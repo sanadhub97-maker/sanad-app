@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, FileText, CreditCard, Activity, ArrowDownToLine } from "lucide-react";
+import { Users, FileText, CreditCard, Activity, ArrowDownToLine, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +13,7 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { reportsApi, type ReportFormat } from "@/api/reports";
+import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 type EmployeeRow = { employeeNumber: string; fullName: string; department: string | null; branch: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
@@ -47,23 +48,70 @@ export default function ReportsPage() {
     enabled: tab === "activity",
   });
 
-  function ExportMenu({ report, params: p }: { report: keyof typeof reportsApi; params: Record<string, unknown> }) {
+  function ReportActions({ report, params: p }: { report: keyof typeof reportsApi; params: Record<string, unknown> }) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5 rounded-xl border-border/70 bg-card shadow-sm hover:bg-muted">
-            <ArrowDownToLine className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-xs">تصدير التقرير (Export)</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 shadow-luxury">
-          {(["xlsx", "csv", "pdf"] as ReportFormat[]).map((fmt) => (
-            <DropdownMenuItem key={fmt} onSelect={() => reportsApi[report].export(p, fmt)} className="rounded-lg text-xs font-semibold">
-              {fmt.toUpperCase()}
+      <div className="flex items-center gap-2">
+        {/* Dedicated Print Button with Options */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-xl border-border/70 bg-card shadow-2xs hover:bg-muted font-semibold text-xs h-9 px-3 text-foreground"
+            >
+              <Printer className="h-4 w-4 text-primary" />
+              <span>{t("common.print", { defaultValue: "طباعة التقرير" })}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-60 rounded-xl p-1 shadow-luxury">
+            <DropdownMenuItem
+              onSelect={() => openPdfInNewTab(`/reports/${report}`, { ...p, format: "pdf" })}
+              className="rounded-lg text-xs font-semibold gap-2 py-2 cursor-pointer"
+            >
+              <FileText className="h-4 w-4 text-rose-500 shrink-0" />
+              <div className="flex flex-col">
+                <span>طباعة تقرير PDF الرسمي</span>
+                <span className="text-[10px] text-muted-foreground font-normal">تقرير منسق بشعار المؤسسة للطباعة المباشرة</span>
+              </div>
             </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem
+              onSelect={() => window.print()}
+              className="rounded-lg text-xs font-semibold gap-2 py-2 cursor-pointer"
+            >
+              <Printer className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex flex-col">
+                <span>طباعة الصفحة الحالية</span>
+                <span className="text-[10px] text-muted-foreground font-normal">أمر طباعة المتصفح المباشر</span>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Export Button */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-xl border-border/70 bg-card shadow-2xs hover:bg-muted font-semibold text-xs h-9 px-3 text-foreground"
+            >
+              <ArrowDownToLine className="h-4 w-4 text-primary" />
+              <span>{t("common.export", { defaultValue: "تصدير التقرير" })}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44 rounded-xl p-1 shadow-luxury">
+            {(["xlsx", "csv", "pdf"] as ReportFormat[]).map((fmt) => (
+              <DropdownMenuItem
+                key={fmt}
+                onSelect={() => reportsApi[report].export(p, fmt)}
+                className="rounded-lg text-xs font-semibold py-1.5 cursor-pointer"
+              >
+                تصدير بصيغة {fmt.toUpperCase()}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     );
   }
 
@@ -105,7 +153,7 @@ export default function ReportsPage() {
                 <span className="text-xs font-semibold text-muted-foreground">
                   عرض قائمة الموظفين وحالات الإقامات المسجلة
                 </span>
-                <ExportMenu report="employees" params={{}} />
+                <ReportActions report="employees" params={{}} />
               </div>
               <div className="rounded-xl border border-border/60 overflow-hidden">
                 <Table>
@@ -155,7 +203,7 @@ export default function ReportsPage() {
                     <SelectItem value="EXPIRED">منتهية (Expired)</SelectItem>
                   </SelectContent>
                 </Select>
-                <ExportMenu report="documents" params={{ status: statusFilter || undefined }} />
+                <ReportActions report="documents" params={{ status: statusFilter || undefined }} />
               </div>
               <div className="rounded-xl border border-border/60 overflow-hidden">
                 <Table>
@@ -194,7 +242,7 @@ export default function ReportsPage() {
                 <span className="text-xs font-semibold text-muted-foreground">
                   سجل الدفعات والمصروفات المالية
                 </span>
-                <ExportMenu report="payments" params={{}} />
+                <ReportActions report="payments" params={{}} />
               </div>
               <div className="rounded-xl border border-border/60 overflow-hidden">
                 <Table>
@@ -231,7 +279,7 @@ export default function ReportsPage() {
                 <span className="text-xs font-semibold text-muted-foreground">
                   سجل التدقيق والحركات الإدارية اللحظية
                 </span>
-                <ExportMenu report="activity" params={{}} />
+                <ReportActions report="activity" params={{}} />
               </div>
               <div className="rounded-xl border border-border/60 overflow-hidden">
                 <Table>

@@ -271,3 +271,40 @@
   }
 }
 
+/* Dedicated Print Stylesheet */
+@media print {
+  aside,
+  header,
+  nav,
+  .no-print,
+  button,
+  [role="tablist"],
+  [data-radix-popper-content-wrapper] {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding: 6px 10px !important;
+    color: #0f172a !important;
+  }
+}
+
