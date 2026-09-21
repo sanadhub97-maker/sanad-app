@@ -80,6 +80,21 @@ export async function softDelete(id: string) {
   });
 }
 
+export async function getNextCode(): Promise<string> {
+  const branches = await prisma.branch.findMany({ where: { deletedAt: null }, select: { code: true } });
+
+  let maxNum = 0;
+  for (const b of branches) {
+    const match = b.code.match(/\d+/);
+    if (match) {
+      const num = parseInt(match[0], 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+  }
+
+  return `BR-${String(maxNum + 1).padStart(3, "0")}`;
+}
+
 export async function listAllActive() {
   return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, code: true }, orderBy: { name: "asc" } });
 }

@@ -12,6 +12,7 @@ router.use(requireAuth);
 
 router.get("/", requirePermission("branches.view"), validate({ query: listBranchesQuerySchema }), controller.list);
 router.get("/active", requirePermission("branches.view"), controller.listActive);
+router.get("/next-code", requirePermission("branches.view"), controller.getNextCode);
 router.get("/:id", requirePermission("branches.view"), validate({ params: idParamSchema }), controller.getById);
 
 router.post(

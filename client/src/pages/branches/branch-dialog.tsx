@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -26,6 +26,7 @@ import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { branchesApi } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { Branch } from "@/types/models";
 
 const schema = z.object({
@@ -59,6 +60,8 @@ export function BranchDialog({
     handleSubmit,
     control,
     reset,
+    getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -81,6 +84,26 @@ export function BranchDialog({
       );
     }
   }, [open, branch, reset]);
+
+  // Auto-fetch the next establishment code when creating a new one
+  const {
+    data: autoCode,
+    isLoading: loadingAutoCode,
+    refetch: refetchAutoCode,
+  } = useQuery({
+    queryKey: ["branches", "next-code"],
+    queryFn: branchesApi.getNextCode,
+    enabled: open && !isEdit,
+  });
+
+  useEffect(() => {
+    if (open && !isEdit && autoCode) {
+      const current = getValues("code");
+      if (!current) {
+        setValue("code", autoCode, { shouldValidate: true });
+      }
+    }
+  }, [open, isEdit, autoCode, setValue, getValues]);
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => (isEdit ? branchesApi.update(branch!.id, values) : branchesApi.create(values)),
@@ -138,12 +161,40 @@ export function BranchDialog({
                 />
               </FormField>
 
-              <FormField label={t("branches.fields.code")} required error={errors.code?.message} icon={Hash}>
-                <Input
-                  {...register("code")}
-                  placeholder="BR-001"
-                  className="h-11 rounded-xl font-mono font-bold bg-background/90 border-border/70 uppercase focus:border-emerald-500/60 focus:ring-4 focus:ring-emerald-500/10"
-                />
+              <FormField
+                label={t("branches.fields.code")}
+                required
+                error={errors.code?.message}
+                icon={Hash}
+                hint={!isEdit ? (isAr ? "توليد تسلسلي" : "Auto sequence") : undefined}
+              >
+                <div className="relative flex items-center">
+                  <Input
+                    {...register("code")}
+                    placeholder={loadingAutoCode ? (isAr ? "جاري توليد الرمز..." : "Generating...") : "BR-001"}
+                    className={cn(
+                      "h-11 rounded-xl font-mono font-bold bg-background/90 border-border/70 uppercase focus:border-emerald-500/60 focus:ring-4 focus:ring-emerald-500/10",
+                      !isEdit && "pe-28"
+                    )}
+                  />
+                  {!isEdit && (
+                    <button
+                      type="button"
+                      disabled={loadingAutoCode}
+                      onClick={async () => {
+                        const res = await refetchAutoCode();
+                        if (res.data) {
+                          setValue("code", res.data, { shouldValidate: true, shouldDirty: true });
+                          toast.success(isAr ? `تم توليد رمز المؤسسة: ${res.data}` : `Generated code: ${res.data}`);
+                        }
+                      }}
+                      className="absolute end-1.5 flex items-center gap-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1.5 text-[11px] font-semibold transition-colors border border-emerald-500/20 shadow-xs"
+                      title={isAr ? "توليد رمز تسلسلي جديد تلقائياً" : "Generate a new sequential code"}
+                    >
+                      {isAr ? "توليد" : "Generate"}
+                    </button>
+                  )}
+                </div>
               </FormField>
 
               <FormField label={t("branches.fields.status")} required icon={Activity} className="sm:col-span-2">

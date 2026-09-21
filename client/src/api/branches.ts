@@ -14,7 +14,15 @@ export interface BranchInput {
   notes?: string;
 }
 
-export const branchesApi = createResourceApi<Branch, BranchInput>("/branches");
+const baseBranchesApi = createResourceApi<Branch, BranchInput>("/branches");
+
+export const branchesApi = {
+  ...baseBranchesApi,
+  getNextCode: async () => {
+    const res = await api.get<{ data: { nextCode: string } }>("/branches/next-code");
+    return res.data.data.nextCode;
+  },
+};
 
 export async function listActiveBranches() {
   const res = await api.get<{ data: { id: string; name: string; code: string }[] }>("/branches/active");

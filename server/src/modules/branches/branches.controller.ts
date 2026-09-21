@@ -11,6 +11,11 @@ export const listActive = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.listAllActive() });
 });
 
+export const getNextCode = asyncHandler(async (_req: Request, res: Response) => {
+  const nextCode = await service.getNextCode();
+  res.json({ data: { nextCode } });
+});
+
 export const getById = asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.getById(req.params.id) });
 });
