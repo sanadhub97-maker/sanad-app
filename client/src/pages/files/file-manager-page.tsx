@@ -58,10 +58,16 @@ export default function FileManagerPage() {
       header: t("common.actions"),
       cell: (c) => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" asChild>
-            <a href={filesApi.downloadUrl(c.row.original.id)} target="_blank" rel="noreferrer">
-              <Download className="h-4 w-4" />
-            </a>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() =>
+              filesApi
+                .download(c.row.original.id, c.row.original.originalName)
+                .catch((err) => toast.error(getErrorMessage(err)))
+            }
+          >
+            <Download className="h-4 w-4" />
           </Button>
           {hasPermission("files.delete") && (
             <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(c.row.original)}>

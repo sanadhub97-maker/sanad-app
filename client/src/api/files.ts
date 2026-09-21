@@ -21,7 +21,28 @@ export const filesApi = {
     });
     return res.data.data;
   },
-  downloadUrl: (id: string) => `/api/files/${id}/download`,
+  // Downloads require the Bearer access token; a plain <img src> or <a href>
+  // can't attach it, so the endpoint 401s. Fetch the bytes through the
+  // authenticated `api` client instead and hand back an object URL — for
+  // inline previews (see AuthedFileImage) and "view file" links alike.
+  fetchBlobUrl: async (id: string) => {
+    const res = await api.get(`/files/${id}/download`, { responseType: "blob" });
+    return window.URL.createObjectURL(res.data as Blob);
+  },
+  openInNewTab: async (id: string) => {
+    const blobUrl = await filesApi.fetchBlobUrl(id);
+    window.open(blobUrl, "_blank");
+  },
+  download: async (id: string, filename: string) => {
+    const blobUrl = await filesApi.fetchBlobUrl(id);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(blobUrl);
+  },
   remove: async (id: string) => {
     await api.delete(`/files/${id}`);
   },

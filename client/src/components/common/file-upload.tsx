@@ -37,9 +37,13 @@ export function FileUpload({ fileId, fileName, module, onUploaded, onRemoved }: 
     return (
       <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
         <FileText className="h-4 w-4 text-muted-foreground" />
-        <a href={filesApi.downloadUrl(fileId)} target="_blank" rel="noreferrer" className="flex-1 truncate text-accent hover:underline">
+        <button
+          type="button"
+          onClick={() => filesApi.openInNewTab(fileId).catch((err) => toast.error(getErrorMessage(err, "Could not open file.")))}
+          className="flex-1 truncate text-start text-accent hover:underline"
+        >
           {fileName ?? "View file"}
-        </a>
+        </button>
         <Button type="button" variant="ghost" size="icon" onClick={onRemoved}>
           <X className="h-4 w-4" />
         </Button>

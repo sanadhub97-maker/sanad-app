@@ -49,6 +49,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/common/page-header";
 import { AppleIcon } from "@/components/common/apple-icon";
+import { AuthedFileImage } from "@/components/common/authed-file-image";
 import { settingsApi, type CompanySettings, type AppearanceSettings, type EmailSettingsInput, type WhatsappSettingsInput } from "@/api/settings";
 import { filesApi } from "@/api/files";
 import { getErrorMessage } from "@/lib/api";
@@ -1512,8 +1513,8 @@ function AssetUploadCard({
                   backgroundPosition: "0 0, 8px 8px",
                 }}
               />
-              <img
-                src={filesApi.downloadUrl(fileId)}
+              <AuthedFileImage
+                fileId={fileId}
                 alt="Corporate Logo"
                 className="relative z-10 max-h-20 max-w-[200px] object-contain drop-shadow-sm transition-transform group-hover:scale-105"
               />
@@ -1525,13 +1526,13 @@ function AssetUploadCard({
                 {isRtl ? "معاينة علامة التبويب في المتصفح:" : "Browser tab mockup preview:"}
               </span>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-xs max-w-xs">
-                <img
-                  src={filesApi.downloadUrl(fileId)}
+                <AuthedFileImage
+                  fileId={fileId}
                   alt="Favicon"
                   className="h-4 w-4 rounded-xs object-contain"
                 />
                 <span className="text-xs font-bold text-foreground truncate">
-                  {isRtl ? "نظام الموارد البشرية | HR System" : "HR & Personnel System"}
+                  {isRtl ? "نظام SanaD لإدارة الوثائق والموظفين" : "SanaD Documents & Licenses"}
                 </span>
               </div>
             </div>
