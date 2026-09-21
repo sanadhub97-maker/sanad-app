@@ -1,0 +1,36 @@
+import { Router } from "express";
+import authRoutes from "@/modules/auth/auth.routes";
+import branchesRoutes from "@/modules/branches/branches.routes";
+import usersRoutes from "@/modules/users/users.routes";
+import rolesRoutes from "@/modules/roles/roles.routes";
+import filesRoutes from "@/modules/files/files.routes";
+import employeesRoutes from "@/modules/employees/employees.routes";
+import { makeCompanyDocumentsRouter } from "@/modules/companyDocuments/companyDocuments.routes";
+import paymentsRoutes from "@/modules/payments/payments.routes";
+import notificationsRoutes from "@/modules/notifications/notifications.routes";
+import auditLogsRoutes from "@/modules/auditLogs/auditLogs.routes";
+import settingsRoutes from "@/modules/settings/settings.routes";
+import dashboardRoutes from "@/modules/dashboard/dashboard.routes";
+import reportsRoutes from "@/modules/reports/reports.routes";
+import importExportRoutes from "@/modules/importExport/importExport.routes";
+import searchRoutes from "@/modules/search/search.routes";
+
+const router = Router();
+
+router.use("/auth", authRoutes);
+router.use("/branches", branchesRoutes);
+router.use("/users", usersRoutes);
+router.use("/roles", rolesRoutes);
+router.use("/files", filesRoutes);
+router.use("/employees", employeesRoutes);
+router.use("/company-documents", makeCompanyDocumentsRouter());
+router.use("/payments", paymentsRoutes);
+router.use("/notifications", notificationsRoutes);
+router.use("/audit-logs", auditLogsRoutes);
+router.use("/settings", settingsRoutes);
+router.use("/dashboard", dashboardRoutes);
+router.use("/reports", reportsRoutes);
+router.use("/import-export", importExportRoutes);
+router.use("/search", searchRoutes);
+
+export default router;

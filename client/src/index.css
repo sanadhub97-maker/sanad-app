@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Plus Jakarta Sans", "Cairo", "Tajawal", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+    /* Light Theme: Pristine Porcelain Slate with Deep Royal Navy & Indigo */
+    --background: 216 33% 98%; /* #F8FAFD */
+    --foreground: 224 58% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 58% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 58% 11%;
+
+    --primary: 224 64% 16%; /* Deep Royal Navy */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 220 28% 95%;
+    --secondary-foreground: 224 58% 14%;
+
+    --accent: 221 83% 53%; /* Vibrant Royal Sapphire */
+    --accent-foreground: 210 40% 98%;
+
+    --muted: 218 25% 94%;
+    --muted-foreground: 218 16% 45%;
+
+    --border: 216 22% 89%;
+    --input: 216 22% 89%;
+    --ring: 221 83% 53%;
+
+    --destructive: 0 75% 54%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 152 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 92% 48%;
+    --warning-foreground: 26 40% 15%;
+
+    --info: 199 89% 46%;
+    --info-foreground: 210 40% 98%;
+
+    --radius: 0.875rem;
+  }
+
+  .dark,
+  :root.dark,
+  html.dark {
+    /* Dark Theme: Deep Obsidian Midnight with Luminous Sapphire & Emerald */
+    --background: 224 45% 5.5%; /* #070B14 */
+    --foreground: 214 32% 96%;
+
+    --card: 224 42% 8.5%; /* #0C1220 */
+    --card-foreground: 214 32% 96%;
+
+    --popover: 224 42% 8.5%;
+    --popover-foreground: 214 32% 96%;
+
+    --primary: 217 91% 60%; /* Glowing Electric Sapphire */
+    --primary-foreground: 224 45% 6%;
+
+    --secondary: 224 30% 14%;
+    --secondary-foreground: 214 32% 96%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 224 45% 6%;
+
+    --muted: 224 25% 14%;
+    --muted-foreground: 218 18% 66%;
+
+    --border: 224 24% 15%;
+    --input: 224 24% 15%;
+    --ring: 217 91% 60%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 152 68% 46%;
+    --success-foreground: 210 40% 98%;
+
+    --warning: 38 90% 54%;
+    --warning-foreground: 26 40% 10%;
+
+    --info: 199 85% 55%;
+    --info-foreground: 210 40% 98%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-blue-500/20 selection:text-blue-600 dark:selection:text-blue-300;
+    font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html[dir="rtl"] body {
+    font-family: "Cairo", "Tajawal", "Plus Jakarta Sans", sans-serif;
+  }
+
+  html[dir="ltr"] body {
+    font-family: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Custom Luxury Obsidian Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.22);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.45);
+  }
+
+  /* Executive Liquid Glass Panels */
+  .glass-panel {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.75);
+  }
+
+  .glass-header {
+    background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  /* Specular Micro-Border Top Highlight */
+  .specular-border {
+    position: relative;
+  }
+  .specular-border::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .dark .specular-border::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  }
+
+  /* Chromatic Glow Accents */
+  .glow-sapphire {
+    box-shadow: 0 0 25px -4px rgba(37, 99, 235, 0.25);
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.25);
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.25);
+  }
+
+  .glow-rose {
+    box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.25);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.25);
+  }
+
+  /* Luxury Card Hover Lift with Spring Shadow */
+  .card-luxury-hover {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  .card-luxury-hover:hover {
+    transform: translateY(-2.5px);
+    box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px hsl(var(--primary) / 0.15);
+  }
+  .dark .card-luxury-hover:hover {
+    box-shadow: 0 20px 42px -15px rgba(0, 0, 0, 0.55), 0 0 0 1px hsl(var(--primary) / 0.28);
+  }
+
+  /* Shimmer Sheen Sweep Effect on Hover */
+  .shimmer-hover {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-hover::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: linear-gradient(
+      60deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
+    transform: rotate(25deg);
+    transition: none;
+    pointer-events: none;
+  }
+  .shimmer-hover:hover::after {
+    left: 140%;
+    transition: all 0.75s ease-in-out;
+  }
+
+  /* Ambient Breathing Keyframes */
+  @keyframes ambient-pulse {
+    0%, 100% {
+      transform: scale(1) translate(0, 0);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1) translate(12px, -18px);
+      opacity: 0.95;
+    }
+  }
+
+  .animate-ambient-pulse {
+    animation: ambient-pulse 14s ease-in-out infinite alternate;
+  }
+
+  .animate-ambient-pulse-slow {
+    animation: ambient-pulse 20s ease-in-out infinite alternate-reverse;
+  }
+}
