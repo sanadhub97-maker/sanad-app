@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
+import { DateInput } from "@/components/common/date-input";
 import { FileUpload } from "@/components/common/file-upload";
 import { employeesApi } from "@/api/employees";
 import { listActiveBranches } from "@/api/branches";
@@ -399,10 +400,16 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
 
               <FormField label={t("employees.fields.dateOfBirth")} icon={Calendar}>
-                <Input
-                  type="date"
-                  {...register("dateOfBirth")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="dateOfBirth"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
             </div>
