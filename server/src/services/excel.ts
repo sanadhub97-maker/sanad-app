@@ -8,7 +8,7 @@ export interface ColumnDef<T> {
 }
 
 /** Generic "rows -> professional .xlsx buffer" used by every module's Export
- * Excel button and by the Reports center (§27). Frozen header row + basic
+ * Excel button and by the Reports center (§27). Frozen header row + executive
  * styling; column-specific dropdowns/validation are added by callers that
  * need them (see importExport templates). */
 export async function buildWorkbook<T extends Record<string, unknown>>(
@@ -17,25 +17,70 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   rows: T[]
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "SanaD Documents & Licenses Management System";
+  workbook.creator = "SanaD Enterprise HR & Compliance Suite";
   workbook.created = new Date();
 
-  const sheet = workbook.addWorksheet(sheetName, { views: [{ state: "frozen", ySplit: 1, rightToLeft: false }] });
-  sheet.columns = columns.map((c) => ({ header: c.header, key: c.key, width: c.width ?? 22 }));
+  // RTL Sheet View with frozen header row
+  const sheet = workbook.addWorksheet(sheetName, {
+    views: [{ state: "frozen", ySplit: 1, rightToLeft: true }],
+  });
 
+  sheet.columns = columns.map((c) => ({
+    header: c.header,
+    key: c.key,
+    width: c.width ?? 22,
+  }));
+
+  // Style Header Row (Row 1)
   const headerRow = sheet.getRow(1);
-  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B1F3A" } };
-  headerRow.alignment = { vertical: "middle", horizontal: "center" };
+  headerRow.height = 34;
+  headerRow.font = { name: "Cairo", size: 10.5, bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
+  headerRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
 
-  for (const row of rows) {
+  for (let c = 1; c <= columns.length; c++) {
+    const cell = sheet.getCell(1, c);
+    cell.border = {
+      top: { style: "medium", color: { argb: "FF0B1324" } },
+      bottom: { style: "medium", color: { argb: "FF0B1324" } },
+      left: { style: "thin", color: { argb: "33FFFFFF" } },
+      right: { style: "thin", color: { argb: "33FFFFFF" } },
+    };
+  }
+
+  // Populate Data Rows with Zebra Striping & Borders
+  rows.forEach((row, rIdx) => {
     const values: Record<string, unknown> = {};
     for (const col of columns) {
       const raw = row[col.key];
       values[col.key] = col.format ? col.format(raw, row) : (raw as never);
     }
-    sheet.addRow(values);
-  }
+    const addedRow = sheet.addRow(values);
+    addedRow.height = 24;
+
+    const isEven = rIdx % 2 === 0;
+    const bgArgb = isEven ? "FFFFFFFF" : "FFF8FAFC";
+
+    for (let c = 1; c <= columns.length; c++) {
+      const cell = addedRow.getCell(c);
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgArgb } };
+      cell.font = { name: "Cairo", size: 9.5, color: { argb: "FF0F172A" } };
+      cell.border = {
+        top: { style: "thin", color: { argb: "FFE2E8F0" } },
+        bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
+        left: { style: "thin", color: { argb: "FFE2E8F0" } },
+        right: { style: "thin", color: { argb: "FFE2E8F0" } },
+      };
+
+      const val = cell.value;
+      const isDate = val instanceof Date || (typeof val === "string" && /^\d{4}-\d{2}-\d{2}/.test(val));
+      const isNum = typeof val === "number" || (typeof val === "string" && /^[A-Z0-9_-]+$/.test(val));
+      cell.alignment = {
+        vertical: "middle",
+        horizontal: isDate || isNum ? "center" : "right",
+      };
+    }
+  });
 
   sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: columns.length } };
 
