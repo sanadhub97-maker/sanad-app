@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: ohio
-    buildCommand: npm install && npx prisma generate --schema=server/prisma/schema.prisma && npm run build:client && npm run build:server
+    buildCommand: npm install --include=dev && npx prisma generate --schema=server/prisma/schema.prisma && npm run build:client && npm run build:server
     startCommand: npx prisma migrate deploy --schema=server/prisma/schema.prisma && node server/dist/index.js
     healthCheckPath: /api/health
     envVars:
