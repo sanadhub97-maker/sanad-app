@@ -17,10 +17,12 @@ import { AppleIcon } from "@/components/common/apple-icon";
 export function AuthLayout() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const isAr = i18n.language === "ar";
+  const isAr = (i18n.language || "ar").startsWith("ar");
 
   function toggleLanguage() {
-    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
+    const currentLang = i18n.language || "ar";
+    const nextLang = currentLang.startsWith("ar") ? "en" : "ar";
+    i18n.changeLanguage(nextLang);
   }
 
   return (

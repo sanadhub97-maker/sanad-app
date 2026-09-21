@@ -2,7 +2,42 @@ import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+const Tabs = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>
+>(({ dir, className, ...props }, ref) => {
+  const [docDir, setDocDir] = React.useState<"ltr" | "rtl">(() => {
+    if (typeof document !== "undefined") {
+      return document.documentElement.dir === "rtl" ? "rtl" : "ltr";
+    }
+    return "ltr";
+  });
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const update = () => {
+      const currentDir = document.documentElement.dir === "rtl" ? "rtl" : "ltr";
+      setDocDir(currentDir);
+    };
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["dir", "lang"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <TabsPrimitive.Root
+      ref={ref}
+      dir={dir ?? docDir}
+      className={className}
+      {...props}
+    />
+  );
+});
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -10,7 +45,10 @@ const TabsList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
-    className={cn("inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground", className)}
+    className={cn(
+      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      className
+    )}
     {...props}
   />
 ));

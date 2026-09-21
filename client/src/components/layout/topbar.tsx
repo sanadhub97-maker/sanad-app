@@ -65,7 +65,9 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   }
 
   function toggleLanguage() {
-    i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
+    const currentLang = i18n.language || "ar";
+    const nextLang = currentLang.startsWith("ar") ? "en" : "ar";
+    i18n.changeLanguage(nextLang);
   }
 
   const initials = user?.fullName
@@ -75,7 +77,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
     .join("")
     .toUpperCase() ?? "U";
 
-  const isAr = i18n.language === "ar";
+  const isAr = (i18n.language || "ar").startsWith("ar");
   const primaryRoleRaw = user?.isSuperAdmin ? "Super Admin" : user?.roles?.[0];
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 

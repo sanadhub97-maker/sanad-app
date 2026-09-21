@@ -57,9 +57,10 @@ import { useUiStore } from "@/stores/uiStore";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const canEdit = hasPermission("settings.edit");
+  const isRtl = (i18n.language || "ar").startsWith("ar");
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in-50 duration-300">
@@ -74,16 +75,16 @@ export default function SettingsPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="text-xs font-semibold text-muted-foreground">
-              النظام متزامن ومحدّث
+              {isRtl ? "النظام متزامن ومحدّث" : "System Synchronized & Active"}
             </span>
           </div>
         }
       />
 
       {/* Tabs Navigation & Panels */}
-      <Tabs defaultValue="company" className="space-y-6">
+      <Tabs defaultValue="company" dir={isRtl ? "rtl" : "ltr"} className="space-y-6">
         {/* Executive Glass Capsule Tabs List */}
-        <div className="overflow-x-auto pb-1 no-scrollbar">
+        <div className="overflow-x-auto pb-1 no-scrollbar flex items-center justify-start">
           <TabsList className="inline-flex h-auto p-1.5 rounded-2xl bg-card/75 dark:bg-card/45 backdrop-blur-xl border border-border/80 shadow-sm gap-1.5 min-w-full sm:min-w-0">
             <TabsTrigger
               value="company"
@@ -129,27 +130,27 @@ export default function SettingsPage() {
 
         {/* Tab 1: Company Profile */}
         <TabsContent value="company" className="focus-visible:outline-none">
-          <CompanyTab canEdit={canEdit} />
+          <CompanyTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 2: Appearance & Brand */}
         <TabsContent value="appearance" className="focus-visible:outline-none">
-          <AppearanceTab canEdit={canEdit} />
+          <AppearanceTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 3: Expiration Rules */}
         <TabsContent value="expiration" className="focus-visible:outline-none">
-          <ExpirationTab canEdit={canEdit} />
+          <ExpirationTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 4: Email SMTP */}
         <TabsContent value="email" className="focus-visible:outline-none">
-          <EmailTab canEdit={canEdit} />
+          <EmailTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 5: WhatsApp API */}
         <TabsContent value="whatsapp" className="focus-visible:outline-none">
-          <WhatsappTab canEdit={canEdit} />
+          <WhatsappTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
       </Tabs>
     </div>
@@ -159,7 +160,7 @@ export default function SettingsPage() {
 // -----------------------------------------------------------------------------
 // TAB 1: COMPANY SETTINGS
 // -----------------------------------------------------------------------------
-function CompanyTab({ canEdit }: { canEdit: boolean }) {
+function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -194,7 +195,9 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">جاري تحميل بيانات المنشأة...</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {isRtl ? "جاري تحميل بيانات المنشأة..." : "Loading company settings..."}
+        </p>
       </div>
     );
   }
@@ -208,10 +211,12 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={ShieldCheck} tone="blue" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                بيانات المنشأة والسجلات الرسمية
+                {isRtl ? "بيانات المنشأة والسجلات الرسمية" : "Corporate Identity & Legal Records"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                الاسم الرسمي والسجل التجاري والرقم الضريبي المعتمد للجهات الحكومية
+                {isRtl
+                  ? "الاسم الرسمي والسجل التجاري والرقم الضريبي المعتمد للجهات الحكومية"
+                  : "Official legal name, commercial registration number, and tax identification"}
               </CardDescription>
             </div>
           </div>
@@ -222,7 +227,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
               <Input
                 {...register("nameAr")}
                 dir="rtl"
-                placeholder="مثال: شركة الرواد للموارد البشرية والحلول الإدارية"
+                placeholder={isRtl ? "مثال: شركة الرواد للموارد البشرية والحلول الإدارية" : "e.g. Al-Rowad HR & Management Solutions Co."}
                 className="h-11 rounded-xl bg-background/60 font-medium"
               />
             </InputField>
@@ -236,7 +241,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
               />
             </InputField>
 
-            <InputField label={t("settings.company.crNumber")} icon={FileText} hint="10 أرقام">
+            <InputField label={t("settings.company.crNumber")} icon={FileText} hint={isRtl ? "10 أرقام" : "10 digits"}>
               <Input
                 {...register("crNumber")}
                 dir="ltr"
@@ -245,7 +250,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
               />
             </InputField>
 
-            <InputField label={t("settings.company.vatNumber")} icon={Receipt} hint="15 رقماً">
+            <InputField label={t("settings.company.vatNumber")} icon={Receipt} hint={isRtl ? "15 رقماً" : "15 digits"}>
               <Input
                 {...register("vatNumber")}
                 dir="ltr"
@@ -264,10 +269,12 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={MapPin} tone="cyan" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                المقر الرئيسي وبيانات التواصل
+                {isRtl ? "المقر الرئيسي وبيانات التواصل" : "Headquarters & Contact Details"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                قنوات الاتصال الرسمية وعنوان المقر المعتمد في المراسلات والفواتير
+                {isRtl
+                  ? "قنوات الاتصال الرسمية وعنوان المقر المعتمد في المراسلات والفواتير"
+                  : "Official communication channels and registered headquarters address"}
               </CardDescription>
             </div>
           </div>
@@ -305,7 +312,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             <InputField label={t("settings.company.city")} icon={Building2}>
               <Input
                 {...register("city")}
-                placeholder="الرياض"
+                placeholder={isRtl ? "الرياض" : "Riyadh"}
                 className="h-11 rounded-xl bg-background/60 font-medium"
               />
             </InputField>
@@ -313,13 +320,13 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             <InputField label={t("settings.company.country")} icon={Globe}>
               <Input
                 {...register("country")}
-                placeholder="المملكة العربية السعودية"
+                placeholder={isRtl ? "المملكة العربية السعودية" : "Saudi Arabia"}
                 className="h-11 rounded-xl bg-background/60 font-medium"
               />
             </InputField>
 
             <div className="sm:col-span-1">
-              <InputField label="الرمز البريدي / العنوان المختصر" icon={Navigation}>
+              <InputField label={isRtl ? "الرمز البريدي / العنوان المختصر" : "Postal Code / Short Address"} icon={Navigation}>
                 <Input
                   dir="ltr"
                   placeholder="12345 - 6789"
@@ -332,7 +339,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
               <InputField label={t("settings.company.address")} icon={Navigation}>
                 <Input
                   {...register("address")}
-                  placeholder="طريق الملك فهد، حي الصحافة، برج الإدارة، الدور 8"
+                  placeholder={isRtl ? "طريق الملك فهد، حي الصحافة، برج الإدارة، الدور 8" : "King Fahd Road, Al-Sahafa District, Management Tower, Floor 8"}
                   className="h-11 rounded-xl bg-background/60 font-medium"
                 />
               </InputField>
@@ -348,10 +355,14 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={Sparkles} tone="purple" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                الأصول الرقمية والهوية البصرية
+                {isRtl ? "الأصول الرقمية والهوية البصرية" : "Digital Brand Assets & Visual Identity"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                تظهر هوية المنشأة في ترويسة التطبيق، مسيرات الرواتب، وتقارير <span className="font-bold text-foreground">PDF</span> وقوالب الطباعة الرسمية
+                {isRtl ? (
+                  <>تظهر هوية المنشأة في ترويسة التطبيق، مسيرات الرواتب، وتقارير <span className="font-bold text-foreground">PDF</span> وقوالب الطباعة الرسمية</>
+                ) : (
+                  <>Company branding appears on app headers, payroll slips, official <span className="font-bold text-foreground">PDF</span> reports, and print templates</>
+                )}
               </CardDescription>
             </div>
           </div>
@@ -361,27 +372,29 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             {/* Primary Logo */}
             <AssetUploadCard
               title={t("settings.company.logo")}
-              subtitle="الشعار المؤسسي الرسمي للنظام والتقارير"
-              aspectHint="صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت"
+              subtitle={isRtl ? "الشعار المؤسسي الرسمي للنظام والتقارير" : "Official primary corporate logo for system & reports"}
+              aspectHint={isRtl ? "صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت" : "Transparent PNG or SVG • up to 5MB"}
               previewType="logo"
               fileId={logoFileId}
               module="company-logo"
               onUploaded={(fid) => setValue("logoFileId", fid, { shouldDirty: true })}
               onRemoved={() => setValue("logoFileId", null, { shouldDirty: true })}
               disabled={!canEdit}
+              isRtl={isRtl}
             />
 
             {/* Browser Favicon */}
             <AssetUploadCard
               title={t("settings.company.favicon")}
-              subtitle="أيقونة علامة التبويب في المتصفح والإشعارات"
-              aspectHint="صيغة ICO أو PNG مربعة • 64x64 بكسل"
+              subtitle={isRtl ? "أيقونة علامة التبويب في المتصفح والإشعارات" : "Browser tab icon and system notification badge"}
+              aspectHint={isRtl ? "صيغة ICO أو PNG مربعة • 64x64 بكسل" : "Square ICO or PNG • 64x64 px"}
               previewType="favicon"
               fileId={faviconFileId}
               module="company-favicon"
               onUploaded={(fid) => setValue("faviconFileId", fid, { shouldDirty: true })}
               onRemoved={() => setValue("faviconFileId", null, { shouldDirty: true })}
               disabled={!canEdit}
+              isRtl={isRtl}
             />
           </div>
         </CardContent>
@@ -393,7 +406,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
           {isDirty && (
             <Badge variant="outline" className="text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 gap-1 text-xs">
               <AlertTriangle className="h-3 w-3" />
-              توجد تعديلات غير محفوظة
+              {isRtl ? "توجد تعديلات غير محفوظة" : "Unsaved changes"}
             </Badge>
           )}
         </div>
@@ -405,7 +418,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             disabled={!isDirty || isSubmitting}
             className="rounded-xl px-5 h-11 border-border/80 hover:bg-muted font-bold text-xs"
           >
-            <RotateCcw className="h-3.5 w-3.5 mr-2 rtl:ml-2 rtl:mr-0 text-muted-foreground" />
+            <RotateCcw className="h-3.5 w-3.5 me-2 text-muted-foreground" />
             {t("common.reset")}
           </Button>
 
@@ -415,9 +428,9 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
             className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
           >
             {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+              <Loader2 className="h-4 w-4 animate-spin me-2" />
             ) : (
-              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              <Check className="h-4 w-4 me-2" />
             )}
             {t("common.save")}
           </Button>
@@ -430,7 +443,7 @@ function CompanyTab({ canEdit }: { canEdit: boolean }) {
 // -----------------------------------------------------------------------------
 // TAB 2: APPEARANCE SETTINGS
 // -----------------------------------------------------------------------------
-function AppearanceTab({ canEdit }: { canEdit: boolean }) {
+function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -480,7 +493,9 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات المظهر...</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {isRtl ? "جاري تحميل إعدادات المظهر..." : "Loading appearance settings..."}
+        </p>
       </div>
     );
   }
@@ -494,10 +509,12 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={Sun} tone="amber" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                وضع المظهر العام (Theme Mode)
+                {isRtl ? "وضع المظهر العام (Theme Mode)" : "Interface Theme Mode"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                اختر أسلوب العرض المفضل للواجهة بين السمة الفاتحة أو الداكنة الفاخرة
+                {isRtl
+                  ? "اختر أسلوب العرض المفضل للواجهة بين السمة الفاتحة أو الداكنة الفاخرة"
+                  : "Choose your preferred system appearance between Crisp Light and Obsidian Dark"}
               </CardDescription>
             </div>
           </div>
@@ -524,10 +541,12 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   </div>
                   <div>
                     <div className="font-black text-sm">{t("settings.appearance.light")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">واجهة ناصعة بظلال كلاسيكية نقية</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isRtl ? "واجهة ناصعة بظلال كلاسيكية نقية" : "Pristine slate with crisp contrast"}
+                    </p>
                   </div>
                   {field.value === "light" && (
-                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -549,10 +568,12 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   </div>
                   <div>
                     <div className="font-black text-sm">{t("settings.appearance.dark")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">أسود سبجي فاخر وتأثيرات زجاجية</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isRtl ? "أسود سبجي فاخر وتأثيرات زجاجية" : "Executive Obsidian and liquid glass"}
+                    </p>
                   </div>
                   {field.value === "dark" && (
-                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -574,10 +595,12 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   </div>
                   <div>
                     <div className="font-black text-sm">{t("settings.appearance.system")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">المزامنة التلقائية مع إعدادات جهازك</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isRtl ? "المزامنة التلقائية مع إعدادات جهازك" : "Sync automatically with OS preferences"}
+                    </p>
                   </div>
                   {field.value === "system" && (
-                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -595,10 +618,10 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={LayoutList} tone="indigo" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                نمط القائمة الجانبية (Sidebar Navigation)
+                {isRtl ? "نمط القائمة الجانبية (Sidebar Navigation)" : "Sidebar Navigation Style"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                تحديد طريقة ظهور قائمة التنقل الرئيسية في سطح المكتب
+                {isRtl ? "تحديد طريقة ظهور قائمة التنقل الرئيسية في سطح المكتب" : "Choose sidebar display mode on desktop screens"}
               </CardDescription>
             </div>
           </div>
@@ -613,7 +636,7 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   type="button"
                   onClick={() => field.onChange("expanded")}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-right rtl:text-right ltr:text-left transition-all duration-200 cursor-pointer",
+                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer",
                     field.value === "expanded"
                       ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                       : "border-border/70 hover:border-border bg-card/60"
@@ -624,7 +647,9 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-sm text-foreground">{t("settings.appearance.expanded")}</div>
-                    <p className="text-xs text-muted-foreground">عرض الأيقونات مع النصوص وأسماء الأقسام</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isRtl ? "عرض الأيقونات مع النصوص وأسماء الأقسام" : "Full layout with labels and section headers"}
+                    </p>
                   </div>
                   {field.value === "expanded" && <Check className="h-4 w-4 text-primary shrink-0" />}
                 </button>
@@ -633,7 +658,7 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   type="button"
                   onClick={() => field.onChange("collapsed")}
                   className={cn(
-                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-right rtl:text-right ltr:text-left transition-all duration-200 cursor-pointer",
+                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer",
                     field.value === "collapsed"
                       ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
                       : "border-border/70 hover:border-border bg-card/60"
@@ -644,7 +669,9 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-sm text-foreground">{t("settings.appearance.collapsed")}</div>
-                    <p className="text-xs text-muted-foreground">عرض مدمج للأيقونات فقط لتوفير مساحة العمل</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isRtl ? "عرض مدمج للأيقونات فقط لتوفير مساحة العمل" : "Compact icons-only mode to maximize workspace"}
+                    </p>
                   </div>
                   {field.value === "collapsed" && <Check className="h-4 w-4 text-primary shrink-0" />}
                 </button>
@@ -661,10 +688,10 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={Palette} tone="purple" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                منظومة ألوان العلامة التجارية
+                {isRtl ? "منظومة ألوان العلامة التجارية" : "Brand Color System"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                تخصيص لوحة الألوان الأساسية والحالات التنبيهية في واجهة النظام
+                {isRtl ? "تخصيص لوحة الألوان الأساسية والحالات التنبيهية في واجهة النظام" : "Customize interface primary accent swatches and status alerts"}
               </CardDescription>
             </div>
           </div>
@@ -709,10 +736,10 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
             <AppleIcon icon={Sliders} tone="slate" size="md" />
             <div>
               <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                تجربة الاستخدام والأداء
+                {isRtl ? "تجربة الاستخدام والأداء" : "User Experience & Performance"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                خيارات تسريع التصفح والتحكم في المؤثرات الحركية وكثافة البيانات
+                {isRtl ? "خيارات تسريع التصفح والتحكم في المؤثرات الحركية وكثافة البيانات" : "Control motion animations and table data density"}
               </CardDescription>
             </div>
           </div>
@@ -724,7 +751,7 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                 {t("settings.appearance.enableAnimations")}
               </div>
               <p className="text-xs text-muted-foreground">
-                تفعيل الانتقالات السلسة والظلال الانسيابية وتأثيرات التحويم
+                {isRtl ? "تفعيل الانتقالات السلسة والظلال الانسيابية وتأثيرات التحويم" : "Enable fluid transitions, hover effects, and specular motion"}
               </p>
             </div>
             <Controller
@@ -742,7 +769,7 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
                 {t("settings.appearance.compactMode")}
               </div>
               <p className="text-xs text-muted-foreground">
-                زيادة كثافة عرض الجداول لتقليل التمرير وعرض أكبر قدر من السجلات
+                {isRtl ? "زيادة كثافة عرض الجداول لتقليل التمرير وعرض أكبر قدر من السجلات" : "Increase table row density to maximize visible records without scrolling"}
               </p>
             </div>
             <Controller
@@ -764,9 +791,9 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
           className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
         >
           {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+            <Loader2 className="h-4 w-4 animate-spin me-2" />
           ) : (
-            <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            <Check className="h-4 w-4 me-2" />
           )}
           {t("common.save")}
         </Button>
@@ -778,7 +805,7 @@ function AppearanceTab({ canEdit }: { canEdit: boolean }) {
 // -----------------------------------------------------------------------------
 // TAB 3: EXPIRATION RULES
 // -----------------------------------------------------------------------------
-function ExpirationTab({ canEdit }: { canEdit: boolean }) {
+function ExpirationTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -810,7 +837,9 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">جاري تحميل قواعد الانتهاء...</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {isRtl ? "جاري تحميل قواعد الانتهاء..." : "Loading expiration rules..."}
+        </p>
       </div>
     );
   }
@@ -844,7 +873,7 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
                 {t("settings.expiration.thresholdLabel")}
               </Label>
               <Badge variant="warning" className="font-mono text-xs px-2.5 py-0.5">
-                {thresholdDays} يوماً
+                {thresholdDays} {isRtl ? "يوماً" : "days"}
               </Badge>
             </div>
             <div className="flex items-center gap-3">
@@ -864,19 +893,21 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
                     type="button"
                     onClick={() => setThresholdDays(preset)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
+                      "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer",
                       thresholdDays === preset
                         ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400"
                         : "border-border/80 hover:bg-muted text-muted-foreground"
                     )}
                   >
-                    {preset} يوماً
+                    {preset} {isRtl ? "يوماً" : "days"}
                   </button>
                 ))}
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              تتحول بطاقة الوثيقة أو رخصة الإقامة إلى الحالة التحذيرية البرتقالية عندما يتبقى على انتهائها هذا العدد من الأيام.
+              {isRtl
+                ? "تتحول بطاقة الوثيقة أو رخصة الإقامة إلى الحالة التحذيرية البرتقالية عندما يتبقى على انتهائها هذا العدد من الأيام."
+                : "Documents and residence permits will switch to the orange warning state when remaining validity hits this threshold."}
             </p>
           </div>
 
@@ -893,13 +924,15 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
             />
             {/* Timeline Tag Visualization */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-xs text-muted-foreground ml-1">مواعيد التنبيه المجدولة:</span>
+              <span className="text-xs text-muted-foreground me-1">
+                {isRtl ? "مواعيد التنبيه المجدولة:" : "Scheduled alert milestones:"}
+              </span>
               {notifyPills.map((d) => (
                 <span
                   key={d}
                   className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-muted text-foreground border border-border/80"
                 >
-                  قبل {d} يوم
+                  {isRtl ? `قبل ${d} يوم` : `${d}d before`}
                 </span>
               ))}
             </div>
@@ -922,9 +955,9 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
           className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
         >
           {mutation.isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+            <Loader2 className="h-4 w-4 animate-spin me-2" />
           ) : (
-            <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            <Check className="h-4 w-4 me-2" />
           )}
           {t("common.save")}
         </Button>
@@ -936,7 +969,7 @@ function ExpirationTab({ canEdit }: { canEdit: boolean }) {
 // -----------------------------------------------------------------------------
 // TAB 4: EMAIL SETTINGS (SMTP)
 // -----------------------------------------------------------------------------
-function EmailTab({ canEdit }: { canEdit: boolean }) {
+function EmailTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -978,7 +1011,9 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات البريد...</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {isRtl ? "جاري تحميل إعدادات البريد..." : "Loading email gateway settings..."}
+        </p>
       </div>
     );
   }
@@ -1003,7 +1038,7 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
-                  {isEnabled ? "بوابة الإرسال مفعلة" : "معطلة"}
+                  {isEnabled ? (isRtl ? "بوابة الإرسال مفعلة" : "Gateway Enabled") : (isRtl ? "معطلة" : "Disabled")}
                 </Badge>
                 <Controller
                   control={control}
@@ -1031,7 +1066,7 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
                   type="number"
                   {...register("port")}
                   dir="ltr"
-                  placeholder="587 أو 465"
+                  placeholder="587 / 465"
                   className="h-11 rounded-xl bg-background/60 font-mono text-sm"
                 />
               </InputField>
@@ -1048,7 +1083,7 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
               <InputField
                 label={t("settings.email.password")}
                 icon={Key}
-                hint={data?.hasPassword ? "كلمة المرور محفوظة" : undefined}
+                hint={data?.hasPassword ? (isRtl ? "كلمة المرور محفوظة" : "Password saved") : undefined}
               >
                 <div className="relative">
                   <Input
@@ -1056,12 +1091,12 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
                     dir="ltr"
                     placeholder={t("settings.email.passwordPlaceholder")}
                     {...register("password")}
-                    className="h-11 rounded-xl bg-background/60 font-mono text-sm pr-10 rtl:pr-3 rtl:pl-10"
+                    className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -1071,7 +1106,7 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
               <InputField label={t("settings.email.fromName")} icon={ShieldCheck}>
                 <Input
                   {...register("fromName")}
-                  placeholder="نظام الموارد البشرية - شركة الرواد"
+                  placeholder={isRtl ? "نظام الموارد البشرية - شركة الرواد" : "HR System - Al-Rowad Co."}
                   className="h-11 rounded-xl bg-background/60 font-medium"
                 />
               </InputField>
@@ -1096,9 +1131,9 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
             className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
           >
             {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+              <Loader2 className="h-4 w-4 animate-spin me-2" />
             ) : (
-              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              <Check className="h-4 w-4 me-2" />
             )}
             {t("common.save")}
           </Button>
@@ -1109,15 +1144,17 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
       <Card className="specular-border overflow-hidden border-border/80 bg-muted/20">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
               <Send className="h-4 w-4" />
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                اختبار الاتصال بالخادم وإرسال بريد تجريبي
+                {isRtl ? "اختبار الاتصال بالخادم وإرسال بريد تجريبي" : "Server Connectivity Test & Trial Email"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                تحقق من صحة بيانات الاعتماد والاتصال بخادم البريد قبل حفظ الإعدادات نهائياً
+                {isRtl
+                  ? "تحقق من صحة بيانات الاعتماد والاتصال بخادم البريد قبل حفظ الإعدادات نهائياً"
+                  : "Verify credentials and server reachability before saving configurations"}
               </CardDescription>
             </div>
           </div>
@@ -1139,9 +1176,9 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
               className="rounded-xl h-11 px-5 border-border font-bold text-xs shrink-0 w-full sm:w-auto"
             >
               {testMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+                <Loader2 className="h-4 w-4 animate-spin me-2" />
               ) : (
-                <Send className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+                <Send className="h-4 w-4 me-2" />
               )}
               {t("common.sendTest")}
             </Button>
@@ -1155,7 +1192,7 @@ function EmailTab({ canEdit }: { canEdit: boolean }) {
 // -----------------------------------------------------------------------------
 // TAB 5: WHATSAPP API SETTINGS
 // -----------------------------------------------------------------------------
-function WhatsappTab({ canEdit }: { canEdit: boolean }) {
+function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -1197,7 +1234,9 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
     return (
       <div className="flex flex-col items-center justify-center p-16 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات واتساب...</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {isRtl ? "جاري تحميل إعدادات واتساب..." : "Loading WhatsApp settings..."}
+        </p>
       </div>
     );
   }
@@ -1222,7 +1261,7 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
-                  {isEnabled ? "واتساب كلاود API نشط" : "معطل"}
+                  {isEnabled ? (isRtl ? "واتساب كلاود API نشط" : "WhatsApp Cloud API Active") : (isRtl ? "معطل" : "Disabled")}
                 </Badge>
                 <Controller
                   control={control}
@@ -1257,7 +1296,7 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
                 <InputField
                   label={t("settings.whatsapp.apiKey")}
                   icon={Key}
-                  hint={data?.hasApiKey ? "مفتاح API الدائم محفوظ ومشفّر" : undefined}
+                  hint={data?.hasApiKey ? (isRtl ? "مفتاح API الدائم محفوظ ومشفّر" : "Permanent API key encrypted") : undefined}
                 >
                   <div className="relative">
                     <Input
@@ -1265,12 +1304,12 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
                       dir="ltr"
                       placeholder={t("settings.whatsapp.apiKeyPlaceholder")}
                       {...register("apiKey")}
-                      className="h-11 rounded-xl bg-background/60 font-mono text-sm pr-10 rtl:pr-3 rtl:pl-10"
+                      className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
                     />
                     <button
                       type="button"
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                      className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -1306,9 +1345,9 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
             className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
           >
             {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+              <Loader2 className="h-4 w-4 animate-spin me-2" />
             ) : (
-              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              <Check className="h-4 w-4 me-2" />
             )}
             {t("common.save")}
           </Button>
@@ -1319,15 +1358,17 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
       <Card className="specular-border overflow-hidden border-border/80 bg-muted/20">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
               <Send className="h-4 w-4" />
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                إرسال رسالة اختبار عبر واتساب كلاود
+                {isRtl ? "إرسال رسالة اختبار عبر واتساب كلاود" : "Send Trial Message via WhatsApp Cloud"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية قالب الرسائل
+                {isRtl
+                  ? "أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية قالب الرسائل"
+                  : "Enter phone number with international country code to verify message template readiness"}
               </CardDescription>
             </div>
           </div>
@@ -1349,9 +1390,9 @@ function WhatsappTab({ canEdit }: { canEdit: boolean }) {
               className="rounded-xl h-11 px-5 border-border font-bold text-xs shrink-0 w-full sm:w-auto"
             >
               {testMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+                <Loader2 className="h-4 w-4 animate-spin me-2" />
               ) : (
-                <Send className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+                <Send className="h-4 w-4 me-2" />
               )}
               {t("common.sendTest")}
             </Button>
@@ -1383,8 +1424,8 @@ function InputField({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <Label className="text-xs font-bold text-foreground/90 flex items-center gap-1.5">
-          {Icon && <Icon className="h-3.5 w-3.5 text-primary/70" />}
-          {label}
+          {Icon && <Icon className="h-3.5 w-3.5 text-primary/70 shrink-0" />}
+          <span>{label}</span>
           {required && <span className="text-destructive">*</span>}
         </Label>
         {hint && <span className="text-[11px] text-muted-foreground font-medium">{hint}</span>}
@@ -1404,6 +1445,7 @@ interface AssetUploadCardProps {
   onUploaded: (fileId: string) => void;
   onRemoved: () => void;
   disabled?: boolean;
+  isRtl?: boolean;
 }
 
 function AssetUploadCard({
@@ -1416,6 +1458,7 @@ function AssetUploadCard({
   onUploaded,
   onRemoved,
   disabled,
+  isRtl,
 }: AssetUploadCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -1426,7 +1469,7 @@ function AssetUploadCard({
     try {
       const uploaded = await filesApi.upload(file, module);
       onUploaded(uploaded.id);
-      toast.success("تم رفع الملف بنجاح");
+      toast.success(isRtl ? "تم رفع الملف بنجاح" : "File uploaded successfully");
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -1450,7 +1493,7 @@ function AssetUploadCard({
           <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
         <Badge variant="outline" className="text-[10px] text-muted-foreground shrink-0">
-          {previewType === "logo" ? "شعار المنشأة" : "Favicon"}
+          {previewType === "logo" ? (isRtl ? "شعار المنشأة" : "Company Logo") : "Favicon"}
         </Badge>
       </div>
 
@@ -1478,7 +1521,9 @@ function AssetUploadCard({
           ) : (
             /* Simulated Safari/Chrome Browser Tab Preview */
             <div className="p-3 rounded-xl border border-border/70 bg-muted/40 dark:bg-muted/15 space-y-2">
-              <span className="text-[11px] text-muted-foreground font-medium">معاينة علامة التبويب في المتصفح:</span>
+              <span className="text-[11px] text-muted-foreground font-medium">
+                {isRtl ? "معاينة علامة التبويب في المتصفح:" : "Browser tab mockup preview:"}
+              </span>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-xs max-w-xs">
                 <img
                   src={filesApi.downloadUrl(fileId)}
@@ -1486,7 +1531,7 @@ function AssetUploadCard({
                   className="h-4 w-4 rounded-xs object-contain"
                 />
                 <span className="text-xs font-bold text-foreground truncate">
-                  نظام الموارد البشرية | HR System
+                  {isRtl ? "نظام الموارد البشرية | HR System" : "HR & Personnel System"}
                 </span>
               </div>
             </div>
@@ -1496,7 +1541,7 @@ function AssetUploadCard({
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
               <CheckCircle2 className="h-4 w-4" />
-              <span>أصل نشط ومحفوظ</span>
+              <span>{isRtl ? "أصل نشط ومحفوظ" : "Active & saved asset"}</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1506,10 +1551,10 @@ function AssetUploadCard({
                 size="sm"
                 disabled={disabled || isUploading}
                 onClick={() => inputRef.current?.click()}
-                className="h-8 rounded-lg text-xs font-bold"
+                className="h-8 rounded-lg text-xs font-bold cursor-pointer"
               >
-                {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-                استبدال
+                {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin me-1" /> : null}
+                {isRtl ? "استبدال" : "Replace"}
               </Button>
               <Button
                 type="button"
@@ -1517,10 +1562,10 @@ function AssetUploadCard({
                 size="sm"
                 disabled={disabled}
                 onClick={onRemoved}
-                className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
+                className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
               >
-                <Trash2 className="h-3.5 w-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
-                حذف
+                <Trash2 className="h-3.5 w-3.5 me-1" />
+                {isRtl ? "حذف" : "Remove"}
               </Button>
             </div>
           </div>
@@ -1542,7 +1587,9 @@ function AssetUploadCard({
             )}
           </div>
           <span className="text-xs font-bold text-foreground">
-            {isUploading ? "جاري رفع الملف..." : "اضغط لاختيار الملف أو اسحبه هنا"}
+            {isUploading
+              ? (isRtl ? "جاري رفع الملف..." : "Uploading file...")
+              : (isRtl ? "اضغط لاختيار الملف أو اسحبه هنا" : "Click to choose file or drag here")}
           </span>
           <span className="text-[11px] text-muted-foreground mt-1 font-medium">{aspectHint}</span>
         </div>
