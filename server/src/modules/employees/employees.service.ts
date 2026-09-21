@@ -90,7 +90,9 @@ export async function getById(id: string) {
 
 async function assertUniqueIdentifiers(input: Partial<CreateInput>, excludeId?: string) {
   if (input.employeeNumber) {
-    const existing = await prisma.employee.findFirst({ where: { employeeNumber: input.employeeNumber, id: { not: excludeId } } });
+    const existing = await prisma.employee.findFirst({
+      where: { employeeNumber: input.employeeNumber, id: { not: excludeId }, deletedAt: null },
+    });
     if (existing) throw ApiError.badRequest("An employee with this employee number already exists.");
   }
   if (input.iqamaNumber) {
@@ -105,6 +107,7 @@ async function assertUniqueIdentifiers(input: Partial<CreateInput>, excludeId?: 
 
 export async function getNextEmployeeNumber(): Promise<string> {
   const employees = await prisma.employee.findMany({
+    where: { deletedAt: null },
     select: { employeeNumber: true },
   });
 
@@ -143,5 +146,11 @@ export async function update(id: string, input: UpdateInput) {
 export async function softDelete(id: string) {
   const existing = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Employee not found");
-  await prisma.employee.update({ where: { id }, data: { deletedAt: new Date() } });
+  // employeeNumber has a hard DB-unique constraint, so a soft-deleted row
+  // would otherwise permanently block that number from ever being reused —
+  // free it by tagging the deleted copy.
+  await prisma.employee.update({
+    where: { id },
+    data: { deletedAt: new Date(), employeeNumber: `${existing.employeeNumber}__deleted_${Date.now()}` },
+  });
 }

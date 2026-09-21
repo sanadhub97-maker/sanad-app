@@ -79,7 +79,7 @@ export async function create(input: CreateInput, createdById: string) {
 
   const paymentNumber = input.paymentNumber || (await generatePaymentNumber());
   if (input.paymentNumber) {
-    const existing = await prisma.payment.findUnique({ where: { paymentNumber } });
+    const existing = await prisma.payment.findFirst({ where: { paymentNumber, deletedAt: null } });
     if (existing) throw ApiError.badRequest("A payment with this number already exists.");
   }
 
@@ -93,6 +93,13 @@ export async function update(id: string, input: UpdateInput) {
   const existing = await prisma.payment.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Payment not found");
 
+  if (input.paymentNumber && input.paymentNumber !== existing.paymentNumber) {
+    const duplicate = await prisma.payment.findFirst({
+      where: { paymentNumber: input.paymentNumber, id: { not: id }, deletedAt: null },
+    });
+    if (duplicate) throw ApiError.badRequest("A payment with this number already exists.");
+  }
+
   const amount = input.amount !== undefined ? new Prisma.Decimal(input.amount) : existing.amount;
   const vat = input.vat !== undefined ? new Prisma.Decimal(input.vat) : existing.vat;
   const total = amount.plus(vat);
@@ -103,5 +110,11 @@ export async function update(id: string, input: UpdateInput) {
 export async function softDelete(id: string) {
   const existing = await prisma.payment.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Payment not found");
-  await prisma.payment.update({ where: { id }, data: { deletedAt: new Date() } });
+  // paymentNumber has a hard DB-unique constraint, so a soft-deleted row
+  // would otherwise permanently block that number from ever being reused —
+  // free it by tagging the deleted copy.
+  await prisma.payment.update({
+    where: { id },
+    data: { deletedAt: new Date(), paymentNumber: `${existing.paymentNumber}__deleted_${Date.now()}` },
+  });
 }

@@ -58,7 +58,7 @@ export async function getById(id: string) {
 }
 
 export async function create(input: CreateInput) {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  const existing = await prisma.user.findFirst({ where: { email: input.email, deletedAt: null } });
   if (existing) throw ApiError.badRequest("An account with this email already exists.");
 
   const roles = await prisma.role.findMany({ where: { id: { in: input.roleIds } } });
@@ -111,9 +111,15 @@ export async function update(id: string, input: UpdateInput) {
 
 export async function softDelete(id: string, requestingUserId: string) {
   if (id === requestingUserId) throw ApiError.badRequest("You cannot delete your own account.");
-  await getById(id);
+  const existing = await getById(id);
   await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { deletedAt: new Date(), isActive: false } }),
+    // email has a hard DB-unique constraint, so a soft-deleted row would
+    // otherwise permanently block that email from ever being reused —
+    // free it by tagging the deleted copy.
+    prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date(), isActive: false, email: `${existing.email}__deleted_${Date.now()}` },
+    }),
     prisma.session.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } }),
   ]);
 }

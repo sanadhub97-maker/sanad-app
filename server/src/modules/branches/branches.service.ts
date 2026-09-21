@@ -51,23 +51,33 @@ export async function getById(id: string) {
 }
 
 export async function create(input: CreateInput) {
-  const existing = await prisma.branch.findUnique({ where: { code: input.code } });
+  const existing = await prisma.branch.findFirst({ where: { code: input.code, deletedAt: null } });
   if (existing) throw ApiError.badRequest("A branch with this code already exists.");
   return prisma.branch.create({ data: { ...input, email: input.email || undefined } });
 }
 
 export async function update(id: string, input: UpdateInput) {
   await getById(id);
+  if (input.code) {
+    const existing = await prisma.branch.findFirst({ where: { code: input.code, id: { not: id }, deletedAt: null } });
+    if (existing) throw ApiError.badRequest("A branch with this code already exists.");
+  }
   return prisma.branch.update({ where: { id }, data: { ...input, email: input.email || undefined } });
 }
 
 export async function softDelete(id: string) {
-  await getById(id);
+  const branch = await getById(id);
   const activeEmployees = await prisma.employee.count({ where: { branchId: id, deletedAt: null } });
   if (activeEmployees > 0) {
     throw ApiError.badRequest("Cannot delete a branch that still has employees assigned to it.");
   }
-  return prisma.branch.update({ where: { id }, data: { deletedAt: new Date() } });
+  // code has a hard DB-unique constraint, so a soft-deleted row would
+  // otherwise permanently block that code from ever being reused — free
+  // it by tagging the deleted copy.
+  return prisma.branch.update({
+    where: { id },
+    data: { deletedAt: new Date(), code: `${branch.code}__deleted_${Date.now()}` },
+  });
 }
 
 export async function listAllActive() {
