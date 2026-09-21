@@ -42,6 +42,18 @@ export const download = asyncHandler(async (req: Request, res: Response) => {
   res.send(buffer);
 });
 
+export const downloadPublic = asyncHandler(async (req: Request, res: Response) => {
+  const { file, buffer } = await service.getContent(req.params.id);
+  const publicModules = ["company-logo", "company-favicon", "company-document"];
+  if (!file.module || !publicModules.includes(file.module)) {
+    throw ApiError.forbidden("This file is not publicly accessible.");
+  }
+  res.setHeader("Content-Type", file.mimeType);
+  res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
+  res.setHeader("Content-Disposition", `inline; filename="${encodeURIComponent(file.originalName)}"`);
+  res.send(buffer);
+});
+
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   await service.remove(req.params.id);
   res.json({ message: "File deleted successfully." });

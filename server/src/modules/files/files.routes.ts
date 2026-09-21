@@ -7,6 +7,10 @@ import { upload } from "@/modules/files/files.upload";
 import * as controller from "@/modules/files/files.controller";
 
 const router = Router();
+
+// Publicly accessible download for brand assets (logo, favicon) without requiring authentication
+router.get("/public/:id", controller.downloadPublic);
+
 router.use(requireAuth);
 
 router.post(
@@ -18,7 +22,7 @@ router.post(
 );
 router.get("/", requirePermission("files.view"), controller.list);
 router.get("/:id", requirePermission("files.view"), controller.getMetadata);
-router.get("/:id/download", requirePermission("files.view"), auditLog(AuditAction.DOWNLOAD, "files"), controller.download);
+router.get("/:id/download", auditLog(AuditAction.DOWNLOAD, "files"), controller.download);
 router.delete("/:id", requirePermission("files.delete"), auditLog(AuditAction.DELETE, "files"), controller.remove);
 
 export default router;

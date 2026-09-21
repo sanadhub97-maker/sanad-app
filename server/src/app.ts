@@ -24,7 +24,18 @@ export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+          "img-src": ["'self'", "data:", "blob:", "https:"],
+          "connect-src": ["'self'", "https:", "blob:"],
+        },
+      },
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    })
+  );
   app.use(
     cors({
       origin: env.CLIENT_URL,

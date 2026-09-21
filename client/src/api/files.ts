@@ -6,6 +6,8 @@ export interface FileMetaWithUploader extends FileMeta {
   uploadedBy?: { id: string; fullName: string };
 }
 
+const dataUrlCache = new Map<string, string>();
+
 export const filesApi = {
   list: async (params: Record<string, unknown> = {}) => {
     const res = await api.get<Paginated<FileMetaWithUploader>>("/files", { params });
@@ -21,6 +23,33 @@ export const filesApi = {
     });
     return res.data.data;
   },
+  /** Direct public URL for branding assets like logos and favicons */
+  getPublicUrl: (id: string) => `/api/files/public/${id}`,
+
+  /** Downloads authenticated file and converts to a persistent Base64 Data URL.
+   * Unlike blob URLs, Data URLs cannot be revoked by React StrictMode,
+   * work across all browsers regardless of CSP blob: policy, and can be safely cached. */
+  fetchDataUrl: async (id: string): Promise<string> => {
+    if (dataUrlCache.has(id)) {
+      return dataUrlCache.get(id)!;
+    }
+    const res = await api.get(`/files/${id}/download`, { responseType: "blob" });
+    const blob = res.data as Blob;
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          dataUrlCache.set(id, reader.result);
+          resolve(reader.result);
+        } else {
+          reject(new Error("Failed to read file as data URL"));
+        }
+      };
+      reader.onerror = () => reject(reader.error ?? new Error("FileReader error"));
+      reader.readAsDataURL(blob);
+    });
+  },
+
   // Downloads require the Bearer access token; a plain <img src> or <a href>
   // can't attach it, so the endpoint 401s. Fetch the bytes through the
   // authenticated `api` client instead and hand back an object URL — for

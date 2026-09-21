@@ -1463,9 +1463,12 @@ function AssetUploadCard({
 }: AssetUploadCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   async function handleFileChange(file: File | undefined) {
     if (!file) return;
+    const preview = URL.createObjectURL(file);
+    setLocalPreview(preview);
     setIsUploading(true);
     try {
       const uploaded = await filesApi.upload(file, module);
@@ -1473,9 +1476,18 @@ function AssetUploadCard({
       toast.success(isRtl ? "تم رفع الملف بنجاح" : "File uploaded successfully");
     } catch (err) {
       toast.error(getErrorMessage(err));
+      setLocalPreview(null);
     } finally {
       setIsUploading(false);
     }
+  }
+
+  function handleRemove() {
+    if (localPreview) {
+      URL.revokeObjectURL(localPreview);
+      setLocalPreview(null);
+    }
+    onRemoved();
   }
 
   return (
@@ -1498,7 +1510,7 @@ function AssetUploadCard({
         </Badge>
       </div>
 
-      {fileId ? (
+      {fileId || localPreview ? (
         <div className="space-y-3">
           {/* Visual Live Preview Box */}
           {previewType === "logo" ? (
@@ -1515,6 +1527,8 @@ function AssetUploadCard({
               />
               <AuthedFileImage
                 fileId={fileId}
+                previewUrl={localPreview}
+                isPublic={true}
                 alt="Corporate Logo"
                 className="relative z-10 max-h-20 max-w-[200px] object-contain drop-shadow-sm transition-transform group-hover:scale-105"
               />
@@ -1528,6 +1542,8 @@ function AssetUploadCard({
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-xs max-w-xs">
                 <AuthedFileImage
                   fileId={fileId}
+                  previewUrl={localPreview}
+                  isPublic={true}
                   alt="Favicon"
                   className="h-4 w-4 rounded-xs object-contain"
                 />
@@ -1562,7 +1578,7 @@ function AssetUploadCard({
                 variant="ghost"
                 size="sm"
                 disabled={disabled}
-                onClick={onRemoved}
+                onClick={handleRemove}
                 className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10 cursor-pointer"
               >
                 <Trash2 className="h-3.5 w-3.5 me-1" />

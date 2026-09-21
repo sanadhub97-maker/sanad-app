@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { settingsApi } from "@/api/settings";
+import { filesApi } from "@/api/files";
 import { useUiStore, resolveEffectiveTheme } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 
 /** Applies the effective light/dark class and, once an admin has saved
  * custom brand colors in Settings → Appearance, overrides the CSS
  * variables at runtime (§5/§34) — falls back to the built-in palette
- * otherwise. */
+ * otherwise. Also syncs the browser favicon with the uploaded company favicon. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const themeMode = useUiStore((s) => s.themeMode);
   const isAuthenticated = Boolean(useAuthStore((s) => s.user));
@@ -18,6 +19,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     enabled: isAuthenticated,
     staleTime: 5 * 60_000,
   });
+
+  const { data: company } = useQuery({
+    queryKey: ["settings", "company"],
+    queryFn: settingsApi.getCompany,
+    enabled: isAuthenticated,
+    staleTime: 5 * 60_000,
+  });
+
+  // Dynamically sync favicon in the browser tab
+  useEffect(() => {
+    if (company?.faviconFileId) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = filesApi.getPublicUrl(company.faviconFileId);
+    }
+  }, [company?.faviconFileId]);
 
   // Active theme: user's explicit local choice takes priority if not "system".
   // If "system", check server appearance default, else OS media query.
