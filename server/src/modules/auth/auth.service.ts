@@ -7,6 +7,7 @@ import { env } from "@/config/env";
 import { ApiError } from "@/utils/apiError";
 import { loadAuthContext } from "@/middleware/auth";
 import { sendMail } from "@/services/email";
+import { logger } from "@/lib/logger";
 import type { LoginInput, RegisterInput } from "@/modules/auth/auth.schemas";
 
 const REFRESH_COOKIE_NAME = "refresh_token";
@@ -39,7 +40,14 @@ export async function register(input: RegisterInput) {
     },
   });
 
-  await issueEmailVerification(user.id, user.email, user.fullName);
+  // The account is already created at this point — a transient SMTP failure
+  // (wrong provider config, blocked egress, etc.) must not fail the whole
+  // registration. The user can request a new verification email later.
+  try {
+    await issueEmailVerification(user.id, user.email, user.fullName);
+  } catch (err) {
+    logger.error({ err, userId: user.id }, "Failed to send registration verification email");
+  }
 
   return user;
 }
@@ -150,11 +158,18 @@ export async function forgotPassword(email: string) {
   });
 
   const resetUrl = `${env.CLIENT_URL}/reset-password?token=${rawToken}`;
-  await sendMail({
-    to: user.email,
-    subject: "Reset your password",
-    html: `<p>Hello ${user.fullName},</p><p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
-  });
+  // Same reasoning as registration: an SMTP hiccup must not surface as a
+  // failure here — that would leak whether the account exists, defeating
+  // the point of behaving identically either way.
+  try {
+    await sendMail({
+      to: user.email,
+      subject: "Reset your password",
+      html: `<p>Hello ${user.fullName},</p><p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+    });
+  } catch (err) {
+    logger.error({ err, userId: user.id }, "Failed to send password reset email");
+  }
 }
 
 export async function resetPassword(rawToken: string, newPassword: string) {

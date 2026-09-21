@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/password";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { issueEmailVerification } from "@/modules/auth/auth.service";
+import { logger } from "@/lib/logger";
 import type { z } from "zod";
 import type { createUserSchema, listUsersQuerySchema, updateUserSchema } from "@/modules/users/users.schemas";
 
@@ -75,7 +76,13 @@ export async function create(input: CreateInput) {
     select: selectSafe,
   });
 
-  await issueEmailVerification(user.id, user.email, user.fullName);
+  // The account is already created — an SMTP hiccup must not fail the
+  // whole "create user" request (see auth.service.ts's register()).
+  try {
+    await issueEmailVerification(user.id, user.email, user.fullName);
+  } catch (err) {
+    logger.error({ err, userId: user.id }, "Failed to send welcome/verification email");
+  }
   return serialize(user);
 }
 
