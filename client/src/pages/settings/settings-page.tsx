@@ -1,22 +1,60 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Mail, MessageCircle, Send } from "lucide-react";
+import {
+  Building2,
+  Palette,
+  Clock,
+  Mail,
+  MessageSquare,
+  Send,
+  Loader2,
+  UploadCloud,
+  Check,
+  RotateCcw,
+  Trash2,
+  Eye,
+  EyeOff,
+  Sun,
+  Moon,
+  LayoutList,
+  LayoutGrid,
+  ShieldCheck,
+  Globe,
+  FileText,
+  Receipt,
+  Phone,
+  MapPin,
+  Navigation,
+  Key,
+  Server,
+  Hash,
+  AtSign,
+  Briefcase,
+  Layers,
+  Sparkles,
+  CheckCircle2,
+  Sliders,
+  AlertTriangle,
+  Laptop,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileUpload } from "@/components/common/file-upload";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/common/page-header";
-import { settingsApi } from "@/api/settings";
+import { AppleIcon } from "@/components/common/apple-icon";
+import { settingsApi, type CompanySettings, type AppearanceSettings, type EmailSettingsInput, type WhatsappSettingsInput } from "@/api/settings";
+import { filesApi } from "@/api/files";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -24,29 +62,93 @@ export default function SettingsPage() {
   const canEdit = hasPermission("settings.edit");
 
   return (
-    <div className="space-y-4">
-      <PageHeader title={t("settings.title")} description={t("settings.subtitle")} />
-      <Tabs defaultValue="company">
-        <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="company">{t("settings.tabs.company")}</TabsTrigger>
-          <TabsTrigger value="appearance">{t("settings.tabs.appearance")}</TabsTrigger>
-          <TabsTrigger value="expiration">{t("settings.tabs.expiration")}</TabsTrigger>
-          <TabsTrigger value="email">{t("settings.tabs.email")}</TabsTrigger>
-          <TabsTrigger value="whatsapp">{t("settings.tabs.whatsapp")}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="company">
+    <div className="space-y-6 pb-12 animate-in fade-in-50 duration-300">
+      {/* Executive Page Header */}
+      <PageHeader
+        title={t("settings.title")}
+        description={t("settings.subtitle")}
+        actions={
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card/80 dark:bg-card/40 border border-border/80 shadow-xs backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              النظام متزامن ومحدّث
+            </span>
+          </div>
+        }
+      />
+
+      {/* Tabs Navigation & Panels */}
+      <Tabs defaultValue="company" className="space-y-6">
+        {/* Executive Glass Capsule Tabs List */}
+        <div className="overflow-x-auto pb-1 no-scrollbar">
+          <TabsList className="inline-flex h-auto p-1.5 rounded-2xl bg-card/75 dark:bg-card/45 backdrop-blur-xl border border-border/80 shadow-sm gap-1.5 min-w-full sm:min-w-0">
+            <TabsTrigger
+              value="company"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={Building2} tone="blue" size="xs" />
+              <span>{t("settings.tabs.company")}</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="appearance"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={Palette} tone="purple" size="xs" />
+              <span>{t("settings.tabs.appearance")}</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="expiration"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={Clock} tone="amber" size="xs" />
+              <span>{t("settings.tabs.expiration")}</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="email"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={Mail} tone="rose" size="xs" />
+              <span>{t("settings.tabs.email")}</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="whatsapp"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={MessageSquare} tone="emerald" size="xs" />
+              <span>{t("settings.tabs.whatsapp")}</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Tab 1: Company Profile */}
+        <TabsContent value="company" className="focus-visible:outline-none">
           <CompanyTab canEdit={canEdit} />
         </TabsContent>
-        <TabsContent value="appearance">
+
+        {/* Tab 2: Appearance & Brand */}
+        <TabsContent value="appearance" className="focus-visible:outline-none">
           <AppearanceTab canEdit={canEdit} />
         </TabsContent>
-        <TabsContent value="expiration">
+
+        {/* Tab 3: Expiration Rules */}
+        <TabsContent value="expiration" className="focus-visible:outline-none">
           <ExpirationTab canEdit={canEdit} />
         </TabsContent>
-        <TabsContent value="email">
+
+        {/* Tab 4: Email SMTP */}
+        <TabsContent value="email" className="focus-visible:outline-none">
           <EmailTab canEdit={canEdit} />
         </TabsContent>
-        <TabsContent value="whatsapp">
+
+        {/* Tab 5: WhatsApp API */}
+        <TabsContent value="whatsapp" className="focus-visible:outline-none">
           <WhatsappTab canEdit={canEdit} />
         </TabsContent>
       </Tabs>
@@ -54,333 +156,1397 @@ export default function SettingsPage() {
   );
 }
 
+// -----------------------------------------------------------------------------
+// TAB 1: COMPANY SETTINGS
+// -----------------------------------------------------------------------------
 function CompanyTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "company"], queryFn: settingsApi.getCompany });
-  const { register, handleSubmit, watch, setValue, reset, formState: { isSubmitting } } = useForm({ values: data ?? {} });
+  const { data, isLoading } = useQuery({
+    queryKey: ["settings", "company"],
+    queryFn: settingsApi.getCompany,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { isSubmitting, isDirty },
+  } = useForm<CompanySettings>({
+    values: data ?? {},
+  });
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateCompany,
     onSuccess: (res) => {
-      toast.success(res.message);
+      toast.success(res.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "company"] });
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
+  const logoFileId = watch("logoFileId");
+  const faviconFileId = watch("faviconFileId");
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">جاري تحميل بيانات المنشأة...</p>
+      </div>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("settings.company.title")}</CardTitle>
-        <CardDescription>{t("settings.company.description")}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("settings.company.nameAr")}><Input {...register("nameAr")} dir="rtl" /></Field>
-          <Field label={t("settings.company.nameEn")}><Input {...register("nameEn")} /></Field>
-          <Field label={t("settings.company.crNumber")}><Input {...register("crNumber")} /></Field>
-          <Field label={t("settings.company.vatNumber")}><Input {...register("vatNumber")} /></Field>
-          <Field label={t("settings.company.phone")}><Input {...register("phone")} /></Field>
-          <Field label={t("settings.company.email")}><Input type="email" {...register("email")} /></Field>
-          <Field label={t("settings.company.website")}><Input {...register("website")} /></Field>
-          <Field label={t("settings.company.city")}><Input {...register("city")} /></Field>
-          <Field label={t("settings.company.country")}><Input {...register("country")} /></Field>
-          <Field label={t("settings.company.address")}><Input {...register("address")} /></Field>
-          <Field label={t("settings.company.logo")}>
-            <FileUpload
-              fileId={watch("logoFileId")}
-              module="company-logo"
-              onUploaded={(fid) => setValue("logoFileId", fid)}
-              onRemoved={() => setValue("logoFileId", undefined)}
-            />
-          </Field>
-          <Field label={t("settings.company.favicon")}>
-            <FileUpload
-              fileId={watch("faviconFileId")}
-              module="company-favicon"
-              onUploaded={(fid) => setValue("faviconFileId", fid)}
-              onRemoved={() => setValue("faviconFileId", undefined)}
-            />
-          </Field>
-          <div className="sm:col-span-2 flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => reset()}>
-              {t("common.reset")}
-            </Button>
-            <Button type="submit" disabled={!canEdit || isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />} {t("common.save")}
-            </Button>
+    <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+      {/* Group 1: Corporate Identity & Legal */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={ShieldCheck} tone="blue" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                بيانات المنشأة والسجلات الرسمية
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                الاسم الرسمي والسجل التجاري والرقم الضريبي المعتمد للجهات الحكومية
+              </CardDescription>
+            </div>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <InputField label={t("settings.company.nameAr")} required icon={Building2}>
+              <Input
+                {...register("nameAr")}
+                dir="rtl"
+                placeholder="مثال: شركة الرواد للموارد البشرية والحلول الإدارية"
+                className="h-11 rounded-xl bg-background/60 font-medium"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.nameEn")} icon={Globe}>
+              <Input
+                {...register("nameEn")}
+                dir="ltr"
+                placeholder="e.g. Al-Rowad HR & Management Solutions Co."
+                className="h-11 rounded-xl bg-background/60 font-medium font-sans"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.crNumber")} icon={FileText} hint="10 أرقام">
+              <Input
+                {...register("crNumber")}
+                dir="ltr"
+                placeholder="1010XXXXXX"
+                className="h-11 rounded-xl bg-background/60 font-mono text-sm tracking-wider"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.vatNumber")} icon={Receipt} hint="15 رقماً">
+              <Input
+                {...register("vatNumber")}
+                dir="ltr"
+                placeholder="300XXXXXXXXXXXX"
+                className="h-11 rounded-xl bg-background/60 font-mono text-sm tracking-wider"
+              />
+            </InputField>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Group 2: Contact & Headquarters */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={MapPin} tone="cyan" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                المقر الرئيسي وبيانات التواصل
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                قنوات الاتصال الرسمية وعنوان المقر المعتمد في المراسلات والفواتير
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-5">
+          <div className="grid gap-5 sm:grid-cols-3">
+            <InputField label={t("settings.company.phone")} icon={Phone}>
+              <Input
+                {...register("phone")}
+                dir="ltr"
+                placeholder="+966 11 XXX XXXX"
+                className="h-11 rounded-xl bg-background/60 font-mono"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.email")} icon={Mail}>
+              <Input
+                type="email"
+                {...register("email")}
+                dir="ltr"
+                placeholder="info@company.sa"
+                className="h-11 rounded-xl bg-background/60 font-medium"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.website")} icon={Globe}>
+              <Input
+                {...register("website")}
+                dir="ltr"
+                placeholder="https://company.sa"
+                className="h-11 rounded-xl bg-background/60 font-medium"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.city")} icon={Building2}>
+              <Input
+                {...register("city")}
+                placeholder="الرياض"
+                className="h-11 rounded-xl bg-background/60 font-medium"
+              />
+            </InputField>
+
+            <InputField label={t("settings.company.country")} icon={Globe}>
+              <Input
+                {...register("country")}
+                placeholder="المملكة العربية السعودية"
+                className="h-11 rounded-xl bg-background/60 font-medium"
+              />
+            </InputField>
+
+            <div className="sm:col-span-1">
+              <InputField label="الرمز البريدي / العنوان المختصر" icon={Navigation}>
+                <Input
+                  dir="ltr"
+                  placeholder="12345 - 6789"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+            </div>
+
+            <div className="sm:col-span-3">
+              <InputField label={t("settings.company.address")} icon={Navigation}>
+                <Input
+                  {...register("address")}
+                  placeholder="طريق الملك فهد، حي الصحافة، برج الإدارة، الدور 8"
+                  className="h-11 rounded-xl bg-background/60 font-medium"
+                />
+              </InputField>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Group 3: Digital Brand Assets (Logo & Favicon) */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Sparkles} tone="purple" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                الأصول الرقمية والهوية البصرية
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                تظهر هوية المنشأة في ترويسة التطبيق، مسيرات الرواتب، وتقارير <span className="font-bold text-foreground">PDF</span> وقوالب الطباعة الرسمية
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Primary Logo */}
+            <AssetUploadCard
+              title={t("settings.company.logo")}
+              subtitle="الشعار المؤسسي الرسمي للنظام والتقارير"
+              aspectHint="صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت"
+              previewType="logo"
+              fileId={logoFileId}
+              module="company-logo"
+              onUploaded={(fid) => setValue("logoFileId", fid, { shouldDirty: true })}
+              onRemoved={() => setValue("logoFileId", null, { shouldDirty: true })}
+              disabled={!canEdit}
+            />
+
+            {/* Browser Favicon */}
+            <AssetUploadCard
+              title={t("settings.company.favicon")}
+              subtitle="أيقونة علامة التبويب في المتصفح والإشعارات"
+              aspectHint="صيغة ICO أو PNG مربعة • 64x64 بكسل"
+              previewType="favicon"
+              fileId={faviconFileId}
+              module="company-favicon"
+              onUploaded={(fid) => setValue("faviconFileId", fid, { shouldDirty: true })}
+              onRemoved={() => setValue("faviconFileId", null, { shouldDirty: true })}
+              disabled={!canEdit}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Executive Floating/Sticky Action Bar */}
+      <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 p-4 rounded-2xl bg-card/85 dark:bg-card/75 backdrop-blur-xl border border-border/80 shadow-luxury">
+        <div className="flex items-center gap-2">
+          {isDirty && (
+            <Badge variant="outline" className="text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 gap-1 text-xs">
+              <AlertTriangle className="h-3 w-3" />
+              توجد تعديلات غير محفوظة
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => reset()}
+            disabled={!isDirty || isSubmitting}
+            className="rounded-xl px-5 h-11 border-border/80 hover:bg-muted font-bold text-xs"
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-2 rtl:ml-2 rtl:mr-0 text-muted-foreground" />
+            {t("common.reset")}
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={!canEdit || isSubmitting}
+            className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+            ) : (
+              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            )}
+            {t("common.save")}
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 }
 
+// -----------------------------------------------------------------------------
+// TAB 2: APPEARANCE SETTINGS
+// -----------------------------------------------------------------------------
 function AppearanceTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "appearance"], queryFn: settingsApi.getAppearance });
-  const { register, handleSubmit, control, formState: { isSubmitting } } = useForm({ values: data });
+  const { data, isLoading } = useQuery({
+    queryKey: ["settings", "appearance"],
+    queryFn: settingsApi.getAppearance,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<AppearanceSettings>({
+    values: data,
+  });
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateAppearance,
     onSuccess: (res, variables) => {
-      toast.success(res.message);
+      toast.success(res.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "appearance"] });
       if (variables.themeMode) {
-        useUiStore.getState().setThemeMode(variables.themeMode as "light" | "dark" | "system");
+        useUiStore.getState().setThemeMode(variables.themeMode);
+      }
+      if (typeof variables.animationsEnabled === "boolean") {
+        useUiStore.getState().setAnimationsEnabled(variables.animationsEnabled);
+      }
+      if (variables.sidebarStyle) {
+        useUiStore.getState().setSidebarCollapsed(variables.sidebarStyle === "collapsed");
       }
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
-  const colorFields: { key: "primaryColor" | "secondaryColor" | "accentColor" | "successColor" | "warningColor" | "dangerColor" | "infoColor"; label: string }[] = [
-    { key: "primaryColor", label: t("settings.appearance.primary") },
-    { key: "secondaryColor", label: t("settings.appearance.secondary") },
-    { key: "accentColor", label: t("settings.appearance.accent") },
-    { key: "successColor", label: t("settings.appearance.success") },
-    { key: "warningColor", label: t("settings.appearance.warning") },
-    { key: "dangerColor", label: t("settings.appearance.danger") },
-    { key: "infoColor", label: t("settings.appearance.information") },
+  const colorFields: { key: keyof AppearanceSettings; label: string; tone: string }[] = [
+    { key: "primaryColor", label: t("settings.appearance.primary"), tone: "bg-blue-600" },
+    { key: "secondaryColor", label: t("settings.appearance.secondary"), tone: "bg-slate-600" },
+    { key: "accentColor", label: t("settings.appearance.accent"), tone: "bg-indigo-600" },
+    { key: "successColor", label: t("settings.appearance.success"), tone: "bg-emerald-600" },
+    { key: "warningColor", label: t("settings.appearance.warning"), tone: "bg-amber-500" },
+    { key: "dangerColor", label: t("settings.appearance.danger"), tone: "bg-rose-600" },
+    { key: "infoColor", label: t("settings.appearance.information"), tone: "bg-cyan-600" },
   ];
 
-  if (!data) return null;
+  if (isLoading || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات المظهر...</p>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("settings.appearance.title")}</CardTitle>
-        <CardDescription>{t("settings.appearance.description")}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label={t("settings.appearance.themeMode")}>
-              <Controller control={control} name="themeMode" render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">{t("settings.appearance.light")}</SelectItem>
-                    <SelectItem value="dark">{t("settings.appearance.dark")}</SelectItem>
-                    <SelectItem value="system">{t("settings.appearance.system")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )} />
-            </Field>
-            <Field label={t("settings.appearance.sidebarStyle")}>
-              <Controller control={control} name="sidebarStyle" render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="expanded">{t("settings.appearance.expanded")}</SelectItem>
-                    <SelectItem value="collapsed">{t("settings.appearance.collapsed")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )} />
-            </Field>
+    <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+      {/* Theme Mode Selector */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Sun} tone="amber" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                وضع المظهر العام (Theme Mode)
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                اختر أسلوب العرض المفضل للواجهة بين السمة الفاتحة أو الداكنة الفاخرة
+              </CardDescription>
+            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-4">
-            {colorFields.map((f) => (
-              <Field key={f.key} label={f.label}>
-                <Input type="color" className="h-10 p-1" {...register(f.key)} />
-              </Field>
-            ))}
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Controller
+            control={control}
+            name="themeMode"
+            render={({ field }) => (
+              <div className="grid gap-4 sm:grid-cols-3">
+                {/* Light Mode */}
+                <button
+                  type="button"
+                  onClick={() => field.onChange("light")}
+                  className={cn(
+                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
+                    field.value === "light"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
+                  )}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 group-hover:scale-105 transition-transform">
+                    <Sun className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-black text-sm">{t("settings.appearance.light")}</div>
+                    <p className="text-xs text-muted-foreground mt-0.5">واجهة ناصعة بظلال كلاسيكية نقية</p>
+                  </div>
+                  {field.value === "light" && (
+                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
+                </button>
+
+                {/* Dark Mode */}
+                <button
+                  type="button"
+                  onClick={() => field.onChange("dark")}
+                  className={cn(
+                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
+                    field.value === "dark"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
+                  )}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
+                    <Moon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-black text-sm">{t("settings.appearance.dark")}</div>
+                    <p className="text-xs text-muted-foreground mt-0.5">أسود سبجي فاخر وتأثيرات زجاجية</p>
+                  </div>
+                  {field.value === "dark" && (
+                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
+                </button>
+
+                {/* System Mode */}
+                <button
+                  type="button"
+                  onClick={() => field.onChange("system")}
+                  className={cn(
+                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
+                    field.value === "system"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
+                  )}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 border border-sky-500/20 group-hover:scale-105 transition-transform">
+                    <Laptop className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="font-black text-sm">{t("settings.appearance.system")}</div>
+                    <p className="text-xs text-muted-foreground mt-0.5">المزامنة التلقائية مع إعدادات جهازك</p>
+                  </div>
+                  {field.value === "system" && (
+                    <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
+                </button>
+              </div>
+            )}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Sidebar Layout */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={LayoutList} tone="indigo" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                نمط القائمة الجانبية (Sidebar Navigation)
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                تحديد طريقة ظهور قائمة التنقل الرئيسية في سطح المكتب
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Controller control={control} name="animationsEnabled" render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
-            )} />
-            <Label>{t("settings.appearance.enableAnimations")}</Label>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Controller
+            control={control}
+            name="sidebarStyle"
+            render={({ field }) => (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => field.onChange("expanded")}
+                  className={cn(
+                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-right rtl:text-right ltr:text-left transition-all duration-200 cursor-pointer",
+                    field.value === "expanded"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border/70 hover:border-border bg-card/60"
+                  )}
+                >
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <LayoutList className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-sm text-foreground">{t("settings.appearance.expanded")}</div>
+                    <p className="text-xs text-muted-foreground">عرض الأيقونات مع النصوص وأسماء الأقسام</p>
+                  </div>
+                  {field.value === "expanded" && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => field.onChange("collapsed")}
+                  className={cn(
+                    "flex items-center gap-4 p-4 rounded-2xl border-2 text-right rtl:text-right ltr:text-left transition-all duration-200 cursor-pointer",
+                    field.value === "collapsed"
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
+                      : "border-border/70 hover:border-border bg-card/60"
+                  )}
+                >
+                  <div className="h-10 w-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                    <LayoutGrid className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-sm text-foreground">{t("settings.appearance.collapsed")}</div>
+                    <p className="text-xs text-muted-foreground">عرض مدمج للأيقونات فقط لتوفير مساحة العمل</p>
+                  </div>
+                  {field.value === "collapsed" && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </button>
+              </div>
+            )}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Brand Color Swatches */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Palette} tone="purple" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                منظومة ألوان العلامة التجارية
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                تخصيص لوحة الألوان الأساسية والحالات التنبيهية في واجهة النظام
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Controller control={control} name="compactMode" render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
-            )} />
-            <Label>{t("settings.appearance.compactMode")}</Label>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {colorFields.map((f) => {
+              const currentValue = watch(f.key as keyof AppearanceSettings) as string;
+              return (
+                <div
+                  key={f.key}
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="space-y-0.5">
+                    <Label className="text-xs font-bold text-foreground">{f.label}</Label>
+                    <div className="font-mono text-[11px] text-muted-foreground uppercase">
+                      {currentValue || "#000000"}
+                    </div>
+                  </div>
+                  <div className="relative flex items-center justify-center">
+                    <input
+                      type="color"
+                      {...register(f.key as never)}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <div
+                      className="h-8 w-8 rounded-full border-2 border-white dark:border-slate-800 shadow-md ring-1 ring-black/10 transition-transform hover:scale-110"
+                      style={{ backgroundColor: currentValue || "#000" }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={!canEdit || isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />} {t("common.save")}
-            </Button>
+        </CardContent>
+      </Card>
+
+      {/* Experience & Animation Switches */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Sliders} tone="slate" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                تجربة الاستخدام والأداء
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                خيارات تسريع التصفح والتحكم في المؤثرات الحركية وكثافة البيانات
+              </CardDescription>
+            </div>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-card/60">
+            <div className="space-y-0.5">
+              <div className="font-bold text-sm text-foreground">
+                {t("settings.appearance.enableAnimations")}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                تفعيل الانتقالات السلسة والظلال الانسيابية وتأثيرات التحويم
+              </p>
+            </div>
+            <Controller
+              control={control}
+              name="animationsEnabled"
+              render={({ field }) => (
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              )}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-card/60">
+            <div className="space-y-0.5">
+              <div className="font-bold text-sm text-foreground">
+                {t("settings.appearance.compactMode")}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                زيادة كثافة عرض الجداول لتقليل التمرير وعرض أكبر قدر من السجلات
+              </p>
+            </div>
+            <Controller
+              control={control}
+              name="compactMode"
+              render={({ field }) => (
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              )}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={!canEdit || isSubmitting}
+          className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
+        >
+          {isSubmitting ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+          ) : (
+            <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+          )}
+          {t("common.save")}
+        </Button>
+      </div>
+    </form>
   );
 }
 
+// -----------------------------------------------------------------------------
+// TAB 3: EXPIRATION RULES
+// -----------------------------------------------------------------------------
 function ExpirationTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "expiration"], queryFn: settingsApi.getExpirationRules });
-  const [thresholdDays, setThresholdDays] = useState(data?.expiringSoonThresholdDays ?? 30);
-  const [notifyDays, setNotifyDays] = useState((data?.notifyDaysBefore ?? [90, 60, 30, 15, 7, 3, 1]).join(", "));
+  const { data, isLoading } = useQuery({
+    queryKey: ["settings", "expiration"],
+    queryFn: settingsApi.getExpirationRules,
+  });
+
+  const [thresholdDays, setThresholdDays] = useState(30);
+  const [notifyDays, setNotifyDays] = useState("90, 60, 30, 15, 7, 3, 1");
+
+  // Synchronize when data loads
+  React.useEffect(() => {
+    if (data) {
+      setThresholdDays(data.expiringSoonThresholdDays ?? 30);
+      setNotifyDays((data.notifyDaysBefore ?? [90, 60, 30, 15, 7, 3, 1]).join(", "));
+    }
+  }, [data]);
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateExpirationRules,
     onSuccess: (res) => {
-      toast.success(res.message);
+      toast.success(res.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "expiration"] });
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">جاري تحميل قواعد الانتهاء...</p>
+      </div>
+    );
+  }
+
+  const notifyPills = notifyDays
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => !Number.isNaN(n));
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("settings.expiration.title")}</CardTitle>
-        <CardDescription>{t("settings.expiration.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Field label={t("settings.expiration.thresholdLabel")}>
-          <Input type="number" value={thresholdDays} onChange={(e) => setThresholdDays(Number(e.target.value))} className="max-w-xs" />
-        </Field>
-        <Field label={t("settings.expiration.notifyLabel")}>
-          <Input value={notifyDays} onChange={(e) => setNotifyDays(e.target.value)} />
-        </Field>
-        <div className="flex justify-end">
-          <Button
-            disabled={!canEdit || mutation.isPending}
-            onClick={() =>
-              mutation.mutate({
-                expiringSoonThresholdDays: thresholdDays,
-                notifyDaysBefore: notifyDays.split(",").map((s) => Number(s.trim())).filter((n) => !Number.isNaN(n)),
-              })
-            }
-          >
-            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} {t("common.save")}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Clock} tone="amber" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {t("settings.expiration.title")}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {t("settings.expiration.description")}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-6">
+          {/* Threshold Days */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-bold text-foreground">
+                {t("settings.expiration.thresholdLabel")}
+              </Label>
+              <Badge variant="warning" className="font-mono text-xs px-2.5 py-0.5">
+                {thresholdDays} يوماً
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <Input
+                type="number"
+                min="1"
+                max="365"
+                value={thresholdDays}
+                onChange={(e) => setThresholdDays(Number(e.target.value))}
+                className="max-w-[140px] h-11 rounded-xl bg-background/60 font-mono font-bold text-center text-base"
+              />
+              {/* Quick Presets */}
+              <div className="flex flex-wrap items-center gap-2">
+                {[15, 30, 45, 60, 90].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setThresholdDays(preset)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors",
+                      thresholdDays === preset
+                        ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        : "border-border/80 hover:bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {preset} يوماً
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              تتحول بطاقة الوثيقة أو رخصة الإقامة إلى الحالة التحذيرية البرتقالية عندما يتبقى على انتهائها هذا العدد من الأيام.
+            </p>
+          </div>
+
+          {/* Pre-expiry Notification Days */}
+          <div className="space-y-3 pt-4 border-t border-border/60">
+            <Label className="text-sm font-bold text-foreground">
+              {t("settings.expiration.notifyLabel")}
+            </Label>
+            <Input
+              value={notifyDays}
+              onChange={(e) => setNotifyDays(e.target.value)}
+              className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+              placeholder="90, 60, 30, 15, 7, 3, 1"
+            />
+            {/* Timeline Tag Visualization */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <span className="text-xs text-muted-foreground ml-1">مواعيد التنبيه المجدولة:</span>
+              {notifyPills.map((d) => (
+                <span
+                  key={d}
+                  className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-muted text-foreground border border-border/80"
+                >
+                  قبل {d} يوم
+                </span>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button
+          disabled={!canEdit || mutation.isPending}
+          onClick={() =>
+            mutation.mutate({
+              expiringSoonThresholdDays: thresholdDays,
+              notifyDaysBefore: notifyDays
+                .split(",")
+                .map((s) => Number(s.trim()))
+                .filter((n) => !Number.isNaN(n)),
+            })
+          }
+          className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
+        >
+          {mutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+          ) : (
+            <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+          )}
+          {t("common.save")}
+        </Button>
+      </div>
+    </div>
   );
 }
 
+// -----------------------------------------------------------------------------
+// TAB 4: EMAIL SETTINGS (SMTP)
+// -----------------------------------------------------------------------------
 function EmailTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "email"], queryFn: settingsApi.getEmail });
-  const { register, handleSubmit, control, formState: { isSubmitting } } = useForm({ values: data });
+  const { data, isLoading } = useQuery({
+    queryKey: ["settings", "email"],
+    queryFn: settingsApi.getEmail,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<EmailSettingsInput>({
+    values: data ? { ...data, password: "" } : undefined,
+  });
+
   const [testTo, setTestTo] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateEmail,
-    onSuccess: (res) => {
-      toast.success(res.message ?? t("common.savedSuccess"));
+    onSuccess: (res: any) => {
+      toast.success(res?.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "email"] });
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
+
   const testMutation = useMutation({
     mutationFn: () => settingsApi.testEmail(testTo),
     onSuccess: (res) => toast.success(res.message),
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
-  if (!data) return null;
+  const isEnabled = watch("enabled");
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات البريد...</p>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" /> {t("settings.email.title")}</CardTitle>
-        <CardDescription>{t("settings.email.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Controller control={control} name="enabled" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />
-            <Label>{t("settings.email.enable")}</Label>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("settings.email.host")}><Input {...register("host")} /></Field>
-            <Field label={t("settings.email.port")}><Input type="number" {...register("port")} /></Field>
-            <Field label={t("settings.email.username")}><Input {...register("username")} /></Field>
-            <Field label={t("settings.email.password")}><Input type="password" placeholder={t("settings.email.passwordPlaceholder")} {...register("password" as never)} /></Field>
-            <Field label={t("settings.email.fromName")}><Input {...register("fromName")} /></Field>
-            <Field label={t("settings.email.fromEmail")}><Input type="email" {...register("fromEmail")} /></Field>
-          </div>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={!canEdit || isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />} {t("common.save")}
-            </Button>
-          </div>
-        </form>
-        <div className="flex items-center gap-2 border-t border-border pt-4">
-          <Input placeholder={t("settings.email.sendTestTo")} value={testTo} onChange={(e) => setTestTo(e.target.value)} className="max-w-xs" />
-          <Button variant="outline" onClick={() => testMutation.mutate()} disabled={!testTo || testMutation.isPending}>
-            <Send className="h-4 w-4" /> {t("common.sendTest")}
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+        {/* Gateway Master Switch */}
+        <Card className="specular-border overflow-hidden border-border/80">
+          <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <AppleIcon icon={Mail} tone="rose" size="md" />
+                <div>
+                  <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                    {t("settings.email.title")}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t("settings.email.description")}
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
+                  {isEnabled ? "بوابة الإرسال مفعلة" : "معطلة"}
+                </Badge>
+                <Controller
+                  control={control}
+                  name="enabled"
+                  render={({ field }) => (
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  )}
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <InputField label={t("settings.email.host")} icon={Server}>
+                <Input
+                  {...register("host")}
+                  dir="ltr"
+                  placeholder="smtp.office365.com / smtp.gmail.com"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+
+              <InputField label={t("settings.email.port")} icon={Hash}>
+                <Input
+                  type="number"
+                  {...register("port")}
+                  dir="ltr"
+                  placeholder="587 أو 465"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+
+              <InputField label={t("settings.email.username")} icon={AtSign}>
+                <Input
+                  {...register("username")}
+                  dir="ltr"
+                  placeholder="notifications@company.sa"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+
+              <InputField
+                label={t("settings.email.password")}
+                icon={Key}
+                hint={data?.hasPassword ? "كلمة المرور محفوظة" : undefined}
+              >
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    dir="ltr"
+                    placeholder={t("settings.email.passwordPlaceholder")}
+                    {...register("password")}
+                    className="h-11 rounded-xl bg-background/60 font-mono text-sm pr-10 rtl:pr-3 rtl:pl-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </InputField>
+
+              <InputField label={t("settings.email.fromName")} icon={ShieldCheck}>
+                <Input
+                  {...register("fromName")}
+                  placeholder="نظام الموارد البشرية - شركة الرواد"
+                  className="h-11 rounded-xl bg-background/60 font-medium"
+                />
+              </InputField>
+
+              <InputField label={t("settings.email.fromEmail")} icon={Mail}>
+                <Input
+                  type="email"
+                  {...register("fromEmail")}
+                  dir="ltr"
+                  placeholder="no-reply@company.sa"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={!canEdit || isSubmitting}
+            className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+            ) : (
+              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            )}
+            {t("common.save")}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </form>
+
+      {/* Direct SMTP Test Tool */}
+      <Card className="specular-border overflow-hidden border-border/80 bg-muted/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-rose-500/10 text-rose-600 flex items-center justify-center">
+              <Send className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground">
+                اختبار الاتصال بالخادم وإرسال بريد تجريبي
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                تحقق من صحة بيانات الاعتماد والاتصال بخادم البريد قبل حفظ الإعدادات نهائياً
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="flex flex-col sm:flex-row items-center gap-3 max-w-xl">
+            <Input
+              type="email"
+              placeholder={t("settings.email.sendTestTo")}
+              value={testTo}
+              onChange={(e) => setTestTo(e.target.value)}
+              className="h-11 rounded-xl bg-background text-sm flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => testMutation.mutate()}
+              disabled={!testTo || testMutation.isPending}
+              className="rounded-xl h-11 px-5 border-border font-bold text-xs shrink-0 w-full sm:w-auto"
+            >
+              {testMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+              ) : (
+                <Send className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              )}
+              {t("common.sendTest")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
+// -----------------------------------------------------------------------------
+// TAB 5: WHATSAPP API SETTINGS
+// -----------------------------------------------------------------------------
 function WhatsappTab({ canEdit }: { canEdit: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data } = useQuery({ queryKey: ["settings", "whatsapp"], queryFn: settingsApi.getWhatsapp });
-  const { register, handleSubmit, control, formState: { isSubmitting } } = useForm({ values: data });
+  const { data, isLoading } = useQuery({
+    queryKey: ["settings", "whatsapp"],
+    queryFn: settingsApi.getWhatsapp,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<WhatsappSettingsInput>({
+    values: data ? { ...data, apiKey: "" } : undefined,
+  });
+
   const [testTo, setTestTo] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateWhatsapp,
-    onSuccess: (res) => {
-      toast.success(res.message ?? t("common.savedSuccess"));
+    onSuccess: (res: any) => {
+      toast.success(res?.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "whatsapp"] });
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
+
   const testMutation = useMutation({
     mutationFn: () => settingsApi.testWhatsapp(testTo),
     onSuccess: (res) => toast.success(res.message),
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
-  if (!data) return null;
+  const isEnabled = watch("enabled");
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">جاري تحميل إعدادات واتساب...</p>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> {t("settings.whatsapp.title")}</CardTitle>
-        <CardDescription>{t("settings.whatsapp.description")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Controller control={control} name="enabled" render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />} />
-            <Label>{t("settings.whatsapp.enable")}</Label>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={t("settings.whatsapp.provider")}><Input {...register("provider")} placeholder="Meta Cloud API" /></Field>
-            <Field label={t("settings.whatsapp.apiUrl")}><Input {...register("apiUrl")} placeholder="https://graph.facebook.com/v20.0" /></Field>
-            <Field label={t("settings.whatsapp.apiKey")}><Input type="password" placeholder={t("settings.whatsapp.apiKeyPlaceholder")} {...register("apiKey" as never)} /></Field>
-            <Field label={t("settings.whatsapp.phoneNumberId")}><Input {...register("phoneNumberId")} /></Field>
-            <Field label={t("settings.whatsapp.businessAccountId")}><Input {...register("businessAccountId")} /></Field>
-          </div>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={!canEdit || isSubmitting}>
-              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />} {t("common.save")}
-            </Button>
-          </div>
-        </form>
-        <div className="flex items-center gap-2 border-t border-border pt-4">
-          <Input placeholder={t("settings.whatsapp.sendTestTo")} value={testTo} onChange={(e) => setTestTo(e.target.value)} className="max-w-xs" />
-          <Button variant="outline" onClick={() => testMutation.mutate()} disabled={!testTo || testMutation.isPending}>
-            <Send className="h-4 w-4" /> {t("common.sendTest")}
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+        {/* Gateway Master Switch & Form */}
+        <Card className="specular-border overflow-hidden border-border/80">
+          <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <AppleIcon icon={MessageSquare} tone="emerald" size="md" />
+                <div>
+                  <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                    {t("settings.whatsapp.title")}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    {t("settings.whatsapp.description")}
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
+                  {isEnabled ? "واتساب كلاود API نشط" : "معطل"}
+                </Badge>
+                <Controller
+                  control={control}
+                  name="enabled"
+                  render={({ field }) => (
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  )}
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <InputField label={t("settings.whatsapp.provider")} icon={Layers}>
+                <Input
+                  {...register("provider")}
+                  placeholder="Meta Cloud API"
+                  className="h-11 rounded-xl bg-background/60 font-medium"
+                />
+              </InputField>
+
+              <InputField label={t("settings.whatsapp.apiUrl")} icon={Globe}>
+                <Input
+                  {...register("apiUrl")}
+                  dir="ltr"
+                  placeholder="https://graph.facebook.com/v20.0"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+
+              <div className="sm:col-span-2">
+                <InputField
+                  label={t("settings.whatsapp.apiKey")}
+                  icon={Key}
+                  hint={data?.hasApiKey ? "مفتاح API الدائم محفوظ ومشفّر" : undefined}
+                >
+                  <div className="relative">
+                    <Input
+                      type={showApiKey ? "text" : "password"}
+                      dir="ltr"
+                      placeholder={t("settings.whatsapp.apiKeyPlaceholder")}
+                      {...register("apiKey")}
+                      className="h-11 rounded-xl bg-background/60 font-mono text-sm pr-10 rtl:pr-3 rtl:pl-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute inset-y-0 right-0 rtl:right-auto rtl:left-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                    >
+                      {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </InputField>
+              </div>
+
+              <InputField label={t("settings.whatsapp.phoneNumberId")} icon={Phone}>
+                <Input
+                  {...register("phoneNumberId")}
+                  dir="ltr"
+                  placeholder="e.g. 104598124982341"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+
+              <InputField label={t("settings.whatsapp.businessAccountId")} icon={Briefcase}>
+                <Input
+                  {...register("businessAccountId")}
+                  dir="ltr"
+                  placeholder="e.g. 981249823410459"
+                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                />
+              </InputField>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={!canEdit || isSubmitting}
+            className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110"
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+            ) : (
+              <Check className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            )}
+            {t("common.save")}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </form>
+
+      {/* Direct WhatsApp Test Tool */}
+      <Card className="specular-border overflow-hidden border-border/80 bg-muted/20">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <Send className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground">
+                إرسال رسالة اختبار عبر واتساب كلاود
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية قالب الرسائل
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="flex flex-col sm:flex-row items-center gap-3 max-w-xl">
+            <Input
+              dir="ltr"
+              placeholder="+9665XXXXXXXX"
+              value={testTo}
+              onChange={(e) => setTestTo(e.target.value)}
+              className="h-11 rounded-xl bg-background text-sm flex-1 font-mono"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => testMutation.mutate()}
+              disabled={!testTo || testMutation.isPending}
+              className="rounded-xl h-11 px-5 border-border font-bold text-xs shrink-0 w-full sm:w-auto"
+            >
+              {testMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2 rtl:ml-2 rtl:mr-0" />
+              ) : (
+                <Send className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              )}
+              {t("common.sendTest")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+// -----------------------------------------------------------------------------
+// HELPER COMPONENTS
+// -----------------------------------------------------------------------------
+
+function InputField({
+  label,
+  required,
+  icon: Icon,
+  children,
+  hint,
+}: {
+  label: string;
+  required?: boolean;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  hint?: string;
+}) {
   return (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-bold text-foreground/90 flex items-center gap-1.5">
+          {Icon && <Icon className="h-3.5 w-3.5 text-primary/70" />}
+          {label}
+          {required && <span className="text-destructive">*</span>}
+        </Label>
+        {hint && <span className="text-[11px] text-muted-foreground font-medium">{hint}</span>}
+      </div>
       {children}
+    </div>
+  );
+}
+
+interface AssetUploadCardProps {
+  title: string;
+  subtitle: string;
+  aspectHint: string;
+  previewType: "logo" | "favicon";
+  fileId?: string | null;
+  module: string;
+  onUploaded: (fileId: string) => void;
+  onRemoved: () => void;
+  disabled?: boolean;
+}
+
+function AssetUploadCard({
+  title,
+  subtitle,
+  aspectHint,
+  previewType,
+  fileId,
+  module,
+  onUploaded,
+  onRemoved,
+  disabled,
+}: AssetUploadCardProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  async function handleFileChange(file: File | undefined) {
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const uploaded = await filesApi.upload(file, module);
+      onUploaded(uploaded.id);
+      toast.success("تم رفع الملف بنجاح");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  return (
+    <div className="p-5 rounded-2xl border border-border/80 bg-card/60 space-y-4 transition-all">
+      <input
+        ref={inputRef}
+        type="file"
+        accept={previewType === "favicon" ? ".ico,.png" : ".png,.svg,.jpg,.jpeg"}
+        className="hidden"
+        onChange={(e) => handleFileChange(e.target.files?.[0])}
+      />
+
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-black text-sm text-foreground">{title}</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+        </div>
+        <Badge variant="outline" className="text-[10px] text-muted-foreground shrink-0">
+          {previewType === "logo" ? "شعار المنشأة" : "Favicon"}
+        </Badge>
+      </div>
+
+      {fileId ? (
+        <div className="space-y-3">
+          {/* Visual Live Preview Box */}
+          {previewType === "logo" ? (
+            <div className="relative flex items-center justify-center p-6 rounded-xl border border-border/70 bg-muted/40 dark:bg-muted/15 min-h-[140px] overflow-hidden group">
+              {/* Subtle checkered background for transparent logos */}
+              <div
+                className="absolute inset-0 opacity-15 pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(#000 1px, transparent 1px), radial-gradient(#000 1px, transparent 1px)",
+                  backgroundSize: "16px 16px",
+                  backgroundPosition: "0 0, 8px 8px",
+                }}
+              />
+              <img
+                src={filesApi.downloadUrl(fileId)}
+                alt="Corporate Logo"
+                className="relative z-10 max-h-20 max-w-[200px] object-contain drop-shadow-sm transition-transform group-hover:scale-105"
+              />
+            </div>
+          ) : (
+            /* Simulated Safari/Chrome Browser Tab Preview */
+            <div className="p-3 rounded-xl border border-border/70 bg-muted/40 dark:bg-muted/15 space-y-2">
+              <span className="text-[11px] text-muted-foreground font-medium">معاينة علامة التبويب في المتصفح:</span>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-xs max-w-xs">
+                <img
+                  src={filesApi.downloadUrl(fileId)}
+                  alt="Favicon"
+                  className="h-4 w-4 rounded-xs object-contain"
+                />
+                <span className="text-xs font-bold text-foreground truncate">
+                  نظام الموارد البشرية | HR System
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Action Row */}
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>أصل نشط ومحفوظ</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled || isUploading}
+                onClick={() => inputRef.current?.click()}
+                className="h-8 rounded-lg text-xs font-bold"
+              >
+                {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
+                استبدال
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={disabled}
+                onClick={onRemoved}
+                className="h-8 rounded-lg text-xs font-bold text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+                حذف
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Sleek Upload Dropzone */
+        <div
+          onClick={() => (!disabled && !isUploading ? inputRef.current?.click() : null)}
+          className={cn(
+            "flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-border/80 bg-muted/20 hover:bg-muted/40 transition-all text-center cursor-pointer group",
+            disabled && "opacity-50 pointer-events-none"
+          )}
+        >
+          <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+            {isUploading ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <UploadCloud className="h-6 w-6" />
+            )}
+          </div>
+          <span className="text-xs font-bold text-foreground">
+            {isUploading ? "جاري رفع الملف..." : "اضغط لاختيار الملف أو اسحبه هنا"}
+          </span>
+          <span className="text-[11px] text-muted-foreground mt-1 font-medium">{aspectHint}</span>
+        </div>
+      )}
     </div>
   );
 }

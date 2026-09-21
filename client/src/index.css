@@ -247,4 +247,27 @@
   .animate-ambient-pulse-slow {
     animation: ambient-pulse 20s ease-in-out infinite alternate-reverse;
   }
+
+  /* Browser Autofill Fix: Prevent jarring white backgrounds */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #0c1220 inset !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    caret-color: #38bdf8 !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* Mesh Grid Pattern for Cockpit & Landing pages */
+  .bg-grid-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .bg-grid-glow {
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  }
 }
+

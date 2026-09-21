@@ -1,20 +1,21 @@
 import { z } from "zod";
+import { emptyToUndefined } from "@/utils/zodHelpers";
 
 export const companySettingsSchema = z.object({
-  nameAr: z.string().max(150).optional(),
-  nameEn: z.string().max(150).optional(),
-  logoFileId: z.string().optional(),
-  faviconFileId: z.string().optional(),
-  stampFileId: z.string().optional(),
-  signatureFileId: z.string().optional(),
-  crNumber: z.string().max(50).optional(),
-  vatNumber: z.string().max(50).optional(),
-  phone: z.string().max(30).optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  website: z.string().max(200).optional(),
-  address: z.string().max(255).optional(),
-  city: z.string().max(100).optional(),
-  country: z.string().max(100).optional(),
+  nameAr: emptyToUndefined(z.string().max(150).optional()),
+  nameEn: emptyToUndefined(z.string().max(150).optional()),
+  logoFileId: emptyToUndefined(z.string().optional()),
+  faviconFileId: emptyToUndefined(z.string().optional()),
+  stampFileId: emptyToUndefined(z.string().optional()),
+  signatureFileId: emptyToUndefined(z.string().optional()),
+  crNumber: emptyToUndefined(z.string().max(50).optional()),
+  vatNumber: emptyToUndefined(z.string().max(50).optional()),
+  phone: emptyToUndefined(z.string().max(30).optional()),
+  email: emptyToUndefined(z.string().email().optional()),
+  website: emptyToUndefined(z.string().max(200).optional()),
+  address: emptyToUndefined(z.string().max(255).optional()),
+  city: emptyToUndefined(z.string().max(100).optional()),
+  country: emptyToUndefined(z.string().max(100).optional()),
 });
 
 export const appearanceSettingsSchema = z.object({

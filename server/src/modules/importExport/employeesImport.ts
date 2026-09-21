@@ -3,10 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 
 // Canonical header -> field mapping. Matching is case-insensitive and tries
-// every alias so the bundled template (see employeesTemplate.ts) always
-// round-trips, while still tolerating minor header edits by end users (§25).
+// every alias (Arabic, English, Bilingual) so the bundled template always
+// round-trips smoothly, while tolerating minor header edits by end users.
 const HEADER_ALIASES: Record<string, string> = {
+  // English
   "employee number": "employeeNumber",
+  "employee no": "employeeNumber",
   "full name (arabic)": "fullNameAr",
   "full name ar": "fullNameAr",
   "full name (english)": "fullNameEn",
@@ -15,7 +17,9 @@ const HEADER_ALIASES: Record<string, string> = {
   gender: "gender",
   "date of birth": "dateOfBirth",
   mobile: "mobile",
+  "mobile number": "mobile",
   email: "email",
+  "email address": "email",
   "job title": "jobTitle",
   department: "department",
   "branch code": "branchCode",
@@ -29,13 +33,97 @@ const HEADER_ALIASES: Record<string, string> = {
   "passport issue date": "passportIssueDate",
   "passport expiry date": "passportExpiryDate",
   notes: "notes",
+
+  // Arabic
+  "رقم الموظف": "employeeNumber",
+  "الاسم الكامل (عربي)": "fullNameAr",
+  "الاسم الكامل عربي": "fullNameAr",
+  "الاسم الكامل بالعربي": "fullNameAr",
+  "الاسم بالعربي": "fullNameAr",
+  "الاسم الكامل (إنجليزي)": "fullNameEn",
+  "الاسم الكامل انجليزي": "fullNameEn",
+  "الاسم الكامل بالإنجليزي": "fullNameEn",
+  "الاسم بالإنجليزي": "fullNameEn",
+  "الجنسية": "nationality",
+  "الجنس": "gender",
+  "تاريخ الميلاد": "dateOfBirth",
+  "رقم الجوال": "mobile",
+  "الجوال": "mobile",
+  "البريد الإلكتروني": "email",
+  "البريد الالكتروني": "email",
+  "المسمى الوظيفي": "jobTitle",
+  "القسم": "department",
+  "القسم / الإدارة": "department",
+  "القسم / الادارة": "department",
+  "الإدارة": "department",
+  "الادارة": "department",
+  "رمز الفرع": "branchCode",
+  "كود الفرع": "branchCode",
+  "تاريخ الالتحاق": "joiningDate",
+  "تاريخ التعيين": "joiningDate",
+  "تاريخ المباشرة": "joiningDate",
+  "الحالة الوظيفية": "employmentStatus",
+  "حالة الموظف": "employmentStatus",
+  "رقم الإقامة": "iqamaNumber",
+  "رقم الاقامة": "iqamaNumber",
+  "رقم الإقامة / الهوية": "iqamaNumber",
+  "رقم الاقامة / الهوية": "iqamaNumber",
+  "رقم الهوية": "iqamaNumber",
+  "تاريخ إصدار الإقامة": "iqamaIssueDate",
+  "تاريخ اصدار الاقامة": "iqamaIssueDate",
+  "تاريخ انتهاء الإقامة": "iqamaExpiryDate",
+  "تاريخ انتهاء الاقامة": "iqamaExpiryDate",
+  "رقم جواز السفر": "passportNumber",
+  "رقم الجواز": "passportNumber",
+  "دولة إصدار الجواز": "passportCountry",
+  "دولة اصدار الجواز": "passportCountry",
+  "بلد الإصدار": "passportCountry",
+  "بلد الاصدار": "passportCountry",
+  "تاريخ إصدار الجواز": "passportIssueDate",
+  "تاريخ اصدار الجواز": "passportIssueDate",
+  "تاريخ انتهاء الجواز": "passportExpiryDate",
+  "ملاحظات إضافية": "notes",
+  "ملاحظات": "notes",
 };
+
+function matchHeader(raw: string): string | undefined {
+  if (!raw) return undefined;
+  // 1. Direct or normalized match (removing punctuation, asterisks, brackets)
+  const norm = raw
+    .toLowerCase()
+    .replace(/[*()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (HEADER_ALIASES[norm]) return HEADER_ALIASES[norm];
+  if (HEADER_ALIASES[raw.trim().toLowerCase()]) return HEADER_ALIASES[raw.trim().toLowerCase()];
+
+  // 2. Split by newline (for bilingual headers like "رقم الموظف\n(Employee Number)")
+  const lines = raw.split(/\r?\n/);
+  for (const line of lines) {
+    const lineNorm = line
+      .toLowerCase()
+      .replace(/[*()]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (HEADER_ALIASES[lineNorm]) return HEADER_ALIASES[lineNorm];
+  }
+
+  return undefined;
+}
 
 const REQUIRED_FIELDS = ["employeeNumber", "fullNameAr"];
 const GENDER_VALUES = new Set(["MALE", "FEMALE"]);
 const EMPLOYMENT_STATUS_VALUES = new Set(["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED"]);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const DATE_FIELDS = ["dateOfBirth", "joiningDate", "iqamaIssueDate", "iqamaExpiryDate", "passportIssueDate", "passportExpiryDate"];
+const DATE_FIELDS = [
+  "dateOfBirth",
+  "joiningDate",
+  "iqamaIssueDate",
+  "iqamaExpiryDate",
+  "passportIssueDate",
+  "passportExpiryDate",
+];
 
 export interface RowError {
   rowNumber: number;
@@ -66,38 +154,96 @@ export async function parseWorkbook(buffer: Buffer): Promise<{ rows: ParsedRow[]
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as never);
   const sheet = workbook.worksheets[0];
-  if (!sheet) throw ApiError.badRequest("The uploaded file has no worksheets.");
+  if (!sheet) throw ApiError.badRequest("الملف المرفوع لا يحتوي على أوراق عمل صالحة.");
 
-  const headerRow = sheet.getRow(1);
+  let headerRowNumber = 1;
   const fieldByColumn = new Map<number, string>();
-  headerRow.eachCell((cell, colNumber) => {
-    const raw = String(cell.value ?? "").trim().toLowerCase();
-    const field = HEADER_ALIASES[raw];
-    if (field) fieldByColumn.set(colNumber, field);
-  });
+
+  // Scan rows 1 through 10 to locate the true header row
+  for (let r = 1; r <= 10; r++) {
+    const candidateRow = sheet.getRow(r);
+    const candidateMatches = new Map<number, string>();
+
+    candidateRow.eachCell((cell, colNumber) => {
+      const val = String(cell.value ?? "");
+      const field = matchHeader(val);
+      if (field) candidateMatches.set(colNumber, field);
+    });
+
+    // If we recognize at least 2 distinct valid fields, this is the header row
+    if (candidateMatches.size >= 2) {
+      headerRowNumber = r;
+      candidateMatches.forEach((f, c) => fieldByColumn.set(c, f));
+      break;
+    }
+  }
 
   if (fieldByColumn.size === 0) {
-    throw ApiError.badRequest("Could not recognize any columns. Please use the provided template.");
+    throw ApiError.badRequest(
+      "لم يتم التعرف على أعمدة الجدول. يرجى استخدام قالب استيراد الموظفين المعتمد من النظام."
+    );
   }
 
   const rows: ParsedRow[] = [];
   const parseErrors: RowError[] = [];
 
   sheet.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return;
+    // Skip header and any banner rows above it
+    if (rowNumber <= headerRowNumber) return;
+
     const data: Record<string, unknown> = {};
     let isEmpty = true;
 
     row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
       const field = fieldByColumn.get(colNumber);
       if (!field) return;
+
       let value: unknown = cell.value;
-      if (value && typeof value === "object" && "result" in value) value = (value as { result: unknown }).result;
-      if (value !== null && value !== undefined && value !== "") isEmpty = false;
+      if (value && typeof value === "object" && "result" in value) {
+        value = (value as { result: unknown }).result;
+      }
+      if (value !== null && value !== undefined && String(value).trim() !== "") {
+        isEmpty = false;
+      }
       data[field] = DATE_FIELDS.includes(field) ? excelDateToJs(value) ?? value : value;
     });
 
-    if (!isEmpty) rows.push({ rowNumber, data });
+    if (isEmpty) return;
+
+    // Check and skip the example row if not removed by user
+    const empNum = String(data.employeeNumber ?? "").trim();
+    const notes = String(data.notes ?? "").trim().toLowerCase();
+    if (
+      empNum === "EMP-0001" &&
+      (notes.includes("مثال") || notes.includes("example") || notes.includes("استرشادي") || notes.includes("حذف"))
+    ) {
+      return;
+    }
+
+    // Normalize Arabic Enums -> English canonical database enums
+    if (data.gender) {
+      const g = String(data.gender).trim().toUpperCase();
+      if (g === "ذكر" || g === "MALE") data.gender = "MALE";
+      else if (g === "أنثى" || g === "انثى" || g === "FEMALE") data.gender = "FEMALE";
+    }
+
+    if (data.employmentStatus) {
+      const s = String(data.employmentStatus).trim();
+      if (s === "نشط" || s.toUpperCase() === "ACTIVE") data.employmentStatus = "ACTIVE";
+      else if (s === "غير نشط" || s.toUpperCase() === "INACTIVE") data.employmentStatus = "INACTIVE";
+      else if (s.includes("إجازة") || s.includes("اجازة") || s.toUpperCase() === "ON_LEAVE") {
+        data.employmentStatus = "ON_LEAVE";
+      } else if (
+        s.includes("منتهي") ||
+        s.includes("مفصول") ||
+        s.includes("مستقيل") ||
+        s.toUpperCase() === "TERMINATED"
+      ) {
+        data.employmentStatus = "TERMINATED";
+      }
+    }
+
+    rows.push({ rowNumber, data });
   });
 
   return { rows, parseErrors };
@@ -108,29 +254,65 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
   const { data, rowNumber } = row;
 
   for (const field of REQUIRED_FIELDS) {
-    if (!data[field]) errors.push({ rowNumber, field, message: `${field} is required`, rawData: data });
+    if (!data[field]) {
+      const fieldAr = field === "employeeNumber" ? "رقم الموظف" : "الاسم الكامل (عربي)";
+      errors.push({
+        rowNumber,
+        field,
+        message: `حقل (${fieldAr}) مطلوب ولا يمكن تركه فارغاً`,
+        rawData: data,
+      });
+    }
   }
 
   const employeeNumber = String(data.employeeNumber ?? "").trim();
   if (employeeNumber) {
     if (seenEmployeeNumbers.has(employeeNumber)) {
-      errors.push({ rowNumber, field: "employeeNumber", message: `Duplicate employee number "${employeeNumber}" within this file`, rawData: data });
+      errors.push({
+        rowNumber,
+        field: "employeeNumber",
+        message: `رقم الموظف "${employeeNumber}" مكرر داخل هذا الملف`,
+        rawData: data,
+      });
     }
     seenEmployeeNumbers.add(employeeNumber);
   }
 
   if (data.gender && !GENDER_VALUES.has(String(data.gender).toUpperCase())) {
-    errors.push({ rowNumber, field: "gender", message: `Invalid gender "${data.gender}" (expected MALE or FEMALE)`, rawData: data });
+    errors.push({
+      rowNumber,
+      field: "gender",
+      message: `قيمة الجنس غير صحيحة "${data.gender}" (المقبول: MALE أو FEMALE أو ذكر / أنثى)`,
+      rawData: data,
+    });
   }
+
   if (data.employmentStatus && !EMPLOYMENT_STATUS_VALUES.has(String(data.employmentStatus).toUpperCase())) {
-    errors.push({ rowNumber, field: "employmentStatus", message: `Invalid employment status "${data.employmentStatus}"`, rawData: data });
+    errors.push({
+      rowNumber,
+      field: "employmentStatus",
+      message: `الحالة الوظيفية غير صحيحة "${data.employmentStatus}"`,
+      rawData: data,
+    });
   }
+
   if (data.email && !EMAIL_RE.test(String(data.email))) {
-    errors.push({ rowNumber, field: "email", message: `Invalid email address "${data.email}"`, rawData: data });
+    errors.push({
+      rowNumber,
+      field: "email",
+      message: `صيغة البريد الإلكتروني غير صحيحة "${data.email}"`,
+      rawData: data,
+    });
   }
+
   for (const field of DATE_FIELDS) {
     if (data[field] !== undefined && !(data[field] instanceof Date)) {
-      errors.push({ rowNumber, field, message: `Invalid date value for ${field}: "${data[field]}"`, rawData: data });
+      errors.push({
+        rowNumber,
+        field,
+        message: `صيغة التاريخ غير صحيحة في ${field}: "${data[field]}" (المطلوب YYYY-MM-DD)`,
+        rawData: data,
+      });
     }
   }
 
@@ -147,7 +329,12 @@ export interface ImportSummary {
   errors: RowError[];
 }
 
-export async function importEmployees(buffer: Buffer, fileName: string, createdById: string, dryRun: boolean): Promise<ImportSummary> {
+export async function importEmployees(
+  buffer: Buffer,
+  fileName: string,
+  createdById: string,
+  dryRun: boolean
+): Promise<ImportSummary> {
   const { rows, parseErrors } = await parseWorkbook(buffer);
 
   const seen = new Set<string>();
@@ -167,7 +354,13 @@ export async function importEmployees(buffer: Buffer, fileName: string, createdB
   const existingByNumber = new Map(existing.map((e) => [e.employeeNumber, e.id]));
 
   const importJob = await prisma.importJob.create({
-    data: { module: "employees", fileName, status: "PROCESSING", totalRows: rows.length, createdById },
+    data: {
+      module: "employees",
+      fileName,
+      status: "PROCESSING",
+      totalRows: rows.length,
+      createdById,
+    },
   });
 
   let importedCount = 0;
@@ -177,77 +370,100 @@ export async function importEmployees(buffer: Buffer, fileName: string, createdB
 
   for (const row of rows) {
     const errs = rowErrors.get(row.rowNumber);
-    if (errs?.length) {
+    if (errs && errs.length) {
       allErrors.push(...errs);
-      skippedCount++;
       continue;
     }
 
-    const { branchCode, ...rest } = row.data as Record<string, unknown> & { branchCode?: string };
-    const branchId = branchCode ? branchIdByCode.get(String(branchCode).toUpperCase()) : undefined;
-    if (branchCode && !branchId) {
-      allErrors.push({ rowNumber: row.rowNumber, field: "branchCode", message: `Unknown branch code "${branchCode}"`, rawData: row.data });
-      skippedCount++;
-      continue;
+    const { data } = row;
+    const employeeNumber = String(data.employeeNumber).trim();
+    const existingId = existingByNumber.get(employeeNumber);
+
+    let branchId: string | undefined;
+    if (data.branchCode) {
+      const code = String(data.branchCode).trim().toUpperCase();
+      branchId = branchIdByCode.get(code);
+      if (!branchId) {
+        allErrors.push({
+          rowNumber: row.rowNumber,
+          field: "branchCode",
+          message: `كود الفرع "${data.branchCode}" غير موجود بالنظام`,
+          rawData: data,
+        });
+        continue;
+      }
     }
 
-    const employeeNumber = String(rest.employeeNumber);
     const payload = {
-      ...rest,
       employeeNumber,
-      gender: rest.gender ? String(rest.gender).toUpperCase() : undefined,
-      employmentStatus: rest.employmentStatus ? String(rest.employmentStatus).toUpperCase() : "ACTIVE",
+      fullNameAr: String(data.fullNameAr).trim(),
+      fullNameEn: data.fullNameEn ? String(data.fullNameEn).trim() : undefined,
+      nationality: data.nationality ? String(data.nationality).trim() : undefined,
+      gender: data.gender as "MALE" | "FEMALE" | undefined,
+      dateOfBirth: data.dateOfBirth as Date | undefined,
+      mobile: data.mobile ? String(data.mobile).trim() : undefined,
+      email: data.email ? String(data.email).trim() : undefined,
+      jobTitle: data.jobTitle ? String(data.jobTitle).trim() : undefined,
+      department: data.department ? String(data.department).trim() : undefined,
       branchId,
+      joiningDate: data.joiningDate as Date | undefined,
+      employmentStatus: (data.employmentStatus as "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED") ?? "ACTIVE",
+      notes: data.notes ? String(data.notes).trim() : undefined,
+      iqamaNumber: data.iqamaNumber ? String(data.iqamaNumber).trim() : undefined,
+      iqamaIssueDate: data.iqamaIssueDate as Date | undefined,
+      iqamaExpiryDate: data.iqamaExpiryDate as Date | undefined,
+      passportNumber: data.passportNumber ? String(data.passportNumber).trim() : undefined,
+      passportCountry: data.passportCountry ? String(data.passportCountry).trim() : undefined,
+      passportIssueDate: data.passportIssueDate as Date | undefined,
+      passportExpiryDate: data.passportExpiryDate as Date | undefined,
     };
 
-    if (dryRun) {
-      existingByNumber.has(employeeNumber) ? updatedCount++ : importedCount++;
-      continue;
-    }
-
-    try {
-      const existingId = existingByNumber.get(employeeNumber);
-      if (existingId) {
-        await prisma.employee.update({ where: { id: existingId }, data: payload as never });
-        updatedCount++;
-      } else {
-        await prisma.employee.create({ data: payload as never });
-        importedCount++;
+    if (!dryRun) {
+      try {
+        if (existingId) {
+          await prisma.employee.update({ where: { id: existingId }, data: payload });
+          updatedCount++;
+        } else {
+          await prisma.employee.create({ data: payload });
+          importedCount++;
+        }
+      } catch (err) {
+        allErrors.push({
+          rowNumber: row.rowNumber,
+          message: (err as Error).message,
+          rawData: data,
+        });
       }
-    } catch (err) {
-      allErrors.push({ rowNumber: row.rowNumber, message: `Database error: ${(err as Error).message}`, rawData: row.data });
-      skippedCount++;
+    } else {
+      if (existingId) updatedCount++;
+      else importedCount++;
     }
   }
 
-  if (!dryRun) {
-    await prisma.$transaction([
-      prisma.importJob.update({
-        where: { id: importJob.id },
-        data: {
-          status: "COMPLETED",
-          importedCount,
-          updatedCount,
-          skippedCount,
-          failedCount: allErrors.length,
-          completedAt: new Date(),
-        },
-      }),
-      ...(allErrors.length
-        ? [
-            prisma.importError.createMany({
-              data: allErrors.map((e) => ({
-                importJobId: importJob.id,
-                rowNumber: e.rowNumber,
-                field: e.field,
-                message: e.message,
-                rawData: (e.rawData ?? {}) as never,
-              })),
-            }),
-          ]
-        : []),
-    ]);
-  }
+  const failedCount = allErrors.length;
+  const status: "COMPLETED" | "FAILED" = failedCount === rows.length && rows.length > 0 ? "FAILED" : "COMPLETED";
+
+  await prisma.importJob.update({
+    where: { id: importJob.id },
+    data: {
+      status,
+      importedCount,
+      updatedCount,
+      skippedCount,
+      failedCount,
+      completedAt: new Date(),
+      errors: allErrors.length
+        ? {
+            create: allErrors.map((e) => ({
+              rowNumber: e.rowNumber,
+              field: e.field,
+              message: e.message,
+              rawData: e.rawData as never,
+            })),
+          }
+        : undefined,
+    },
+  });
 
   return {
     importJobId: importJob.id,
@@ -255,7 +471,7 @@ export async function importEmployees(buffer: Buffer, fileName: string, createdB
     importedCount,
     updatedCount,
     skippedCount,
-    failedCount: allErrors.length,
+    failedCount,
     errors: allErrors,
   };
 }
