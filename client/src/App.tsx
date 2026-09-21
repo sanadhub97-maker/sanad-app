@@ -18,6 +18,12 @@ import ServerErrorPage from "@/pages/errors/server-error";
 const DashboardPage = lazy(() => import("@/pages/dashboard/dashboard-page"));
 const EmployeesListPage = lazy(() => import("@/pages/employees/employees-list-page"));
 const EmployeeProfilePage = lazy(() => import("@/pages/employees/employee-profile-page"));
+const IqamasPage = lazy(() => import("@/pages/workforce/iqamas-page"));
+const PassportsPage = lazy(() => import("@/pages/workforce/passports-page"));
+const HealthCertificatesPage = lazy(() => import("@/pages/workforce/health-certificates-page"));
+const MedicalInsurancePage = lazy(() => import("@/pages/workforce/medical-insurance-page"));
+const VisasPage = lazy(() => import("@/pages/workforce/visas-page"));
+const FlightTicketsPage = lazy(() => import("@/pages/workforce/flight-tickets-page"));
 const CompanyDocumentsPage = lazy(() => import("@/pages/companyDocuments/company-documents-page"));
 const BranchesPage = lazy(() => import("@/pages/branches/branches-page"));
 const PaymentsPage = lazy(() => import("@/pages/payments/payments-page"));
@@ -66,6 +72,14 @@ export default function App() {
                 <Route element={<RequirePermission permission="employees.view" />}>
                   <Route path="/employees" element={<EmployeesListPage />} />
                   <Route path="/employees/:id" element={<EmployeeProfilePage />} />
+                  <Route path="/workforce/iqamas" element={<IqamasPage />} />
+                  <Route path="/workforce/passports" element={<PassportsPage />} />
+                  <Route path="/workforce/health-certificates" element={<HealthCertificatesPage />} />
+                  <Route path="/workforce/medical-insurance" element={<MedicalInsurancePage />} />
+                  <Route path="/workforce/visas" element={<VisasPage />} />
+                  <Route path="/workforce/flight-tickets" element={<FlightTicketsPage />} />
+                  <Route path="/iqamas" element={<Navigate to="/workforce/iqamas" replace />} />
+                  <Route path="/passports" element={<Navigate to="/workforce/passports" replace />} />
                 </Route>
 
                 <Route element={<RequirePermission permission="companyDocuments.view" />}>

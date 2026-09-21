@@ -14,6 +14,7 @@ import dashboardRoutes from "@/modules/dashboard/dashboard.routes";
 import reportsRoutes from "@/modules/reports/reports.routes";
 import importExportRoutes from "@/modules/importExport/importExport.routes";
 import searchRoutes from "@/modules/search/search.routes";
+import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocuments.routes";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.use("/users", usersRoutes);
 router.use("/roles", rolesRoutes);
 router.use("/files", filesRoutes);
 router.use("/employees", employeesRoutes);
+router.use("/workforce-documents", workforceDocumentsRoutes);
 router.use("/company-documents", makeCompanyDocumentsRouter());
 router.use("/payments", paymentsRoutes);
 router.use("/notifications", notificationsRoutes);

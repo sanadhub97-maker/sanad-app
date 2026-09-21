@@ -8,6 +8,12 @@
     "financeSection": "Finance & Analytics",
     "systemSection": "Administration",
     "employees": "Employees",
+    "iqamas": "Iqamas",
+    "passports": "Passports",
+    "healthCertificates": "Health Certificates",
+    "medicalInsurance": "Medical Insurance",
+    "visas": "Visas",
+    "flightTickets": "Flight Tickets",
     "allEmployees": "All Employees",
     "addEmployee": "Add Employee",
     "companyDocuments": "Company Documents",
@@ -232,6 +238,67 @@
       "startDate": "Start Date",
       "expiryDate": "Expiry Date",
       "file": "File"
+    }
+  },
+  "workforce": {
+    "iqamas": {
+      "title": "Iqama & Work Permit Management",
+      "subtitle": "Track expiry dates, renewals, professions, and verified residency documents.",
+      "addTitle": "Register / Renew Iqama",
+      "number": "Iqama Number",
+      "issueDate": "Issue Date",
+      "expiryDate": "Expiry Date"
+    },
+    "passports": {
+      "title": "Passport Records & Travel Documents",
+      "subtitle": "Track international travel passports, validity dates, and issuing countries.",
+      "addTitle": "Register / Renew Passport",
+      "number": "Passport Number",
+      "country": "Country of Issue",
+      "issueDate": "Issue Date",
+      "expiryDate": "Expiry Date"
+    },
+    "healthCertificates": {
+      "title": "Health Certificates & Municipal Cards",
+      "subtitle": "Manage periodic medical examination certificates and occupational health clearances.",
+      "addTitle": "Add Health Certificate",
+      "number": "Certificate Number",
+      "authority": "Issuing Authority / Medical Center"
+    },
+    "medicalInsurance": {
+      "title": "Medical Insurance Policies",
+      "subtitle": "Monitor cooperative health insurance policies, coverage classes, and validity terms.",
+      "addTitle": "Add Medical Insurance",
+      "number": "Policy / Card Number",
+      "authority": "Insurance Provider / Class"
+    },
+    "visas": {
+      "title": "Work & Travel Visas",
+      "subtitle": "Track work visas, exit & re-entry visas, final exit permits, and stay durations.",
+      "addTitle": "Add Visa Record",
+      "number": "Visa Number",
+      "authority": "Visa Type / Issuing Authority"
+    },
+    "flightTickets": {
+      "title": "Flight Tickets & Employee Travel",
+      "subtitle": "Manage booked flight tickets, airline reservations (PNR), and annual leave travels.",
+      "addTitle": "Add Flight Ticket",
+      "number": "Ticket Number / PNR Code",
+      "authority": "Airline / Route"
+    },
+    "stats": {
+      "total": "Total Records",
+      "valid": "Active & Valid",
+      "expiringSoon": "Expiring Soon",
+      "expired": "Expired"
+    },
+    "dialog": {
+      "selectEmployee": "Select Employee",
+      "selectEmployeePlaceholder": "Search by name or employee number...",
+      "docDetails": "Document Details",
+      "attachments": "Attachments & Files",
+      "fileUploadHint": "Upload PDF or document image",
+      "notes": "Additional Notes"
     }
   },
   "branches": {
