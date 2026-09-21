@@ -15,7 +15,6 @@ import {
   User,
   Hash,
   Building,
-  Calendar,
   Loader2,
   CheckCircle2,
   Search,
@@ -27,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { FileUpload } from "@/components/common/file-upload";
+import { DateInput } from "@/components/common/date-input";
 import { workforceDocumentsApi, type WorkforceDocumentItem } from "@/api/workforceDocuments";
 import { employeesApi } from "@/api/employees";
 import { getErrorMessage } from "@/lib/api";
@@ -366,25 +366,31 @@ export function WorkforceDocumentDialog({
           {/* Dates Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label={t("workforce.iqamas.issueDate")} error={errors.issueDate?.message}>
-              <div className="relative">
-                <Calendar className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="date"
-                  {...register("issueDate")}
-                  className="ps-9 font-mono text-xs rounded-xl border-border/80 bg-muted/20"
-                />
-              </div>
+              <Controller
+                control={control}
+                name="issueDate"
+                render={({ field }) => (
+                  <DateInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="font-mono text-xs rounded-xl border-border/80 bg-muted/20"
+                  />
+                )}
+              />
             </FormField>
 
             <FormField label={t("workforce.iqamas.expiryDate")} error={errors.expiryDate?.message}>
-              <div className="relative">
-                <Calendar className="absolute start-3 top-2.5 h-4 w-4 text-amber-500" />
-                <Input
-                  type="date"
-                  {...register("expiryDate")}
-                  className="ps-9 font-mono text-xs rounded-xl border-border/80 bg-muted/20"
-                />
-              </div>
+              <Controller
+                control={control}
+                name="expiryDate"
+                render={({ field }) => (
+                  <DateInput
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="font-mono text-xs rounded-xl border-border/80 bg-muted/20"
+                  />
+                )}
+              />
             </FormField>
           </div>
 

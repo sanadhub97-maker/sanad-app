@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
+import { DateInput } from "@/components/common/date-input";
 import { FileUpload } from "@/components/common/file-upload";
 import { employeeDocumentsApi } from "@/api/employees";
 import { getErrorMessage } from "@/lib/api";
@@ -250,10 +251,16 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
                 label={t("employees.documentDialog.issueDate")}
                 icon={Calendar}
               >
-                <Input
-                  type="date"
-                  {...register("issueDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                <Controller
+                  control={control}
+                  name="issueDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -261,10 +268,16 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
                 label={t("employees.documentDialog.startDate")}
                 icon={CalendarCheck}
               >
-                <Input
-                  type="date"
-                  {...register("startDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                <Controller
+                  control={control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -274,10 +287,16 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
                 className="sm:col-span-2"
                 hint={isAr ? "هام لمنظومة التنبيهات" : "Triggers expiry notifications"}
               >
-                <Input
-                  type="date"
-                  {...register("expiryDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                <Controller
+                  control={control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500/60"
+                    />
+                  )}
                 />
               </FormField>
 

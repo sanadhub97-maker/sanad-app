@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Building2, Edit, Plus, Trash2 } from "lucide-react";
+import { Building2, Edit, Eye, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -14,6 +14,7 @@ import { branchesApi } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
+import { BranchDetailsDialog } from "@/pages/branches/branch-details-dialog";
 import type { Branch } from "@/types/models";
 
 const columnHelper = createColumnHelper<Branch>();
@@ -25,6 +26,7 @@ export default function BranchesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<{ open: boolean; branch?: Branch }>({ open: false });
+  const [detailsTarget, setDetailsTarget] = useState<Branch | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Branch | null>(null);
   const pageSize = 20;
 
@@ -84,13 +86,23 @@ export default function BranchesPage() {
       id: "actions",
       header: t("common.actions"),
       cell: (c) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={() => setDetailsTarget(c.row.original)}
+            title={t("common.viewDetails")}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
           {hasPermission("branches.edit") && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8 rounded-lg hover:bg-muted"
               onClick={() => setDialog({ open: true, branch: c.row.original })}
+              title={t("common.edit")}
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -101,6 +113,7 @@ export default function BranchesPage() {
               size="icon"
               className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
               onClick={() => setDeleteTarget(c.row.original)}
+              title={t("common.delete")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -136,6 +149,7 @@ export default function BranchesPage() {
           setSearch(v);
           setPage(1);
         }}
+        onRowClick={(row) => setDetailsTarget(row)}
         emptyTitle={t("branches.emptyTitle")}
         emptyAction={
           hasPermission("branches.create") ? (
@@ -144,6 +158,12 @@ export default function BranchesPage() {
             </Button>
           ) : undefined
         }
+      />
+      <BranchDetailsDialog
+        open={Boolean(detailsTarget)}
+        branch={detailsTarget}
+        onOpenChange={(open) => !open && setDetailsTarget(null)}
+        onEdit={(b) => setDialog({ open: true, branch: b })}
       />
       <BranchDialog open={dialog.open} branch={dialog.branch} onOpenChange={(open) => setDialog({ open })} />
       <ConfirmDialog

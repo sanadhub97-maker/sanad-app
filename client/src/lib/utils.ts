@@ -41,3 +41,14 @@ export function toDateInputValue(value: string | Date | null | undefined): strin
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
 }
+
+export function daysUntil(date: string | Date | null | undefined): number | null {
+  if (!date) return null;
+  const target = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(target.getTime())) return null;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diffTime = target.getTime() - now.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+

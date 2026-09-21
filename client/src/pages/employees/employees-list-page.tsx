@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
 import { motion } from "framer-motion";
-import { FileDown, MoreHorizontal, Plus, Printer, Trash2, Users, UserCheck, AlertTriangle, Building2 } from "lucide-react";
+import { FileDown, MoreHorizontal, Plus, Printer, Trash2, Users, UserCheck, AlertTriangle, Building2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -141,37 +141,48 @@ export default function EmployeesListPage() {
       id: "actions",
       header: t("common.actions"),
       cell: (c) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="w-48 rounded-xl p-1 shadow-luxury">
-            <DropdownMenuItem onSelect={() => navigate(`/employees/${c.row.original.id}`)} className="rounded-lg text-xs font-medium">
-              {t("employees.menu.viewProfile")}
-            </DropdownMenuItem>
-            {hasPermission("employees.edit") && (
-              <DropdownMenuItem
-                onSelect={() => {
-                  setEditTarget(c.row.original);
-                  setDialogOpen(true);
-                }}
-                className="rounded-lg text-xs font-medium"
-              >
-                {t("employees.menu.edit")}
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={() => navigate(`/employees/${c.row.original.id}`)}
+            title={t("common.viewDetails")}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-muted">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-xl p-1 shadow-luxury">
+              <DropdownMenuItem onSelect={() => navigate(`/employees/${c.row.original.id}`)} className="rounded-lg text-xs font-medium">
+                <Eye className="h-4 w-4 me-2 text-primary" /> {t("employees.menu.viewProfile")}
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onSelect={() => openPdfInNewTab(employeePdfUrl(c.row.original.id))} className="rounded-lg text-xs font-medium">
-              <Printer className="h-4 w-4 me-2 text-muted-foreground" /> {t("employees.menu.printProfile")}
-            </DropdownMenuItem>
-            {hasPermission("employees.delete") && (
-              <DropdownMenuItem onSelect={() => setDeleteTarget(c.row.original)} className="rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4 me-2" /> {t("employees.menu.delete")}
+              {hasPermission("employees.edit") && (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setEditTarget(c.row.original);
+                    setDialogOpen(true);
+                  }}
+                  className="rounded-lg text-xs font-medium"
+                >
+                  {t("employees.menu.edit")}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onSelect={() => openPdfInNewTab(employeePdfUrl(c.row.original.id))} className="rounded-lg text-xs font-medium">
+                <Printer className="h-4 w-4 me-2 text-muted-foreground" /> {t("employees.menu.printProfile")}
               </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              {hasPermission("employees.delete") && (
+                <DropdownMenuItem onSelect={() => setDeleteTarget(c.row.original)} className="rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4 me-2" /> {t("employees.menu.delete")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       ),
     }),
   ];

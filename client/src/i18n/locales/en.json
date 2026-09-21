@@ -37,6 +37,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
+    "viewDetails": "View Details",
     "print": "Print",
     "export": "Export",
     "import": "Import",

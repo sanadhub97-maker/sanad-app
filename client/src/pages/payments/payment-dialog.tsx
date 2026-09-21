@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { FileUpload } from "@/components/common/file-upload";
+import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
 import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS } from "@/api/payments";
 import { getErrorMessage } from "@/lib/api";
@@ -261,10 +262,16 @@ export function PaymentDialog({
                 required
                 error={errors.paymentDate?.message}
               >
-                <Input
-                  type="date"
-                  {...register("paymentDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                <Controller
+                  control={control}
+                  name="paymentDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                    />
+                  )}
                 />
               </FormField>
 

@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { FileUpload } from "@/components/common/file-upload";
+import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
@@ -290,10 +291,16 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
                 label={t("companyDocuments.fields.issueDate")}
                 icon={Calendar}
               >
-                <Input
-                  type="date"
-                  {...register("issueDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                <Controller
+                  control={control}
+                  name="issueDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -301,10 +308,16 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
                 label={t("companyDocuments.fields.startDate")}
                 icon={CalendarCheck}
               >
-                <Input
-                  type="date"
-                  {...register("startDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                <Controller
+                  control={control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -314,10 +327,16 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
                 className="sm:col-span-2"
                 hint={isAr ? "مهم لإشعارات التجديد" : "Triggers expiry alerts"}
               >
-                <Input
-                  type="date"
-                  {...register("expiryDate")}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                <Controller
+                  control={control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
+                    />
+                  )}
                 />
               </FormField>
 

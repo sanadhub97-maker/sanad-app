@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
 import { motion } from "framer-motion";
-import { Edit, FileDown, FileText, Plus, Trash2, CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
+import { Edit, Eye, FileDown, FileText, Plus, Trash2, CheckCircle2, AlertTriangle, AlertOctagon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -18,6 +18,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { CategoryChips } from "@/components/common/category-chips";
 import { CompanyDocumentDialog } from "@/pages/companyDocuments/company-document-dialog";
+import { CompanyDocumentDetailsDialog } from "@/pages/companyDocuments/company-document-details-dialog";
 import { COMPANY_DOCUMENT_CATEGORY_ICONS } from "@/lib/document-type-icons";
 import type { CompanyDocument } from "@/types/models";
 import type { companyDocumentsApi } from "@/api/companyDocuments";
@@ -43,6 +44,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [dialog, setDialog] = useState<{ open: boolean; document?: CompanyDocument }>({ open: false });
+  const [detailsDoc, setDetailsDoc] = useState<CompanyDocument | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CompanyDocument | null>(null);
   const pageSize = 20;
 
@@ -109,15 +111,36 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
       id: "actions",
       header: t("common.actions"),
       cell: (c) => (
-        <div className="flex gap-1">
+        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={() => setDetailsDoc(c.row.original)}
+            title={t("common.viewDetails")}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
           {hasPermission(p("edit")) && (
-            <Button variant="ghost" size="icon" onClick={() => setDialog({ open: true, document: c.row.original })}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg hover:bg-muted"
+              onClick={() => setDialog({ open: true, document: c.row.original })}
+              title={t("common.edit")}
+            >
               <Edit className="h-4 w-4" />
             </Button>
           )}
           {hasPermission(p("delete")) && (
-            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(c.row.original)}>
-              <Trash2 className="h-4 w-4 text-destructive" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleteTarget(c.row.original)}
+              title={t("common.delete")}
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -231,6 +254,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
           setSearch(v);
           setPage(1);
         }}
+        onRowClick={(row) => setDetailsDoc(row)}
         emptyTitle={t("companyDocuments.emptyTitle")}
         emptyAction={
           hasPermission(p("create")) ? (
@@ -254,6 +278,12 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
             </DropdownMenu>
           </>
         }
+      />
+      <CompanyDocumentDetailsDialog
+        open={Boolean(detailsDoc)}
+        document={detailsDoc}
+        onOpenChange={(open) => !open && setDetailsDoc(null)}
+        onEdit={(doc) => setDialog({ open: true, document: doc })}
       />
       <CompanyDocumentDialog
         api={api}

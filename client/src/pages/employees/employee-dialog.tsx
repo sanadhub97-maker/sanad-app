@@ -520,10 +520,16 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
 
               <FormField label={t("employees.fields.joiningDate")} icon={CalendarCheck}>
-                <Input
-                  type="date"
-                  {...register("joiningDate")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="joiningDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -581,18 +587,30 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
 
               <FormField label={t("employees.fields.issueDate")} icon={Calendar}>
-                <Input
-                  type="date"
-                  {...register("iqamaIssueDate")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="iqamaIssueDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
 
               <FormField label={t("employees.fields.expiryDate")} icon={CalendarClock} hint={isAr ? "للتنبيهات" : "Alerts"}>
-                <Input
-                  type="date"
-                  {...register("iqamaExpiryDate")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="iqamaExpiryDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
 
@@ -641,18 +659,30 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
 
               <FormField label={t("employees.fields.issueDate")} icon={Calendar}>
-                <Input
-                  type="date"
-                  {...register("passportIssueDate")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="passportIssueDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
 
               <FormField label={t("employees.fields.expiryDate")} icon={CalendarClock} hint={isAr ? "للتنبيهات" : "Alerts"}>
-                <Input
-                  type="date"
-                  {...register("passportExpiryDate")}
-                  className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
+                <Controller
+                  control={control}
+                  name="passportExpiryDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
+                    />
+                  )}
                 />
               </FormField>
 

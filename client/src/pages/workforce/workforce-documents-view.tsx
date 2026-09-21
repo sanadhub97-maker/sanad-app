@@ -5,6 +5,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { motion } from "framer-motion";
 import {
   Edit,
+  Eye,
   FileDown,
   Plus,
   Trash2,
@@ -16,7 +17,7 @@ import {
   Building,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
 import { DataTable } from "@/components/common/data-table";
@@ -78,6 +79,7 @@ export function WorkforceDocumentsView({
 }: Props) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
 
@@ -288,7 +290,19 @@ export function WorkforceDocumentsView({
       id: "actions",
       header: isAr ? "إجراءات" : "Actions",
       cell: (c) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary rounded-lg"
+            onClick={() => {
+              const empId = c.row.original.employeeId || c.row.original.employee?.id || c.row.original.id;
+              navigate(`/employees/${empId}`);
+            }}
+            title={t("common.viewDetails")}
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
           {hasPermission("employees.edit") && (
             <Button
               variant="ghost"
@@ -531,6 +545,9 @@ export function WorkforceDocumentsView({
           setSearch(v);
           setPage(1);
         }}
+        onRowClick={(row) =>
+          navigate(`/employees/${row.employeeId || row.employee?.id || row.id}`)
+        }
         emptyTitle={isAr ? "لا توجد سجلات حالياً" : "No records found"}
         emptyDescription={
           isAr
