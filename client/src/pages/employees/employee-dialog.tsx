@@ -9,8 +9,6 @@ import {
   Users,
   Phone,
   Briefcase,
-  ShieldCheck,
-  FileText,
   Sparkles,
   CheckCircle2,
   Loader2,
@@ -28,9 +26,6 @@ import {
   CalendarCheck,
   Activity,
   FileEdit,
-  CalendarClock,
-  Plane,
-  Paperclip,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -40,7 +35,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { DateInput } from "@/components/common/date-input";
-import { FileUpload } from "@/components/common/file-upload";
 import { employeesApi } from "@/api/employees";
 import { listActiveBranches } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
@@ -213,8 +207,8 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {isAr
-                    ? "إدخال وتوثيق ملف الموظف، الهوية الوطنية/الإقامة، جواز السفر، والارتباط الإداري"
-                    : "Register employee profile, civil ID/Iqama, passport details, and branch placement"}
+                    ? "إدخال وتوثيق ملف الموظف، الهوية، وبيانات العمل والارتباط الإداري"
+                    : "Register employee profile, personal details, and branch placement"}
                 </p>
               </div>
             </div>
@@ -243,20 +237,6 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
             >
               {isAr ? "3. العمل والمؤسسة" : "3. Job & Establishment"}
             </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("emp-sec-iqama")}
-              className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-all font-semibold whitespace-nowrap text-[11px] border border-amber-500/20"
-            >
-              {isAr ? "4. الإقامة" : "4. Iqama"}
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection("emp-sec-passport")}
-              className="px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20 transition-all font-semibold whitespace-nowrap text-[11px] border border-cyan-500/20"
-            >
-              {isAr ? "5. جواز السفر" : "5. Passport"}
-            </button>
           </div>
         </DialogHeader>
 
@@ -272,7 +252,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 </h3>
               </div>
               <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">
-                01 / 05
+                01 / 03
               </span>
             </div>
 
@@ -425,7 +405,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 </h3>
               </div>
               <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                02 / 05
+                02 / 03
               </span>
             </div>
 
@@ -477,7 +457,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 </h3>
               </div>
               <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
-                03 / 05
+                03 / 03
               </span>
             </div>
 
@@ -498,18 +478,18 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 />
               </FormField>
 
-              <FormField label={t("employees.fields.branch")} icon={Building}>
+              <FormField label={t("employees.fields.branchId")} icon={Building} required error={errors.branchId?.message}>
                 <Controller
                   control={control}
                   name="branchId"
                   render={({ field }) => (
-                    <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60">
-                        <SelectValue placeholder={t("employees.fields.selectBranch")} />
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus:ring-purple-500/30 focus:border-purple-500/60">
+                        <SelectValue placeholder={isAr ? "اختر فرع العمل / المركز" : "Select Branch"} />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl shadow-xl">
-                        {(branches ?? []).map((b) => (
-                          <SelectItem key={b.id} value={b.id}>
+                      <SelectContent className="rounded-xl border-border shadow-xl">
+                        {branches?.map((b) => (
+                          <SelectItem key={b.id} value={b.id} className="rounded-lg font-medium cursor-pointer">
                             {b.name}
                           </SelectItem>
                         ))}
@@ -539,14 +519,22 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                   name="employmentStatus"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60">
+                      <SelectTrigger className="h-11 rounded-xl font-bold bg-background/90 border-border/80 shadow-xs focus:ring-purple-500/30 focus:border-purple-500/60">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl shadow-xl">
-                        <SelectItem value="ACTIVE">{t("status.ACTIVE")}</SelectItem>
-                        <SelectItem value="INACTIVE">{t("status.INACTIVE")}</SelectItem>
-                        <SelectItem value="ON_LEAVE">{t("status.ON_LEAVE")}</SelectItem>
-                        <SelectItem value="TERMINATED">{t("status.TERMINATED")}</SelectItem>
+                      <SelectContent className="rounded-xl border-border shadow-xl">
+                        <SelectItem value="ACTIVE" className="rounded-lg font-bold text-emerald-600 dark:text-emerald-400 cursor-pointer">
+                          {isAr ? "نشط ومباشر للعمل" : "Active"}
+                        </SelectItem>
+                        <SelectItem value="INACTIVE" className="rounded-lg font-medium text-muted-foreground cursor-pointer">
+                          {isAr ? "غير نشط / موقوف" : "Inactive"}
+                        </SelectItem>
+                        <SelectItem value="ON_LEAVE" className="rounded-lg font-medium text-amber-600 dark:text-amber-400 cursor-pointer">
+                          {isAr ? "في إجازة رسمية" : "On Leave"}
+                        </SelectItem>
+                        <SelectItem value="TERMINATED" className="rounded-lg font-medium text-destructive cursor-pointer">
+                          {isAr ? "منتهي الخدمة / عقد ملغى" : "Terminated"}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
@@ -559,142 +547,6 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                   placeholder={isAr ? "أي ملاحظات إدارية، سجل سابق، أو تعليمات خاصة..." : "Internal notes or instructions..."}
                   className="rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60 min-h-[80px]"
                 />
-              </FormField>
-            </div>
-          </div>
-
-          {/* 🛡️ Section 4: Iqama Information */}
-          <div id="emp-sec-iqama" className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-border/40">
-              <div className="flex items-center gap-2">
-                <AppleIcon icon={ShieldCheck} tone="amber" size="sm" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                  {isAr ? "بيانات الإقامة النظامية" : "Iqama & Residence Permit Details"}
-                </h3>
-              </div>
-              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                04 / 05
-              </span>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <FormField label={t("employees.fields.iqamaNumber")} icon={Hash}>
-                <Input
-                  {...register("iqamaNumber")}
-                  placeholder="10 أرقام (2XXXXXXXXX)"
-                  className="h-11 rounded-xl font-mono font-bold bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.issueDate")} icon={Calendar}>
-                <Controller
-                  control={control}
-                  name="iqamaIssueDate"
-                  render={({ field }) => (
-                    <DateInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
-                    />
-                  )}
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.expiryDate")} icon={CalendarClock} hint={isAr ? "للتنبيهات" : "Alerts"}>
-                <Controller
-                  control={control}
-                  name="iqamaExpiryDate"
-                  render={({ field }) => (
-                    <DateInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 font-mono"
-                    />
-                  )}
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.iqamaFile")} icon={Paperclip} className="sm:col-span-2 lg:col-span-3">
-                <div className="rounded-2xl border border-border/80 bg-background/60 p-2.5 shadow-inner">
-                  <FileUpload
-                    fileId={watch("iqamaFileId")}
-                    module="employee-iqama"
-                    onUploaded={(fid) => setValue("iqamaFileId", fid)}
-                    onRemoved={() => setValue("iqamaFileId", undefined)}
-                  />
-                </div>
-              </FormField>
-            </div>
-          </div>
-
-          {/* ✈️ Section 5: Passport Information */}
-          <div id="emp-sec-passport" className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-border/40">
-              <div className="flex items-center gap-2">
-                <AppleIcon icon={FileText} tone="cyan" size="sm" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                  {isAr ? "بيانات وثيقة وجواز السفر" : "Passport Information"}
-                </h3>
-              </div>
-              <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">
-                05 / 05
-              </span>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <FormField label={t("employees.fields.passportNumber")} icon={Plane}>
-                <Input
-                  {...register("passportNumber")}
-                  placeholder="A12345678"
-                  className="h-11 rounded-xl font-mono font-bold uppercase bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.passportCountry")} icon={Globe}>
-                <Input
-                  {...register("passportCountry")}
-                  placeholder={isAr ? "دولة الإصدار" : "Issuing Country"}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60"
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.issueDate")} icon={Calendar}>
-                <Controller
-                  control={control}
-                  name="passportIssueDate"
-                  render={({ field }) => (
-                    <DateInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
-                    />
-                  )}
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.expiryDate")} icon={CalendarClock} hint={isAr ? "للتنبيهات" : "Alerts"}>
-                <Controller
-                  control={control}
-                  name="passportExpiryDate"
-                  render={({ field }) => (
-                    <DateInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-cyan-500/30 focus-visible:border-cyan-500/60 font-mono"
-                    />
-                  )}
-                />
-              </FormField>
-
-              <FormField label={t("employees.fields.passportFile")} icon={Paperclip} className="sm:col-span-2 lg:col-span-3">
-                <div className="rounded-2xl border border-border/80 bg-background/60 p-2.5 shadow-inner">
-                  <FileUpload
-                    fileId={watch("passportFileId")}
-                    module="employee-passport"
-                    onUploaded={(fid) => setValue("passportFileId", fid)}
-                    onRemoved={() => setValue("passportFileId", undefined)}
-                  />
-                </div>
               </FormField>
             </div>
           </div>
