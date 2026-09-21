@@ -35,14 +35,6 @@ function serializeAuth(auth: { userId: string; fullName: string; email: string; 
   };
 }
 
-export const register = asyncHandler(async (req: Request, res: Response) => {
-  const user = await authService.register(req.body);
-  res.status(201).json({
-    data: { id: user.id, fullName: user.fullName, email: user.email },
-    message: "Account created. Please check your email to verify your address.",
-  });
-});
-
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.login(req.body, clientMeta(req));
   setRefreshCookie(res, result.refreshToken, msFromTtl(result.refreshTtl));

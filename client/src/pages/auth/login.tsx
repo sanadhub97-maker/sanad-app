@@ -132,13 +132,6 @@ export default function LoginPage() {
           )}
         </Button>
       </form>
-
-      <p className="text-center text-xs text-muted-foreground">
-        {t("auth.noAccount")}{" "}
-        <Link to="/register" className="font-semibold text-primary hover:underline">
-          {t("auth.register")}
-        </Link>
-      </p>
     </div>
   );
 }

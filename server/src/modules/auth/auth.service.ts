@@ -8,48 +8,13 @@ import { ApiError } from "@/utils/apiError";
 import { loadAuthContext } from "@/middleware/auth";
 import { sendMail } from "@/services/email";
 import { logger } from "@/lib/logger";
-import type { LoginInput, RegisterInput } from "@/modules/auth/auth.schemas";
+import type { LoginInput } from "@/modules/auth/auth.schemas";
 
 const REFRESH_COOKIE_NAME = "refresh_token";
 
 export interface RequestMeta {
   ipAddress?: string;
   userAgent?: string;
-}
-
-async function ensureDefaultRole(roleName: string) {
-  const role = await prisma.role.findUnique({ where: { name: roleName } });
-  if (!role) throw ApiError.internal(`Default role "${roleName}" is missing — run the seed script.`);
-  return role;
-}
-
-export async function register(input: RegisterInput) {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
-  if (existing) throw ApiError.badRequest("An account with this email already exists.");
-
-  const employeeRole = await ensureDefaultRole("Employee");
-  const passwordHash = await hashPassword(input.password);
-
-  const user = await prisma.user.create({
-    data: {
-      fullName: input.fullName,
-      email: input.email,
-      phone: input.phone,
-      passwordHash,
-      userRoles: { create: [{ roleId: employeeRole.id }] },
-    },
-  });
-
-  // The account is already created at this point — a transient SMTP failure
-  // (wrong provider config, blocked egress, etc.) must not fail the whole
-  // registration. The user can request a new verification email later.
-  try {
-    await issueEmailVerification(user.id, user.email, user.fullName);
-  } catch (err) {
-    logger.error({ err, userId: user.id }, "Failed to send registration verification email");
-  }
-
-  return user;
 }
 
 export async function issueEmailVerification(userId: string, email: string, fullName: string) {

@@ -8,7 +8,6 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
-  registerSchema,
   resetPasswordSchema,
   verifyEmailSchema,
 } from "@/modules/auth/auth.schemas";
@@ -30,7 +29,8 @@ const authLimiter = rateLimit({
   },
 });
 
-router.post("/register", authLimiter, validate({ body: registerSchema }), controller.register);
+// No public self-registration — accounts are created by an admin via
+// Users & Roles, matching this app's internal-system access model.
 router.post("/login", authLimiter, validate({ body: loginSchema }), controller.login);
 router.post("/refresh", controller.refresh);
 router.post("/logout", controller.logout);
