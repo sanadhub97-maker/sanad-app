@@ -1,5 +1,7 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
+import { getPrintLogoPng } from "@/services/branding";
+import { addLogoToSheet } from "@/services/excel";
 
 export interface TemplateColumn {
   key: string;
@@ -257,7 +259,9 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   // 🏛️ الصف 1: الترويسة الرئيسية للنظام (Executive Brand Banner)
   sheet.mergeCells(1, 1, 1, totalCols);
   const row1 = sheet.getRow(1);
-  row1.height = 36;
+  const logo = await getPrintLogoPng();
+  row1.height = logo ? 48 : 36;
+  if (logo) addLogoToSheet(workbook, sheet, logo);
   const cell1 = sheet.getCell(1, 1);
   cell1.value = "🏢 نظام SanaD لإدارة الموارد البشرية والامتثال الحكومي | SanaD Enterprise HR & Compliance Suite";
   cell1.font = { name: "Cairo", size: 13, bold: true, color: { argb: "FFFFFFFF" } };

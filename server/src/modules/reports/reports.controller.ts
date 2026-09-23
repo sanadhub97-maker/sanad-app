@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
 import { renderHtmlToPdf } from "@/services/pdf";
-import { getBrandingContext } from "@/services/branding";
+import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
 import { tableReportPdf, statusBadge } from "@/modules/pdf/templates";
 import * as service from "@/modules/reports/reports.service";
 
@@ -30,6 +30,7 @@ async function respond(
       : undefined;
 
     const buffer = await buildWorkbook(title, columns, rows, {
+      logo: await getPrintLogoPng(),
       title: titleEn ? `${title} (${titleEn})` : title,
       companyName: companyTitle,
     });

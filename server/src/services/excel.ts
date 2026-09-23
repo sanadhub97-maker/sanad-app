@@ -12,6 +12,20 @@ export interface WorkbookOptions {
   title?: string;
   subtitle?: string;
   companyName?: string;
+  logo?: { buffer: Buffer; width: number; height: number } | null;
+}
+
+const LOGO_HEIGHT_PX = 56;
+
+/** Places the company logo in the top-start corner of the title banner. */
+export function addLogoToSheet(
+  workbook: ExcelJS.Workbook,
+  sheet: ExcelJS.Worksheet,
+  logo: { buffer: Buffer; width: number; height: number }
+) {
+  const imageId = workbook.addImage({ buffer: logo.buffer as never, extension: "png" });
+  const width = Math.round((logo.width / logo.height) * LOGO_HEIGHT_PX);
+  sheet.addImage(imageId, { tl: { col: 0.15, row: 0.1 }, ext: { width, height: LOGO_HEIGHT_PX } });
 }
 
 /**
@@ -59,7 +73,9 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   // 👑 Row 1: Royal Navy Corporate Title Banner
   sheet.mergeCells(1, 1, 1, totalCols);
   const titleRow = sheet.getRow(1);
-  titleRow.height = 38;
+  // Taller when there's a logo, so it fits inside the banner (56px ≈ 42pt).
+  titleRow.height = options.logo ? 48 : 38;
+  if (options.logo) addLogoToSheet(workbook, sheet, options.logo);
   const titleCell = sheet.getCell(1, 1);
   titleCell.value = `🏛️  ${companyTitle}  —  ${reportTitle}`;
   titleCell.font = { name: "Cairo", size: 13, bold: true, color: { argb: "FFFFFFFF" } };
