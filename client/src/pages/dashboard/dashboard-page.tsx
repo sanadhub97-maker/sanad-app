@@ -73,67 +73,67 @@ const TONE_STYLES: Record<
   }
 > = {
   blue: {
-    cardBg: "bg-gradient-to-br from-blue-50/90 via-sky-50/40 to-card dark:from-blue-950/40 dark:via-blue-900/15 dark:to-card/90",
-    border: "border-blue-200/90 dark:border-blue-700/50 hover:border-blue-400 dark:hover:border-blue-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(59,130,246,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(59,130,246,0.28)]",
-    orb: "bg-blue-500/20 to-sky-500/10",
-    dot: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]",
+    cardBg: "bg-gradient-to-br from-blue-50/90 via-sky-50/40 to-card dark:from-[#0B1736]/90 dark:via-[#091228]/85 dark:to-[#060B1A]/95",
+    border: "border-blue-200/90 dark:border-blue-500/30 hover:border-blue-400 dark:hover:border-blue-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(59,130,246,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(59,130,246,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(59,130,246,0.45)]",
+    orb: "bg-blue-500/25 to-sky-500/15",
+    dot: "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.9)]",
     badge: "text-blue-700 dark:text-blue-300 bg-blue-500/10 border-blue-500/20",
   },
   emerald: {
-    cardBg: "bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-card dark:from-emerald-950/40 dark:via-emerald-900/15 dark:to-card/90",
-    border: "border-emerald-200/90 dark:border-emerald-700/50 hover:border-emerald-400 dark:hover:border-emerald-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(16,185,129,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(16,185,129,0.28)]",
-    orb: "bg-emerald-500/20 to-teal-500/10",
-    dot: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]",
+    cardBg: "bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-card dark:from-[#08221D]/90 dark:via-[#071916]/85 dark:to-[#050E0C]/95",
+    border: "border-emerald-200/90 dark:border-emerald-500/30 hover:border-emerald-400 dark:hover:border-emerald-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(16,185,129,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(16,185,129,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(16,185,129,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(16,185,129,0.45)]",
+    orb: "bg-emerald-500/25 to-teal-500/15",
+    dot: "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]",
     badge: "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/20",
   },
   purple: {
-    cardBg: "bg-gradient-to-br from-purple-50/90 via-fuchsia-50/40 to-card dark:from-purple-950/40 dark:via-purple-900/15 dark:to-card/90",
-    border: "border-purple-200/90 dark:border-purple-700/50 hover:border-purple-400 dark:hover:border-purple-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(168,85,247,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(168,85,247,0.28)]",
-    orb: "bg-purple-500/20 to-fuchsia-500/10",
-    dot: "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]",
+    cardBg: "bg-gradient-to-br from-purple-50/90 via-fuchsia-50/40 to-card dark:from-[#1E0D36]/90 dark:via-[#160A28]/85 dark:to-[#0A0515]/95",
+    border: "border-purple-200/90 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(168,85,247,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(168,85,247,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(168,85,247,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(168,85,247,0.45)]",
+    orb: "bg-purple-500/25 to-fuchsia-500/15",
+    dot: "bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.9)]",
     badge: "text-purple-700 dark:text-purple-300 bg-purple-500/10 border-purple-500/20",
   },
   teal: {
-    cardBg: "bg-gradient-to-br from-teal-50/90 via-emerald-50/40 to-card dark:from-teal-950/40 dark:via-teal-900/15 dark:to-card/90",
-    border: "border-teal-200/90 dark:border-teal-700/50 hover:border-teal-400 dark:hover:border-teal-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(20,184,166,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(20,184,166,0.28)]",
-    orb: "bg-teal-500/20 to-cyan-500/10",
-    dot: "bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.8)]",
+    cardBg: "bg-gradient-to-br from-teal-50/90 via-emerald-50/40 to-card dark:from-[#062224]/90 dark:via-[#05191B]/85 dark:to-[#030E0F]/95",
+    border: "border-teal-200/90 dark:border-teal-500/30 hover:border-teal-400 dark:hover:border-teal-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(20,184,166,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(20,184,166,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(20,184,166,0.45)]",
+    orb: "bg-teal-500/25 to-cyan-500/15",
+    dot: "bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.9)]",
     badge: "text-teal-700 dark:text-teal-300 bg-teal-500/10 border-teal-500/20",
   },
   amber: {
-    cardBg: "bg-gradient-to-br from-amber-50/90 via-yellow-50/40 to-card dark:from-amber-950/40 dark:via-amber-900/15 dark:to-card/90",
-    border: "border-amber-200/90 dark:border-amber-700/50 hover:border-amber-400 dark:hover:border-amber-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(245,158,11,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(245,158,11,0.28)]",
-    orb: "bg-amber-500/20 to-orange-500/10",
-    dot: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]",
+    cardBg: "bg-gradient-to-br from-amber-50/90 via-yellow-50/40 to-card dark:from-[#2B1805]/90 dark:via-[#201204]/85 dark:to-[#120902]/95",
+    border: "border-amber-200/90 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(245,158,11,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(245,158,11,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(245,158,11,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(245,158,11,0.45)]",
+    orb: "bg-amber-500/25 to-orange-500/15",
+    dot: "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.9)]",
     badge: "text-amber-700 dark:text-amber-300 bg-amber-500/10 border-amber-500/20",
   },
   rose: {
-    cardBg: "bg-gradient-to-br from-rose-50/90 via-red-50/40 to-card dark:from-rose-950/40 dark:via-rose-900/15 dark:to-card/90",
-    border: "border-rose-200/90 dark:border-rose-700/50 hover:border-rose-400 dark:hover:border-rose-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(244,63,94,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(244,63,94,0.28)]",
-    orb: "bg-rose-500/20 to-red-500/10",
-    dot: "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]",
+    cardBg: "bg-gradient-to-br from-rose-50/90 via-red-50/40 to-card dark:from-[#2E0B15]/90 dark:via-[#22080F]/85 dark:to-[#140408]/95",
+    border: "border-rose-200/90 dark:border-rose-500/30 hover:border-rose-400 dark:hover:border-rose-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(244,63,94,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(244,63,94,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(244,63,94,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(244,63,94,0.45)]",
+    orb: "bg-rose-500/25 to-red-500/15",
+    dot: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]",
     badge: "text-rose-700 dark:text-rose-300 bg-rose-500/10 border-rose-500/20",
   },
   indigo: {
-    cardBg: "bg-gradient-to-br from-indigo-50/90 via-blue-50/40 to-card dark:from-indigo-950/40 dark:via-indigo-900/15 dark:to-card/90",
-    border: "border-indigo-200/90 dark:border-indigo-700/50 hover:border-indigo-400 dark:hover:border-indigo-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(99,102,241,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(99,102,241,0.28)]",
-    orb: "bg-indigo-500/20 to-purple-500/10",
-    dot: "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]",
+    cardBg: "bg-gradient-to-br from-indigo-50/90 via-blue-50/40 to-card dark:from-[#131138]/90 dark:via-[#0F0D2B]/85 dark:to-[#080718]/95",
+    border: "border-indigo-200/90 dark:border-indigo-500/30 hover:border-indigo-400 dark:hover:border-indigo-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(99,102,241,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(99,102,241,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(99,102,241,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(99,102,241,0.45)]",
+    orb: "bg-indigo-500/25 to-purple-500/15",
+    dot: "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]",
     badge: "text-indigo-700 dark:text-indigo-300 bg-indigo-500/10 border-indigo-500/20",
   },
   cyan: {
-    cardBg: "bg-gradient-to-br from-cyan-50/90 via-sky-50/40 to-card dark:from-cyan-950/40 dark:via-cyan-900/15 dark:to-card/90",
-    border: "border-cyan-200/90 dark:border-cyan-700/50 hover:border-cyan-400 dark:hover:border-cyan-400",
-    glow: "shadow-[0_4px_20px_-4px_rgba(6,182,212,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(6,182,212,0.28)]",
-    orb: "bg-cyan-500/20 to-blue-500/10",
-    dot: "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]",
+    cardBg: "bg-gradient-to-br from-cyan-50/90 via-sky-50/40 to-card dark:from-[#06202E]/90 dark:via-[#051722]/85 dark:to-[#030D14]/95",
+    border: "border-cyan-200/90 dark:border-cyan-500/30 hover:border-cyan-400 dark:hover:border-cyan-400/80",
+    glow: "shadow-[0_4px_20px_-4px_rgba(6,182,212,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(6,182,212,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(6,182,212,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(6,182,212,0.45)]",
+    orb: "bg-cyan-500/25 to-blue-500/15",
+    dot: "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.9)]",
     badge: "text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 border-cyan-500/20",
   },
 };
@@ -355,17 +355,17 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 p-6 sm:p-8 text-white shadow-2xl shadow-blue-950/20 specular-border"
+        className="relative overflow-hidden rounded-3xl border border-white/[0.12] bg-gradient-to-r from-[#070D1F] via-[#0E1B3D] to-[#070D1F] p-6 sm:p-8 text-white shadow-2xl shadow-blue-950/40 specular-border backdrop-blur-2xl"
       >
         {/* Top Glass Specular Rim Line */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/40 dark:via-cyan-300/30 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
 
         {/* Subtle background ambient mesh glow */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
 
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-cyan-300 backdrop-blur-md border border-white/10">
                 <Calendar className="h-3.5 w-3.5" /> {todayDateString}
@@ -376,10 +376,10 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white font-sans">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white font-sans leading-tight">
               {greeting}، {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
             </h1>
-            <p className="text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
               {isAr
                 ? "مرحباً بك في مركز القيادة والعمليات التنفيذي لنظام SanaD. يمكنك متابعة وثائق الموظفين، التراخيص الحكومية، والمصروفات بدقة استباقية ولحظياً."
                 : "Welcome to your executive operations command center. Monitor workforce compliance, official company licenses, and payments in real time."}
@@ -390,23 +390,23 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Button
               onClick={() => setEmployeeDialogOpen(true)}
-              className="h-10 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-600 hover:to-indigo-700 hover:shadow-blue-500/40 transition-all font-semibold text-xs sm:text-sm px-4 specular-border"
+              className="h-11 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-5 specular-border"
             >
-              <Plus className="h-4 w-4 me-1.5" /> {t("dashboard.addEmployee")}
+              <Plus className="h-4 w-4 me-1.5 stroke-[2.5]" /> {t("dashboard.addEmployee")}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate("/company-documents")}
-              className="h-10 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-md font-semibold text-xs sm:text-sm px-4"
+              className="h-11 rounded-xl border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <FileText className="h-4 w-4 me-1.5 text-cyan-300" /> {t("nav.companyDocuments")}
+              <FileText className="h-4 w-4 me-1.5 text-amber-400" /> {t("nav.companyDocuments")}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate("/reports")}
-              className="h-10 rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-md font-semibold text-xs sm:text-sm px-4"
+              className="h-11 rounded-xl border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <FileBarChart className="h-4 w-4 me-1.5 text-amber-300" /> {t("dashboard.reports")}
+              <FileBarChart className="h-4 w-4 me-1.5 text-purple-400" /> {t("dashboard.reports")}
             </Button>
           </div>
         </div>
