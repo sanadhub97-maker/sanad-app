@@ -37,7 +37,7 @@ export const paymentsApi = {
 };
 
 export function paymentReceiptUrl(id: string) {
-  return `/api/payments/${id}/receipt.pdf`;
+  return `/payments/${id}/receipt.pdf`;
 }
 
 export const PAYMENT_METHODS = ["CASH", "BANK_TRANSFER", "CARD", "ONLINE", "OTHER"] as const;

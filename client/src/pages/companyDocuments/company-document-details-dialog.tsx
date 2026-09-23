@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Copy,
   Paperclip,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -152,6 +153,17 @@ export function CompanyDocumentDetailsDialog({ open, onOpenChange, document, onE
               </span>
               <p className="text-sm font-semibold text-foreground truncate">
                 {document.branch?.name || "—"}
+              </p>
+            </div>
+
+            {/* City */}
+            <div className="rounded-2xl border border-border/60 bg-card/50 p-3.5 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                {t("companyDocuments.fields.city")}
+              </span>
+              <p className="text-sm font-semibold text-foreground truncate">
+                {document.city || "—"}
               </p>
             </div>
 

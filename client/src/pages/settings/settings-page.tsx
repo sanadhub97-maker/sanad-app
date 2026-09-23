@@ -1045,7 +1045,7 @@ function EmailTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                   control={control}
                   name="enabled"
                   render={({ field }) => (
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <Switch checked={!!field.value} onCheckedChange={field.onChange} />
                   )}
                 />
               </div>
@@ -1268,7 +1268,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                   control={control}
                   name="enabled"
                   render={({ field }) => (
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    <Switch checked={!!field.value} onCheckedChange={field.onChange} />
                   )}
                 />
               </div>

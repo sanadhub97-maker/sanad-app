@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Receipt,
   DollarSign,
-  Percent,
   Hash,
   Calendar,
   FolderOpen,
@@ -192,8 +191,8 @@ export function PaymentDialog({
               </FormField>
 
               <FormField
-                label={isAr ? "ضريبة القيمة المضافة (VAT)" : "VAT Amount"}
-                icon={Percent}
+                label={isAr ? "قيمة الضريبة (مبلغ، وليست نسبة)" : "VAT Amount (currency, not a rate)"}
+                icon={DollarSign}
                 hint={isAr ? "اختياري" : "Optional"}
               >
                 <Input

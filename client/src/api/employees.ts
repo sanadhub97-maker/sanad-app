@@ -41,7 +41,7 @@ export const employeesApi = {
 };
 
 export function employeePdfUrl(id: string) {
-  return `/api/employees/${id}/pdf`;
+  return `/employees/${id}/pdf`;
 }
 
 export interface EmployeeDocumentInput {
