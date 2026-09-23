@@ -33,6 +33,7 @@ import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
 import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } from "@/api/payments";
 import { employeesApi } from "@/api/employees";
+import { EmployeePicker } from "@/components/common/employee-picker";
 import { getErrorMessage } from "@/lib/api";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import type { Payment } from "@/types/models";
@@ -383,24 +384,12 @@ export function PaymentDialog({
                     control={control}
                     name="employeeId"
                     render={({ field }) => (
-                      <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
-                          <SelectValue placeholder={isAr ? "اختر الموظف" : "Select employee"} />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl shadow-xl max-h-72">
-                          {employees.length === 0 && (
-                            <div className="px-3 py-2 text-xs text-muted-foreground">
-                              {isAr ? "لا يوجد موظفون مسجلون" : "No employees yet"}
-                            </div>
-                          )}
-                          {employees.map((emp) => (
-                            <SelectItem key={emp.id} value={emp.id}>
-                              <bdi>{isAr ? emp.fullNameAr : emp.fullNameEn || emp.fullNameAr}</bdi>
-                              <span className="ms-2 font-mono text-[11px] text-muted-foreground">{emp.employeeNumber}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <EmployeePicker
+                        employees={employees}
+                        value={field.value}
+                        onChange={field.onChange}
+                        invalid={!!errors.employeeId}
+                      />
                     )}
                   />
                 </FormField>
