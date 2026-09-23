@@ -84,8 +84,12 @@ function isoToDisplay(iso?: string | null): string {
   return `${m[3]}/${m[2]}/${m[1]}`;
 }
 
+function normalizeNumerals(str: string): string {
+  return str.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+}
+
 function displayToIso(display: string): string {
-  const digits = display.replace(/\D/g, "");
+  const digits = normalizeNumerals(display).replace(/\D/g, "");
   if (digits.length !== 8) return "";
   const day = digits.slice(0, 2);
   const month = digits.slice(2, 4);
@@ -142,7 +146,8 @@ export function DateInput({
   }, [value, parsedValue]);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    const raw = normalizeNumerals(e.target.value);
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
     const formatted = formatDigits(digits);
     setDisplay(formatted);
     if (digits.length === 8) {
@@ -282,10 +287,11 @@ export function DateInput({
           autoComplete="off"
           value={display}
           onChange={handleInputChange}
+          onClick={() => setOpen(true)}
           onBlur={onBlur}
           disabled={disabled}
           placeholder={placeholder ?? (isRtl ? "يوم/شهر/سنة" : "dd/mm/yyyy")}
-          dir="ltr"
+          dir={isRtl ? "rtl" : "ltr"}
           className={cn(
             "flex h-9 w-full rounded-xl border border-input/80 bg-background/80 px-3.5 py-1 pe-10 text-sm text-start font-medium shadow-xs transition-all",
             "placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary",
@@ -299,7 +305,7 @@ export function DateInput({
             disabled={disabled}
             aria-label={isRtl ? "فتح التقويم" : "Open calendar"}
             className={cn(
-              "absolute end-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-muted-foreground transition-all",
+              "absolute end-1.5 top-1/2 -translate-y-1/2 h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground transition-all",
               "hover:text-primary hover:bg-primary/10 active:scale-95 disabled:opacity-50 cursor-pointer",
               open && "text-primary bg-primary/15 shadow-xs"
             )}
@@ -325,7 +331,7 @@ export function DateInput({
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
-              onClick={isRtl ? nextYear : prevYear}
+              onClick={prevYear}
               title={isRtl ? "السنة السابقة" : "Previous year"}
             >
               {isRtl ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
@@ -335,7 +341,7 @@ export function DateInput({
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
-              onClick={isRtl ? nextMonth : prevMonth}
+              onClick={prevMonth}
               title={isRtl ? "الشهر السابق" : "Previous month"}
             >
               {isRtl ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -358,7 +364,7 @@ export function DateInput({
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
-              onClick={isRtl ? prevMonth : nextMonth}
+              onClick={nextMonth}
               title={isRtl ? "الشهر القادم" : "Next month"}
             >
               {isRtl ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -368,7 +374,7 @@ export function DateInput({
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 cursor-pointer"
-              onClick={isRtl ? prevYear : nextYear}
+              onClick={nextYear}
               title={isRtl ? "السنة القادمة" : "Next year"}
             >
               {isRtl ? <ChevronsLeft className="h-4 w-4" /> : <ChevronsRight className="h-4 w-4" />}
@@ -486,19 +492,21 @@ export function DateInput({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 rounded-md"
+                  className="h-6 w-6 rounded-md cursor-pointer"
                   onClick={() => setDecadeStart((prev) => prev - 12)}
+                  title={isRtl ? "العقد السابق" : "Previous decade"}
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  {isRtl ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 rounded-md"
+                  className="h-6 w-6 rounded-md cursor-pointer"
                   onClick={() => setDecadeStart((prev) => prev + 12)}
+                  title={isRtl ? "العقد القادم" : "Next decade"}
                 >
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  {isRtl ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                 </Button>
               </div>
             </div>
