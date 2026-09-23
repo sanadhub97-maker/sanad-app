@@ -130,6 +130,12 @@ async function openSocket() {
       } else if (code === baileys.DisconnectReason.connectionReplaced) {
         // Another server instance (e.g. a fresh deploy) took over the session — let it.
         state.status = "disconnected";
+      } else if (!creds.registered) {
+        // The QR was never scanned before WhatsApp gave up on it — don't keep
+        // generating codes nobody is looking at.
+        state.status = "disconnected";
+        state.lastError = "انتهت مهلة مسح الكود — اضغط ربط رقم تاني";
+        await clearSession();
       } else {
         state.status = "connecting";
         setTimeout(() => void startWhatsappWeb().catch(() => undefined), 3000);
