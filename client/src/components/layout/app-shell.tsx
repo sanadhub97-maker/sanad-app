@@ -133,12 +133,16 @@ export function AppShell() {
         <Topbar onOpenMobileNav={() => setMobileOpen(true)} />
         <main
           ref={mainRef}
-          className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-background via-background to-muted/15"
+          className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-background via-background to-muted/15 selection:bg-cyan-500/30 selection:text-cyan-200"
         >
-          {/* Ambient Background Breathing Glows */}
-          <div className="pointer-events-none absolute -top-40 right-10 h-80 w-80 rounded-full bg-blue-500/10 blur-[100px] animate-ambient-pulse dark:bg-blue-600/15" />
-          <div className="pointer-events-none absolute top-1/3 -left-20 h-72 w-72 rounded-full bg-indigo-500/10 blur-[100px] animate-ambient-pulse-slow dark:bg-indigo-600/10" />
-          <div className="pointer-events-none absolute bottom-10 right-1/4 h-72 w-72 rounded-full bg-emerald-500/5 blur-[90px] animate-ambient-pulse dark:bg-cyan-600/10" />
+          {/* 🕸️ Subtle Isometric Grid Overlay (Matches Login Cockpit) */}
+          <div className="pointer-events-none absolute inset-0 bg-grid-pattern bg-grid-glow opacity-25" />
+
+          {/* 🌌 Deep Cosmos Ambient Glow Orbs */}
+          <div className="pointer-events-none absolute -top-40 -left-40 h-[650px] w-[650px] rounded-full bg-blue-600/15 blur-[140px] animate-ambient-pulse" />
+          <div className="pointer-events-none absolute -bottom-40 -right-40 h-[650px] w-[650px] rounded-full bg-indigo-600/15 blur-[150px] animate-ambient-pulse-slow" />
+          <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px] animate-ambient-pulse" />
+          <div className="pointer-events-none absolute bottom-10 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[110px]" />
 
           <AnimatePresence mode="wait" initial={false}>
             <motion.div

@@ -20,7 +20,7 @@ interface UiState {
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
-      themeMode: "system",
+      themeMode: "dark",
       sidebarCollapsed: false,
       animationsEnabled: true,
       setThemeMode: (mode) => set({ themeMode: mode }),
@@ -33,8 +33,8 @@ export const useUiStore = create<UiState>()(
 );
 
 export function resolveEffectiveTheme(mode: ThemeMode): "light" | "dark" {
-  if (mode === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  if (mode === "light") {
+    return "light";
   }
-  return mode;
+  return "dark";
 }

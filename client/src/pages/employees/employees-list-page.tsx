@@ -220,41 +220,44 @@ export default function EmployeesListPage() {
             setBranchId("");
           }}
           className={cn(
-            "group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300 card-luxury-hover",
+            "group relative cursor-pointer overflow-hidden rounded-3xl border p-5 transition-all duration-300 backdrop-blur-xl specular-border shadow-luxury hover:-translate-y-1",
             !employmentStatus
-              ? "border-blue-500/40 bg-card shadow-sm ring-1 ring-blue-500/20"
-              : "border-border/70 bg-card/60 hover:bg-card"
+              ? "border-blue-500/50 bg-card/90 shadow-md ring-2 ring-blue-500/25"
+              : "border-blue-200/80 dark:border-blue-900/40 bg-card/85 hover:border-blue-400"
           )}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">{t("employees.stats.total", { defaultValue: "إجمالي الموظفين" })}</span>
-            <AppleIcon icon={Users} tone="blue" size="md" className="transition-transform duration-200 group-hover:scale-110" />
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-blue-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">{t("employees.stats.total", { defaultValue: "إجمالي الموظفين" })}</span>
+            <AppleIcon icon={Users} tone="blue" size="md" className="transition-transform duration-200 group-hover:scale-110 shadow-sm" />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-foreground font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
               {summary?.totalEmployees ?? data?.meta.total ?? "—"}
             </span>
+            <span className="text-[11px] text-muted-foreground font-medium">موظف</span>
           </div>
         </div>
 
         <div
           onClick={() => setEmploymentStatus(employmentStatus === "ACTIVE" ? "" : "ACTIVE")}
           className={cn(
-            "group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300 card-luxury-hover",
+            "group relative cursor-pointer overflow-hidden rounded-3xl border p-5 transition-all duration-300 backdrop-blur-xl specular-border shadow-luxury hover:-translate-y-1",
             employmentStatus === "ACTIVE"
-              ? "border-emerald-500/40 bg-card shadow-sm ring-1 ring-emerald-500/20"
-              : "border-border/70 bg-card/60 hover:bg-card"
+              ? "border-emerald-500/50 bg-card/90 shadow-md ring-2 ring-emerald-500/25"
+              : "border-emerald-200/80 dark:border-emerald-900/40 bg-card/85 hover:border-emerald-400"
           )}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">{t("employees.stats.active", { defaultValue: "الموظفون على رأس العمل" })}</span>
-            <AppleIcon icon={UserCheck} tone="emerald" size="md" className="transition-transform duration-200 group-hover:scale-110" />
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-emerald-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">{t("employees.stats.active", { defaultValue: "على رأس العمل" })}</span>
+            <AppleIcon icon={UserCheck} tone="emerald" size="md" className="transition-transform duration-200 group-hover:scale-110 shadow-sm" />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-sans">
               {summary?.activeEmployees ?? "—"}
             </span>
-            <span className="inline-block rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-block rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               {summary && summary.totalEmployees > 0
                 ? `${Math.round((summary.activeEmployees / summary.totalEmployees) * 100)}%`
                 : "نشط"}
@@ -264,33 +267,35 @@ export default function EmployeesListPage() {
 
         <div
           onClick={() => navigate("/reports?tab=documents&status=EXPIRING_SOON")}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-amber-500/40 hover:bg-card"
+          className="group relative cursor-pointer overflow-hidden rounded-3xl border border-amber-200/80 dark:border-amber-900/40 bg-card/85 p-5 transition-all duration-300 backdrop-blur-xl specular-border shadow-luxury hover:-translate-y-1 hover:border-amber-400"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">{t("employees.stats.expiring", { defaultValue: "وثائق تنتهي قريباً" })}</span>
-            <AppleIcon icon={AlertTriangle} tone="amber" size="md" className="transition-transform duration-200 group-hover:scale-110" />
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-amber-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">{t("employees.stats.expiring", { defaultValue: "وثائق تنتهي قريباً" })}</span>
+            <AppleIcon icon={AlertTriangle} tone="amber" size="md" className="transition-transform duration-200 group-hover:scale-110 shadow-sm" />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-sans">
               {expiration?.within30 ?? summary?.expiringDocuments ?? 0}
             </span>
-            <span className="text-[10px] text-muted-foreground">خلال 30 يوم</span>
+            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">خلال 30 يوم</span>
           </div>
         </div>
 
         <div
           onClick={() => navigate("/branches")}
-          className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-indigo-500/40 hover:bg-card"
+          className="group relative cursor-pointer overflow-hidden rounded-3xl border border-indigo-200/80 dark:border-indigo-900/40 bg-card/85 p-5 transition-all duration-300 backdrop-blur-xl specular-border shadow-luxury hover:-translate-y-1 hover:border-indigo-400"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">{t("employees.stats.branches", { defaultValue: "المؤسسات التابعة" })}</span>
-            <AppleIcon icon={Building2} tone="indigo" size="md" className="transition-transform duration-200 group-hover:scale-110" />
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-indigo-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">{t("employees.stats.branches", { defaultValue: "المؤسسات التابعة" })}</span>
+            <AppleIcon icon={Building2} tone="indigo" size="md" className="transition-transform duration-200 group-hover:scale-110 shadow-sm" />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-sans">
               {branches?.length ?? 1}
             </span>
-            <span className="text-[10px] text-muted-foreground">مؤسسة نشطة</span>
+            <span className="text-[11px] text-muted-foreground font-medium">مؤسسة نشطة</span>
           </div>
         </div>
       </motion.div>

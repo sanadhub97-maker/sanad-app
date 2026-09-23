@@ -41,8 +41,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [company?.faviconFileId]);
 
   // Active theme: user's explicit local choice takes priority if not "system".
-  // If "system", check server appearance default, else OS media query.
-  const activeMode = themeMode !== "system" ? themeMode : (appearance?.themeMode ?? "system");
+  // If "system", check server appearance default, else fallback to "dark".
+  const activeMode = themeMode !== "system" ? themeMode : (appearance?.themeMode ?? "dark");
   const effective = resolveEffectiveTheme(activeMode);
 
   useEffect(() => {

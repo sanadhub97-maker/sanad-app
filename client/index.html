@@ -20,16 +20,19 @@
           document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
           document.documentElement.lang = isRtl ? 'ar' : 'en';
 
-          // 2. Theme Mode
+          // 2. Theme Mode - Default to Dark Luxury Obsidian Glass unless explicitly set to 'light'
           var raw = localStorage.getItem('sanad-ui-preferences');
-          var mode = 'system';
+          var mode = 'dark';
           if (raw) {
-            var parsed = JSON.parse(raw);
-            if (parsed && parsed.state && parsed.state.themeMode) {
-              mode = parsed.state.themeMode;
-            }
+            try {
+              var parsed = JSON.parse(raw);
+              if (parsed && parsed.state && parsed.state.themeMode) {
+                mode = parsed.state.themeMode;
+              }
+            } catch (err) {}
           }
-          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          // If system or dark, default to the executive obsidian luxury dark theme
+          var isDark = mode !== 'light';
           if (isDark) {
             document.documentElement.classList.add('dark');
           } else {
