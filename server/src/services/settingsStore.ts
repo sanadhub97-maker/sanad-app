@@ -60,6 +60,21 @@ export function getAppearanceSettings(): Promise<AppearanceSettings> {
   return getSetting(APPEARANCE_KEY, DEFAULT_APPEARANCE);
 }
 
+const EXPIRATION_SCAN_KEY = "jobs.expirationScan";
+
+function todayUtc(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export async function hasExpirationScanRunToday(): Promise<boolean> {
+  const { lastRunDate } = await getSetting<{ lastRunDate: string | null }>(EXPIRATION_SCAN_KEY, { lastRunDate: null });
+  return lastRunDate === todayUtc();
+}
+
+export function markExpirationScanRun() {
+  return setSetting(EXPIRATION_SCAN_KEY, { lastRunDate: todayUtc() });
+}
+
 export function setAppearanceSettings(value: AppearanceSettings) {
   return setSetting(APPEARANCE_KEY, value);
 }

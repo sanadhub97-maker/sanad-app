@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
-import { sendWhatsapp } from "@/services/whatsapp";
+import { sendWhatsapp, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -73,17 +73,32 @@ async function getRecipients() {
 
 async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAPP", action: () => Promise<void>) {
   const existing = await prisma.notificationLog.findUnique({ where: { dedupeKey } });
-  if (existing) return; // already processed by a previous run — idempotent (§41)
+  // Only a delivered notification is final — a failed one is retried the next
+  // time the scan runs, instead of being silently dropped for good.
+  if (existing?.status === "SENT") return;
 
   try {
     await action();
-    await prisma.notificationLog.create({ data: { dedupeKey, channel, status: "SENT", sentAt: new Date() } });
+    await prisma.notificationLog.upsert({
+      where: { dedupeKey },
+      update: { status: "SENT", sentAt: new Date(), errorMessage: null },
+      create: { dedupeKey, channel, status: "SENT", sentAt: new Date() },
+    });
   } catch (err) {
     logger.error({ err, dedupeKey }, "Notification dispatch failed");
+    const errorMessage = (err as Error).message;
     await prisma.notificationLog
-      .create({ data: { dedupeKey, channel, status: "FAILED", errorMessage: (err as Error).message } })
+      .upsert({
+        where: { dedupeKey },
+        update: { status: "FAILED", errorMessage },
+        create: { dedupeKey, channel, status: "FAILED", errorMessage },
+      })
       .catch(() => undefined);
   }
+}
+
+function assertSent(result: { sent: boolean; reason?: string }) {
+  if (!result.sent) throw new Error(result.reason ?? "Send failed");
 }
 
 export async function runExpirationScan() {
@@ -126,21 +141,32 @@ export async function runExpirationScan() {
     if (emailSettings?.enabled) {
       for (const recipient of recipients) {
         await logOnce(`${dedupeBase}:EMAIL:${recipient.id}`, "EMAIL", async () => {
-          await sendMail({ to: recipient.email, subject: "Document Expiration Alert", html: `<p>${message}</p>` });
+          assertSent(await sendMail({ to: recipient.email, subject: "Document Expiration Alert", html: `<p>${message}</p>` }));
         });
       }
     }
 
     if (whatsappSettings?.enabled) {
       const whatsappMessage = whatsappMessageFor(item, threshold, companyName);
-      for (const recipient of recipients) {
-        if (!recipient.phone) continue;
-        await logOnce(`${dedupeBase}:WHATSAPP:${recipient.id}`, "WHATSAPP", async () => {
-          await sendWhatsapp(recipient.phone!, whatsappMessage);
-        });
+      if (whatsappSettings.provider === CALLMEBOT_PROVIDER) {
+        // CallMeBot's free key can only message the one number that activated it.
+        const phone = whatsappSettings.phoneNumberId;
+        if (phone) {
+          await logOnce(`${dedupeBase}:WHATSAPP:callmebot:${phone}`, "WHATSAPP", async () => {
+            assertSent(await sendWhatsapp(phone, whatsappMessage));
+          });
+        }
+      } else {
+        for (const recipient of recipients) {
+          if (!recipient.phone) continue;
+          await logOnce(`${dedupeBase}:WHATSAPP:${recipient.id}`, "WHATSAPP", async () => {
+            assertSent(await sendWhatsapp(recipient.phone!, whatsappMessage));
+          });
+        }
       }
     }
   }
 
+  await markExpirationScanRun();
   logger.info(`Expiration scan complete — ${dueCount} item(s) matched a notification threshold today`);
 }

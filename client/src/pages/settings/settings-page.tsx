@@ -1208,11 +1208,17 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
     watch,
     formState: { isSubmitting },
   } = useForm<WhatsappSettingsInput>({
-    values: data ? { ...data, apiKey: "" } : undefined,
+    values: data ? { ...data, provider: data.provider === "CALLMEBOT" ? "CALLMEBOT" : "META", apiKey: "" } : undefined,
   });
 
   const [testTo, setTestTo] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
+
+  // CallMeBot's free key only delivers to the number that activated it, so
+  // that's the only useful test target — prefill it.
+  React.useEffect(() => {
+    if (data?.provider === "CALLMEBOT" && data.phoneNumberId) setTestTo(data.phoneNumberId);
+  }, [data?.provider, data?.phoneNumberId]);
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateWhatsapp,
@@ -1230,6 +1236,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   });
 
   const isEnabled = watch("enabled");
+  const isCallMeBot = watch("provider") === "CALLMEBOT";
 
   if (isLoading || !data) {
     return (
@@ -1262,7 +1269,11 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               </div>
               <div className="flex items-center gap-3">
                 <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
-                  {isEnabled ? (isRtl ? "واتساب كلاود API نشط" : "WhatsApp Cloud API Active") : (isRtl ? "معطل" : "Disabled")}
+                  {isEnabled
+                    ? isCallMeBot
+                      ? isRtl ? "CallMeBot نشط" : "CallMeBot Active"
+                      : isRtl ? "واتساب كلاود API نشط" : "WhatsApp Cloud API Active"
+                    : isRtl ? "معطل" : "Disabled"}
                 </Badge>
                 <Controller
                   control={control}
@@ -1276,65 +1287,161 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid gap-5 sm:grid-cols-2">
-              <InputField label={t("settings.whatsapp.provider")} icon={Layers}>
-                <Input
-                  {...register("provider")}
-                  placeholder="Meta Cloud API"
-                  className="h-11 rounded-xl bg-background/60 font-medium"
-                />
-              </InputField>
-
-              <InputField label={t("settings.whatsapp.apiUrl")} icon={Globe}>
-                <Input
-                  {...register("apiUrl")}
-                  dir="ltr"
-                  placeholder="https://graph.facebook.com/v20.0"
-                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
-                />
-              </InputField>
-
               <div className="sm:col-span-2">
-                <InputField
-                  label={t("settings.whatsapp.apiKey")}
-                  icon={Key}
-                  hint={data?.hasApiKey ? (isRtl ? "مفتاح API الدائم محفوظ ومشفّر" : "Permanent API key encrypted") : undefined}
-                >
-                  <div className="relative">
-                    <Input
-                      type={showApiKey ? "text" : "password"}
-                      dir="ltr"
-                      placeholder={t("settings.whatsapp.apiKeyPlaceholder")}
-                      {...register("apiKey")}
-                      className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                <InputField label={t("settings.whatsapp.provider")} icon={Layers}>
+                  <Controller
+                    control={control}
+                    name="provider"
+                    render={({ field }) => (
+                      <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
+                        {[
+                          { value: "CALLMEBOT", label: isRtl ? "CallMeBot (مجاني)" : "CallMeBot (free)" },
+                          { value: "META", label: isRtl ? "واتساب الرسمي (Meta)" : "Official (Meta Cloud API)" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            aria-pressed={field.value === opt.value}
+                            onClick={() => field.onChange(opt.value)}
+                            className={cn(
+                              "h-9 rounded-lg text-xs font-bold transition-colors",
+                              field.value === opt.value
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  />
                 </InputField>
               </div>
 
-              <InputField label={t("settings.whatsapp.phoneNumberId")} icon={Phone}>
-                <Input
-                  {...register("phoneNumberId")}
-                  dir="ltr"
-                  placeholder="e.g. 104598124982341"
-                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
-                />
-              </InputField>
+              {isCallMeBot ? (
+                <>
+                  <div className="sm:col-span-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 text-xs leading-relaxed space-y-2">
+                    <p className="font-bold text-foreground">
+                      {isRtl ? "تفعيل CallMeBot (مرة واحدة لكل رقم):" : "Activate CallMeBot (once per number):"}
+                    </p>
+                    <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                      <li>
+                        {isRtl ? "أضف الرقم " : "Save "}
+                        <bdi dir="ltr" className="font-mono font-semibold text-foreground">+34 623 80 11 90</bdi>
+                        {isRtl ? " لجهات الاتصال" : " to your contacts"}
+                      </li>
+                      <li>
+                        {isRtl ? "ابعت له على واتساب: " : "Send it on WhatsApp: "}
+                        <bdi dir="ltr" className="font-mono font-semibold text-foreground">I allow callmebot to send me messages</bdi>
+                      </li>
+                      <li>{isRtl ? "هيرد عليك بمفتاح API، حطّه هنا مع رقمك." : "It replies with an API key — enter it here with your number."}</li>
+                    </ol>
+                    <p className="text-muted-foreground">
+                      {isRtl
+                        ? "الخدمة المجانية بتبعت التنبيهات للرقم اللي فعّل المفتاح بس. لو رقم التفعيل مش شغال، "
+                        : "The free API only delivers to the number that activated the key. If the activation number doesn't work, "}
+                      <a
+                        href="https://www.callmebot.com/blog/free-api-whatsapp-messages/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-emerald-600 dark:text-emerald-400 underline underline-offset-2"
+                      >
+                        {isRtl ? "شوف الرقم الحالي على موقعهم" : "check their site for the current one"}
+                      </a>
+                      .
+                    </p>
+                  </div>
 
-              <InputField label={t("settings.whatsapp.businessAccountId")} icon={Briefcase}>
-                <Input
-                  {...register("businessAccountId")}
-                  dir="ltr"
-                  placeholder="e.g. 981249823410459"
-                  className="h-11 rounded-xl bg-background/60 font-mono text-sm"
-                />
-              </InputField>
+                  <InputField label={isRtl ? "رقم الواتساب المفعّل" : "Activated WhatsApp number"} icon={Phone}>
+                    <Input
+                      {...register("phoneNumberId")}
+                      dir="ltr"
+                      placeholder="+9665XXXXXXXX"
+                      className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                    />
+                  </InputField>
+
+                  <InputField
+                    label={isRtl ? "مفتاح CallMeBot" : "CallMeBot API key"}
+                    icon={Key}
+                    hint={data?.hasApiKey ? (isRtl ? "المفتاح محفوظ ومشفّر" : "Key saved and encrypted") : undefined}
+                  >
+                    <div className="relative">
+                      <Input
+                        type={showApiKey ? "text" : "password"}
+                        dir="ltr"
+                        placeholder={data?.hasApiKey ? "••••••" : "1234567"}
+                        {...register("apiKey")}
+                        className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </InputField>
+                </>
+              ) : (
+                <>
+                  <div className="sm:col-span-2">
+                    <InputField label={t("settings.whatsapp.apiUrl")} icon={Globe}>
+                      <Input
+                        {...register("apiUrl")}
+                        dir="ltr"
+                        placeholder="https://graph.facebook.com/v20.0"
+                        className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                      />
+                    </InputField>
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <InputField
+                      label={t("settings.whatsapp.apiKey")}
+                      icon={Key}
+                      hint={data?.hasApiKey ? (isRtl ? "مفتاح API الدائم محفوظ ومشفّر" : "Permanent API key encrypted") : undefined}
+                    >
+                      <div className="relative">
+                        <Input
+                          type={showApiKey ? "text" : "password"}
+                          dir="ltr"
+                          placeholder={t("settings.whatsapp.apiKeyPlaceholder")}
+                          {...register("apiKey")}
+                          className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowApiKey(!showApiKey)}
+                          className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
+                        >
+                          {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </InputField>
+                  </div>
+
+                  <InputField label={t("settings.whatsapp.phoneNumberId")} icon={Phone}>
+                    <Input
+                      {...register("phoneNumberId")}
+                      dir="ltr"
+                      placeholder="e.g. 104598124982341"
+                      className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                    />
+                  </InputField>
+
+                  <InputField label={t("settings.whatsapp.businessAccountId")} icon={Briefcase}>
+                    <Input
+                      {...register("businessAccountId")}
+                      dir="ltr"
+                      placeholder="e.g. 981249823410459"
+                      className="h-11 rounded-xl bg-background/60 font-mono text-sm"
+                    />
+                  </InputField>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -1364,12 +1471,16 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                {isRtl ? "إرسال رسالة اختبار عبر واتساب كلاود" : "Send Trial Message via WhatsApp Cloud"}
+                {isRtl ? "إرسال رسالة اختبار عبر واتساب" : "Send a WhatsApp test message"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                {isRtl
-                  ? "أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية قالب الرسائل"
-                  : "Enter phone number with international country code to verify message template readiness"}
+                {isCallMeBot
+                  ? isRtl
+                    ? "احفظ الإعدادات الأول، وبعدين ابعت اختبار للرقم المفعّل"
+                    : "Save the settings first, then send a test to the activated number"
+                  : isRtl
+                    ? "أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية الإرسال"
+                    : "Enter a phone number with its country code to verify sending works"}
               </CardDescription>
             </div>
           </div>

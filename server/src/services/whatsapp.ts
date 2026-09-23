@@ -3,18 +3,27 @@ import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 
+export const CALLMEBOT_PROVIDER = "CALLMEBOT";
+const CALLMEBOT_API_URL = "https://api.callmebot.com/whatsapp.php";
+
 interface WhatsappConfig {
   enabled: boolean;
+  provider?: string;
   apiUrl?: string;
   apiKey?: string;
+  // Meta: the sending number's Phone Number ID. CallMeBot: the WhatsApp number
+  // that activated the key — its free API only delivers to that one number.
   phoneNumberId?: string;
 }
 
-async function getWhatsappConfig(): Promise<WhatsappConfig> {
+type SendResult = { sent: boolean; reason?: string };
+
+export async function getWhatsappConfig(): Promise<WhatsappConfig> {
   const row = await prisma.whatsappSettings.findUnique({ where: { id: 1 } });
   if (row?.enabled) {
     return {
       enabled: true,
+      provider: row.provider ?? undefined,
       apiUrl: row.apiUrl ?? undefined,
       apiKey: row.apiKeyEncrypted ? decryptSecret(row.apiKeyEncrypted) : undefined,
       phoneNumberId: row.phoneNumberId ?? undefined,
@@ -29,15 +38,20 @@ async function getWhatsappConfig(): Promise<WhatsappConfig> {
 }
 
 /**
- * Sends a WhatsApp message via the official WhatsApp Business (Cloud) API —
- * a plain HTTPS POST to the configured Business API endpoint, never
- * WhatsApp-Web automation (§23). No-ops safely until an administrator
- * configures real Meta Business credentials in Settings → WhatsApp.
+ * Sends a WhatsApp message through the configured provider: the official
+ * WhatsApp Business (Cloud) API, or CallMeBot's free personal-use API. Neither
+ * path automates WhatsApp Web (§23). No-ops safely until an administrator
+ * configures credentials in Settings → WhatsApp.
  */
-export async function sendWhatsapp(toPhoneE164: string, message: string): Promise<{ sent: boolean; reason?: string }> {
+export async function sendWhatsapp(toPhoneE164: string, message: string): Promise<SendResult> {
   const config = await getWhatsappConfig();
+  if (config.provider === CALLMEBOT_PROVIDER) return sendViaCallMeBot(config, toPhoneE164, message);
+  return sendViaMetaCloud(config, toPhoneE164, message);
+}
+
+async function sendViaMetaCloud(config: WhatsappConfig, to: string, message: string): Promise<SendResult> {
   if (!config.enabled || !config.apiUrl || !config.apiKey || !config.phoneNumberId) {
-    logger.warn({ to: toPhoneE164 }, "WhatsApp not configured — skipping send");
+    logger.warn({ to }, "WhatsApp not configured — skipping send");
     return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
   }
 
@@ -50,7 +64,7 @@ export async function sendWhatsapp(toPhoneE164: string, message: string): Promis
     },
     body: JSON.stringify({
       messaging_product: "whatsapp",
-      to: toPhoneE164,
+      to,
       type: "text",
       text: { body: message },
     }),
@@ -60,6 +74,26 @@ export async function sendWhatsapp(toPhoneE164: string, message: string): Promis
     const errorBody = await response.text();
     logger.error({ status: response.status, errorBody }, "WhatsApp send failed");
     return { sent: false, reason: `HTTP_${response.status}` };
+  }
+
+  return { sent: true };
+}
+
+async function sendViaCallMeBot(config: WhatsappConfig, to: string, message: string): Promise<SendResult> {
+  if (!config.enabled || !config.apiKey) {
+    logger.warn({ to }, "WhatsApp (CallMeBot) not configured — skipping send");
+    return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
+  }
+
+  const url = `${CALLMEBOT_API_URL}?${new URLSearchParams({ phone: to, text: message, apikey: config.apiKey })}`;
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+  const body = (await response.text()).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  // CallMeBot reports failures like an invalid key with a 2xx status (203) and
+  // the reason only in the body, so the status code alone can't be trusted.
+  if (response.status !== 200 || /invalid|error|not allowed|blocked|paused/i.test(body)) {
+    logger.error({ status: response.status, body }, "WhatsApp (CallMeBot) send failed");
+    return { sent: false, reason: body.slice(0, 200) || `HTTP_${response.status}` };
   }
 
   return { sent: true };

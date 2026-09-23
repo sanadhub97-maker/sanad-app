@@ -60,6 +60,12 @@ export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => 
     "— نظام SanaD لإدارة الوثائق والتراخيص",
   ].join("\n");
   const result = await sendWhatsapp(req.body.to, message);
-  if (!result.sent) throw ApiError.badRequest("WhatsApp is not configured yet — save Business API settings first.");
+  if (!result.sent) {
+    throw ApiError.badRequest(
+      result.reason === "WHATSAPP_NOT_CONFIGURED"
+        ? "WhatsApp is not configured yet — save the WhatsApp settings first."
+        : `WhatsApp send failed: ${result.reason}`
+    );
+  }
   res.json({ message: `Test WhatsApp message sent to ${req.body.to}.` });
 });
