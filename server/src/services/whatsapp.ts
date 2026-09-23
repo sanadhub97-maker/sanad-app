@@ -87,7 +87,10 @@ async function sendViaCallMeBot(config: WhatsappConfig, to: string, message: str
 
   const url = `${CALLMEBOT_API_URL}?${new URLSearchParams({ phone: to, text: message, apikey: config.apiKey })}`;
   const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
-  const body = (await response.text()).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const flatten = (s: string) => s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  // The response echoes the message back; drop it so words inside an alert
+  // can't be mistaken for an error below.
+  const body = flatten(await response.text()).replace(flatten(message), "");
 
   // CallMeBot reports failures like an invalid key with a 2xx status (203) and
   // the reason only in the body, so the status code alone can't be trusted.
