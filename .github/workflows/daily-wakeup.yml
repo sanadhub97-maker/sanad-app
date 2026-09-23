@@ -1,18 +1,19 @@
-name: Daily wake-up for expiration alerts
+name: Keep the server awake
 
-# Render's free tier puts the server to sleep when idle, and a sleeping server
-# can't run its daily expiration scan. Waking it once a day lets its on-boot
-# catch-up run the scan (a no-op if the scan already ran today).
+# Render's free tier puts the server to sleep after ~15 idle minutes, and the
+# next visitor then waits 30–60s for it to start. Pinging it every 10 minutes
+# keeps it awake (the free 750 instance-hours/month cover one service 24/7).
+# Waking also lets the server's on-boot catch-up run the daily expiration scan.
 on:
   schedule:
-    - cron: "5 6 * * *" # 06:05 UTC = 09:05 Riyadh
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
-  wake:
+  ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Wake the Render service
+      - name: Ping the Render service
         run: |
           curl -fsS --retry 6 --retry-delay 20 --retry-all-errors --max-time 120 \
             https://sanad-app-t7ja.onrender.com/api/health

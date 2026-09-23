@@ -72,8 +72,18 @@ export function createApp() {
   app.use("/api", routes);
 
   if (hasClientBuild) {
-    app.use(express.static(clientDistPath));
-    app.get(/^(?!\/api).*/, (_req, res) => res.sendFile(path.join(clientDistPath, "index.html")));
+    // Vite's build output in /assets has content hashes in its filenames, so a
+    // changed file always gets a new URL — safe to cache for a year. index.html
+    // must always be revalidated so visitors pick up new deploys.
+    app.use(
+      "/assets",
+      express.static(path.join(clientDistPath, "assets"), { maxAge: "365d", immutable: true, fallthrough: false })
+    );
+    app.use(express.static(clientDistPath, { maxAge: "1d", index: false }));
+    app.get(/^(?!\/api).*/, (_req, res) => {
+      res.setHeader("Cache-Control", "no-cache");
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
   }
 
   app.use(notFoundHandler);
