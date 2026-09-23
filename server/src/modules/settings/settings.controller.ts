@@ -4,6 +4,7 @@ import { ApiError } from "@/utils/apiError";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
+import { getBrandingContext } from "@/services/branding";
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.getCompanySettings() });
@@ -49,7 +50,16 @@ export const updateWhatsapp = asyncHandler(async (req: Request, res: Response) =
   res.json({ data: await service.updateWhatsappSettings(req.body), message: "WhatsApp settings saved." });
 });
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const result = await sendWhatsapp(req.body.to, "This is a test message from your SanaD Documents & Licenses Management System.");
+  const { company } = await getBrandingContext();
+  const companyName = company?.nameAr || company?.nameEn;
+  const message = [
+    `✅ *رسالة اختبار*${companyName ? ` — ${companyName}` : ""}`,
+    "",
+    "تم ربط نظام SanaD بنجاح بخدمة واتساب للأعمال، وسيصلك عليه تنبيهات انتهاء صلاحية الوثائق والإقامات تلقائيًا من الآن.",
+    "",
+    "— نظام SanaD لإدارة الوثائق والتراخيص",
+  ].join("\n");
+  const result = await sendWhatsapp(req.body.to, message);
   if (!result.sent) throw ApiError.badRequest("WhatsApp is not configured yet — save Business API settings first.");
   res.json({ message: `Test WhatsApp message sent to ${req.body.to}.` });
 });

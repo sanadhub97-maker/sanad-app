@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
+import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 
@@ -30,6 +31,39 @@ function messageFor(item: TrackableItem, threshold: string): string {
   return `${item.label} will expire in ${threshold} day${threshold === "1" ? "" : "s"}.`;
 }
 
+const SOURCE_TYPE_LABELS_AR: Record<TrackableItem["sourceType"], string> = {
+  EMPLOYEE_IQAMA: "الإقامة",
+  EMPLOYEE_PASSPORT: "جواز السفر",
+  EMPLOYEE_DOCUMENT: "مستند موظف",
+  COMPANY_DOCUMENT: "وثيقة مؤسسة",
+};
+
+function formatDateAr(d: Date): string {
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+/** A WhatsApp-specific message: branded, Arabic-first, and formatted for a
+ * chat bubble (WhatsApp's `*bold*` markup) — kept separate from messageFor()
+ * above, which still backs the in-app/email channels. */
+function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?: string | null): string {
+  const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType];
+  const subject = item.employeeName ? `${item.employeeName} — ${typeLabel}` : item.label;
+  const dateStr = formatDateAr(new Date(item.expiryDate));
+  const statusLine =
+    threshold === "expired" ? "⚠️ *منتهية الصلاحية*" : `⏳ *متبقٍ ${threshold} يوم على الانتهاء*`;
+
+  return [
+    `🔔 *تنبيه انتهاء صلاحية*${companyName ? ` — ${companyName}` : ""}`,
+    "",
+    `📌 ${subject}`,
+    `📅 تاريخ الانتهاء: ${dateStr}`,
+    statusLine,
+    "",
+    "يرجى المبادرة بالتجديد في أقرب وقت ممكن.",
+    "— نظام SanaD لإدارة الوثائق والتراخيص",
+  ].join("\n");
+}
+
 async function getRecipients() {
   return prisma.user.findMany({
     where: { deletedAt: null, isActive: true, userRoles: { some: { role: { name: { in: NOTIFY_ROLE_NAMES } } } } },
@@ -54,13 +88,15 @@ async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAP
 
 export async function runExpirationScan() {
   logger.info("Starting daily expiration scan");
-  const [items, rules, emailSettings, whatsappSettings, recipients] = await Promise.all([
+  const [items, rules, emailSettings, whatsappSettings, recipients, branding] = await Promise.all([
     getTrackableItems(),
     getExpirationRules(),
     prisma.emailSettings.findUnique({ where: { id: 1 } }),
     prisma.whatsappSettings.findUnique({ where: { id: 1 } }),
     getRecipients(),
+    getBrandingContext(),
   ]);
+  const companyName = branding.company?.nameAr || branding.company?.nameEn;
 
   let dueCount = 0;
 
@@ -96,10 +132,11 @@ export async function runExpirationScan() {
     }
 
     if (whatsappSettings?.enabled) {
+      const whatsappMessage = whatsappMessageFor(item, threshold, companyName);
       for (const recipient of recipients) {
         if (!recipient.phone) continue;
         await logOnce(`${dedupeBase}:WHATSAPP:${recipient.id}`, "WHATSAPP", async () => {
-          await sendWhatsapp(recipient.phone!, message);
+          await sendWhatsapp(recipient.phone!, whatsappMessage);
         });
       }
     }
