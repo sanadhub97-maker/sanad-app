@@ -19,7 +19,7 @@ Command.displayName = CommandPrimitive.displayName;
 function CommandDialog({ children, ...props }: React.ComponentProps<typeof Dialog>) {
   return (
     <Dialog {...props}>
-      <DialogContent className="overflow-hidden p-0 max-w-lg top-24 translate-y-0 rounded-3xl border border-border/80 bg-card/95 backdrop-blur-2xl shadow-2xl specular-border">
+      <DialogContent className="overflow-hidden p-0 max-w-lg top-24 translate-y-0 rounded-3xl border border-border/80 bg-card/95 backdrop-blur-2xl shadow-2xl">
         <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-extrabold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground/80">
           {children}
         </Command>

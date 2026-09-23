@@ -195,7 +195,7 @@
   }
 
   /* Specular Micro-Border Top Highlight */
-  .specular-border {
+  .specular-border:not(.fixed):not(.absolute) {
     position: relative;
   }
   .specular-border::before {
