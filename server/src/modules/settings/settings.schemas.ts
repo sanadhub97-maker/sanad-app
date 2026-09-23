@@ -39,22 +39,22 @@ export const expirationRulesSchema = z.object({
 
 export const emailSettingsSchema = z.object({
   enabled: z.boolean(),
-  host: z.string().max(200).optional(),
-  port: z.number().int().min(1).max(65535).optional(),
+  host: emptyToUndefined(z.string().max(200).optional()),
+  port: emptyToUndefined(z.number().int().min(1).max(65535).optional()),
   secure: z.boolean().default(true),
-  username: z.string().max(200).optional(),
-  password: z.string().max(500).optional(), // omitted => keep existing secret
-  fromName: z.string().max(150).optional(),
-  fromEmail: z.string().email().optional().or(z.literal("")),
+  username: emptyToUndefined(z.string().max(200).optional()),
+  password: emptyToUndefined(z.string().max(500).optional()), // omitted => keep existing secret
+  fromName: emptyToUndefined(z.string().max(150).optional()),
+  fromEmail: emptyToUndefined(z.string().email().optional()),
 });
 
 export const whatsappSettingsSchema = z.object({
   enabled: z.boolean(),
-  provider: z.string().max(100).optional(),
-  apiUrl: z.string().max(300).optional(),
-  apiKey: z.string().max(500).optional(), // omitted => keep existing secret
-  phoneNumberId: z.string().max(100).optional(),
-  businessAccountId: z.string().max(100).optional(),
+  provider: emptyToUndefined(z.string().max(100).optional()),
+  apiUrl: emptyToUndefined(z.string().max(300).optional()),
+  apiKey: emptyToUndefined(z.string().max(500).optional()), // omitted => keep existing secret
+  phoneNumberId: emptyToUndefined(z.string().max(100).optional()),
+  businessAccountId: emptyToUndefined(z.string().max(100).optional()),
 });
 
 const phoneSchema = z
