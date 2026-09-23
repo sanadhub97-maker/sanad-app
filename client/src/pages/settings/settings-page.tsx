@@ -1438,15 +1438,15 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         </div>
       </form>
 
-      {isWhatsappWeb && data.provider === "WHATSAPP_WEB" && data.enabled && (
-        <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} />
+      {isWhatsappWeb && (
+        <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} saved={data.provider === "WHATSAPP_WEB" && data.enabled} />
       )}
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
     </div>
   );
 }
 
-function WhatsappWebLinkCard({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
+function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRtl: boolean; saved: boolean }) {
   const queryClient = useQueryClient();
   const { data: status } = useQuery({
     queryKey: ["settings", "whatsapp", "web-status"],
@@ -1534,16 +1534,20 @@ function WhatsappWebLinkCard({ canEdit, isRtl }: { canEdit: boolean; isRtl: bool
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {status?.lastError
-                ? status.lastError
-                : isRtl
-                  ? "مفيش رقم مربوط. اضغط ربط عشان يظهر كود QR تمسحه من الموبايل."
-                  : "No number linked. Click Link to show a QR code to scan."}
+            <p className={cn("text-sm", saved ? "text-muted-foreground" : "font-semibold text-amber-600 dark:text-amber-400")}>
+              {!saved
+                ? isRtl
+                  ? "فعّل الخاصية واضغط «حفظ» فوق الأول، وبعدين اضغط ربط رقم."
+                  : "Enable the feature and click Save above first, then Link a number."
+                : status?.lastError
+                  ? status.lastError
+                  : isRtl
+                    ? "مفيش رقم مربوط. اضغط ربط عشان يظهر كود QR تمسحه من الموبايل."
+                    : "No number linked. Click Link to show a QR code to scan."}
             </p>
             <Button
               type="button"
-              disabled={!canEdit || connect.isPending}
+              disabled={!canEdit || !saved || connect.isPending}
               onClick={() => connect.mutate()}
               className="rounded-xl h-10 px-6 bg-primary text-primary-foreground font-black text-xs"
             >
