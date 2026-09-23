@@ -45,6 +45,7 @@ import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
+import { EmptyState } from "@/components/common/empty-state";
 
 const STATUS_COLORS: Record<string, string> = {
   VALID: "#10B981",
@@ -580,31 +581,39 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="h-72 pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={charts?.documentsByStatus ?? []}
-                  dataKey="count"
-                  nameKey="status"
-                  innerRadius={65}
-                  outerRadius={95}
-                  paddingAngle={4}
-                >
-                  {(charts?.documentsByStatus ?? []).map((entry) => (
-                    <Cell
-                      key={entry.status}
-                      fill={STATUS_COLORS[entry.status] ?? "#3B82F6"}
-                      stroke="transparent"
-                    />
-                  ))}
-                </Pie>
-                <RechartsTooltip content={<CustomChartTooltip />} />
-                <Legend
-                  formatter={(val) => t(`status.${val}`, { defaultValue: val })}
-                  wrapperStyle={{ fontSize: 11, paddingTop: 10 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {(charts?.documentsByStatus ?? []).some((d) => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={charts?.documentsByStatus ?? []}
+                    dataKey="count"
+                    nameKey="status"
+                    innerRadius={65}
+                    outerRadius={95}
+                    paddingAngle={4}
+                  >
+                    {(charts?.documentsByStatus ?? []).map((entry) => (
+                      <Cell
+                        key={entry.status}
+                        fill={STATUS_COLORS[entry.status] ?? "#3B82F6"}
+                        stroke="transparent"
+                      />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip content={<CustomChartTooltip />} />
+                  <Legend
+                    formatter={(val) => t(`status.${val}`, { defaultValue: val })}
+                    wrapperStyle={{ fontSize: 11, paddingTop: 10 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState
+                icon={FileText}
+                title={isAr ? "لا توجد وثائق بعد" : "No documents yet"}
+                className="h-full border-none bg-transparent py-0"
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -620,28 +629,36 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="h-72 pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={charts?.employeesByStatus ?? []}>
-                <defs>
-                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop stopColor="#3B82F6" stopOpacity={0.9} />
-                    <stop offset="1" stopColor="#1D4ED8" stopOpacity={0.6} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.15} />
-                <XAxis
-                  dataKey="status"
-                  tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }}
-                  tickFormatter={(val) => t(`status.${val}`, { defaultValue: val })}
-                />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }} />
-                <RechartsTooltip
-                  content={<CustomChartTooltip />}
-                  labelFormatter={(val) => t(`status.${val}`, { defaultValue: val })}
-                />
-                <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {(charts?.employeesByStatus ?? []).some((d) => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={charts?.employeesByStatus ?? []}>
+                  <defs>
+                    <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop stopColor="#3B82F6" stopOpacity={0.9} />
+                      <stop offset="1" stopColor="#1D4ED8" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.15} />
+                  <XAxis
+                    dataKey="status"
+                    tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }}
+                    tickFormatter={(val) => t(`status.${val}`, { defaultValue: val })}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }} />
+                  <RechartsTooltip
+                    content={<CustomChartTooltip />}
+                    labelFormatter={(val) => t(`status.${val}`, { defaultValue: val })}
+                  />
+                  <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState
+                icon={Users}
+                title={isAr ? "لا يوجد موظفون بعد" : "No employees yet"}
+                className="h-full border-none bg-transparent py-0"
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -657,21 +674,29 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="h-72 pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={charts?.paymentsByCategory ?? []} layout="vertical" margin={{ left: 15, right: 15 }}>
-                <defs>
-                  <linearGradient id="catGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop stopColor="#4F46E5" stopOpacity={0.9} />
-                    <stop offset="1" stopColor="#06B6D4" stopOpacity={0.7} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.15} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <YAxis dataKey="category" type="category" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.7 }} width={100} />
-                <RechartsTooltip content={<CustomChartTooltip formatter={(v: number) => formatCurrency(v)} />} />
-                <Bar dataKey="total" fill="url(#catGrad)" radius={[0, 8, 8, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {(charts?.paymentsByCategory ?? []).some((d) => d.total > 0) ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={charts?.paymentsByCategory ?? []} layout="vertical" margin={{ left: 15, right: 15 }}>
+                  <defs>
+                    <linearGradient id="catGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop stopColor="#4F46E5" stopOpacity={0.9} />
+                      <stop offset="1" stopColor="#06B6D4" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.15} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <YAxis dataKey="category" type="category" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.7 }} width={100} />
+                  <RechartsTooltip content={<CustomChartTooltip formatter={(v: number) => formatCurrency(v)} />} />
+                  <Bar dataKey="total" fill="url(#catGrad)" radius={[0, 8, 8, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyState
+                icon={Wallet}
+                title={isAr ? "لا توجد مدفوعات بعد" : "No payments yet"}
+                className="h-full border-none bg-transparent py-0"
+              />
+            )}
           </CardContent>
         </Card>
       </div>

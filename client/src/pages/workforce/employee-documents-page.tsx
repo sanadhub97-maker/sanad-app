@@ -561,7 +561,7 @@ export default function EmployeeDocumentsPage() {
                   <SelectItem value="ALL">{isAr ? "جميع الفروع" : "All Branches"}</SelectItem>
                   {branches.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.name}
+                      <bdi>{b.name}</bdi>
                     </SelectItem>
                   ))}
                 </SelectContent>

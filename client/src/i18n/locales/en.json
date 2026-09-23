@@ -203,6 +203,7 @@
       "jobTitle": "Job Title",
       "department": "Department",
       "branch": "Establishment",
+      "branchId": "Establishment",
       "selectBranch": "Select establishment",
       "joiningDate": "Joining Date",
       "employmentStatus": "Employment Status",

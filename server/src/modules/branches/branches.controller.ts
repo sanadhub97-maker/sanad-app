@@ -22,15 +22,15 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   const branch = await service.create(req.body);
-  res.status(201).json({ data: branch, message: "Branch created successfully." });
+  res.status(201).json({ data: branch });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
   const branch = await service.update(req.params.id, req.body);
-  res.json({ data: branch, message: "Branch updated successfully." });
+  res.json({ data: branch });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   await service.softDelete(req.params.id);
-  res.json({ message: "Branch deleted successfully." });
+  res.json({});
 });

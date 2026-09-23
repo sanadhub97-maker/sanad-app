@@ -272,7 +272,7 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
                       <SelectContent className="rounded-xl shadow-xl">
                         {(branches ?? []).map((b) => (
                           <SelectItem key={b.id} value={b.id}>
-                            {b.name}
+                            <bdi>{b.name}</bdi>
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -203,6 +203,7 @@
       "jobTitle": "المسمى الوظيفي",
       "department": "القسم",
       "branch": "المؤسسة",
+      "branchId": "المؤسسة",
       "selectBranch": "اختر المؤسسة",
       "joiningDate": "تاريخ الالتحاق",
       "employmentStatus": "حالة التوظيف",

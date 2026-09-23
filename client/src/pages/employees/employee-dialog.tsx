@@ -492,7 +492,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                       <SelectContent className="rounded-xl border-border shadow-xl">
                         {branches?.map((b) => (
                           <SelectItem key={b.id} value={b.id} className="rounded-lg font-medium cursor-pointer">
-                            {b.name}
+                            <bdi>{b.name}</bdi>
                           </SelectItem>
                         ))}
                       </SelectContent>
