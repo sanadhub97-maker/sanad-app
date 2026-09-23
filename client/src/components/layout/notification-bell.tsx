@@ -36,14 +36,14 @@ export function NotificationBell() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className="relative h-9 w-9 rounded-xl border-border/70 bg-background/60 text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+          className="relative h-8 w-8 rounded-lg text-muted-foreground hover:bg-background hover:text-foreground dark:hover:bg-white/[0.08] transition-colors"
           title={isAr ? "الإشعارات" : "Notifications"}
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-sm shadow-rose-600/50 ring-2 ring-background animate-in zoom-in-50">
+            <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white ring-2 ring-card animate-in zoom-in-50">
               {unread > 9 ? "9+" : unread}
             </span>
           )}

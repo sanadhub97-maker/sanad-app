@@ -84,9 +84,9 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 sm:gap-3 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-3 sm:px-5 backdrop-blur-2xl transition-colors specular-border shadow-xs">
-      {/* 1. Leading Section: Mobile Toggle + Company Badge + Divider + Quick Search */}
-      <div className="flex items-center gap-2 sm:gap-2.5 shrink min-w-0">
+    <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 lg:gap-6 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-3 sm:px-6 backdrop-blur-2xl transition-colors">
+      {/* Start: menu (mobile) + company identity */}
+      <div className="flex items-center gap-2 min-w-0">
         <Button
           variant="ghost"
           size="icon"
@@ -95,73 +95,62 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         >
           <Menu className="h-5 w-5" />
         </Button>
-
         <CompanyBadge isDark={isDark} />
+      </div>
 
-        <div className="h-5 w-px bg-border/70 dark:bg-white/10 hidden sm:block shrink-0" />
-
-        {/* Global Search Bar */}
-        <div className="w-32 sm:w-44 md:w-52 lg:w-56 shrink min-w-[110px]">
+      {/* Middle: search takes the free space */}
+      <div className="flex justify-center min-w-0">
+        <div className="w-full min-w-0 sm:min-w-[150px] max-w-xl">
           <GlobalSearch />
         </div>
       </div>
 
-      {/* 2. Center Section: Executive Live Calendar & Digital Clock */}
-      <div className="flex items-center justify-center shrink-0 mx-1 sm:mx-2">
-        <LiveCalendarClock />
-      </div>
+      {/* End: date & time, quick actions, account */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="hidden xl:block">
+          <LiveCalendarClock />
+        </div>
 
-      {/* 3. Trailing Section: Language + Theme + Notifications + User Menu */}
-      <div className="ms-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
-        {/* Language Switcher Pill */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleLanguage}
-          className="h-9 gap-1.5 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] px-2.5 sm:px-3 text-xs font-bold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all active:scale-95 shadow-2xs"
-          title={isAr ? "Switch to English" : "التحويل إلى العربية"}
-        >
-          <Globe className="h-3.5 w-3.5 text-blue-500" />
-          <span>{isAr ? "EN" : "عربي"}</span>
-        </Button>
+        <div className="flex items-center gap-0.5 rounded-xl border border-border/70 bg-muted/40 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleLanguage}
+            className="h-8 gap-1.5 rounded-lg px-2 sm:px-2.5 text-xs font-bold text-muted-foreground hover:bg-background hover:text-foreground dark:hover:bg-white/[0.08]"
+            title={isAr ? "Switch to English" : "التحويل إلى العربية"}
+          >
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">{isAr ? "EN" : "عربي"}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleTheme}
+            className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-background hover:text-foreground dark:hover:bg-white/[0.08]"
+            title={isDark ? (isAr ? "التبديل إلى الوضع النهاري" : "Switch to Light Mode") : (isAr ? "التبديل إلى الوضع الليلي" : "Switch to Dark Mode")}
+          >
+            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <NotificationBell />
+        </div>
 
-        {/* Theme Mode Toggle */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleToggleTheme}
-          className="h-9 w-9 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-200 active:scale-95 shadow-2xs"
-          title={isDark ? (isAr ? "التبديل إلى الوضع النهاري" : "Switch to Light Mode") : (isAr ? "التبديل إلى الوضع الليلي" : "Switch to Dark Mode")}
-        >
-          {isDark ? (
-            <Sun className="h-4 w-4 text-amber-400 transition-transform duration-200 hover:rotate-45" />
-          ) : (
-            <Moon className="h-4 w-4 text-indigo-500 transition-transform duration-200 hover:-rotate-12" />
-          )}
-        </Button>
-
-        {/* Notification Bell */}
-        <NotificationBell />
-
-        <div className="h-5 w-px bg-border/70 dark:bg-white/10 mx-0.5 sm:mx-1 hidden sm:block shrink-0" />
-
-        {/* User Dropdown */}
+        {/* Account */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2.5 rounded-xl p-1.5 transition-colors hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-primary/20">
-              <div className="relative">
-                <Avatar className="h-8 w-8 rounded-xl border border-primary/30 shadow-xs">
-                  <AvatarFallback className="bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-700 text-xs font-black text-white">
+            <button className="flex items-center gap-2.5 rounded-xl py-1 ps-1 pe-2 transition-colors hover:bg-muted/70 dark:hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+              <div className="relative shrink-0">
+                <Avatar className="h-9 w-9 rounded-xl">
+                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-xs font-black text-white">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background" />
+                <span className="absolute -bottom-0.5 -end-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
               </div>
-              <div className="hidden text-start md:block">
-                <p className="text-xs font-bold leading-tight text-foreground">{user?.fullName}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{primaryRole}</p>
+              <div className="hidden text-start lg:block leading-tight">
+                <p className="max-w-[140px] truncate text-[13px] font-bold text-foreground">{user?.fullName}</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{primaryRole}</p>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" />
+              <ChevronDown className="hidden h-4 w-4 text-muted-foreground lg:block" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-luxury border border-border/80 bg-background/95 backdrop-blur-xl">

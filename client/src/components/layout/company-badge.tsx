@@ -20,34 +20,31 @@ export function CompanyBadge({ isDark }: { isDark: boolean }) {
   if (!name && !logoId) return null;
 
   return (
-    <div className="flex items-center gap-2.5 min-w-0 shrink-0">
+    <div className="flex items-center gap-3 min-w-0">
       {logoId ? (
-        <div className="flex h-9 items-center justify-center rounded-xl bg-card/60 dark:bg-white/[0.04] p-1 border border-border/60 dark:border-white/10 shadow-2xs">
+        <div className="flex h-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-white px-1.5 dark:border-white/10 dark:bg-white/[0.06]">
           <img
             key={logoId}
             src={filesApi.getPublicUrl(logoId)}
             alt={name ?? ""}
-            className="h-7 w-auto max-w-[120px] object-contain"
+            className="h-8 w-auto min-w-8 max-w-[116px] object-contain"
             onError={(e) => {
               e.currentTarget.style.display = "none";
             }}
           />
         </div>
       ) : (
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-primary shrink-0">
-          <Building2 className="h-4 w-4" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+          <Building2 className="h-5 w-5" />
         </div>
       )}
       {name && (
-        <div className="hidden md:flex flex-col min-w-0">
-          <span
-            className="text-xs sm:text-sm font-extrabold text-foreground truncate max-w-[200px] lg:max-w-[260px] xl:max-w-[320px] leading-tight"
-            title={name}
-          >
+        <div className="hidden xl:flex flex-col min-w-0 leading-tight">
+          <span className="truncate text-[14px] font-extrabold text-foreground max-w-[180px] lg:max-w-[240px] 2xl:max-w-[320px]" title={name}>
             {name}
           </span>
-          <span className="text-[10px] font-semibold text-muted-foreground truncate">
-            {isAr ? "المنشأة المعتمدة" : "Active Organization"}
+          <span className="truncate text-[11px] font-medium text-muted-foreground">
+            {isAr ? "المنشأة المعتمدة" : "Active organization"}
           </span>
         </div>
       )}

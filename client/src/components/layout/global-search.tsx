@@ -56,22 +56,19 @@ export function GlobalSearch() {
     <>
       <Button
         variant="outline"
-        className="group relative h-9 w-full max-w-sm justify-start rounded-xl border-border/70 bg-background/60 px-3 text-xs text-muted-foreground shadow-sm hover:border-primary/40 hover:bg-background hover:text-foreground transition-all duration-200"
+        className="group relative h-10 w-full justify-start gap-2.5 rounded-xl border-border/60 bg-muted/40 dark:bg-white/[0.04] px-3.5 text-[13px] font-medium text-muted-foreground shadow-none hover:border-primary/40 hover:bg-background hover:text-foreground transition-all duration-200"
         onClick={() => setOpen(true)}
       >
-        <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors me-2 shrink-0" />
-        <span className="truncate hidden xl:inline">
-          {isAr ? "البحث السريع (موظف، إقامة...)" : "Quick search (employees, docs...)"}
+        <Search className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+        <span className="truncate">
+          {isAr ? "ابحث عن موظف، إقامة، مستند..." : "Search employees, iqamas, documents..."}
         </span>
-        <span className="truncate hidden sm:inline xl:hidden">
-          {isAr ? "البحث السريع..." : "Quick search..."}
-        </span>
-        <span className="sm:hidden">{isAr ? "بحث..." : "Search..."}</span>
-        <div className="ms-auto flex items-center gap-0.5">
-          <kbd className="hidden rounded-md border border-border/80 bg-muted/80 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground sm:inline-block shadow-[0_1px_1px_rgba(0,0,0,0.05)]">
-            Ctrl K
-          </kbd>
-        </div>
+        <kbd
+          dir="ltr"
+          className="ms-auto hidden rounded-md border border-border/80 bg-background px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground sm:inline-block"
+        >
+          Ctrl K
+        </kbd>
       </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>

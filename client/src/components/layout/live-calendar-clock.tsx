@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Moon, Clock, Sparkles, Globe2, CheckCircle2 } from "lucide-react";
+import { Calendar, Moon, Clock, Globe2, CheckCircle2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -84,73 +84,29 @@ export function LiveCalendarClock() {
         <button
           type="button"
           className={cn(
-            "group relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-2xl",
-            "bg-card/80 dark:bg-card/50 hover:bg-card/95 dark:hover:bg-card/80",
-            "backdrop-blur-xl border border-border/80 dark:border-white/10",
-            "shadow-2xs hover:shadow-xs hover:border-primary/40",
-            "transition-all duration-200 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+            "group flex h-10 items-center gap-3 rounded-xl px-3",
+            "border border-transparent hover:border-border/70 hover:bg-muted/50 dark:hover:bg-white/[0.04]",
+            "transition-colors cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
           )}
           title={isAr ? "عرض تفاصيل التقويم والتوقيت" : "View calendar & clock details"}
         >
-          {/* Subtle Ambient Hover Sheen */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-indigo-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          {/* Dates: day + Hijri on top, Gregorian underneath */}
+          <div className="hidden 2xl:flex flex-col items-end leading-tight text-end">
+            <span className="text-[12px] font-bold text-foreground whitespace-nowrap">
+              {dayName} <span className="text-muted-foreground/60 mx-0.5">·</span> {hijriDate}
+            </span>
+            <span className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">{gregDate}</span>
+          </div>
 
-          {/* 1. Day of the Week Badge */}
-          <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold text-[11px] leading-tight border border-emerald-500/20 shrink-0">
-            <Sparkles className="h-3 w-3 text-emerald-500" />
-            <span>{dayName}</span>
+          <span className="hidden 2xl:block h-7 w-px bg-border/80 dark:bg-white/10" />
+
+          {/* Time — isolated as LTR so hh:mm never reorders inside the RTL header */}
+          <span dir="ltr" className="flex items-baseline gap-1 whitespace-nowrap">
+            <span className="font-mono text-[15px] font-bold tracking-tight text-foreground tabular-nums">
+              {formattedTime.hours}:{formattedTime.minutes}
+            </span>
+            <span className="text-[11px] font-bold text-muted-foreground">{amPmText}</span>
           </span>
-
-          {/* 2. Hijri Date */}
-          <div className="hidden md:flex items-center gap-1 text-[11px] font-bold text-foreground/90 shrink-0">
-            <Moon className="h-3 w-3 text-amber-500 shrink-0" />
-            <span>{hijriDate}</span>
-          </div>
-
-          {/* Micro Divider */}
-          <span className="hidden lg:inline-block h-3 w-px bg-border/80 dark:bg-white/15" />
-
-          {/* 3. Gregorian Date */}
-          <div className="hidden lg:flex items-center gap-1 text-[11px] font-semibold text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
-            <Calendar className="h-3 w-3 text-blue-500 shrink-0" />
-            <span>{gregDate}</span>
-          </div>
-
-          {/* Divider before Clock */}
-          <span className="hidden sm:inline-block h-3.5 w-px bg-border/80 dark:bg-white/15 shrink-0" />
-
-          {/* 4. Live Digital Clock Capsule */}
-          <div className="flex items-center gap-1 bg-background/80 dark:bg-black/35 px-2 py-0.5 rounded-xl border border-border/70 dark:border-white/10 shadow-2xs font-mono shrink-0">
-            {/* Live Green Pulsing Beacon */}
-            <span className="relative flex h-2 w-2 me-0.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-
-            {/* Hours */}
-            <span className="font-mono font-black text-xs text-foreground tracking-tight tabular-nums">
-              {formattedTime.hours}
-            </span>
-
-            {/* Pulsing Colon */}
-            <span className="animate-pulse text-primary font-black text-xs -mx-0.5 select-none">:</span>
-
-            {/* Minutes */}
-            <span className="font-mono font-black text-xs text-foreground tracking-tight tabular-nums">
-              {formattedTime.minutes}
-            </span>
-
-            {/* Secondary Colon & Seconds */}
-            <span className="hidden sm:inline-block animate-pulse text-primary/70 font-bold text-[10px] -mx-0.5 select-none">:</span>
-            <span className="hidden sm:inline-block font-mono font-extrabold text-[10px] text-primary tabular-nums">
-              {formattedTime.seconds}
-            </span>
-
-            {/* AM / PM Badge */}
-            <span className="text-[10px] font-black text-muted-foreground ms-0.5 uppercase select-none">
-              {amPmText}
-            </span>
-          </div>
         </button>
       </PopoverTrigger>
 
@@ -183,7 +139,7 @@ export function LiveCalendarClock() {
 
         {/* Big Live Digital Clock Display */}
         <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-muted/40 dark:bg-white/[0.03] border border-border/60">
-          <div className="flex items-baseline gap-1 font-mono">
+          <div dir="ltr" className="flex items-baseline gap-1 font-mono">
             <span className="text-2xl sm:text-3xl font-black text-foreground tracking-tight tabular-nums">
               {formattedTime.hours}
             </span>
