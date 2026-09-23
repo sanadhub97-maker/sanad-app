@@ -47,7 +47,7 @@ type FormValues = z.infer<typeof schema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  docType: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET";
+  docType?: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET";
   document?: WorkforceDocumentItem | null;
   queryKey: string;
   onSuccess?: () => void;
@@ -116,7 +116,23 @@ export function WorkforceDocumentDialog({
   const isAr = i18n.language === "ar";
   const queryClient = useQueryClient();
   const isEdit = Boolean(document);
-  const cfg = TYPE_CONFIG[docType];
+
+  const [selectedType, setSelectedType] = useState<keyof typeof TYPE_CONFIG>(
+    docType && TYPE_CONFIG[docType] ? docType : "IQAMA"
+  );
+
+  useEffect(() => {
+    if (document) {
+      const detected = (document.type as keyof typeof TYPE_CONFIG) || (document.iqamaNumber ? "IQAMA" : "PASSPORT");
+      if (TYPE_CONFIG[detected]) {
+        setSelectedType(detected);
+      }
+    } else if (docType && TYPE_CONFIG[docType]) {
+      setSelectedType(docType);
+    }
+  }, [document, docType, open]);
+
+  const cfg = TYPE_CONFIG[selectedType] || TYPE_CONFIG.IQAMA;
 
   const [employeeSearch, setEmployeeSearch] = useState("");
 
@@ -207,7 +223,7 @@ export function WorkforceDocumentDialog({
       } else {
         await workforceDocumentsApi.create({
           employeeId: values.employeeId,
-          type: docType,
+          type: selectedType,
           documentNumber: values.documentNumber,
           issuingAuthority: values.issuingAuthority || undefined,
           issueDate: values.issueDate || undefined,
@@ -251,6 +267,39 @@ export function WorkforceDocumentDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-2">
+          {/* Document Type Selector (when adding new) */}
+          {!isEdit && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground">
+                {isAr ? "نوع الوثيقة" : "Document Type"} <span className="text-destructive">*</span>
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {(Object.keys(TYPE_CONFIG) as (keyof typeof TYPE_CONFIG)[]).map((tKey) => {
+                  const itemCfg = TYPE_CONFIG[tKey];
+                  const isSelected = selectedType === tKey;
+                  const ItemIcon = itemCfg.icon;
+                  return (
+                    <button
+                      key={tKey}
+                      type="button"
+                      onClick={() => setSelectedType(tKey)}
+                      className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                          : "border-border/60 bg-card/60 hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <ItemIcon className="h-4 w-4 mb-1" />
+                      <span className="text-[11px] leading-tight truncate w-full">
+                        {t(itemCfg.titleKey)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Employee Selection */}
           {isEdit && document ? (
             <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-3.5">

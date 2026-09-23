@@ -8,6 +8,7 @@
     "financeSection": "المالية والبيانات",
     "systemSection": "إدارة النظام",
     "employees": "الموظفون",
+    "employeeDocuments": "مستندات الموظفون",
     "iqamas": "الإقامات",
     "passports": "جوازات السفر",
     "healthCertificates": "الشهادات الصحية",
@@ -344,6 +345,36 @@
       "expiryDate": "تاريخ الانتهاء",
       "attachment": "المرفق",
       "notes": "ملاحظات"
+    }
+  },
+  "employeeDocuments": {
+    "title": "مستندات الموظفون",
+    "subtitle": "إدارة ومتابعة كافة وثائق القوى العاملة (الإقامات، جوازات السفر، الشهادات الصحية، التأمين الطبي، التأشيرات، وتذاكر الطيران).",
+    "addDocument": "إضافة وثيقة موظف",
+    "editDocument": "تعديل الوثيقة",
+    "emptyTitle": "لم يتم العثور على أي وثائق مسجلة",
+    "emptyDescription": "لا توجد وثائق للموظفين تطابق معايير البحث أو التصفية المحددة.",
+    "deleteConfirmTitle": "تأكيد حذف الوثيقة؟",
+    "deleteConfirmBody": "هل أنت متأكد من رغبتك في حذف هذا المستند من سجلات الموظف؟",
+    "table": {
+      "employee": "الموظف",
+      "documentType": "نوع الوثيقة",
+      "documentNumber": "رقم الوثيقة",
+      "authority": "الجهة / الدولة",
+      "expiryDate": "تاريخ الانتهاء",
+      "status": "الحالة",
+      "remaining": "المدة المتبقية"
+    },
+    "filters": {
+      "allCategories": "جميع مستندات الموظفين"
+    },
+    "categories": {
+      "IQAMA": "الإقامات",
+      "PASSPORT": "جوازات السفر",
+      "HEALTH_CERTIFICATE": "الشهادات الصحية",
+      "MEDICAL_INSURANCE": "التأمين الطبي",
+      "VISA": "التأشيرات",
+      "FLIGHT_TICKET": "تذاكر الطيران"
     }
   },
   "payments": {

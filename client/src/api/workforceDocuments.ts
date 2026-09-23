@@ -55,9 +55,16 @@ export interface WorkforceQueryParams {
   q?: string;
   branchId?: string;
   status?: string;
+  category?: string;
 }
 
 export const workforceDocumentsApi = {
+  listUnified: async (params: WorkforceQueryParams = {}) =>
+    (await api.get<WorkforceListResponse>("/workforce-documents", { params })).data,
+
+  categoryCounts: async () =>
+    (await api.get<{ data: Record<string, number> }>("/workforce-documents/category-counts")).data.data,
+
   getIqamas: async (params: WorkforceQueryParams = {}) =>
     (await api.get<WorkforceListResponse>("/workforce-documents/iqamas", { params })).data,
 

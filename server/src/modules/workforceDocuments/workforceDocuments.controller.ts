@@ -81,6 +81,24 @@ export async function getOverviewStats(_req: Request, res: Response, next: NextF
   }
 }
 
+export async function listAllDocuments(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.listAllWorkforceDocuments(req.query as any);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getCategoryCounts(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const counts = await service.getWorkforceCategoryCounts();
+    res.json({ data: counts });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function createDoc(req: Request, res: Response, next: NextFunction) {
   try {
     const doc = await service.createDocument(req.body);
@@ -107,4 +125,5 @@ export async function removeDoc(req: Request, res: Response, next: NextFunction)
     next(err);
   }
 }
+
 

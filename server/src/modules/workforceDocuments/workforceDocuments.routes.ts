@@ -15,6 +15,8 @@ import {
 const router = Router();
 router.use(requireAuth);
 
+router.get("/", requirePermission("employees.view"), validate({ query: listWorkforceQuerySchema }), controller.listAllDocuments);
+router.get("/category-counts", requirePermission("employees.view"), controller.getCategoryCounts);
 router.get("/iqamas", requirePermission("employees.view"), validate({ query: listWorkforceQuerySchema }), controller.getIqamas);
 router.get("/passports", requirePermission("employees.view"), validate({ query: listWorkforceQuerySchema }), controller.getPassports);
 router.get("/health-certificates", requirePermission("employees.view"), validate({ query: listWorkforceQuerySchema }), controller.getHealthCertificates);

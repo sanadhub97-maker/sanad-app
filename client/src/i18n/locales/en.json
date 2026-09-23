@@ -8,6 +8,7 @@
     "financeSection": "Finance & Analytics",
     "systemSection": "Administration",
     "employees": "Employees",
+    "employeeDocuments": "Employee Documents",
     "iqamas": "Iqamas",
     "passports": "Passports",
     "healthCertificates": "Health Certificates",
@@ -344,6 +345,36 @@
       "expiryDate": "Expiry Date",
       "attachment": "Attachment",
       "notes": "Notes"
+    }
+  },
+  "employeeDocuments": {
+    "title": "Employee Documents",
+    "subtitle": "Manage and track all workforce credentials (Iqamas, Passports, Health Certificates, Insurance, Visas, and Tickets).",
+    "addDocument": "Add Employee Document",
+    "editDocument": "Edit Document",
+    "emptyTitle": "No employee documents found",
+    "emptyDescription": "No records matched your search or category filter criteria.",
+    "deleteConfirmTitle": "Delete Document?",
+    "deleteConfirmBody": "Are you sure you want to remove this document from the employee's records?",
+    "table": {
+      "employee": "Employee",
+      "documentType": "Document Type",
+      "documentNumber": "Document Number",
+      "authority": "Authority / Country",
+      "expiryDate": "Expiry Date",
+      "status": "Status",
+      "remaining": "Remaining"
+    },
+    "filters": {
+      "allCategories": "All Employee Documents"
+    },
+    "categories": {
+      "IQAMA": "Iqamas",
+      "PASSPORT": "Passports",
+      "HEALTH_CERTIFICATE": "Health Certificates",
+      "MEDICAL_INSURANCE": "Medical Insurance",
+      "VISA": "Visas",
+      "FLIGHT_TICKET": "Flight Tickets"
     }
   },
   "payments": {

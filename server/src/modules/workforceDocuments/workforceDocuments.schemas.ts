@@ -8,6 +8,7 @@ export const listWorkforceQuerySchema = z.object({
   q: emptyToUndefined(z.string().optional()),
   branchId: emptyToUndefined(z.string().optional()),
   status: z.nativeEnum(DocumentStatus).optional(),
+  category: emptyToUndefined(z.string().optional()),
 });
 
 export type ListWorkforceQuery = z.infer<typeof listWorkforceQuerySchema>;
