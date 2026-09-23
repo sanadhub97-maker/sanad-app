@@ -2,11 +2,11 @@ import { z } from "zod";
 import { paginationSchema } from "@/utils/pagination";
 import { emptyToUndefined } from "@/utils/zodHelpers";
 import { PaymentCategory } from "@prisma/client";
+import { PAYMENT_SUBTYPES } from "@/constants/paymentCategories";
 
 export const paymentMethodEnum = z.enum(["CASH", "BANK_TRANSFER", "CARD", "ONLINE", "OTHER"]);
 export const paymentCategoryEnum = z.nativeEnum(PaymentCategory);
 
-export const VISA_TYPES = ["EXIT_REENTRY", "FINAL_EXIT", "WORK_VISA"] as const;
 // Categories that are always about a specific employee.
 const EMPLOYEE_CATEGORIES: string[] = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
 
@@ -30,12 +30,14 @@ const basePaymentSchema = z.object({
 
 type PaymentFields = Partial<z.infer<typeof basePaymentSchema>>;
 
-/** Visa payments need a visa type; employee-related payments need the
- * employee (except a work visa, often issued before the person is hired). */
+/** Categories with sub-types (issue/renewal, visa kinds…) need a valid one;
+ * employee-related payments need the employee (except a work visa, often
+ * issued before the person is hired). */
 function checkCategoryFields(p: PaymentFields, ctx: z.RefinementCtx) {
   if (!p.category) return;
-  if (p.category === "VISA" && !VISA_TYPES.includes(p.type as (typeof VISA_TYPES)[number])) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["type"], message: "Choose the visa type" });
+  const subtypes = PAYMENT_SUBTYPES[p.category];
+  if (subtypes && !subtypes.includes(p.type ?? "")) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["type"], message: "Choose the transaction type" });
   }
   const needsEmployee = EMPLOYEE_CATEGORIES.includes(p.category) && !(p.category === "VISA" && p.type === "WORK_VISA");
   if (needsEmployee && !p.employeeId) {

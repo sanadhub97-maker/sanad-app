@@ -31,14 +31,13 @@ import { FormField } from "@/components/common/form-field";
 import { FileUpload } from "@/components/common/file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
-import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS } from "@/api/payments";
+import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } from "@/api/payments";
 import { employeesApi } from "@/api/employees";
 import { getErrorMessage } from "@/lib/api";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import type { Payment } from "@/types/models";
 
 // Keep in sync with server/src/modules/payments/payments.schemas.ts.
-const VISA_TYPES = ["EXIT_REENTRY", "FINAL_EXIT", "WORK_VISA"] as const;
 const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
 
 function needsEmployee(category?: string, type?: string) {
@@ -62,8 +61,13 @@ const schema = z.object({
   fileId: z.string().optional(),
   notes: z.string().optional(),
 }).superRefine((v, ctx) => {
-  if (v.category === "VISA" && !VISA_TYPES.includes(v.type as (typeof VISA_TYPES)[number])) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["type"], message: "اختر نوع التأشيرة" });
+  const subtypes = PAYMENT_SUBTYPES[v.category];
+  if (subtypes && !subtypes.includes(v.type ?? "")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["type"],
+      message: v.category === "VISA" ? "اختر نوع التأشيرة" : "اختر نوع العملية",
+    });
   }
   if (needsEmployee(v.category, v.type) && !v.employeeId) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: "اختر الموظف" });
@@ -99,6 +103,7 @@ export function PaymentDialog({
     reset,
     watch,
     setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -113,6 +118,14 @@ export function PaymentDialog({
   const category = watch("category");
   const visaType = watch("type");
   const showEmployee = !!category && EMPLOYEE_CATEGORIES.includes(category);
+  const subtypes = category ? PAYMENT_SUBTYPES[category] : undefined;
+
+  // A sub-type from the previous category (e.g. "cancellation" from a license)
+  // isn't valid for the new one — clear it when the category changes.
+  useEffect(() => {
+    const current = getValues("type");
+    if (current && !subtypes?.includes(current)) setValue("type", undefined);
+  }, [category, subtypes, getValues, setValue]);
   const amount = watch("amount") || 0;
   const vat = watch("vat") || 0;
   const total = (Number(amount) + Number(vat)).toFixed(2);
@@ -330,20 +343,25 @@ export function PaymentDialog({
                 />
               </FormField>
 
-              {category === "VISA" && (
-                <FormField label={isAr ? "نوع التأشيرة" : "Visa type"} icon={FileText} required error={errors.type?.message}>
+              {subtypes && (
+                <FormField
+                  label={category === "VISA" ? (isAr ? "نوع التأشيرة" : "Visa type") : isAr ? "نوع العملية" : "Transaction type"}
+                  icon={FileText}
+                  required
+                  error={errors.type?.message}
+                >
                   <Controller
                     control={control}
                     name="type"
                     render={({ field }) => (
                       <Select value={field.value ?? ""} onValueChange={field.onChange}>
                         <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
-                          <SelectValue placeholder={isAr ? "اختر نوع التأشيرة" : "Select visa type"} />
+                          <SelectValue placeholder={isAr ? "اختر" : "Select"} />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl shadow-xl">
-                          {VISA_TYPES.map((v) => (
+                          {subtypes.map((v) => (
                             <SelectItem key={v} value={v}>
-                              {t(`visaTypes.${v}`)}
+                              {t(`paymentSubtypes.${v}`)}
                             </SelectItem>
                           ))}
                         </SelectContent>

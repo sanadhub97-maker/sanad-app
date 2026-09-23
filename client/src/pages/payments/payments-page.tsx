@@ -10,7 +10,7 @@ import { DataTable } from "@/components/common/data-table";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppleIcon } from "@/components/common/apple-icon";
-import { paymentsApi, paymentReceiptUrl } from "@/api/payments";
+import { paymentsApi, paymentReceiptUrl, PAYMENT_SUBTYPES } from "@/api/payments";
 import { reportsApi } from "@/api/reports";
 import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
@@ -70,7 +70,7 @@ export default function PaymentsPage() {
           <div className="flex flex-col items-start gap-1">
             <span className="inline-block rounded-lg bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/60">
               {t(`paymentCategories.${c.getValue()}`)}
-              {c.getValue() === "VISA" && type ? ` — ${t(`visaTypes.${type}`, { defaultValue: type })}` : ""}
+              {type && PAYMENT_SUBTYPES[c.getValue()]?.includes(type) ? ` — ${t(`paymentSubtypes.${type}`)}` : ""}
             </span>
             {employee && (
               <span className="text-[11px] text-muted-foreground">

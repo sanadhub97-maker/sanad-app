@@ -56,3 +56,12 @@ export const PAYMENT_CATEGORIES = [
   "SPONSORSHIP_TRANSFER",
   "PROFESSION_CHANGE",
 ] as const;
+
+/** Sub-types a category requires (labels in i18n paymentSubtypes.*). Keep in
+ * sync with PAYMENT_SUBTYPES in server/src/constants/paymentCategories.ts. */
+export const PAYMENT_SUBTYPES: Record<string, readonly string[]> = {
+  IQAMA: ["ISSUE", "RENEWAL"],
+  COMMERCIAL_REGISTRATION: ["ISSUE", "RENEWAL"],
+  MUNICIPAL_LICENSE: ["ISSUE", "RENEWAL", "CANCELLATION", "AMENDMENT"],
+  VISA: ["EXIT_REENTRY", "FINAL_EXIT", "WORK_VISA"],
+};

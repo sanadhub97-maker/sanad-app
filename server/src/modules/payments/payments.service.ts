@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
+import { PAYMENT_SUBTYPES } from "@/constants/paymentCategories";
 import type { z } from "zod";
 import type { createPaymentSchema, listPaymentsQuerySchema, updatePaymentSchema } from "@/modules/payments/payments.schemas";
 
@@ -84,7 +85,7 @@ export async function create(input: CreateInput, createdById: string) {
   }
 
   return prisma.payment.create({
-    data: { ...input, type: input.category === "VISA" ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
+    data: { ...input, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
     include: includeRelations,
   });
 }
@@ -104,8 +105,8 @@ export async function update(id: string, input: UpdateInput) {
   const vat = input.vat !== undefined ? new Prisma.Decimal(input.vat) : existing.vat;
   const total = amount.plus(vat);
 
-  // `type` holds the visa type; drop it if the payment is no longer a visa.
-  const type = input.category && input.category !== "VISA" ? null : input.type;
+  // `type` holds the sub-type (issue/renewal, visa kind…); drop it if the new category has none.
+  const type = input.category && !PAYMENT_SUBTYPES[input.category] ? null : input.type;
 
   return prisma.payment.update({ where: { id }, data: { ...input, type, amount, vat, total }, include: includeRelations });
 }
