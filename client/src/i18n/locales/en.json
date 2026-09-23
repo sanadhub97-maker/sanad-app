@@ -753,6 +753,16 @@
     "OTHER": "Other"
   },
   "paymentCategories": {
+    "COMMERCIAL_REGISTRATION": "Commercial registration",
+    "MUNICIPAL_LICENSE": "Business license",
+    "CLEANING": "Cleaning contract",
+    "RENT": "Lease contract",
+    "TOBACCO_LICENSE": "Tobacco license",
+    "PERMIT_24H": "24-hour permit",
+    "IQAMA": "Iqama",
+    "VISA": "Visas",
+    "SPONSORSHIP_TRANSFER": "Sponsorship transfer",
+    "PROFESSION_CHANGE": "Profession change",
     "COMMERCIAL_REGISTRATION_ISSUE": "Commercial registration — issue",
     "COMMERCIAL_REGISTRATION_RENEWAL": "Commercial registration — renewal",
     "COMMERCIAL_REGISTRATION_AMENDMENT": "Commercial registration — amendment",
@@ -770,13 +780,9 @@
     "WORK_PERMIT": "Work permit fee",
     "EXPAT_LEVY": "Expat levy",
     "DEPENDENTS_FEE": "Dependents fee",
-    "PROFESSION_CHANGE": "Profession change",
-    "SPONSORSHIP_TRANSFER": "Sponsorship transfer",
     "WORK_VISA": "Work visa issuance",
     "EXIT_REENTRY_VISA": "Exit & re-entry visa",
     "FINAL_EXIT_VISA": "Final exit visa",
-    "IQAMA": "Other iqama services",
-    "VISA": "Other visas",
     "PASSPORT": "Passport services",
     "GOSI": "GOSI (social insurance)",
     "MEDICAL_INSURANCE": "Medical insurance",
@@ -784,8 +790,6 @@
     "GOVERNMENT_FINES": "Government fines & violations",
     "GOVERNMENT_FEES": "Other government fees",
     "EMPLOYEE_DOCUMENTS": "Employee documents",
-    "RENT": "Rent",
-    "CLEANING": "Cleaning",
     "INSURANCE": "Other insurance",
     "MEDICAL": "Medical checkups",
     "OTHER": "Other"
@@ -819,11 +823,5 @@
     "settings": "Settings",
     "auditLogs": "Audit Logs",
     "auth": "Authentication"
-  },
-  "paymentCategoryGroups": {
-    "commercial": "Commercial registration & licenses",
-    "residency": "Iqamas & visas",
-    "government": "Insurance & government fees",
-    "operational": "Operating expenses"
   }
 }

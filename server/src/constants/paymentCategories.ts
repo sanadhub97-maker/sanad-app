@@ -4,6 +4,19 @@ import type { PaymentCategory } from "@prisma/client";
 // enum, so adding a category without a label fails to compile. The client's
 // grouped list lives in client/src/api/payments.ts.
 export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
+  // The categories offered in the payment form
+  COMMERCIAL_REGISTRATION: "سجل تجاري",
+  MUNICIPAL_LICENSE: "رخصة تجارية",
+  CLEANING: "عقد النظافة",
+  RENT: "عقد الإيجار",
+  TOBACCO_LICENSE: "ترخيص التبغ",
+  PERMIT_24H: "تصريح 24 ساعة",
+  IQAMA: "إقامة",
+  VISA: "تأشيرات",
+  SPONSORSHIP_TRANSFER: "نقل كفالة",
+  PROFESSION_CHANGE: "تعديل مهنة",
+
+  // Older categories no longer offered in the form, kept for existing records
   // السجل التجاري والتراخيص
   COMMERCIAL_REGISTRATION_ISSUE: "إصدار سجل تجاري",
   COMMERCIAL_REGISTRATION_RENEWAL: "تجديد سجل تجاري",
@@ -24,13 +37,9 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   WORK_PERMIT: "رسوم رخصة العمل",
   EXPAT_LEVY: "المقابل المالي",
   DEPENDENTS_FEE: "رسوم المرافقين",
-  PROFESSION_CHANGE: "تعديل المهنة",
-  SPONSORSHIP_TRANSFER: "نقل خدمات (نقل كفالة)",
   WORK_VISA: "إصدار تأشيرة عمل",
   EXIT_REENTRY_VISA: "تأشيرة خروج وعودة",
   FINAL_EXIT_VISA: "تأشيرة خروج نهائي",
-  IQAMA: "خدمات إقامة أخرى",
-  VISA: "تأشيرات أخرى",
   PASSPORT: "خدمات الجوازات",
 
   // التأمينات والرسوم الحكومية
@@ -42,8 +51,6 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   EMPLOYEE_DOCUMENTS: "مستندات الموظفين",
 
   // مصروفات تشغيلية
-  RENT: "الإيجار",
-  CLEANING: "النظافة",
   INSURANCE: "تأمين آخر",
   MEDICAL: "فحوصات طبية",
   OTHER: "أخرى",
