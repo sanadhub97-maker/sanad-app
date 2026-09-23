@@ -36,7 +36,7 @@ export function BranchDetailsDialog({ open, onOpenChange, branch, onEdit }: Prop
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl rounded-3xl p-6">
+      <DialogContent className="w-full sm:max-w-2xl md:max-w-3xl border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl rounded-3xl p-6">
         <DialogHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">

@@ -78,7 +78,7 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl rounded-3xl p-6">
+      <DialogContent className="w-full sm:max-w-2xl md:max-w-3xl max-h-[92vh] overflow-y-auto border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl rounded-3xl p-6">
         <DialogHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center gap-3">
             <AppleIcon icon={Icon} tone={meta.tone} size="md" />

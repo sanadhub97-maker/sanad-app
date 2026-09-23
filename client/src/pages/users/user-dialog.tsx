@@ -91,23 +91,26 @@ export function UserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-card p-0 shadow-2xl sm:max-w-xl max-h-[90vh] flex flex-col">
-        {/* 🌟 Ambient Blue Tone Light Bleed */}
-        <div className="pointer-events-none absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-blue-500/15 via-blue-500/5 to-transparent" />
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl max-h-[92vh] flex flex-col">
+        {/* 🌟 Ambient Purple Tone Light Bleed */}
+        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-purple-500/20 via-violet-500/10 to-transparent blur-3xl" />
         {/* 🌟 Top Specular Glass Sheen */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/80 dark:via-white/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
         {/* 💎 Executive Header */}
-        <div className="relative z-10 px-6 pt-6 pb-4 border-b border-border/50 bg-card/60 backdrop-blur-md">
+        <div className="relative z-10 px-6 pt-6 pb-4 border-b border-border/50 bg-muted/15 backdrop-blur-md">
           <div className="flex items-center gap-3.5">
-            <AppleIcon icon={isEdit ? UserCheck : UserPlus} tone="blue" size="md" className="shadow-sm" />
+            <AppleIcon icon={isEdit ? UserCheck : UserPlus} tone="purple" size="md" className="shadow-sm" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <DialogTitle className="text-lg font-black tracking-tight text-foreground font-sans">
                   {isEdit ? (isAr ? "تعديل حساب المستخدم" : "Edit User Account") : (isAr ? "إضافة مستخدم جديد" : "Add New User")}
                 </DialogTitle>
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 border border-purple-500/25 px-2.5 py-0.5 text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                  </span>
                   {isEdit ? (isAr ? "تعديل سجل" : "Edit") : (isAr ? "مستخدم جديد" : "New User")}
                 </span>
               </div>
@@ -121,18 +124,27 @@ export function UserDialog({
         {/* 📋 Form Body */}
         <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Section 1: Account Credentials */}
-          <div className="rounded-2xl border border-border/60 bg-muted/25 dark:bg-muted/15 p-4 space-y-3.5">
-            <div className="flex items-center gap-2 pb-1 text-xs font-bold text-foreground/80">
-              <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 pb-1 text-xs font-bold uppercase tracking-wider text-foreground">
+              <User className="h-4 w-4 text-purple-500" />
               <span>{isAr ? "بيانات الدخول والحساب" : "Account Credentials"}</span>
             </div>
 
-            <div className="grid gap-3.5 sm:grid-cols-2">
-              <FormField label={isAr ? "الاسم الكامل" : "Full Name"} required error={errors.fullName?.message} icon={User} className="sm:col-span-2">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label={isAr ? "الاسم الكامل" : "Full Name"} required error={errors.fullName?.message} icon={User}>
                 <Input
                   {...register("fullName")}
                   placeholder={isAr ? "مثال: عبد العزيز محمد الشمري" : "e.g. Abdulaziz Alshammari"}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
+                />
+              </FormField>
+
+              <FormField label={isAr ? "رقم الجوال" : "Mobile Phone"} icon={Phone}>
+                <Input
+                  {...register("phone")}
+                  dir="ltr"
+                  placeholder="+966 50 000 0000"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
 
@@ -144,7 +156,7 @@ export function UserDialog({
                       dir="ltr"
                       {...register("email")}
                       placeholder="user@company.com"
-                      className="h-11 rounded-xl font-medium bg-background/90 border-border/70"
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                     />
                   </FormField>
 
@@ -154,17 +166,17 @@ export function UserDialog({
                       dir="ltr"
                       {...register("password")}
                       placeholder="••••••••"
-                      className="h-11 rounded-xl font-medium bg-background/90 border-border/70"
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                     />
                   </FormField>
                 </>
               ) : (
-                <FormField label={isAr ? "حالة الحساب" : "Account Status"} className="sm:col-span-1">
+                <FormField label={isAr ? "حالة الحساب" : "Account Status"} className="sm:col-span-2">
                   <Controller
                     control={control}
                     name="isActive"
                     render={({ field }) => (
-                      <label className="flex items-center gap-3 h-11 px-3 rounded-xl border border-border/70 bg-background/90 cursor-pointer select-none transition-colors hover:bg-background">
+                      <label className="flex items-center gap-3 h-11 px-4 rounded-xl border border-border/80 bg-background/90 cursor-pointer select-none transition-colors hover:bg-background shadow-xs">
                         <Checkbox
                           checked={Boolean(field.value)}
                           onCheckedChange={(checked) => field.onChange(Boolean(checked))}
@@ -177,23 +189,14 @@ export function UserDialog({
                   />
                 </FormField>
               )}
-
-              <FormField label={isAr ? "رقم الجوال" : "Mobile Phone"} icon={Phone} className={isEdit ? "sm:col-span-1" : "sm:col-span-2"}>
-                <Input
-                  {...register("phone")}
-                  dir="ltr"
-                  placeholder="+966 50 000 0000"
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/70"
-                />
-              </FormField>
             </div>
           </div>
 
           {/* Section 2: Roles Matrix */}
-          <div className="rounded-2xl border border-border/60 bg-muted/25 dark:bg-muted/15 p-4 space-y-3.5">
+          <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground/80">
-                <Shield className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Shield className="h-4 w-4 text-purple-500" />
                 <span>{isAr ? "الأدوار والصلاحيات الوظيفية" : "Assigned System Roles"}</span>
               </div>
               <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400">
@@ -208,11 +211,11 @@ export function UserDialog({
                 <div className="space-y-2">
                   {loadingRoles ? (
                     <div className="flex items-center justify-center p-6 text-xs text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin me-2 text-primary" />
+                      <Loader2 className="h-4 w-4 animate-spin me-2 text-purple-500" />
                       <span>{isAr ? "جاري تحميل الأدوار..." : "Loading roles..."}</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pe-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-56 overflow-y-auto pe-1">
                       {(roles ?? []).map((role) => {
                         const isChecked = (field.value as string[] | undefined)?.includes(role.id);
                         return (
@@ -225,14 +228,14 @@ export function UserDialog({
                             }}
                             className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${
                               isChecked
-                                ? "bg-gradient-to-r from-blue-500/15 via-blue-500/10 to-indigo-500/5 border-blue-500/40 text-foreground shadow-xs ring-1 ring-blue-500/20"
-                                : "bg-background/80 border-border/60 hover:bg-background hover:border-border text-foreground"
+                                ? "bg-gradient-to-r from-purple-500/15 via-violet-500/10 to-purple-500/5 border-purple-500/40 text-foreground shadow-xs ring-1 ring-purple-500/20"
+                                : "bg-background/80 border-border/70 hover:bg-background hover:border-purple-500/30 text-foreground shadow-xs"
                             }`}
                           >
                             <div
                               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all ${
                                 isChecked
-                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  ? "bg-purple-600 border-purple-600 text-white shadow-xs"
                                   : "border-border bg-card"
                               }`}
                             >
@@ -274,7 +277,7 @@ export function UserDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold text-xs sm:text-sm px-6 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="h-11 rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white font-bold text-xs sm:text-sm px-6 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
               <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "إنشاء المستخدم" : "Create User")}</span>

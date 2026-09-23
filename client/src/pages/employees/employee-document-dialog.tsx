@@ -119,9 +119,9 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl sm:max-w-3xl max-h-[92vh] flex flex-col">
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col">
         {/* 🌟 Ambient Top Glow */}
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-80 rounded-full bg-gradient-to-b from-indigo-500/20 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-indigo-500/20 via-purple-500/10 to-transparent blur-3xl pointer-events-none" />
 
         {/* 🌟 Specular Glass Edge */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent" />
@@ -170,7 +170,7 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
               </span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <FormField
                 label={t("employees.documentDialog.type")}
                 icon={FileBadge}
@@ -246,7 +246,7 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
               </span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 label={t("employees.documentDialog.issueDate")}
                 icon={Calendar}
@@ -284,7 +284,7 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
               <FormField
                 label={t("employees.documentDialog.expiryDate")}
                 icon={CalendarClock}
-                className="sm:col-span-2"
+                className="sm:col-span-2 lg:col-span-1"
                 hint={isAr ? "هام لمنظومة التنبيهات" : "Triggers expiry notifications"}
               >
                 <Controller
@@ -303,7 +303,7 @@ export function EmployeeDocumentDialog({ employeeId, open, document, onOpenChang
               <FormField
                 label={t("common.notes")}
                 icon={FileEdit}
-                className="sm:col-span-2"
+                className="sm:col-span-2 lg:col-span-3"
               >
                 <Textarea
                   {...register("notes")}

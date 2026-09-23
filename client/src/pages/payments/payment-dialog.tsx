@@ -123,27 +123,27 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl sm:max-w-3xl max-h-[92vh] flex flex-col">
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col">
         {/* 🌟 Ambient Top Glow */}
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-80 rounded-full bg-gradient-to-b from-amber-500/20 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-rose-500/20 via-pink-500/10 to-transparent blur-3xl pointer-events-none" />
 
         {/* 🌟 Specular Glass Edge */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-rose-400/50 to-transparent" />
 
         {/* 👑 Executive Dialog Header */}
         <DialogHeader className="p-6 pb-5 border-b border-border/60 bg-muted/15 relative z-10 shrink-0">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <AppleIcon icon={CreditCard} tone="amber" size="lg" />
+              <AppleIcon icon={CreditCard} tone="rose" size="lg" />
               <div>
                 <div className="flex items-center gap-2.5">
                   <DialogTitle className="text-xl font-black tracking-tight text-foreground font-sans">
                     {isEdit ? (isAr ? "تعديل سند الصرف" : "Edit Payment") : (isAr ? "إضافة سند صرف جديد" : "New Payment Voucher")}
                   </DialogTitle>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 border border-amber-500/25 shadow-xs">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-600 dark:text-rose-400 border border-rose-500/25 shadow-xs">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
                     </span>
                     {isEdit ? (isAr ? "تعديل سجل" : "Edit") : (isAr ? "سند جديد" : "New Voucher")}
                   </span>
@@ -164,7 +164,7 @@ export function PaymentDialog({
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-amber-500" />
+                <Receipt className="h-4 w-4 text-rose-500" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   {isAr ? "الحسابات والمبالغ المالية" : "Financial Calculations"}
                 </h3>
@@ -187,7 +187,7 @@ export function PaymentDialog({
                   dir="ltr"
                   placeholder="0.00"
                   {...register("amount")}
-                  className="h-11 rounded-xl font-bold font-mono text-base bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-bold font-mono text-base bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
 
@@ -202,15 +202,15 @@ export function PaymentDialog({
                   dir="ltr"
                   placeholder="0.00"
                   {...register("vat")}
-                  className="h-11 rounded-xl font-bold font-mono text-base bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-bold font-mono text-base bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
             </div>
 
             {/* 💎 Total KPI Preview Card */}
-            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-transparent p-4 flex items-center justify-between shadow-xs">
+            <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/15 via-rose-500/5 to-transparent p-4 flex items-center justify-between shadow-xs">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-xs">
+                <div className="h-10 w-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-xs">
                   <Receipt className="h-5 w-5" />
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export function PaymentDialog({
                   </span>
                 </div>
               </div>
-              <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-amber-600 dark:text-amber-400">
+              <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-rose-600 dark:text-rose-400">
                 {total} <span className="text-xs font-bold text-muted-foreground uppercase">{isAr ? "ر.س" : "SAR"}</span>
               </div>
             </div>
@@ -232,7 +232,7 @@ export function PaymentDialog({
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <FileCheck className="h-4 w-4 text-amber-500" />
+                <FileCheck className="h-4 w-4 text-rose-500" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   {isAr ? "تفاصيل وبيانات السند" : "Voucher & Payment Details"}
                 </h3>
@@ -242,7 +242,7 @@ export function PaymentDialog({
               </span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField
                 label={isAr ? "رقم السند" : "Payment Number"}
                 icon={Hash}
@@ -252,7 +252,7 @@ export function PaymentDialog({
                   placeholder="PAY-0001"
                   {...register("paymentNumber")}
                   disabled={isEdit}
-                  className="h-11 rounded-xl font-mono font-bold bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-mono font-bold bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
 
@@ -269,7 +269,7 @@ export function PaymentDialog({
                     <DateInput
                       value={field.value}
                       onChange={field.onChange}
-                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                      className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                     />
                   )}
                 />
@@ -285,7 +285,7 @@ export function PaymentDialog({
                   name="category"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60">
+                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl shadow-xl">
@@ -310,7 +310,7 @@ export function PaymentDialog({
                   name="method"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60">
+                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl shadow-xl">
@@ -334,7 +334,7 @@ export function PaymentDialog({
                   name="branchId"
                   render={({ field }) => (
                     <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60">
+                      <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
                         <SelectValue placeholder={isAr ? "اختر المؤسسة" : "Select establishment"} />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl shadow-xl">
@@ -356,7 +356,7 @@ export function PaymentDialog({
                 <Input
                   {...register("paidBy")}
                   placeholder={isAr ? "اسم الموظف أو المفوض" : "Employee or agent name"}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
 
@@ -367,7 +367,7 @@ export function PaymentDialog({
                 <Input
                   {...register("supplierName")}
                   placeholder={isAr ? "اسم الشركة أو الجهة المستفيدة" : "Vendor or beneficiary name"}
-                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
 
@@ -378,19 +378,19 @@ export function PaymentDialog({
                 <Input
                   {...register("referenceNumber")}
                   placeholder="INV-9921"
-                  className="h-11 rounded-xl font-mono bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60"
+                  className="h-11 rounded-xl font-mono bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60"
                 />
               </FormField>
 
               <FormField
                 label={isAr ? "البيان / الوصف" : "Description"}
                 icon={FileText}
-                className="sm:col-span-2"
+                className="sm:col-span-2 lg:col-span-3"
               >
                 <Textarea
                   {...register("description")}
                   placeholder={isAr ? "شرح تفصيلي لسبب الصرف والبنود المغطاة..." : "Detailed reason for payment..."}
-                  className="rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-amber-500/30 focus-visible:border-amber-500/60 resize-none min-h-[72px]"
+                  className="rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60 resize-none min-h-[72px]"
                 />
               </FormField>
             </div>
@@ -400,7 +400,7 @@ export function PaymentDialog({
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <Paperclip className="h-4 w-4 text-amber-500" />
+                <Paperclip className="h-4 w-4 text-rose-500" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   {isAr ? "إيصال السداد والمرفقات" : "Receipt & Documents"}
                 </h3>
@@ -433,7 +433,7 @@ export function PaymentDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 text-white font-bold text-sm px-6 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
+              className="h-11 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white font-bold text-sm px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
               <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ سند الصرف" : "Save Payment")}</span>

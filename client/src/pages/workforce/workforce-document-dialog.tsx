@@ -243,21 +243,80 @@ export function WorkforceDocumentDialog({
     }
   }
 
+const TONE_STYLES: Record<string, { border: string; glow: string; topLine: string; badge: string; btn: string }> = {
+  blue: {
+    border: "border-blue-500/30 dark:border-blue-500/20",
+    glow: "from-blue-500/20 via-sky-500/10 to-transparent",
+    topLine: "via-blue-400/80",
+    badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25",
+    btn: "bg-gradient-to-r from-blue-600 via-sky-600 to-blue-700 shadow-blue-500/25 hover:shadow-blue-500/40",
+  },
+  purple: {
+    border: "border-purple-500/30 dark:border-purple-500/20",
+    glow: "from-purple-500/20 via-indigo-500/10 to-transparent",
+    topLine: "via-purple-400/80",
+    badge: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25",
+    btn: "bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 shadow-purple-500/25 hover:shadow-purple-500/40",
+  },
+  emerald: {
+    border: "border-emerald-500/30 dark:border-emerald-500/20",
+    glow: "from-emerald-500/20 via-teal-500/10 to-transparent",
+    topLine: "via-emerald-400/80",
+    badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
+    btn: "bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-emerald-500/25 hover:shadow-emerald-500/40",
+  },
+  cyan: {
+    border: "border-cyan-500/30 dark:border-cyan-500/20",
+    glow: "from-cyan-500/20 via-sky-500/10 to-transparent",
+    topLine: "via-cyan-400/80",
+    badge: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25",
+    btn: "bg-gradient-to-r from-cyan-600 via-sky-600 to-cyan-700 shadow-cyan-500/25 hover:shadow-cyan-500/40",
+  },
+  amber: {
+    border: "border-amber-500/30 dark:border-amber-500/20",
+    glow: "from-amber-500/20 via-orange-500/10 to-transparent",
+    topLine: "via-amber-400/80",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
+    btn: "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 shadow-amber-500/25 hover:shadow-amber-500/40",
+  },
+  rose: {
+    border: "border-rose-500/30 dark:border-rose-500/20",
+    glow: "from-rose-500/20 via-pink-500/10 to-transparent",
+    topLine: "via-rose-400/80",
+    badge: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25",
+    btn: "bg-gradient-to-r from-rose-600 via-pink-600 to-rose-700 shadow-rose-500/25 hover:shadow-rose-500/40",
+  },
+};
+
+  const toneStyle = TONE_STYLES[cfg.tone] || TONE_STYLES.blue;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto border-border/80 bg-background/95 backdrop-blur-2xl shadow-2xl rounded-3xl p-6">
-        <DialogHeader className="border-b border-border/50 pb-4">
-          <div className="flex items-center gap-3">
-            <AppleIcon icon={cfg.icon} tone={cfg.tone} size="md" />
-            <div>
-              <DialogTitle className="text-xl font-bold tracking-tight">
-                {isEdit
-                  ? isAr
-                    ? `تعديل ${t(cfg.titleKey)}`
-                    : `Edit ${t(cfg.titleKey)}`
-                  : t(cfg.addKey)}
-              </DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">
+      <DialogContent className={`overflow-hidden rounded-3xl border ${toneStyle.border} bg-background/95 backdrop-blur-2xl shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col p-0`}>
+        {/* 🌟 Ambient Top Glow */}
+        <div className={`pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b ${toneStyle.glow} blur-3xl`} />
+
+        {/* 🌟 Top Specular Glass Sheen */}
+        <div className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent ${toneStyle.topLine} to-transparent`} />
+
+        <DialogHeader className="p-6 sm:p-8 pb-4 border-b border-border/50 bg-card/60 backdrop-blur-md relative z-10 shrink-0">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={cfg.icon} tone={cfg.tone} size="lg" className="shadow-md" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2.5">
+                <DialogTitle className="text-xl font-black tracking-tight text-foreground font-sans">
+                  {isEdit
+                    ? isAr
+                      ? `تعديل ${t(cfg.titleKey)}`
+                      : `Edit ${t(cfg.titleKey)}`
+                    : t(cfg.addKey)}
+                </DialogTitle>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold border shadow-xs ${toneStyle.badge}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  {isEdit ? (isAr ? "تعديل" : "Edit") : (isAr ? "وثيقة جديدة" : "New")}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
                 {isAr
                   ? "أدخل بيانات الوثيقة وتاريخ الصلاحية والمرفقات بدقة"
                   : "Enter document details, expiration dates, and file attachments accurately"}
@@ -266,7 +325,7 @@ export function WorkforceDocumentDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 pt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
           {/* Document Type Selector (when adding new) */}
           {!isEdit && (
             <div className="space-y-1.5">
@@ -472,19 +531,19 @@ export function WorkforceDocumentDialog({
             />
           </FormField>
 
-          <DialogFooter className="border-t border-border/50 pt-4 gap-2">
+          <DialogFooter className="border-t border-border/50 pt-4 gap-3 sticky bottom-0 bg-background/90 backdrop-blur-md pb-1">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl"
+              className="h-11 rounded-xl px-6 font-semibold"
             >
               {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl gap-2 font-semibold shadow-md min-w-[120px]"
+              className={`h-11 rounded-xl gap-2 font-bold text-white shadow-lg min-w-[140px] px-7 transition-all ${toneStyle.btn}`}
             >
               {isSubmitting ? (
                 <>
