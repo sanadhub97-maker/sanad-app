@@ -36,6 +36,7 @@ import {
   Sparkles,
   Activity,
   CreditCard,
+  Building2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,8 @@ import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
+import { BranchDialog } from "@/pages/branches/branch-dialog";
+import { PaymentDialog } from "@/pages/payments/payment-dialog";
 import { EmptyState } from "@/components/common/empty-state";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -233,6 +236,8 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
 
   const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
+  const [branchDialogOpen, setBranchDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const { data: summary, isLoading: loadingSummary } = useQuery({
     queryKey: ["dashboard", "summary"],
@@ -365,8 +370,8 @@ export default function DashboardPage() {
         <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
         <div className="pointer-events-none absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-3">
+        <div className="relative z-10 space-y-6">
+          <div className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-cyan-300 backdrop-blur-md border border-white/10">
                 <Calendar className="h-3.5 w-3.5" /> {todayDateString}
@@ -380,21 +385,52 @@ export default function DashboardPage() {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white font-sans leading-tight">
               {greeting}، {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed font-normal">
               {isAr
                 ? "مرحباً بك في مركز القيادة والعمليات التنفيذي لنظام SanaD. يمكنك متابعة وثائق الموظفين، التراخيص الحكومية، والمصروفات بدقة استباقية ولحظياً."
                 : "Welcome to your executive operations command center. Monitor workforce compliance, official company licenses, and payments in real time."}
             </p>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {/* Quick Action Dock */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/[0.08]">
+            {/* 1. إضافة موظف */}
             <Button
               onClick={() => setEmployeeDialogOpen(true)}
-              className="h-11 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-5 specular-border"
+              className="h-11 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 sm:px-5 specular-border"
             >
               <Plus className="h-4 w-4 me-1.5 stroke-[2.5]" /> {t("dashboard.addEmployee")}
             </Button>
+
+            {/* 2. إضافة شركة أو مؤسسة */}
+            <Button
+              onClick={() => setBranchDialogOpen(true)}
+              className="h-11 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:bg-emerald-500/40 text-emerald-300 hover:text-white shadow-lg shadow-emerald-500/15 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 backdrop-blur-md"
+            >
+              <Building2 className="h-4 w-4 me-1.5 text-emerald-400 stroke-[2.5]" />
+              {isAr ? "+ إضافة شركة أو مؤسسة" : "+ Add Company / Branch"}
+            </Button>
+
+            {/* 3. إضافة دفعة */}
+            <Button
+              onClick={() => setPaymentDialogOpen(true)}
+              className="h-11 rounded-xl border border-rose-500/40 bg-gradient-to-r from-rose-600/30 via-pink-500/20 to-rose-600/30 hover:bg-rose-500/40 text-rose-300 hover:text-white shadow-lg shadow-rose-500/15 hover:shadow-rose-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 backdrop-blur-md"
+            >
+              <CreditCard className="h-4 w-4 me-1.5 text-rose-400 stroke-[2.5]" />
+              {isAr ? "+ إضافة دفعة" : "+ Add Payment"}
+            </Button>
+
+            {/* 4. مستندات الموظفون */}
+            <Button
+              variant="outline"
+              onClick={() => navigate("/employee-documents")}
+              className="h-11 rounded-xl border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
+            >
+              <Users className="h-4 w-4 me-1.5 text-cyan-400" />
+              {isAr ? "مستندات الموظفون" : "Employee Documents"}
+            </Button>
+
+            {/* 5. مستندات الشركة */}
             <Button
               variant="outline"
               onClick={() => navigate("/company-documents")}
@@ -402,6 +438,8 @@ export default function DashboardPage() {
             >
               <FileText className="h-4 w-4 me-1.5 text-amber-400" /> {t("nav.companyDocuments")}
             </Button>
+
+            {/* 6. التقارير */}
             <Button
               variant="outline"
               onClick={() => navigate("/reports")}
@@ -919,6 +957,18 @@ export default function DashboardPage() {
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ["dashboard"] });
         }}
+      />
+
+      {/* 🏢 Quick-Add Branch / Company Dialog */}
+      <BranchDialog
+        open={branchDialogOpen}
+        onOpenChange={setBranchDialogOpen}
+      />
+
+      {/* 💳 Quick-Add Payment Dialog */}
+      <PaymentDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
       />
     </div>
   );
