@@ -190,7 +190,6 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   });
 
   const logoFileId = watch("logoFileId");
-  const faviconFileId = watch("faviconFileId");
 
   if (isLoading) {
     return (
@@ -360,40 +359,26 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 {isRtl ? (
-                  <>تظهر هوية المنشأة في ترويسة التطبيق، مسيرات الرواتب، وتقارير <span className="font-bold text-foreground">PDF</span> وقوالب الطباعة الرسمية</>
+                  <>شعار الشركة بيظهر في المطبوعات وتقارير <span className="font-bold text-foreground">PDF</span> وملفات التصدير بس. شعار وأيقونة النظام نفسه ثابتين ومش بيتغيروا.</>
                 ) : (
-                  <>Company branding appears on app headers, payroll slips, official <span className="font-bold text-foreground">PDF</span> reports, and print templates</>
+                  <>The company logo appears on printed documents, <span className="font-bold text-foreground">PDF</span> reports and exports only. The system's own logo and icon stay fixed.</>
                 )}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="max-w-xl">
             {/* Primary Logo */}
             <AssetUploadCard
               title={t("settings.company.logo")}
-              subtitle={isRtl ? "الشعار المؤسسي الرسمي للنظام والتقارير" : "Official primary corporate logo for system & reports"}
+              subtitle={isRtl ? "شعار الشركة للمطبوعات والتقارير والتصدير" : "Company logo for prints, reports and exports"}
               aspectHint={isRtl ? "صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت" : "Transparent PNG or SVG • up to 5MB"}
               previewType="logo"
               fileId={logoFileId}
               module="company-logo"
               onUploaded={(fid) => setValue("logoFileId", fid, { shouldDirty: true })}
               onRemoved={() => setValue("logoFileId", null, { shouldDirty: true })}
-              disabled={!canEdit}
-              isRtl={isRtl}
-            />
-
-            {/* Browser Favicon */}
-            <AssetUploadCard
-              title={t("settings.company.favicon")}
-              subtitle={isRtl ? "أيقونة علامة التبويب في المتصفح والإشعارات" : "Browser tab icon and system notification badge"}
-              aspectHint={isRtl ? "صيغة ICO أو PNG مربعة • 64x64 بكسل" : "Square ICO or PNG • 64x64 px"}
-              previewType="favicon"
-              fileId={faviconFileId}
-              module="company-favicon"
-              onUploaded={(fid) => setValue("faviconFileId", fid, { shouldDirty: true })}
-              onRemoved={() => setValue("faviconFileId", null, { shouldDirty: true })}
               disabled={!canEdit}
               isRtl={isRtl}
             />
