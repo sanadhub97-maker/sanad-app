@@ -22,7 +22,8 @@ import type { Payment } from "@/types/models";
 const columnHelper = createColumnHelper<Payment>();
 
 export default function PaymentsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const [page, setPage] = useState(1);
@@ -63,11 +64,22 @@ export default function PaymentsPage() {
     }),
     columnHelper.accessor("category", {
       header: t("payments.table.category"),
-      cell: (c) => (
-        <span className="inline-block rounded-lg bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/60">
-          {t(`paymentCategories.${c.getValue()}`)}
-        </span>
-      ),
+      cell: (c) => {
+        const { type, employee } = c.row.original;
+        return (
+          <div className="flex flex-col items-start gap-1">
+            <span className="inline-block rounded-lg bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground border border-border/60">
+              {t(`paymentCategories.${c.getValue()}`)}
+              {c.getValue() === "VISA" && type ? ` — ${t(`visaTypes.${type}`, { defaultValue: type })}` : ""}
+            </span>
+            {employee && (
+              <span className="text-[11px] text-muted-foreground">
+                <bdi>{isAr ? employee.fullNameAr : employee.fullNameEn || employee.fullNameAr}</bdi>
+              </span>
+            )}
+          </div>
+        );
+      },
     }),
     columnHelper.accessor((row) => row.branch?.name, {
       id: "branch",

@@ -87,6 +87,7 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
     paymentNumber: p.paymentNumber,
     paymentDate: p.paymentDate,
     category: p.category,
+    type: p.type,
     method: p.method,
     branch: p.branch?.name ?? null,
     employee: p.employee ? p.employee.fullNameEn || p.employee.fullNameAr : null,

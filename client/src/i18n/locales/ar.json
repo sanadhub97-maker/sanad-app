@@ -823,5 +823,10 @@
     "settings": "الإعدادات",
     "auditLogs": "سجل التدقيق",
     "auth": "المصادقة"
+  },
+  "visaTypes": {
+    "EXIT_REENTRY": "خروج وعودة",
+    "FINAL_EXIT": "خروج نهائي",
+    "WORK_VISA": "تأشيرة عمل"
   }
 }

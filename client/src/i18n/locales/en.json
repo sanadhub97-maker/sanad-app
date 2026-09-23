@@ -823,5 +823,10 @@
     "settings": "Settings",
     "auditLogs": "Audit Logs",
     "auth": "Authentication"
+  },
+  "visaTypes": {
+    "EXIT_REENTRY": "Exit & re-entry",
+    "FINAL_EXIT": "Final exit",
+    "WORK_VISA": "Work visa"
   }
 }

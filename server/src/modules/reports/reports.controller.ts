@@ -130,7 +130,7 @@ export const payments = asyncHandler(async (req: Request, res: Response) => {
     columns: [
       { header: "رقم السند", subHeader: "Voucher #", key: "paymentNumber" },
       { header: "تاريخ السند", subHeader: "Date", key: "paymentDate" },
-      { header: "بند الصرف", subHeader: "Category", key: "category", format: (v) => paymentCategoryLabel(v as string) },
+      { header: "بند الصرف", subHeader: "Category", key: "category", format: (v, row) => paymentCategoryLabel(v as string, row.type as string | null) },
       { header: "طريقة الدفع", subHeader: "Method", key: "method", format: (v) => paymentMethodLabel(v as string) },
       { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
       { header: "الموظف / المستفيد", subHeader: "Beneficiary", key: "employee" },

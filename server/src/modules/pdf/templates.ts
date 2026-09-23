@@ -222,6 +222,7 @@ export function paymentReceiptPdf(
     paymentNumber: string;
     paymentDate: Date;
     category: string;
+    type?: string | null;
     description: string | null;
     amount: unknown;
     vat: unknown;
@@ -267,7 +268,7 @@ export function paymentReceiptPdf(
           </tr>
           <tr>
             <th>بند / تصنيف الصرف</th>
-            <td style="font-weight:700;">${paymentCategoryLabel(payment.category)}</td>
+            <td style="font-weight:700;">${paymentCategoryLabel(payment.category, payment.type)}</td>
             <th>طريقة الدفع</th>
             <td style="font-weight:700;">${paymentMethodLabel(payment.method)}</td>
           </tr>

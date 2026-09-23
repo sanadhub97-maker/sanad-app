@@ -69,7 +69,16 @@ export function paymentMethodLabel(method: string | null | undefined): string {
   return PAYMENT_METHOD_LABELS_AR[method] ?? method;
 }
 
-export function paymentCategoryLabel(category: string | null | undefined): string {
+export const VISA_TYPE_LABELS_AR: Record<string, string> = {
+  EXIT_REENTRY: "خروج وعودة",
+  FINAL_EXIT: "خروج نهائي",
+  WORK_VISA: "تأشيرة عمل",
+};
+
+/** e.g. "تأشيرات — خروج وعودة" when the payment carries a visa type. */
+export function paymentCategoryLabel(category: string | null | undefined, type?: string | null): string {
   if (!category) return "—";
-  return PAYMENT_CATEGORY_LABELS_AR[category as PaymentCategory] ?? category;
+  const label = PAYMENT_CATEGORY_LABELS_AR[category as PaymentCategory] ?? category;
+  const visaType = category === "VISA" && type ? VISA_TYPE_LABELS_AR[type] : undefined;
+  return visaType ? `${label} — ${visaType}` : label;
 }

@@ -84,7 +84,7 @@ export async function create(input: CreateInput, createdById: string) {
   }
 
   return prisma.payment.create({
-    data: { ...input, paymentNumber, amount, vat, total, createdById },
+    data: { ...input, type: input.category === "VISA" ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
     include: includeRelations,
   });
 }
@@ -104,7 +104,10 @@ export async function update(id: string, input: UpdateInput) {
   const vat = input.vat !== undefined ? new Prisma.Decimal(input.vat) : existing.vat;
   const total = amount.plus(vat);
 
-  return prisma.payment.update({ where: { id }, data: { ...input, amount, vat, total }, include: includeRelations });
+  // `type` holds the visa type; drop it if the payment is no longer a visa.
+  const type = input.category && input.category !== "VISA" ? null : input.type;
+
+  return prisma.payment.update({ where: { id }, data: { ...input, type, amount, vat, total }, include: includeRelations });
 }
 
 export async function softDelete(id: string) {

@@ -32,14 +32,25 @@ import { FileUpload } from "@/components/common/file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
 import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS } from "@/api/payments";
+import { employeesApi } from "@/api/employees";
 import { getErrorMessage } from "@/lib/api";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import type { Payment } from "@/types/models";
+
+// Keep in sync with server/src/modules/payments/payments.schemas.ts.
+const VISA_TYPES = ["EXIT_REENTRY", "FINAL_EXIT", "WORK_VISA"] as const;
+const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
+
+function needsEmployee(category?: string, type?: string) {
+  return !!category && EMPLOYEE_CATEGORIES.includes(category) && !(category === "VISA" && type === "WORK_VISA");
+}
 
 const schema = z.object({
   paymentNumber: z.string().optional(),
   paymentDate: z.string().min(1, "Required"),
   category: z.string().min(1),
+  type: z.string().optional(),
+  employeeId: z.string().optional(),
   description: z.string().optional(),
   amount: z.coerce.number().positive("Must be greater than 0"),
   vat: z.coerce.number().min(0).default(0),
@@ -50,6 +61,13 @@ const schema = z.object({
   referenceNumber: z.string().optional(),
   fileId: z.string().optional(),
   notes: z.string().optional(),
+}).superRefine((v, ctx) => {
+  if (v.category === "VISA" && !VISA_TYPES.includes(v.type as (typeof VISA_TYPES)[number])) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["type"], message: "اختر نوع التأشيرة" });
+  }
+  if (needsEmployee(v.category, v.type) && !v.employeeId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: "اختر الموظف" });
+  }
 });
 type FormValues = z.infer<typeof schema>;
 
@@ -67,6 +85,12 @@ export function PaymentDialog({
   const queryClient = useQueryClient();
   const isEdit = Boolean(payment);
   const { data: branches } = useQuery({ queryKey: ["branches", "active"], queryFn: listActiveBranches });
+  const { data: employeesData } = useQuery({
+    queryKey: ["employees-selector"],
+    queryFn: () => employeesApi.list({ pageSize: 200 }),
+    enabled: open,
+  });
+  const employees = employeesData?.data ?? [];
 
   const {
     register,
@@ -86,6 +110,9 @@ export function PaymentDialog({
     },
   });
 
+  const category = watch("category");
+  const visaType = watch("type");
+  const showEmployee = !!category && EMPLOYEE_CATEGORIES.includes(category);
   const amount = watch("amount") || 0;
   const vat = watch("vat") || 0;
   const total = (Number(amount) + Number(vat)).toFixed(2);
@@ -302,6 +329,64 @@ export function PaymentDialog({
                   )}
                 />
               </FormField>
+
+              {category === "VISA" && (
+                <FormField label={isAr ? "نوع التأشيرة" : "Visa type"} icon={FileText} required error={errors.type?.message}>
+                  <Controller
+                    control={control}
+                    name="type"
+                    render={({ field }) => (
+                      <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
+                          <SelectValue placeholder={isAr ? "اختر نوع التأشيرة" : "Select visa type"} />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl shadow-xl">
+                          {VISA_TYPES.map((v) => (
+                            <SelectItem key={v} value={v}>
+                              {t(`visaTypes.${v}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </FormField>
+              )}
+
+              {showEmployee && (
+                <FormField
+                  label={isAr ? "الموظف" : "Employee"}
+                  icon={User}
+                  required={needsEmployee(category, visaType)}
+                  hint={!needsEmployee(category, visaType) ? (isAr ? "اختياري لتأشيرة العمل" : "Optional for a work visa") : undefined}
+                  error={errors.employeeId?.message}
+                >
+                  <Controller
+                    control={control}
+                    name="employeeId"
+                    render={({ field }) => (
+                      <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                        <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
+                          <SelectValue placeholder={isAr ? "اختر الموظف" : "Select employee"} />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl shadow-xl max-h-72">
+                          {employees.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">
+                              {isAr ? "لا يوجد موظفون مسجلون" : "No employees yet"}
+                            </div>
+                          )}
+                          {employees.map((emp) => (
+                            <SelectItem key={emp.id} value={emp.id}>
+                              <bdi>{isAr ? emp.fullNameAr : emp.fullNameEn || emp.fullNameAr}</bdi>
+                              <span className="ms-2 font-mono text-[11px] text-muted-foreground">{emp.employeeNumber}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </FormField>
+              )}
 
               <FormField
                 label={isAr ? "طريقة الدفع" : "Payment Method"}
