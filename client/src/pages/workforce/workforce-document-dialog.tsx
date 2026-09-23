@@ -212,6 +212,7 @@ export function WorkforceDocumentDialog({
     try {
       if (isEdit && document) {
         await workforceDocumentsApi.update(document.id, {
+          type: selectedType,
           documentNumber: values.documentNumber,
           issuingAuthority: values.issuingAuthority || undefined,
           issueDate: values.issueDate || undefined,

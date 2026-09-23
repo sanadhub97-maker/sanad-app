@@ -92,7 +92,7 @@ export const workforceDocumentsApi = {
   update: async (id: string, payload: any) =>
     (await api.put<{ data: WorkforceDocumentItem; message: string }>(`/workforce-documents/${id}`, payload)).data,
 
-  remove: async (id: string) =>
-    (await api.delete<{ message: string }>(`/workforce-documents/${id}`)).data,
+  remove: async (id: string, type?: string) =>
+    (await api.delete<{ message: string }>(`/workforce-documents/${id}`, { params: type ? { type } : undefined })).data,
 };
 

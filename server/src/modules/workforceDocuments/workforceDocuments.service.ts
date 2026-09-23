@@ -62,6 +62,8 @@ export async function listIqamas(query: ListWorkforceQuery) {
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
       branch: emp.branch,
+      type: "IQAMA",
+      documentNumber: emp.iqamaNumber,
       iqamaNumber: emp.iqamaNumber,
       issueDate: emp.iqamaIssueDate,
       expiryDate: emp.iqamaExpiryDate,
@@ -139,8 +141,11 @@ export async function listPassports(query: ListWorkforceQuery) {
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
       branch: emp.branch,
+      type: "PASSPORT",
+      documentNumber: emp.passportNumber,
       passportNumber: emp.passportNumber,
       passportCountry: emp.passportCountry,
+      issuingAuthority: emp.passportCountry,
       issueDate: emp.passportIssueDate,
       expiryDate: emp.passportExpiryDate,
       daysRemaining: days,
@@ -595,6 +600,59 @@ export async function createDocument(input: any) {
   });
   if (!employee) throw ApiError.notFound("Employee not found");
 
+  const rules = await getExpirationRules();
+
+  // Iqama/Passport live only on the Employee record's own denormalized fields
+  // (see expiringItems.ts's documented architecture) — listIqamas/listPassports
+  // read those fields directly, never an EmployeeDocument row. Creating a real
+  // EmployeeDocument row here too would leave a duplicate that immediately goes
+  // stale (edits only ever touch the Employee fields) and shows up as a phantom,
+  // never-updated document on the employee's profile Documents tab.
+  if (input.type === EmployeeDocumentType.IQAMA) {
+    const updated = await prisma.employee.update({
+      where: { id: input.employeeId },
+      data: {
+        iqamaNumber: input.documentNumber ?? employee.iqamaNumber,
+        iqamaIssueDate: input.issueDate ?? employee.iqamaIssueDate,
+        iqamaExpiryDate: input.expiryDate ?? employee.iqamaExpiryDate,
+        iqamaFileId: input.fileId ?? employee.iqamaFileId,
+      },
+    });
+    return {
+      id: updated.id,
+      employeeId: updated.id,
+      type: "IQAMA",
+      documentNumber: updated.iqamaNumber,
+      issueDate: updated.iqamaIssueDate,
+      expiryDate: updated.iqamaExpiryDate,
+      fileId: updated.iqamaFileId,
+      status: computeStatus(updated.iqamaExpiryDate, rules),
+    };
+  }
+
+  if (input.type === EmployeeDocumentType.PASSPORT) {
+    const updated = await prisma.employee.update({
+      where: { id: input.employeeId },
+      data: {
+        passportNumber: input.documentNumber ?? employee.passportNumber,
+        passportIssueDate: input.issueDate ?? employee.passportIssueDate,
+        passportExpiryDate: input.expiryDate ?? employee.passportExpiryDate,
+        passportFileId: input.fileId ?? employee.passportFileId,
+        passportCountry: input.issuingAuthority ?? employee.passportCountry,
+      },
+    });
+    return {
+      id: updated.id,
+      employeeId: updated.id,
+      type: "PASSPORT",
+      documentNumber: updated.passportNumber,
+      issueDate: updated.passportIssueDate,
+      expiryDate: updated.passportExpiryDate,
+      fileId: updated.passportFileId,
+      status: computeStatus(updated.passportExpiryDate, rules),
+    };
+  }
+
   const doc = await prisma.employeeDocument.create({
     data: {
       employeeId: input.employeeId,
@@ -621,31 +679,6 @@ export async function createDocument(input: any) {
     },
   });
 
-  // Sync to primary employee record if IQAMA or PASSPORT
-  if (input.type === EmployeeDocumentType.IQAMA) {
-    await prisma.employee.update({
-      where: { id: input.employeeId },
-      data: {
-        iqamaNumber: input.documentNumber ?? employee.iqamaNumber,
-        iqamaIssueDate: input.issueDate ?? employee.iqamaIssueDate,
-        iqamaExpiryDate: input.expiryDate ?? employee.iqamaExpiryDate,
-        iqamaFileId: input.fileId ?? employee.iqamaFileId,
-      },
-    });
-  } else if (input.type === EmployeeDocumentType.PASSPORT) {
-    await prisma.employee.update({
-      where: { id: input.employeeId },
-      data: {
-        passportNumber: input.documentNumber ?? employee.passportNumber,
-        passportIssueDate: input.issueDate ?? employee.passportIssueDate,
-        passportExpiryDate: input.expiryDate ?? employee.passportExpiryDate,
-        passportFileId: input.fileId ?? employee.passportFileId,
-        passportCountry: input.issuingAuthority ?? employee.passportCountry,
-      },
-    });
-  }
-
-  const rules = await getExpirationRules();
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
@@ -710,24 +743,31 @@ export async function updateDocument(id: string, input: any) {
   });
 
   if (!existing) {
-    // Check if ID belongs directly to an employee record
+    // Iqamas/passports are displayed from the Employee record's own denormalized
+    // fields (see listIqamas/listPassports), so their "document id" is really the
+    // employee's id — there's no EmployeeDocument row to find above. The client
+    // always sends `type` so we can tell these two apart; don't guess, since
+    // guessing wrong silently overwrites the wrong field on the employee record.
     const emp = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
     if (emp) {
-      if (input.type === EmployeeDocumentType.PASSPORT || input.passportNumber) {
+      if (input.type === EmployeeDocumentType.PASSPORT) {
         const updated = await prisma.employee.update({
           where: { id },
           data: {
             passportNumber: input.documentNumber ?? emp.passportNumber,
+            passportIssueDate: input.issueDate ?? emp.passportIssueDate,
             passportExpiryDate: input.expiryDate ?? emp.passportExpiryDate,
             passportFileId: input.fileId ?? emp.passportFileId,
+            passportCountry: input.issuingAuthority ?? emp.passportCountry,
           },
         });
         return { ...updated, status: computeStatus(updated.passportExpiryDate, rules) };
-      } else {
+      } else if (input.type === EmployeeDocumentType.IQAMA) {
         const updated = await prisma.employee.update({
           where: { id },
           data: {
             iqamaNumber: input.documentNumber ?? emp.iqamaNumber,
+            iqamaIssueDate: input.issueDate ?? emp.iqamaIssueDate,
             iqamaExpiryDate: input.expiryDate ?? emp.iqamaExpiryDate,
             iqamaFileId: input.fileId ?? emp.iqamaFileId,
           },
@@ -757,12 +797,12 @@ export async function updateDocument(id: string, input: any) {
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
-export async function removeDocument(id: string) {
+export async function removeDocument(id: string, type?: string) {
   if (id.startsWith("iqama-")) {
     const empId = id.replace("iqama-", "");
     await prisma.employee.update({
       where: { id: empId },
-      data: { iqamaNumber: null, iqamaExpiryDate: null, iqamaFileId: null },
+      data: { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null },
     });
     return;
   }
@@ -771,7 +811,7 @@ export async function removeDocument(id: string) {
     const empId = id.replace("passport-", "");
     await prisma.employee.update({
       where: { id: empId },
-      data: { passportNumber: null, passportExpiryDate: null, passportFileId: null },
+      data: { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null },
     });
     return;
   }
@@ -781,13 +821,26 @@ export async function removeDocument(id: string) {
   });
 
   if (!existing) {
+    // Same bare-employee-id case as updateDocument: don't guess which of
+    // Iqama/Passport is meant — clearing both would silently wipe whichever
+    // one the caller didn't intend to touch. The caller must say which.
     const emp = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
     if (emp) {
-      await prisma.employee.update({
-        where: { id },
-        data: { iqamaNumber: null, iqamaExpiryDate: null, passportNumber: null, passportExpiryDate: null },
-      });
-      return;
+      if (type === EmployeeDocumentType.PASSPORT) {
+        await prisma.employee.update({
+          where: { id },
+          data: { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null },
+        });
+        return;
+      }
+      if (type === EmployeeDocumentType.IQAMA) {
+        await prisma.employee.update({
+          where: { id },
+          data: { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null },
+        });
+        return;
+      }
+      throw ApiError.badRequest("Document type is required to delete this record");
     }
     throw ApiError.notFound("Document not found");
   }

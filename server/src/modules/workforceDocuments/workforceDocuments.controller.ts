@@ -119,7 +119,7 @@ export async function updateDoc(req: Request, res: Response, next: NextFunction)
 
 export async function removeDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    await service.removeDocument(req.params.id);
+    await service.removeDocument(req.params.id, req.query.type as string | undefined);
     res.json({ message: "تم حذف الوثيقة بنجاح" });
   } catch (err) {
     next(err);

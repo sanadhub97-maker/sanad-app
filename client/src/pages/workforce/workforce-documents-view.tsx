@@ -117,7 +117,7 @@ export function WorkforceDocumentsView({
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      await workforceDocumentsApi.remove(deleteTarget.id);
+      await workforceDocumentsApi.remove(deleteTarget.id, deleteTarget.type);
       toast.success(isAr ? "تم حذف السجل بنجاح" : "Record deleted successfully");
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       setDeleteTarget(null);

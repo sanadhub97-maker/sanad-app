@@ -134,7 +134,7 @@ export default function EmployeeDocumentsPage() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      await workforceDocumentsApi.remove(deleteTarget.id);
+      await workforceDocumentsApi.remove(deleteTarget.id, deleteTarget.type);
       toast.success(isAr ? "تم حذف الوثيقة بنجاح" : "Document deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["workforce-documents-unified"] });
       queryClient.invalidateQueries({ queryKey: ["workforce-category-counts"] });
