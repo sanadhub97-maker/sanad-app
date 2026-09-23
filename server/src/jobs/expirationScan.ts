@@ -6,6 +6,7 @@ import { getExpirationRules, markExpirationScanRun } from "@/services/settingsSt
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
+import { getActiveRecipients } from "@/services/whatsappRecipients";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -112,6 +113,7 @@ export async function runExpirationScan() {
     getBrandingContext(),
   ]);
   const companyName = branding.company?.nameAr || branding.company?.nameEn;
+  const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
 
   let dueCount = 0;
 
@@ -148,21 +150,16 @@ export async function runExpirationScan() {
 
     if (whatsappSettings?.enabled) {
       const whatsappMessage = whatsappMessageFor(item, threshold, companyName);
-      if (whatsappSettings.provider === CALLMEBOT_PROVIDER) {
-        // CallMeBot's free key can only message the one number that activated it.
-        const phone = whatsappSettings.phoneNumberId;
-        if (phone) {
-          await logOnce(`${dedupeBase}:WHATSAPP:callmebot:${phone}`, "WHATSAPP", async () => {
-            assertSent(await sendWhatsapp(phone, whatsappMessage));
-          });
-        }
-      } else {
-        for (const recipient of recipients) {
-          if (!recipient.phone) continue;
-          await logOnce(`${dedupeBase}:WHATSAPP:${recipient.id}`, "WHATSAPP", async () => {
-            assertSent(await sendWhatsapp(recipient.phone!, whatsappMessage));
-          });
-        }
+      // The numbers configured in Settings → WhatsApp decide who gets alerts.
+      // With Meta and no list configured, fall back to notify-role users' phones.
+      const phones =
+        whatsappPhones.length > 0 || whatsappSettings.provider === CALLMEBOT_PROVIDER
+          ? whatsappPhones
+          : recipients.flatMap((r) => (r.phone ? [r.phone] : []));
+      for (const phone of phones) {
+        await logOnce(`${dedupeBase}:WHATSAPP:${phone}`, "WHATSAPP", async () => {
+          assertSent(await sendWhatsapp(phone, whatsappMessage));
+        });
       }
     }
   }

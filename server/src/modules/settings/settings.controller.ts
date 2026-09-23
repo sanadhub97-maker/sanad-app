@@ -5,6 +5,7 @@ import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 import { getBrandingContext } from "@/services/branding";
+import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.getCompanySettings() });
@@ -49,7 +50,14 @@ export const getWhatsapp = asyncHandler(async (_req: Request, res: Response) => 
 export const updateWhatsapp = asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.updateWhatsappSettings(req.body), message: "WhatsApp settings saved." });
 });
-export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
+export const getWhatsappRecipients = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({ data: await listRecipients() });
+});
+export const updateWhatsappRecipients = asyncHandler(async (req: Request, res: Response) => {
+  res.json({ data: await saveRecipients(req.body.recipients) });
+});
+
+export const testWhatsapp =asyncHandler(async (req: Request, res: Response) => {
   const { company } = await getBrandingContext();
   const companyName = company?.nameAr || company?.nameEn;
   const message = [

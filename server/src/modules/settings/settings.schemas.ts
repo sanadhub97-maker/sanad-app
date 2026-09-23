@@ -57,5 +57,28 @@ export const whatsappSettingsSchema = z.object({
   businessAccountId: z.string().max(100).optional(),
 });
 
+const phoneSchema = z
+  .string()
+  .transform((v) => v.replace(/[\s()-]/g, ""))
+  .refine((v) => /^\+\d{8,15}$/.test(v), "Phone must be in international format, e.g. +9665XXXXXXXX");
+
+export const whatsappRecipientsSchema = z
+  .object({
+    recipients: z
+      .array(
+        z.object({
+          id: z.string().max(100).optional(),
+          name: z.string().max(100).default(""),
+          phone: phoneSchema,
+          enabled: z.boolean(),
+          apiKey: z.string().max(200).optional(),
+        })
+      )
+      .max(50),
+  })
+  .refine((v) => new Set(v.recipients.map((r) => r.phone)).size === v.recipients.length, {
+    message: "The same number is listed more than once",
+  });
+
 export const testEmailSchema = z.object({ to: z.string().email() });
 export const testWhatsappSchema = z.object({ to: z.string().min(6) });

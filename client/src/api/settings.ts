@@ -83,4 +83,24 @@ export const settingsApi = {
   getWhatsapp: async () => (await api.get<{ data: WhatsappSettingsView }>("/settings/whatsapp")).data.data,
   updateWhatsapp: async (input: WhatsappSettingsInput) => (await api.put("/settings/whatsapp", input)).data,
   testWhatsapp: async (to: string) => (await api.post<{ message: string }>("/settings/whatsapp/test", { to })).data,
+  getWhatsappRecipients: async () =>
+    (await api.get<{ data: WhatsappRecipient[] }>("/settings/whatsapp/recipients")).data.data,
+  updateWhatsappRecipients: async (recipients: WhatsappRecipientInput[]) =>
+    (await api.put<{ data: WhatsappRecipient[] }>("/settings/whatsapp/recipients", { recipients })).data.data,
 };
+
+export interface WhatsappRecipient {
+  id: string;
+  name: string;
+  phone: string;
+  enabled: boolean;
+  hasApiKey: boolean;
+}
+
+export interface WhatsappRecipientInput {
+  id?: string;
+  name: string;
+  phone: string;
+  enabled: boolean;
+  apiKey?: string;
+}

@@ -13,6 +13,7 @@ import {
   testEmailSchema,
   testWhatsappSchema,
   whatsappSettingsSchema,
+  whatsappRecipientsSchema,
 } from "@/modules/settings/settings.schemas";
 
 const router = Router();
@@ -63,6 +64,14 @@ router.put(
   auditLog(AuditAction.UPDATE, "settings"),
   controller.updateWhatsapp
 );
-router.post("/whatsapp/test", requirePermission("settings.edit"), validate({ body: testWhatsappSchema }), controller.testWhatsapp);
+router.get("/whatsapp/recipients", requirePermission("settings.view"), controller.getWhatsappRecipients);
+router.put(
+  "/whatsapp/recipients",
+  requirePermission("settings.edit"),
+  validate({ body: whatsappRecipientsSchema }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappRecipients
+);
+router.post("/whatsapp/test",requirePermission("settings.edit"), validate({ body: testWhatsappSchema }), controller.testWhatsapp);
 
 export default router;

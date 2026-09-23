@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
+import { getRecipientApiKey, normalizePhone } from "@/services/whatsappRecipients";
 
 export const CALLMEBOT_PROVIDER = "CALLMEBOT";
 const CALLMEBOT_API_URL = "https://api.callmebot.com/whatsapp.php";
@@ -80,12 +81,16 @@ async function sendViaMetaCloud(config: WhatsappConfig, to: string, message: str
 }
 
 async function sendViaCallMeBot(config: WhatsappConfig, to: string, message: string): Promise<SendResult> {
-  if (!config.enabled || !config.apiKey) {
+  if (!config.enabled) {
     logger.warn({ to }, "WhatsApp (CallMeBot) not configured — skipping send");
     return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
   }
+  const apiKey = await getRecipientApiKey(to);
+  if (!apiKey) {
+    return { sent: false, reason: "No CallMeBot key saved for this number — add it to the recipients list first." };
+  }
 
-  const url = `${CALLMEBOT_API_URL}?${new URLSearchParams({ phone: to, text: message, apikey: config.apiKey })}`;
+  const url = `${CALLMEBOT_API_URL}?${new URLSearchParams({ phone: normalizePhone(to), text: message, apikey: apiKey })}`;
   const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   const flatten = (s: string) => s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   // The response echoes the message back; drop it so words inside an alert

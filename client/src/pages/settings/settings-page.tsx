@@ -1211,14 +1211,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
     values: data ? { ...data, provider: data.provider === "CALLMEBOT" ? "CALLMEBOT" : "META", apiKey: "" } : undefined,
   });
 
-  const [testTo, setTestTo] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
-
-  // CallMeBot's free key only delivers to the number that activated it, so
-  // that's the only useful test target — prefill it.
-  React.useEffect(() => {
-    if (data?.provider === "CALLMEBOT" && data.phoneNumberId) setTestTo(data.phoneNumberId);
-  }, [data?.provider, data?.phoneNumberId]);
 
   const mutation = useMutation({
     mutationFn: settingsApi.updateWhatsapp,
@@ -1226,12 +1219,6 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
       toast.success(res?.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "whatsapp"] });
     },
-    onError: (err) => toast.error(getErrorMessage(err)),
-  });
-
-  const testMutation = useMutation({
-    mutationFn: () => settingsApi.testWhatsapp(testTo),
-    onSuccess: (res) => toast.success(res.message),
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
@@ -1335,7 +1322,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                         {isRtl ? "ابعت له على واتساب: " : "Send it on WhatsApp: "}
                         <bdi dir="ltr" className="font-mono font-semibold text-foreground">I allow callmebot to send me messages</bdi>
                       </li>
-                      <li>{isRtl ? "هيرد عليك بمفتاح API، حطّه هنا مع رقمك." : "It replies with an API key — enter it here with your number."}</li>
+                      <li>{isRtl ? "هيرد عليك بمفتاح API، ضيف الرقم ومفتاحه في قائمة الأرقام تحت." : "It replies with an API key — add the number and its key to the recipients list below."}</li>
                     </ol>
                     <p className="text-muted-foreground">
                       {isRtl
@@ -1352,38 +1339,6 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                       .
                     </p>
                   </div>
-
-                  <InputField label={isRtl ? "رقم الواتساب المفعّل" : "Activated WhatsApp number"} icon={Phone}>
-                    <Input
-                      {...register("phoneNumberId")}
-                      dir="ltr"
-                      placeholder="+9665XXXXXXXX"
-                      className="h-11 rounded-xl bg-background/60 font-mono text-sm"
-                    />
-                  </InputField>
-
-                  <InputField
-                    label={isRtl ? "مفتاح CallMeBot" : "CallMeBot API key"}
-                    icon={Key}
-                    hint={data?.hasApiKey ? (isRtl ? "المفتاح محفوظ ومشفّر" : "Key saved and encrypted") : undefined}
-                  >
-                    <div className="relative">
-                      <Input
-                        type={showApiKey ? "text" : "password"}
-                        dir="ltr"
-                        placeholder={data?.hasApiKey ? "••••••" : "1234567"}
-                        {...register("apiKey")}
-                        className="h-11 rounded-xl bg-background/60 font-mono text-sm pe-10 ps-3"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute inset-y-0 end-0 flex items-center px-3 text-muted-foreground hover:text-foreground cursor-pointer"
-                      >
-                        {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </InputField>
                 </>
               ) : (
                 <>
@@ -1462,56 +1417,199 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         </div>
       </form>
 
-      {/* Direct WhatsApp Test Tool */}
-      <Card className="specular-border overflow-hidden border-border/80 bg-muted/20">
-        <CardHeader className="pb-3">
+      <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
+    </div>
+  );
+}
+
+type RecipientRow = { id?: string; name: string; phone: string; enabled: boolean; apiKey: string; hasApiKey: boolean };
+
+function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: boolean; isRtl: boolean; isCallMeBot: boolean }) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["settings", "whatsapp", "recipients"],
+    queryFn: settingsApi.getWhatsappRecipients,
+  });
+
+  const [rows, setRows] = useState<RecipientRow[]>([]);
+  const [dirty, setDirty] = useState(false);
+  const [testingPhone, setTestingPhone] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (data && !dirty) setRows(data.map((r) => ({ ...r, apiKey: "" })));
+  }, [data, dirty]);
+
+  function update(index: number, patch: Partial<RecipientRow>) {
+    setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
+    setDirty(true);
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      settingsApi.updateWhatsappRecipients(
+        rows.map(({ id, name, phone, enabled, apiKey }) => ({ id, name, phone, enabled, apiKey: apiKey || undefined }))
+      ),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(["settings", "whatsapp", "recipients"], saved);
+      setRows(saved.map((r) => ({ ...r, apiKey: "" })));
+      setDirty(false);
+      toast.success(isRtl ? "تم حفظ أرقام الاستلام" : "Recipients saved");
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  async function sendTest(phone: string) {
+    setTestingPhone(phone);
+    try {
+      const res = await settingsApi.testWhatsapp(phone);
+      toast.success(res.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setTestingPhone(null);
+    }
+  }
+
+  const activeCount = rows.filter((r) => r.enabled).length;
+
+  return (
+    <Card className="specular-border overflow-hidden border-border/80">
+      <CardHeader className="pb-3 border-b border-border/40">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <Send className="h-4 w-4" />
+              <Phone className="h-4 w-4" />
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-foreground">
-                {isRtl ? "إرسال رسالة اختبار عبر واتساب" : "Send a WhatsApp test message"}
+                {isRtl ? "الأرقام اللي بتستلم التنبيهات" : "Alert recipients"}
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
                 {isCallMeBot
                   ? isRtl
-                    ? "احفظ الإعدادات الأول، وبعدين ابعت اختبار للرقم المفعّل"
-                    : "Save the settings first, then send a test to the activated number"
+                    ? "كل رقم لازم يفعّل CallMeBot من موبايله ويتحط مفتاحه جنبه"
+                    : "Each number must activate CallMeBot from its own phone and have its key entered"
                   : isRtl
-                    ? "أدخل رقم هاتف مع رمز الدولة للتحقق من جاهزية الإرسال"
-                    : "Enter a phone number with its country code to verify sending works"}
+                    ? "التنبيهات هتتبعت للأرقام المفعّلة في القائمة دي"
+                    : "Alerts go to the enabled numbers in this list"}
               </CardDescription>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="pt-2">
-          <div className="flex flex-col sm:flex-row items-center gap-3 max-w-xl">
-            <Input
-              dir="ltr"
-              placeholder="+9665XXXXXXXX"
-              value={testTo}
-              onChange={(e) => setTestTo(e.target.value)}
-              className="h-11 rounded-xl bg-background text-sm flex-1 font-mono"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => testMutation.mutate()}
-              disabled={!testTo || testMutation.isPending}
-              className="rounded-xl h-11 px-5 border-border font-bold text-xs shrink-0 w-full sm:w-auto"
-            >
-              {testMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin me-2" />
-              ) : (
-                <Send className="h-4 w-4 me-2" />
+          <Badge variant={activeCount > 0 ? "success" : "secondary"} className="text-xs px-3 py-1 shrink-0">
+            {isRtl ? `${activeCount} رقم مفعّل` : `${activeCount} active`}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-3">
+        {rows.length === 0 && (
+          <p className="text-xs text-muted-foreground py-4 text-center">
+            {isRtl ? "مفيش أرقام لسه — ضيف أول رقم." : "No numbers yet — add the first one."}
+          </p>
+        )}
+
+        {rows.map((row, index) => {
+          const needsKey = isCallMeBot && !row.hasApiKey && !row.apiKey;
+          return (
+            <div
+              key={row.id ?? `new-${index}`}
+              className={cn(
+                "grid gap-2 rounded-xl border p-3 sm:grid-cols-[1fr_1.2fr_1fr_auto] sm:items-center",
+                row.enabled ? "border-border/70 bg-background/60" : "border-dashed border-border/60 bg-muted/20 opacity-70"
               )}
-              {t("common.sendTest")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            >
+              <Input
+                id={`recipient-name-${index}`}
+                value={row.name}
+                onChange={(e) => update(index, { name: e.target.value })}
+                placeholder={isRtl ? "الاسم (اختياري)" : "Name (optional)"}
+                disabled={!canEdit}
+                className="h-10 rounded-lg text-sm"
+              />
+              <Input
+                id={`recipient-phone-${index}`}
+                value={row.phone}
+                onChange={(e) => update(index, { phone: e.target.value })}
+                placeholder="+9665XXXXXXXX"
+                dir="ltr"
+                disabled={!canEdit}
+                className="h-10 rounded-lg font-mono text-sm"
+              />
+              {isCallMeBot ? (
+                <Input
+                  id={`recipient-key-${index}`}
+                  value={row.apiKey}
+                  onChange={(e) => update(index, { apiKey: e.target.value })}
+                  placeholder={row.hasApiKey ? (isRtl ? "المفتاح محفوظ ✓" : "Key saved ✓") : isRtl ? "مفتاح CallMeBot" : "CallMeBot key"}
+                  dir="ltr"
+                  disabled={!canEdit}
+                  className={cn("h-10 rounded-lg font-mono text-sm", needsKey && "border-amber-500/60")}
+                />
+              ) : (
+                <span className="hidden sm:block" />
+              )}
+              <div className="flex items-center justify-end gap-1.5">
+                <Switch
+                  checked={row.enabled}
+                  onCheckedChange={(v) => update(index, { enabled: v })}
+                  disabled={!canEdit}
+                  aria-label={isRtl ? "تفعيل الرقم" : "Enable number"}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  title={dirty ? (isRtl ? "احفظ الأول" : "Save first") : isRtl ? "إرسال رسالة اختبار" : "Send test message"}
+                  disabled={!row.id || dirty || testingPhone !== null}
+                  onClick={() => sendTest(row.phone)}
+                  className="h-9 w-9 rounded-lg text-emerald-600"
+                >
+                  {testingPhone === row.phone ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  title={isRtl ? "حذف" : "Remove"}
+                  disabled={!canEdit}
+                  onClick={() => {
+                    setRows((prev) => prev.filter((_, i) => i !== index));
+                    setDirty(true);
+                  }}
+                  className="h-9 w-9 rounded-lg text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!canEdit}
+            onClick={() => {
+              setRows((prev) => [...prev, { name: "", phone: "", enabled: true, apiKey: "", hasApiKey: false }]);
+              setDirty(true);
+            }}
+            className="rounded-xl h-10 text-xs font-bold"
+          >
+            + {isRtl ? "إضافة رقم" : "Add number"}
+          </Button>
+          <Button
+            type="button"
+            disabled={!canEdit || !dirty || saveMutation.isPending}
+            onClick={() => saveMutation.mutate()}
+            className="rounded-xl h-10 px-8 bg-primary text-primary-foreground font-black text-xs"
+          >
+            {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <Check className="h-4 w-4 me-2" />}
+            {t("common.save")}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
