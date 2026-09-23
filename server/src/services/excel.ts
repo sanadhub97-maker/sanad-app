@@ -61,7 +61,17 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   // Create worksheet with RTL enabled and frozen pane below header row (row 4)
   const sheet = workbook.addWorksheet(sheetName.slice(0, 31), {
     views: [{ state: "frozen", ySplit: 4, rightToLeft: true }],
-    pageSetup: { paperSize: 9, orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+    pageSetup: {
+      paperSize: 9, // A4
+      orientation: "portrait",
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 0,
+      horizontalCentered: true,
+      margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 },
+      printTitlesRow: "4:4", // repeat the column headers on every printed page
+    },
+    headerFooter: { oddFooter: "&Lصفحة &P من &N&R&D" },
   });
 
   // Track max string length per column for intelligent auto-width calculation

@@ -36,8 +36,8 @@ export async function closePdfBrowser() {
   }
 }
 
+// Every PDF is A4 portrait; wide report tables use a compact style instead.
 export interface RenderPdfOptions {
-  landscape?: boolean;
   footerLabel?: string;
 }
 
@@ -55,7 +55,7 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     await page.setContent(html, { waitUntil: "networkidle0" });
     const pdf = await page.pdf({
       format: "A4",
-      landscape: options.landscape ?? false,
+      landscape: false,
       printBackground: true,
       displayHeaderFooter: true,
       headerTemplate: "<span></span>",
@@ -102,7 +102,6 @@ export function pdfDocumentShell(opts: {
   bodyHtml: string;
   generatedAt?: Date;
   classification?: string;
-  landscape?: boolean;
 }): string {
   const dir = opts.dir ?? "rtl";
   const companyNameAr = opts.companyNameAr || "منظومة سند لإدارة الموارد البشرية والامتثال";
@@ -110,7 +109,7 @@ export function pdfDocumentShell(opts: {
   const classification = opts.classification || "وثيقة إدارية رسمية معتمدة | Official Document";
 
   const now = opts.generatedAt ?? new Date();
-  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
   const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   return `<!doctype html>
@@ -123,7 +122,7 @@ export function pdfDocumentShell(opts: {
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   @page {
-    size: ${opts.landscape ? "A4 landscape" : "A4 portrait"};
+    size: A4 portrait;
     margin: 12mm 14mm 14mm 14mm;
   }
   * { box-sizing: border-box; }
@@ -288,6 +287,18 @@ export function pdfDocumentShell(opts: {
   tbody tr:nth-child(even) td {
     background: #f8fafc;
   }
+
+  /* Report tables on A4 portrait: keep rows intact across pages, repeat the
+     header on every page, and tighten wide tables so every column fits. */
+  .report-table thead { display: table-header-group; }
+  .report-table tr { page-break-inside: avoid; break-inside: avoid; }
+  .report-table td { overflow-wrap: anywhere; vertical-align: middle; }
+  .report-table .nowrap { white-space: nowrap; }
+  .report-table.compact th, .report-table.compact td { padding: 4px 5px; font-size: 7.5pt; }
+  .report-table.compact th .th-sub { font-size: 6pt; }
+  .report-table.dense th, .report-table.dense td { padding: 3px 3px; font-size: 6.6pt; line-height: 1.3; }
+  .report-table.dense th .th-sub { font-size: 5.3pt; }
+  .report-table.dense .badge-status, .report-table.compact .badge-status { padding: 1px 4px; font-size: 6.2pt; }
 
   /* 🏷️ Status Badges */
   .badge-status {

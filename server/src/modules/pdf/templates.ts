@@ -6,21 +6,23 @@ type Branding = { company: { nameAr?: string | null; nameEn?: string | null } | 
 function fmtDate(d: Date | null | undefined) {
   if (!d) return "—";
   const date = new Date(d);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
 }
 
 function statusBadge(status: string | null | undefined) {
   if (!status) return "—";
-  const map: Record<string, { ar: string; en: string }> = {
-    VALID: { ar: "سارية وممتثلة", en: "Valid" },
-    ACTIVE: { ar: "على رأس العمل", en: "Active" },
-    EXPIRING_SOON: { ar: "توشك على الانتهاء", en: "Expiring Soon" },
-    ON_LEAVE: { ar: "في إجازة", en: "On Leave" },
-    EXPIRED: { ar: "منتهية الصلاحية", en: "Expired" },
-    TERMINATED: { ar: "منتهي التعاقد", en: "Terminated" },
-    INACTIVE: { ar: "حساب معطل", en: "Inactive" },
+  // Short Arabic labels: on A4 portrait a bilingual badge ate most of a
+  // table's width; the column headers already carry the English names.
+  const labels: Record<string, string> = {
+    VALID: "سارية",
+    ACTIVE: "على رأس العمل",
+    EXPIRING_SOON: "قاربت على الانتهاء",
+    ON_LEAVE: "في إجازة",
+    EXPIRED: "منتهية",
+    TERMINATED: "منتهي التعاقد",
+    INACTIVE: "غير نشط",
   };
-  const label = map[status] ? `${map[status].ar} (${map[status].en})` : status;
+  const label = labels[status] ?? status;
   return `<span class="badge-status status-${status}">${label}</span>`;
 }
 
@@ -383,7 +385,6 @@ export interface ReportColumn {
 
 export interface TableReportPdfOptions {
   titleEn?: string;
-  landscape?: boolean;
   classification?: string;
 }
 
@@ -397,7 +398,9 @@ export function tableReportPdf(
   branding: Branding,
   opts?: TableReportPdfOptions
 ) {
-  const isLandscape = opts?.landscape ?? columns.length > 5;
+  // Every report prints on A4 portrait; wide tables switch to a compact style
+  // (smaller type, tighter cells) so all columns still fit the page width.
+  const density = columns.length >= 9 ? "dense" : columns.length >= 6 ? "compact" : "";
 
   const contentHtml = rows.length > 0
     ? `
@@ -407,7 +410,7 @@ export function tableReportPdf(
         <span style="font-size:8pt; color:#64748b; font-weight:600;">تاريخ التصدير: ${fmtDate(new Date())}</span>
       </div>
       <div class="section-body" style="padding:0;">
-        <table style="margin:0; border:none;">
+        <table class="report-table ${density}" style="margin:0; border:none;">
           <thead>
             <tr>
               <th style="width:34px; text-align:center;">#</th>
@@ -489,7 +492,6 @@ export function tableReportPdf(
   return pdfDocumentShell({
     title,
     titleEn: opts?.titleEn,
-    landscape: isLandscape,
     dir: "rtl",
     companyNameAr: branding.company?.nameAr,
     companyNameEn: branding.company?.nameEn,

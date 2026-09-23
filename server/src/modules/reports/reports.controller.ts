@@ -17,12 +17,10 @@ async function respond(
     format: string;
     columns: ColumnDef<Row>[];
     rows: Row[];
-    landscape?: boolean;
   }
 ) {
-  const { title, titleEn, filenameBase, format, columns, rows, landscape } = opts;
+  const { title, titleEn, filenameBase, format, columns, rows } = opts;
   const branding = await getBrandingContext();
-  const isLandscape = landscape ?? columns.length > 5;
 
   if (format === "xlsx") {
     const companyTitle = branding.company?.nameAr
@@ -58,18 +56,14 @@ async function respond(
         }
         if (value instanceof Date) {
           const d = new Date(value);
-          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          return `<span class="nowrap">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>`;
         }
         return value === null || value === undefined ? "—" : String(value);
       },
     }));
-    const html = tableReportPdf(title, pdfColumns, rows, branding, {
-      titleEn,
-      landscape: isLandscape,
-    });
+    const html = tableReportPdf(title, pdfColumns, rows, branding, { titleEn });
     const pdf = await renderHtmlToPdf(html, {
       footerLabel: titleEn ? `${title} — ${titleEn}` : title,
-      landscape: isLandscape,
     });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filenameBase}.pdf"`);
@@ -86,7 +80,6 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
     title: "تقرير الموظفين الشامل",
     titleEn: "Comprehensive Employees & Workforce Report",
     filenameBase: "employees-report",
-    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
@@ -112,7 +105,6 @@ export const documents = asyncHandler(async (req: Request, res: Response) => {
     title: "تقرير متابعة الوثائق الرسمية والامتثال",
     titleEn: "Official Documents & Compliance Expiration Report",
     filenameBase: "documents-expiration-report",
-    landscape: false,
     format: query.format,
     rows: rows as Row[],
     columns: [
@@ -132,7 +124,6 @@ export const payments = asyncHandler(async (req: Request, res: Response) => {
     title: "تقرير سندات الصرف والمصروفات التشغيلية",
     titleEn: "Payment Vouchers & Operational Expenses Report",
     filenameBase: "payments-report",
-    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
@@ -156,7 +147,6 @@ export const activity = asyncHandler(async (req: Request, res: Response) => {
     title: "سجل العمليات والتدقيق الإداري",
     titleEn: "System Audit & Administrative Activity Log",
     filenameBase: "audit-activity-report",
-    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
