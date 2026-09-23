@@ -5,6 +5,7 @@ export interface CompanySettings {
   nameEn?: string | null;
   logoFileId?: string | null;
   logoDarkFileId?: string | null;
+  printLogoFileId?: string | null;
   faviconFileId?: string | null;
   stampFileId?: string | null;
   signatureFileId?: string | null;

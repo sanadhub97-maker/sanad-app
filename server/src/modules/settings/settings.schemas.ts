@@ -9,6 +9,7 @@ export const companySettingsSchema = z.object({
   // null clears an uploaded file (the Remove button); undefined leaves it as is.
   logoFileId: nullableFileId,
   logoDarkFileId: nullableFileId,
+  printLogoFileId: nullableFileId,
   faviconFileId: nullableFileId,
   stampFileId: emptyToUndefined(z.string().optional()),
   signatureFileId: emptyToUndefined(z.string().optional()),

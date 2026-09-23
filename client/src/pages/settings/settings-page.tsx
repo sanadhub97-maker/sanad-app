@@ -191,6 +191,7 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 
   const logoFileId = watch("logoFileId");
   const logoDarkFileId = watch("logoDarkFileId");
+  const printLogoFileId = watch("printLogoFileId");
 
   if (isLoading) {
     return (
@@ -369,13 +370,13 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             <AssetUploadCard
               title={isRtl ? "شعار الوضع النهاري" : "Light mode logo"}
               subtitle={
                 isRtl
-                  ? "بيظهر في الشريط العلوي في الوضع النهاري، وفي المطبوعات والتصدير"
-                  : "Shown in the top bar in light mode, and on prints and exports"
+                  ? "بيظهر في الشريط العلوي في الوضع النهاري"
+                  : "Shown in the top bar in light mode"
               }
               aspectHint={isRtl ? "صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت" : "Transparent PNG or SVG • up to 5MB"}
               previewType="logo"
@@ -399,6 +400,22 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               module="company-logo"
               onUploaded={(fid) => setValue("logoDarkFileId", fid, { shouldDirty: true })}
               onRemoved={() => setValue("logoDarkFileId", null, { shouldDirty: true })}
+              disabled={!canEdit}
+              isRtl={isRtl}
+            />
+            <AssetUploadCard
+              title={isRtl ? "شعار الطباعة" : "Print logo"}
+              subtitle={
+                isRtl
+                  ? "بيظهر في ملفات PDF: ملف الموظف، الإيصالات، والتقارير. لو مش مرفوع، هيتستخدم شعار الوضع النهاري"
+                  : "Used on PDFs: employee profiles, receipts and reports. Falls back to the light logo if not set"
+              }
+              aspectHint={isRtl ? "يفضل نسخة واضحة على خلفية بيضاء • PNG مفرغ" : "Preferably a version that reads well on white • transparent PNG"}
+              previewType="logo"
+              fileId={printLogoFileId}
+              module="company-logo"
+              onUploaded={(fid) => setValue("printLogoFileId", fid, { shouldDirty: true })}
+              onRemoved={() => setValue("printLogoFileId", null, { shouldDirty: true })}
               disabled={!canEdit}
               isRtl={isRtl}
             />

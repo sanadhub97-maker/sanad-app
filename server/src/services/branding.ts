@@ -8,8 +8,10 @@ export async function getBrandingContext() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   let logoDataUrl: string | null = null;
 
-  if (company?.logoFileId) {
-    const logoFile = await prisma.file.findUnique({ where: { id: company.logoFileId } });
+  // A dedicated print logo wins; otherwise the light-mode logo (prints are on white paper).
+  const printLogoId = company?.printLogoFileId || company?.logoFileId;
+  if (printLogoId) {
+    const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
     if (logoFile) {
       const buffer = await storage.read(logoFile.storedName);
       logoDataUrl = `data:${logoFile.mimeType};base64,${buffer.toString("base64")}`;
