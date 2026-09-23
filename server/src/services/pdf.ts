@@ -3,13 +3,28 @@ import { logger } from "@/lib/logger";
 
 let browserPromise: Promise<Browser> | null = null;
 
-function getBrowser(): Promise<Browser> {
-  if (!browserPromise) {
-    browserPromise = puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=medium"],
-    });
+function launchBrowser(): Promise<Browser> {
+  const promise = puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=medium"],
+  });
+  // A launch failure must not wedge every future PDF request behind the same
+  // rejected promise forever — clear it so the next call retries a fresh launch.
+  promise.catch(() => {
+    if (browserPromise === promise) browserPromise = null;
+  });
+  return promise;
+}
+
+async function getBrowser(): Promise<Browser> {
+  if (browserPromise) {
+    const existing = await browserPromise.catch(() => null);
+    if (existing?.isConnected()) return existing;
+    // The cached browser process died (crash/OOM) — relaunch instead of
+    // staying stuck returning a dead browser to every request until restart.
+    browserPromise = null;
   }
+  browserPromise = launchBrowser();
   return browserPromise;
 }
 
@@ -34,8 +49,7 @@ export interface RenderPdfOptions {
  * - Clean bilingual headers without bidirectional text reversal
  * - Official corporate signatures and circular compliance seal
  */
-export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
-  const browser = await getBrowser();
+async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
   const page = await browser.newPage();
   try {
     await page.setContent(html, { waitUntil: "networkidle0" });
@@ -53,11 +67,27 @@ export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = 
       margin: { top: "14mm", bottom: "16mm", left: "12mm", right: "12mm" },
     });
     return Buffer.from(pdf);
-  } catch (err) {
-    logger.error({ err }, "PDF generation failed");
-    throw err;
   } finally {
-    await page.close();
+    await page.close().catch(() => undefined);
+  }
+}
+
+export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
+  try {
+    return await renderOnce(await getBrowser(), html, options);
+  } catch (err) {
+    // The cached browser may have died between the health check in getBrowser()
+    // and this request (e.g. crashed mid-render under load) — force a fresh
+    // launch and retry once before giving up, instead of failing every request
+    // until someone manually restarts the server.
+    logger.warn({ err }, "PDF generation failed, relaunching browser and retrying once");
+    browserPromise = null;
+    try {
+      return await renderOnce(await getBrowser(), html, options);
+    } catch (retryErr) {
+      logger.error({ err: retryErr }, "PDF generation failed after retry");
+      throw retryErr;
+    }
   }
 }
 
