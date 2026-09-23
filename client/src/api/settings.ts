@@ -4,6 +4,7 @@ export interface CompanySettings {
   nameAr?: string | null;
   nameEn?: string | null;
   logoFileId?: string | null;
+  logoDarkFileId?: string | null;
   faviconFileId?: string | null;
   stampFileId?: string | null;
   signatureFileId?: string | null;
@@ -64,7 +65,15 @@ export interface WhatsappSettingsInput extends Omit<WhatsappSettingsView, "hasAp
   apiKey?: string;
 }
 
+export interface CompanyBranding {
+  nameAr: string | null;
+  nameEn: string | null;
+  logoFileId: string | null;
+  logoDarkFileId: string | null;
+}
+
 export const settingsApi = {
+  getBranding: async () => (await api.get<{ data: CompanyBranding }>("/settings/branding")).data.data,
   getCompany: async () => (await api.get<{ data: CompanySettings }>("/settings/company")).data.data,
   updateCompany: async (input: CompanySettings) => (await api.put<{ data: CompanySettings; message: string }>("/settings/company", input)).data,
 

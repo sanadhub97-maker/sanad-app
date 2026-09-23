@@ -190,6 +190,7 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   });
 
   const logoFileId = watch("logoFileId");
+  const logoDarkFileId = watch("logoDarkFileId");
 
   if (isLoading) {
     return (
@@ -368,17 +369,36 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="max-w-xl">
-            {/* Primary Logo */}
+          <div className="grid gap-6 sm:grid-cols-2">
             <AssetUploadCard
-              title={t("settings.company.logo")}
-              subtitle={isRtl ? "شعار الشركة للمطبوعات والتقارير والتصدير" : "Company logo for prints, reports and exports"}
+              title={isRtl ? "شعار الوضع النهاري" : "Light mode logo"}
+              subtitle={
+                isRtl
+                  ? "بيظهر في الشريط العلوي في الوضع النهاري، وفي المطبوعات والتصدير"
+                  : "Shown in the top bar in light mode, and on prints and exports"
+              }
               aspectHint={isRtl ? "صيغة PNG أو SVG مفرغ • حتى 5 ميجابايت" : "Transparent PNG or SVG • up to 5MB"}
               previewType="logo"
               fileId={logoFileId}
               module="company-logo"
               onUploaded={(fid) => setValue("logoFileId", fid, { shouldDirty: true })}
               onRemoved={() => setValue("logoFileId", null, { shouldDirty: true })}
+              disabled={!canEdit}
+              isRtl={isRtl}
+            />
+            <AssetUploadCard
+              title={isRtl ? "شعار الوضع الليلي" : "Dark mode logo"}
+              subtitle={
+                isRtl
+                  ? "بيظهر في الشريط العلوي في الوضع الليلي. لو مش مرفوع، هيتستخدم شعار الوضع النهاري"
+                  : "Shown in the top bar in dark mode. Falls back to the light logo if not set"
+              }
+              aspectHint={isRtl ? "يفضل نسخة فاتحة من الشعار • PNG مفرغ" : "Preferably a light-colored version • transparent PNG"}
+              previewType="logo"
+              fileId={logoDarkFileId}
+              module="company-logo"
+              onUploaded={(fid) => setValue("logoDarkFileId", fid, { shouldDirty: true })}
+              onRemoved={() => setValue("logoDarkFileId", null, { shouldDirty: true })}
               disabled={!canEdit}
               isRtl={isRtl}
             />

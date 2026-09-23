@@ -478,6 +478,7 @@ model CompanySettings {
   nameAr         String?
   nameEn         String?
   logoFileId     String?
+  logoDarkFileId String?
   faviconFileId  String?
   stampFileId    String?
   signatureFileId String?

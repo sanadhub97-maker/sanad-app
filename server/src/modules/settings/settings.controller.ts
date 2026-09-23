@@ -11,7 +11,21 @@ import * as whatsappWeb from "@/services/whatsappWeb";
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.getCompanySettings() });
 });
-export const updateCompany = asyncHandler(async (req: Request, res: Response) => {
+// Name and logos only — every signed-in user sees them in the top bar, while
+// the full company record stays behind settings.view.
+export const getBranding = asyncHandler(async (_req: Request, res: Response) => {
+  const company = await service.getCompanySettings();
+  res.json({
+    data: {
+      nameAr: company.nameAr,
+      nameEn: company.nameEn,
+      logoFileId: "logoFileId" in company ? company.logoFileId : null,
+      logoDarkFileId: "logoDarkFileId" in company ? company.logoDarkFileId : null,
+    },
+  });
+});
+
+export const updateCompany =asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.updateCompanySettings(req.body), message: "Company settings saved." });
 });
 

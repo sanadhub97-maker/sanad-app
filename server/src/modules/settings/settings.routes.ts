@@ -19,6 +19,7 @@ import {
 const router = Router();
 router.use(requireAuth);
 
+router.get("/branding", controller.getBranding);
 router.get("/company", requirePermission("settings.view"), controller.getCompany);
 router.put(
   "/company",

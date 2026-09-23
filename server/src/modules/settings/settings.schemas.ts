@@ -1,11 +1,15 @@
 import { z } from "zod";
 import { emptyToUndefined } from "@/utils/zodHelpers";
 
+const nullableFileId = z.preprocess((v) => (v === "" ? null : v), z.string().nullable().optional());
+
 export const companySettingsSchema = z.object({
   nameAr: emptyToUndefined(z.string().max(150).optional()),
   nameEn: emptyToUndefined(z.string().max(150).optional()),
-  logoFileId: emptyToUndefined(z.string().optional()),
-  faviconFileId: emptyToUndefined(z.string().optional()),
+  // null clears an uploaded file (the Remove button); undefined leaves it as is.
+  logoFileId: nullableFileId,
+  logoDarkFileId: nullableFileId,
+  faviconFileId: nullableFileId,
   stampFileId: emptyToUndefined(z.string().optional()),
   signatureFileId: emptyToUndefined(z.string().optional()),
   crNumber: emptyToUndefined(z.string().max(50).optional()),

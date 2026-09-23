@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { GlobalSearch } from "@/components/layout/global-search";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { CompanyBadge } from "@/components/layout/company-badge";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { logout as logoutRequest } from "@/api/auth";
@@ -91,6 +92,8 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
       >
         <Menu className="h-5 w-5" />
       </Button>
+
+      <CompanyBadge isDark={isDark} />
 
       {/* Global Search Bar */}
       <div className="flex-1 max-w-md">
