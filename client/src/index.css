@@ -279,8 +279,19 @@
       opacity: 0.7;
     }
     50% {
-      transform: scale(1.1) translate(12px, -18px);
+      transform: scale(1.08) translate(14px, -16px);
       opacity: 0.95;
+    }
+  }
+
+  @keyframes ambient-pulse-slow {
+    0%, 100% {
+      transform: scale(1) translate(0, 0);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.12) translate(-14px, 18px);
+      opacity: 0.85;
     }
   }
 
@@ -289,7 +300,7 @@
   }
 
   .animate-ambient-pulse-slow {
-    animation: ambient-pulse 20s ease-in-out infinite alternate-reverse;
+    animation: ambient-pulse-slow 22s ease-in-out infinite alternate-reverse;
   }
 
   /* Browser Autofill Fix: Prevent jarring white backgrounds */
@@ -313,42 +324,171 @@
     mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
     -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
   }
+
+  /* Print-only Visibility Toggles */
+  .print-only {
+    display: none !important;
+  }
 }
 
-/* Dedicated Print Stylesheet */
+/* =========================================================================
+   👑 Executive Corporate Print Stylesheet (@media print)
+   Converts system views into official certified documents & dossiers
+   ========================================================================= */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 15mm 10mm;
+  }
+
+  /* 1. Reset all viewport overflow locks */
+  html,
+  body,
+  #root,
+  .flex.h-screen,
+  main,
+  div,
+  [data-radix-scroll-area-viewport] {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    position: static !important;
+    width: 100% !important;
+  }
+
+  /* 2. Hide unwanted interactive elements */
   aside,
   header,
   nav,
+  footer:not(.print-footer),
   .no-print,
   button,
   [role="tablist"],
-  [data-radix-popper-content-wrapper] {
+  [data-radix-popper-content-wrapper],
+  [role="dialog"] button[aria-label="Close"],
+  input[type="search"],
+  .lucide-search,
+  [aria-haspopup="menu"],
+  .fixed,
+  .route-progress-bar,
+  .sonner-toaster,
+  .toast,
+  .pointer-events-none.absolute {
     display: none !important;
   }
 
+  /* 3. Show dedicated print-only elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* 4. Force high-contrast, official paper typography */
   body {
     background: #ffffff !important;
-    color: #000000 !important;
-    font-size: 11pt !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    font-family: 'Cairo', 'Tajawal', -apple-system, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   main {
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    overflow: visible !important;
+    background: transparent !important;
   }
 
+  /* 5. Clean Card and Box Styling for Paper */
+  .card-luxury,
+  .card,
+  [role="region"],
+  .section-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 6. Executive Table Styling for Print */
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    margin: 10px 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    break-inside: auto !important;
   }
 
-  th, td {
-    border-bottom: 1px solid #cbd5e1 !important;
-    padding: 6px 10px !important;
+  thead {
+    display: table-header-group !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 9pt !important;
+    padding: 6px 8px !important;
+    border: 1px solid #334155 !important;
+    text-align: inherit !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  td {
+    padding: 6px 8px !important;
+    font-size: 9pt !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-inline: 1px solid #f1f5f9 !important;
     color: #0f172a !important;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 7. Official Document Stamps & Signatures Grid */
+  .print-signature-area {
+    margin-top: 36px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-signature-box {
+    flex: 1 !important;
+    border: 1px solid #94a3b8 !important;
+    border-radius: 6px !important;
+    padding: 8px !important;
+    min-height: 80px !important;
+    text-align: center !important;
+    font-size: 8.5pt !important;
+    font-weight: 700 !important;
+  }
+
+  .print-stamp-circle {
+    width: 85px !important;
+    height: 85px !important;
+    border: 2px dashed #94a3b8 !important;
+    border-radius: 50% !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 7.5pt !important;
+    color: #64748b !important;
   }
 }
 

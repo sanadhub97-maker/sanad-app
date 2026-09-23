@@ -38,6 +38,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { EmployeeDocumentDialog } from "@/pages/employees/employee-document-dialog";
 import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
 import { CategoryChips } from "@/components/common/category-chips";
+import { PrintDocumentHeader, PrintDocumentFooter } from "@/components/common/print-document-header";
 import { EMPLOYEE_DOCUMENT_TYPE_ICONS } from "@/lib/document-type-icons";
 import type { EmployeeDocument } from "@/types/models";
 
@@ -87,6 +88,11 @@ export default function EmployeeProfilePage() {
 
   return (
     <div className="space-y-6">
+      <PrintDocumentHeader
+        title={t("employees.profile.title")}
+        subtitle={employee.fullNameAr || employee.fullNameEn || undefined}
+        referenceNumber={employee.employeeNumber}
+      />
       <PageHeader
         title={t("employees.profile.title")}
         actions={
@@ -341,6 +347,12 @@ export default function EmployeeProfilePage() {
         open={editOpen}
         employee={employee}
         onOpenChange={setEditOpen}
+      />
+
+      {/* 🖨️ Official Print Signatures & Stamp Block */}
+      <PrintDocumentFooter
+        prepTitle="إعداد قسم شؤون الموظفين (HR Specialist)"
+        authTitle="اعتماد الإدارة العامة (General Manager)"
       />
     </div>
   );

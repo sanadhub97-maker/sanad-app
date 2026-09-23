@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef, type VisibilityState } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, Columns3, Search, X, Inbox } from "lucide-react";
+import { ChevronLeft, ChevronRight, Columns3, Search, X, Inbox, Printer } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/common/empty-state";
+import { PrintDocumentHeader, PrintDocumentFooter } from "@/components/common/print-document-header";
 import { cn } from "@/lib/utils";
 
 interface DataTableProps<T extends object> {
@@ -30,6 +31,7 @@ interface DataTableProps<T extends object> {
   emptyTitle?: string;
   emptyDescription?: string;
   emptyAction?: React.ReactNode;
+  printTitle?: string;
 }
 
 export function DataTable<T extends object>({
@@ -47,8 +49,10 @@ export function DataTable<T extends object>({
   emptyTitle,
   emptyDescription,
   emptyAction,
+  printTitle,
 }: DataTableProps<T>) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const table = useReactTable({
@@ -63,8 +67,13 @@ export function DataTable<T extends object>({
 
   return (
     <div className="space-y-4">
+      {/* 🖨️ Official Print Document Header (Visible only on paper/PDF print) */}
+      <PrintDocumentHeader
+        title={printTitle || t("common.recordsReport", { defaultValue: "تقرير السجلات والبيانات الرسمية" })}
+      />
+
       {/* Search & Actions Bar */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 no-print">
         {onSearchChange && (
           <div className="relative flex-1 min-w-[220px] max-w-sm">
             <Search className="absolute start-3.5 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -87,6 +96,20 @@ export function DataTable<T extends object>({
 
         <div className="ms-auto flex items-center gap-2">
           {toolbar}
+
+          {/* Quick Print Button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="h-10 gap-1.5 rounded-2xl border-border/80 bg-background/80 px-3 shadow-xs hover:bg-muted font-semibold text-xs transition-transform active:scale-95"
+            title={isAr ? "طباعة التقرير" : "Print Report"}
+          >
+            <Printer className="h-4 w-4 text-muted-foreground" />
+            <span className="hidden sm:inline">{isAr ? "طباعة" : "Print"}</span>
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-10 gap-1.5 rounded-2xl border-border/80 bg-background/80 px-3 shadow-xs hover:bg-muted font-semibold text-xs">
@@ -182,9 +205,12 @@ export function DataTable<T extends object>({
         </Table>
       </div>
 
+      {/* 🖨️ Official Print Document Footer (Signatures & Stamp) */}
+      <PrintDocumentFooter />
+
       {/* Pagination Controls */}
       {total > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground px-1 select-none">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground px-1 select-none no-print">
           <div className="rounded-xl border border-border/70 bg-background/80 px-3.5 py-1.5 font-medium shadow-xs">
             {t("common.showing", { defaultValue: "Showing" })}{" "}
             <span className="font-black text-foreground">
