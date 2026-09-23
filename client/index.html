@@ -20,23 +20,37 @@
           document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
           document.documentElement.lang = isRtl ? 'ar' : 'en';
 
-          // 2. Theme Mode - Default to Dark Luxury Obsidian Glass unless explicitly set to 'light'
-          var raw = localStorage.getItem('sanad-ui-preferences');
-          var mode = 'dark';
-          if (raw) {
+          // 2. Theme Mode - Default to Dark Luxury Obsidian Glass
+          var themeMigrated = localStorage.getItem('sanad-theme-luxury-v2');
+          if (!themeMigrated) {
+            localStorage.setItem('sanad-theme-luxury-v2', 'true');
             try {
-              var parsed = JSON.parse(raw);
-              if (parsed && parsed.state && parsed.state.themeMode) {
-                mode = parsed.state.themeMode;
+              var raw = localStorage.getItem('sanad-ui-preferences');
+              if (raw) {
+                var parsed = JSON.parse(raw);
+                if (parsed && parsed.state) {
+                  parsed.state.themeMode = 'dark';
+                  localStorage.setItem('sanad-ui-preferences', JSON.stringify(parsed));
+                }
               }
-            } catch (err) {}
-          }
-          // If system or dark, default to the executive obsidian luxury dark theme
-          var isDark = mode !== 'light';
-          if (isDark) {
+            } catch (e) {}
             document.documentElement.classList.add('dark');
           } else {
-            document.documentElement.classList.remove('dark');
+            var raw = localStorage.getItem('sanad-ui-preferences');
+            var mode = 'dark';
+            if (raw) {
+              try {
+                var parsed = JSON.parse(raw);
+                if (parsed && parsed.state && parsed.state.themeMode) {
+                  mode = parsed.state.themeMode;
+                }
+              } catch (err) {}
+            }
+            if (mode !== 'light') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
           }
         } catch (e) {}
       })();
