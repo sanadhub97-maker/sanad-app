@@ -1,23 +1,10 @@
 import { z } from "zod";
 import { paginationSchema } from "@/utils/pagination";
 import { emptyToUndefined } from "@/utils/zodHelpers";
+import { PaymentCategory } from "@prisma/client";
 
 export const paymentMethodEnum = z.enum(["CASH", "BANK_TRANSFER", "CARD", "ONLINE", "OTHER"]);
-export const paymentCategoryEnum = z.enum([
-  "GOVERNMENT_FEES",
-  "EMPLOYEE_DOCUMENTS",
-  "LICENSES",
-  "INSURANCE",
-  "RENT",
-  "CLEANING",
-  "CIVIL_DEFENSE",
-  "MUNICIPALITY",
-  "VISA",
-  "IQAMA",
-  "PASSPORT",
-  "MEDICAL",
-  "OTHER",
-]);
+export const paymentCategoryEnum = z.nativeEnum(PaymentCategory);
 
 export const createPaymentSchema = z.object({
   paymentNumber: emptyToUndefined(z.string().max(50).optional()),

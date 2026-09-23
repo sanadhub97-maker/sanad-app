@@ -1,5 +1,6 @@
 import { pdfDocumentShell } from "@/services/pdf";
 import { daysRemainingLabel } from "@/services/expiration";
+import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 
 type Branding = { company: { nameAr?: string | null; nameEn?: string | null } | null; logoDataUrl: string | null };
 
@@ -266,9 +267,9 @@ export function paymentReceiptPdf(
           </tr>
           <tr>
             <th>بند / تصنيف الصرف</th>
-            <td style="font-weight:700;">${payment.category}</td>
+            <td style="font-weight:700;">${paymentCategoryLabel(payment.category)}</td>
             <th>طريقة الدفع</th>
-            <td style="font-weight:700;">${payment.method}</td>
+            <td style="font-weight:700;">${paymentMethodLabel(payment.method)}</td>
           </tr>
           <tr>
             <th>المؤسسة / الفرع</th>

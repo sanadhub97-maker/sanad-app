@@ -25,13 +25,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { FileUpload } from "@/components/common/file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
-import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS } from "@/api/payments";
+import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_CATEGORY_GROUPS, PAYMENT_METHODS } from "@/api/payments";
 import { getErrorMessage } from "@/lib/api";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import type { Payment } from "@/types/models";
@@ -287,11 +287,19 @@ export function PaymentDialog({
                       <SelectTrigger className="h-11 rounded-xl bg-background/90 border-border/80 shadow-xs focus-visible:ring-rose-500/30 focus-visible:border-rose-500/60">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl shadow-xl">
-                        {PAYMENT_CATEGORIES.map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {t(`paymentCategories.${c}`)}
-                          </SelectItem>
+                      <SelectContent className="rounded-xl shadow-xl max-h-80">
+                        {PAYMENT_CATEGORY_GROUPS.map((group, i) => (
+                          <SelectGroup key={group.key}>
+                            {i > 0 && <SelectSeparator />}
+                            <SelectLabel className="text-[11px] font-bold text-primary">
+                              {t(`paymentCategoryGroups.${group.key}`)}
+                            </SelectLabel>
+                            {group.categories.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {t(`paymentCategories.${c}`)}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>

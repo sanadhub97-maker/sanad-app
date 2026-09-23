@@ -1,5 +1,8 @@
 {
-  "app": { "name": "SanaD للمستندات والتراخيص", "enterpriseBadge": "مؤسسي" },
+  "app": {
+    "name": "SanaD للمستندات والتراخيص",
+    "enterpriseBadge": "مؤسسي"
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "overviewSection": "نظرة عامة",
@@ -19,7 +22,7 @@
     "addEmployee": "إضافة موظف",
     "companyDocuments": "مستندات الشركة",
     "branches": "المؤسسات والشركات",
-    "payments": "الدفعات",
+    "payments": "المدفوعات",
     "notifications": "الإشعارات",
     "reports": "التقارير",
     "importExport": "الاستيراد والتصدير",
@@ -124,7 +127,7 @@
   },
   "dashboard": {
     "title": "لوحة التحكم",
-    "subtitle": "نظرة عامة على الموظفين والمستندات والتراخيص والدفعات.",
+    "subtitle": "نظرة عامة على الموظفين والمستندات والتراخيص والمدفوعات.",
     "addEmployee": "إضافة موظف",
     "importExcel": "استيراد Excel",
     "reports": "التقارير",
@@ -135,7 +138,7 @@
       "validDocuments": "مستندات سارية",
       "expiringSoon": "قريبة الانتهاء",
       "expired": "منتهية",
-      "totalPayments": "إجمالي الدفعات",
+      "totalPayments": "إجمالي المدفوعات",
       "thisMonth": "هذا الشهر"
     },
     "widget": {
@@ -150,15 +153,15 @@
     "charts": {
       "documentsByStatus": "المستندات حسب الحالة",
       "employeesByStatus": "الموظفون حسب الحالة",
-      "paymentsByCategory": "الدفعات حسب الفئة",
-      "monthlyPayments": "الدفعات الشهرية (آخر 12 شهر)"
+      "paymentsByCategory": "المدفوعات حسب الفئة",
+      "monthlyPayments": "المدفوعات الشهرية (آخر 12 شهر)"
     },
     "recent": {
       "employees": "أحدث الموظفين",
-      "payments": "أحدث الدفعات",
+      "payments": "أحدث المدفوعات",
       "activity": "أحدث الأنشطة",
       "noEmployees": "لا يوجد موظفون بعد.",
-      "noPayments": "لا توجد دفعات بعد.",
+      "noPayments": "لا توجد مدفوعات بعد.",
       "noActivity": "لا يوجد نشاط بعد."
     }
   },
@@ -168,7 +171,7 @@
     "addEmployee": "إضافة موظف",
     "editEmployee": "تعديل موظف",
     "emptyTitle": "لم تتم إضافة أي موظفين بعد.",
-    "emptyDescription": "أضف أول موظف لبدء تتبع المستندات والتراخيص والدفعات.",
+    "emptyDescription": "أضف أول موظف لبدء تتبع المستندات والتراخيص والمدفوعات.",
     "table": {
       "employeeNumber": "رقم الموظف",
       "fullName": "الاسم الكامل",
@@ -177,9 +180,21 @@
       "status": "الحالة",
       "iqamaExpiry": "انتهاء الإقامة"
     },
-    "filters": { "allBranches": "جميع المؤسسات", "allStatuses": "جميع الحالات" },
-    "menu": { "viewProfile": "عرض الملف", "edit": "تعديل", "printProfile": "طباعة الملف", "delete": "حذف" },
-    "export": { "excel": "إكسل (.xlsx)", "csv": "CSV", "pdf": "PDF" },
+    "filters": {
+      "allBranches": "جميع المؤسسات",
+      "allStatuses": "جميع الحالات"
+    },
+    "menu": {
+      "viewProfile": "عرض الملف",
+      "edit": "تعديل",
+      "printProfile": "طباعة الملف",
+      "delete": "حذف"
+    },
+    "export": {
+      "excel": "إكسل (.xlsx)",
+      "csv": "CSV",
+      "pdf": "PDF"
+    },
     "deleteConfirmTitle": "حذف الموظف؟",
     "deleteConfirmBody": "سيتم إزالة {{name}} من السجلات النشطة.",
     "sections": {
@@ -218,7 +233,11 @@
     },
     "profile": {
       "title": "الملف الشخصي للموظف",
-      "tabs": { "overview": "نظرة عامة", "documents": "المستندات", "payments": "الدفعات" },
+      "tabs": {
+        "overview": "نظرة عامة",
+        "documents": "المستندات",
+        "payments": "المدفوعات"
+      },
       "personalInfo": "المعلومات الشخصية والوظيفية",
       "iqamaPassport": "الإقامة وجواز السفر",
       "iqama": "الإقامة",
@@ -227,9 +246,20 @@
       "addDocument": "إضافة مستند",
       "noDocuments": "لا توجد مستندات مسجلة",
       "noDocumentsDescription": "أضف الشهادات الصحية والعقود والتأشيرات وغيرها.",
-      "noPayments": "لا توجد دفعات مسجلة لهذا الموظف.",
-      "docTable": { "type": "النوع", "name": "الاسم", "number": "الرقم", "expiryDate": "تاريخ الانتهاء", "status": "الحالة" },
-      "paymentTable": { "paymentNumber": "رقم الدفعة", "date": "التاريخ", "category": "الفئة", "total": "الإجمالي" }
+      "noPayments": "لا توجد مدفوعات مسجلة لهذا الموظف.",
+      "docTable": {
+        "type": "النوع",
+        "name": "الاسم",
+        "number": "الرقم",
+        "expiryDate": "تاريخ الانتهاء",
+        "status": "الحالة"
+      },
+      "paymentTable": {
+        "paymentNumber": "رقم الدفعة",
+        "date": "التاريخ",
+        "category": "الفئة",
+        "total": "الإجمالي"
+      }
     },
     "documentDialog": {
       "addTitle": "إضافة مستند",
@@ -312,7 +342,13 @@
     "editBranch": "تعديل مؤسسة",
     "emptyTitle": "لم تتم إضافة أي مؤسسات بعد.",
     "deleteConfirmTitle": "حذف المؤسسة؟",
-    "table": { "name": "اسم المؤسسة", "code": "الرمز", "city": "المدينة", "employees": "الموظفون", "status": "الحالة" },
+    "table": {
+      "name": "اسم المؤسسة",
+      "code": "الرمز",
+      "city": "المدينة",
+      "employees": "الموظفون",
+      "status": "الحالة"
+    },
     "fields": {
       "name": "اسم المؤسسة",
       "code": "رمز المؤسسة",
@@ -331,8 +367,15 @@
     "editDocument": "تعديل مستند",
     "emptyTitle": "لم تتم إضافة أي مستندات بعد.",
     "deleteConfirmTitle": "حذف المستند؟",
-    "table": { "name": "اسم المستند", "category": "الفئة", "branch": "المؤسسة", "expiryDate": "تاريخ الانتهاء" },
-    "filters": { "allCategories": "جميع الفئات" },
+    "table": {
+      "name": "اسم المستند",
+      "category": "الفئة",
+      "branch": "المؤسسة",
+      "expiryDate": "تاريخ الانتهاء"
+    },
+    "filters": {
+      "allCategories": "جميع الفئات"
+    },
     "fields": {
       "category": "الفئة",
       "name": "اسم المستند",
@@ -380,16 +423,22 @@
     }
   },
   "payments": {
-    "title": "الدفعات",
+    "title": "المدفوعات",
     "subtitle": "تتبع الرسوم الحكومية والتراخيص والتأمين والمصروفات الأخرى.",
     "addPayment": "إضافة دفعة",
     "editPayment": "تعديل دفعة",
-    "emptyTitle": "لم يتم تسجيل أي دفعات بعد.",
+    "emptyTitle": "لم يتم تسجيل أي مدفوعات بعد.",
     "deleteConfirmTitle": "حذف الدفعة؟",
     "subtotal": "المجموع الفرعي",
     "vat": "ضريبة القيمة المضافة",
     "grandTotal": "الإجمالي الكلي",
-    "table": { "paymentNumber": "رقم الدفعة", "date": "التاريخ", "category": "الفئة", "branch": "المؤسسة", "total": "الإجمالي" },
+    "table": {
+      "paymentNumber": "رقم الدفعة",
+      "date": "التاريخ",
+      "category": "الفئة",
+      "branch": "المؤسسة",
+      "total": "الإجمالي"
+    },
     "fields": {
       "paymentNumber": "رقم الدفعة",
       "autoGenerated": "يُنشأ تلقائياً إذا تُرك فارغاً",
@@ -415,8 +464,22 @@
     "editUser": "تعديل مستخدم",
     "emptyTitle": "لا يوجد مستخدمون.",
     "deleteConfirmTitle": "حذف المستخدم؟",
-    "table": { "fullName": "الاسم الكامل", "email": "البريد الإلكتروني", "roles": "الأدوار", "status": "الحالة", "lastLogin": "آخر دخول", "never": "أبداً" },
-    "fields": { "fullName": "الاسم الكامل", "email": "البريد الإلكتروني", "mobile": "الجوال", "password": "كلمة المرور", "roles": "الأدوار", "selectAtLeastOneRole": "اختر دوراً واحداً على الأقل" }
+    "table": {
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "roles": "الأدوار",
+      "status": "الحالة",
+      "lastLogin": "آخر دخول",
+      "never": "أبداً"
+    },
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "mobile": "الجوال",
+      "password": "كلمة المرور",
+      "roles": "الأدوار",
+      "selectAtLeastOneRole": "اختر دوراً واحداً على الأقل"
+    }
   },
   "roles": {
     "title": "الأدوار والصلاحيات",
@@ -427,7 +490,12 @@
     "builtIn": "أساسي",
     "usersCount": "{{count}} مستخدم",
     "permissionsCount": "{{count}} صلاحية",
-    "fields": { "name": "اسم الدور", "description": "الوصف", "permissions": "الصلاحيات", "all": "الكل" },
+    "fields": {
+      "name": "اسم الدور",
+      "description": "الوصف",
+      "permissions": "الصلاحيات",
+      "all": "الكل"
+    },
     "systemNames": {
       "Super Admin": "المشرف العام",
       "Admin": "مدير النظام",
@@ -445,17 +513,55 @@
     "markAllRead": "تعليم الكل كمقروء",
     "empty": "لا توجد إشعارات بعد.",
     "noneYet": "لا يوجد جديد حالياً.",
-    "filters": { "severity": "الأهمية", "critical": "حرج", "warning": "تحذير", "information": "معلومة", "status": "الحالة", "unread": "غير مقروء", "read": "مقروء" }
+    "filters": {
+      "severity": "الأهمية",
+      "critical": "حرج",
+      "warning": "تحذير",
+      "information": "معلومة",
+      "status": "الحالة",
+      "unread": "غير مقروء",
+      "read": "مقروء"
+    }
   },
   "reports": {
     "title": "التقارير",
     "subtitle": "معاينة وطباعة وتصدير التقارير لجميع الوحدات.",
-    "tabs": { "employees": "الموظفون", "documents": "المستندات", "payments": "الدفعات", "activity": "النشاط" },
+    "tabs": {
+      "employees": "الموظفون",
+      "documents": "المستندات",
+      "payments": "المدفوعات",
+      "activity": "النشاط"
+    },
     "export": "تصدير",
-    "employeeTable": { "employeeNumber": "رقم الموظف", "name": "الاسم", "department": "القسم", "branch": "المؤسسة", "status": "الحالة", "iqamaExpiry": "انتهاء الإقامة" },
-    "documentTable": { "document": "المستند", "source": "المصدر", "relatedEmployee": "الموظف المرتبط", "expiryDate": "تاريخ الانتهاء", "status": "الحالة" },
-    "paymentTable": { "paymentNumber": "رقم الدفعة", "date": "التاريخ", "category": "الفئة", "branch": "المؤسسة", "total": "الإجمالي" },
-    "activityTable": { "date": "التاريخ", "user": "المستخدم", "action": "الإجراء", "module": "الوحدة", "description": "الوصف" }
+    "employeeTable": {
+      "employeeNumber": "رقم الموظف",
+      "name": "الاسم",
+      "department": "القسم",
+      "branch": "المؤسسة",
+      "status": "الحالة",
+      "iqamaExpiry": "انتهاء الإقامة"
+    },
+    "documentTable": {
+      "document": "المستند",
+      "source": "المصدر",
+      "relatedEmployee": "الموظف المرتبط",
+      "expiryDate": "تاريخ الانتهاء",
+      "status": "الحالة"
+    },
+    "paymentTable": {
+      "paymentNumber": "رقم الدفعة",
+      "date": "التاريخ",
+      "category": "الفئة",
+      "branch": "المؤسسة",
+      "total": "الإجمالي"
+    },
+    "activityTable": {
+      "date": "التاريخ",
+      "user": "المستخدم",
+      "action": "الإجراء",
+      "module": "الوحدة",
+      "description": "الوصف"
+    }
   },
   "importExport": {
     "title": "الاستيراد والتصدير",
@@ -473,21 +579,41 @@
     "confirmImport": "تأكيد الاستيراد ({{count}} سجل)",
     "recentJobs": "عمليات الاستيراد الأخيرة",
     "noJobs": "لا توجد عمليات استيراد بعد.",
-    "jobTable": { "file": "الملف", "status": "الحالة", "imported": "مستورد", "updated": "محدث", "failed": "فاشل", "date": "التاريخ" }
+    "jobTable": {
+      "file": "الملف",
+      "status": "الحالة",
+      "imported": "مستورد",
+      "updated": "محدث",
+      "failed": "فاشل",
+      "date": "التاريخ"
+    }
   },
   "files": {
     "title": "مدير الملفات",
-    "subtitle": "كل الملفات المرفوعة عبر الموظفين والمستندات والدفعات.",
+    "subtitle": "كل الملفات المرفوعة عبر الموظفين والمستندات والمدفوعات.",
     "emptyTitle": "لم يتم رفع أي ملفات بعد.",
     "deleteConfirmTitle": "حذف الملف؟",
-    "table": { "fileName": "اسم الملف", "type": "النوع", "size": "الحجم", "uploadedBy": "رفعه", "uploadDate": "تاريخ الرفع" }
+    "table": {
+      "fileName": "اسم الملف",
+      "type": "النوع",
+      "size": "الحجم",
+      "uploadedBy": "رفعه",
+      "uploadDate": "تاريخ الرفع"
+    }
   },
   "auditLogs": {
     "title": "سجل التدقيق",
     "subtitle": "سجل كامل لكل من قام بماذا ومتى.",
     "filterByModule": "تصفية حسب الوحدة",
     "allModules": "جميع الوحدات",
-    "table": { "date": "التاريخ", "user": "المستخدم", "action": "الإجراء", "module": "الوحدة", "description": "الوصف", "ipAddress": "عنوان IP" },
+    "table": {
+      "date": "التاريخ",
+      "user": "المستخدم",
+      "action": "الإجراء",
+      "module": "الوحدة",
+      "description": "الوصف",
+      "ipAddress": "عنوان IP"
+    },
     "systemUser": "النظام",
     "actions": {
       "CREATE": "إنشاء",
@@ -503,7 +629,13 @@
   "settings": {
     "title": "الإعدادات",
     "subtitle": "هوية الشركة والمظهر وقواعد الانتهاء والتكاملات.",
-    "tabs": { "company": "الشركة", "appearance": "المظهر", "expiration": "قواعد الانتهاء", "email": "البريد الإلكتروني", "whatsapp": "واتساب" },
+    "tabs": {
+      "company": "الشركة",
+      "appearance": "المظهر",
+      "expiration": "قواعد الانتهاء",
+      "email": "البريد الإلكتروني",
+      "whatsapp": "واتساب"
+    },
     "company": {
       "title": "هوية المنشأة",
       "description": "تظهر بيانات وهوية المنشأة في تقارير PDF الرسمية، قوالب الطباعة، وترويسة النظام.",
@@ -581,7 +713,7 @@
   },
   "search": {
     "placeholderShort": "بحث...",
-    "placeholderLong": "البحث في الموظفين والمستندات والدفعات...",
+    "placeholderLong": "البحث في الموظفين والمستندات والمدفوعات...",
     "placeholderFull": "ابحث بالاسم أو رقم الإقامة أو الجواز أو المستند أو الدفعة أو المؤسسة...",
     "noResults": "لا توجد نتائج.",
     "results": "النتائج"
@@ -621,18 +753,41 @@
     "OTHER": "أخرى"
   },
   "paymentCategories": {
-    "GOVERNMENT_FEES": "رسوم حكومية",
+    "COMMERCIAL_REGISTRATION_ISSUE": "إصدار سجل تجاري",
+    "COMMERCIAL_REGISTRATION_RENEWAL": "تجديد سجل تجاري",
+    "COMMERCIAL_REGISTRATION_AMENDMENT": "تعديل سجل تجاري",
+    "COMMERCIAL_REGISTRATION_CANCELLATION": "شطب سجل تجاري",
+    "MUNICIPAL_LICENSE_ISSUE": "إصدار رخصة تجارية (بلدية)",
+    "MUNICIPAL_LICENSE_RENEWAL": "تجديد رخصة تجارية (بلدية)",
+    "MUNICIPAL_LICENSE_AMENDMENT": "تعديل رخصة تجارية (بلدية)",
+    "MUNICIPAL_LICENSE_CANCELLATION": "إلغاء رخصة تجارية (بلدية)",
+    "CHAMBER_OF_COMMERCE": "اشتراك الغرفة التجارية",
+    "CIVIL_DEFENSE": "رخصة الدفاع المدني",
+    "MUNICIPALITY": "رسوم بلدية أخرى",
+    "LICENSES": "تراخيص أخرى",
+    "IQAMA_ISSUE": "إصدار إقامة",
+    "IQAMA_RENEWAL": "تجديد إقامة",
+    "WORK_PERMIT": "رسوم رخصة العمل",
+    "EXPAT_LEVY": "المقابل المالي",
+    "DEPENDENTS_FEE": "رسوم المرافقين",
+    "PROFESSION_CHANGE": "تعديل المهنة",
+    "SPONSORSHIP_TRANSFER": "نقل خدمات (نقل كفالة)",
+    "WORK_VISA": "إصدار تأشيرة عمل",
+    "EXIT_REENTRY_VISA": "تأشيرة خروج وعودة",
+    "FINAL_EXIT_VISA": "تأشيرة خروج نهائي",
+    "IQAMA": "خدمات إقامة أخرى",
+    "VISA": "تأشيرات أخرى",
+    "PASSPORT": "خدمات الجوازات",
+    "GOSI": "التأمينات الاجتماعية",
+    "MEDICAL_INSURANCE": "التأمين الطبي",
+    "ZAKAT_TAX": "الزكاة والضريبة",
+    "GOVERNMENT_FINES": "غرامات ومخالفات حكومية",
+    "GOVERNMENT_FEES": "رسوم حكومية أخرى",
     "EMPLOYEE_DOCUMENTS": "مستندات الموظفين",
-    "LICENSES": "التراخيص",
-    "INSURANCE": "التأمين",
     "RENT": "الإيجار",
     "CLEANING": "النظافة",
-    "CIVIL_DEFENSE": "الدفاع المدني",
-    "MUNICIPALITY": "البلدية",
-    "VISA": "التأشيرة",
-    "IQAMA": "الإقامة",
-    "PASSPORT": "جواز السفر",
-    "MEDICAL": "طبي",
+    "INSURANCE": "تأمين آخر",
+    "MEDICAL": "فحوصات طبية",
     "OTHER": "أخرى"
   },
   "paymentMethods": {
@@ -654,7 +809,7 @@
     "companyDocuments": "مستندات الشركة",
     "licenses": "التراخيص",
     "branches": "المؤسسات والشركات",
-    "payments": "الدفعات",
+    "payments": "المدفوعات",
     "notifications": "الإشعارات",
     "reports": "التقارير",
     "files": "مدير الملفات",
@@ -664,5 +819,11 @@
     "settings": "الإعدادات",
     "auditLogs": "سجل التدقيق",
     "auth": "المصادقة"
+  },
+  "paymentCategoryGroups": {
+    "commercial": "السجل التجاري والتراخيص",
+    "residency": "الإقامات والتأشيرات",
+    "government": "التأمينات والرسوم الحكومية",
+    "operational": "مصروفات تشغيلية"
   }
 }

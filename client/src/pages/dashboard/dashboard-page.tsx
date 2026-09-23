@@ -530,7 +530,7 @@ export default function DashboardPage() {
               icon={TrendingUp}
               label={t("dashboard.kpi.thisMonth")}
               value={formatCurrency(summary?.monthlyPaymentsAmount)}
-              subtext={isAr ? "دفعات الشهر الحالي" : "Current month expenses"}
+              subtext={isAr ? "مدفوعات الشهر الحالي" : "Current month expenses"}
               tone="cyan"
               onClick={() => navigate("/payments")}
             />
@@ -723,7 +723,13 @@ export default function DashboardPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.15} />
                   <XAxis type="number" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.6 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <YAxis dataKey="category" type="category" tick={{ fontSize: 11, fill: "currentColor", opacity: 0.7 }} width={100} />
+                  <YAxis
+                    dataKey="category"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "currentColor", opacity: 0.7 }}
+                    width={130}
+                    tickFormatter={(val) => t(`paymentCategories.${val}`, { defaultValue: val })}
+                  />
                   <RechartsTooltip content={<CustomChartTooltip formatter={(v: number) => formatCurrency(v)} />} />
                   <Bar dataKey="total" fill="url(#catGrad)" radius={[0, 8, 8, 0]} />
                 </BarChart>
@@ -748,7 +754,7 @@ export default function DashboardPage() {
                 {t("dashboard.charts.monthlyPayments")}
               </CardTitle>
               <CardDescription className="text-xs">
-                {isAr ? "تحليل الدفعات والمصروفات على مدار الـ 12 شهراً الماضية" : "Spending trend over the last 12 months"}
+                {isAr ? "تحليل المدفوعات والمصروفات على مدار الـ 12 شهراً الماضية" : "Spending trend over the last 12 months"}
               </CardDescription>
             </div>
             <Button
@@ -757,7 +763,7 @@ export default function DashboardPage() {
               onClick={() => navigate("/payments")}
               className="h-8 rounded-lg text-xs font-semibold hover:bg-muted"
             >
-              {isAr ? "سجل الدفعات" : "View Payments"} <ArrowUpRight className="h-3.5 w-3.5 ms-1" />
+              {isAr ? "سجل المدفوعات" : "View Payments"} <ArrowUpRight className="h-3.5 w-3.5 ms-1" />
             </Button>
           </div>
         </CardHeader>

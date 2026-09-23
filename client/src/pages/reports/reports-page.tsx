@@ -119,7 +119,7 @@ export default function ReportsPage() {
     <div className="space-y-4">
       <PageHeader
         title="التقارير التحليلية والبيانات"
-        description="معاينة وطباعة وتصدير التقارير المفصلة للموظفين والوثائق والدفعات وسجل النشاط."
+        description="معاينة وطباعة وتصدير التقارير المفصلة للموظفين والوثائق والمدفوعات وسجل النشاط."
       />
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
@@ -136,7 +136,7 @@ export default function ReportsPage() {
           </TabsTrigger>
           <TabsTrigger value="payments" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
             <AppleIcon icon={CreditCard} tone="rose" size="xs" />
-            <span>تقرير الدفعات المالية</span>
+            <span>تقرير المدفوعات المالية</span>
             {Array.isArray(payments) && <span className="ms-1 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">{payments.length}</span>}
           </TabsTrigger>
           <TabsTrigger value="activity" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
@@ -240,7 +240,7 @@ export default function ReportsPage() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  سجل الدفعات والمصروفات المالية
+                  سجل المدفوعات والمصروفات المالية
                 </span>
                 <ReportActions report="payments" params={{}} />
               </div>

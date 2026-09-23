@@ -325,7 +325,7 @@ export default function EmployeeProfilePage() {
               </Table>
             </div>
           ) : (
-            <EmptyState icon={CreditCard} title={t("employees.profile.noPayments", { defaultValue: "لا توجد دفعات مسجلة" })} />
+            <EmptyState icon={CreditCard} title={t("employees.profile.noPayments", { defaultValue: "لا توجد مدفوعات مسجلة" })} />
           )}
         </TabsContent>
       </Tabs>

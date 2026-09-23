@@ -3,6 +3,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
 import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
+import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { tableReportPdf, statusBadge } from "@/modules/pdf/templates";
 import * as service from "@/modules/reports/reports.service";
 
@@ -129,8 +130,8 @@ export const payments = asyncHandler(async (req: Request, res: Response) => {
     columns: [
       { header: "رقم السند", subHeader: "Voucher #", key: "paymentNumber" },
       { header: "تاريخ السند", subHeader: "Date", key: "paymentDate" },
-      { header: "بند الصرف", subHeader: "Category", key: "category" },
-      { header: "طريقة الدفع", subHeader: "Method", key: "method" },
+      { header: "بند الصرف", subHeader: "Category", key: "category", format: (v) => paymentCategoryLabel(v as string) },
+      { header: "طريقة الدفع", subHeader: "Method", key: "method", format: (v) => paymentMethodLabel(v as string) },
       { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
       { header: "الموظف / المستفيد", subHeader: "Beneficiary", key: "employee" },
       { header: "المبلغ الأساسي", subHeader: "Amount (SAR)", key: "amount" },
