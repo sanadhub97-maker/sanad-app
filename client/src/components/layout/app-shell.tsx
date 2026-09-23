@@ -43,13 +43,22 @@ export function AppShell() {
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground font-sans relative">
+      {/* 🕸️ Subtle Isometric Grid Overlay (Matches Login Cockpit) */}
+      <div className="pointer-events-none fixed inset-0 bg-grid-pattern bg-grid-glow opacity-30 z-0" />
+
+      {/* 🌌 Deep Cosmos Ambient Glow Orbs - Fixed across entire viewport */}
+      <div className="pointer-events-none fixed -top-40 -left-40 h-[700px] w-[700px] rounded-full bg-blue-600/20 blur-[150px] animate-ambient-pulse z-0" />
+      <div className="pointer-events-none fixed -bottom-40 -right-40 h-[700px] w-[700px] rounded-full bg-indigo-600/20 blur-[160px] animate-ambient-pulse-slow z-0" />
+      <div className="pointer-events-none fixed top-1/3 right-1/4 h-[550px] w-[550px] rounded-full bg-cyan-500/15 blur-[130px] animate-ambient-pulse z-0" />
+      <div className="pointer-events-none fixed bottom-10 left-1/3 h-[450px] w-[450px] rounded-full bg-emerald-500/12 blur-[120px] z-0" />
+
       {/* Desktop Luxury Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 76 : 260 }}
         transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="hidden lg:flex flex-col bg-card/90 dark:bg-[#060913]/95 text-foreground dark:text-white shrink-0 border-e border-border/70 dark:border-white/[0.08] relative z-20 shadow-sm dark:shadow-2xl dark:shadow-black/50 backdrop-blur-2xl transition-colors specular-border"
+        className="hidden lg:flex flex-col bg-card/90 dark:bg-[#060913]/90 text-foreground dark:text-white shrink-0 border-e border-border/70 dark:border-white/[0.08] relative z-20 shadow-sm dark:shadow-2xl dark:shadow-black/50 backdrop-blur-2xl transition-colors specular-border"
       >
         {/* Top Brand Header */}
         <div className="flex h-16 items-center justify-between px-3.5 border-b border-border/80 dark:border-white/[0.08] bg-muted/20 dark:bg-black/10">
@@ -133,16 +142,8 @@ export function AppShell() {
         <Topbar onOpenMobileNav={() => setMobileOpen(true)} />
         <main
           ref={mainRef}
-          className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-background via-background to-muted/15 selection:bg-cyan-500/30 selection:text-cyan-200"
+          className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-transparent selection:bg-cyan-500/30 selection:text-cyan-200 z-10"
         >
-          {/* 🕸️ Subtle Isometric Grid Overlay (Matches Login Cockpit) */}
-          <div className="pointer-events-none absolute inset-0 bg-grid-pattern bg-grid-glow opacity-25" />
-
-          {/* 🌌 Deep Cosmos Ambient Glow Orbs */}
-          <div className="pointer-events-none absolute -top-40 -left-40 h-[650px] w-[650px] rounded-full bg-blue-600/15 blur-[140px] animate-ambient-pulse" />
-          <div className="pointer-events-none absolute -bottom-40 -right-40 h-[650px] w-[650px] rounded-full bg-indigo-600/15 blur-[150px] animate-ambient-pulse-slow" />
-          <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px] animate-ambient-pulse" />
-          <div className="pointer-events-none absolute bottom-10 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[110px]" />
 
           <AnimatePresence mode="wait" initial={false}>
             <motion.div

@@ -51,13 +51,13 @@
   :root.dark,
   html.dark {
     /* Dark Theme: Ultra-Deep Obsidian Midnight with Electric Sapphire & Emerald */
-    --background: 224 48% 4.5%; /* #060913 */
+    --background: 228 48% 4.2%; /* #050814 */
     --foreground: 214 34% 96%;
 
-    --card: 224 42% 7.8%; /* #080E1B */
+    --card: 228 42% 6.8%; /* #070B18 */
     --card-foreground: 214 34% 96%;
 
-    --popover: 224 42% 7.8%;
+    --popover: 228 42% 6.8%;
     --popover-foreground: 214 34% 96%;
 
     --primary: 217 92% 61%; /* Glowing Electric Sapphire */

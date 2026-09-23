@@ -112,7 +112,7 @@ export function RoleDialog({
         </div>
 
         {/* 📋 Form Body */}
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 space-y-5">
+        <form id="role-dialog-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 pb-12">
           {/* Section 1: Role Information */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center gap-2 pb-1 text-xs font-bold uppercase tracking-wider text-foreground">
@@ -231,27 +231,28 @@ export function RoleDialog({
               )}
             />
           </div>
-
-          {/* 📌 Executive Actions Footer */}
-          <div className="pt-3 border-t border-border/60 flex items-center justify-end gap-2.5">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl border-border/80 px-5 font-semibold hover:bg-muted"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-slate-800 text-white font-bold text-xs sm:text-sm px-6 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
-            >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
-              <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "إنشاء الدور" : "Create Role")}</span>
-            </Button>
-          </div>
         </form>
+
+        {/* 📌 Executive Actions Footer */}
+        <div className="shrink-0 px-6 sm:px-8 py-3.5 border-t border-border/80 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-xl border-border/80 px-6 font-semibold hover:bg-muted"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            form="role-dialog-form"
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-slate-800 text-white font-bold text-xs sm:text-sm px-8 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
+            <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "إنشاء الدور" : "Create Role")}</span>
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

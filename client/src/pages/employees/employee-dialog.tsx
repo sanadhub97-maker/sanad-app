@@ -38,7 +38,7 @@ import { DateInput } from "@/components/common/date-input";
 import { employeesApi } from "@/api/employees";
 import { listActiveBranches } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
-import { toDateInputValue, nullsToUndefined, cn } from "@/lib/utils";
+import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import { transliterateArabicName } from "@/lib/arabic-transliteration";
 import type { Employee } from "@/types/models";
 
@@ -180,7 +180,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col">
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-2xl p-0 shadow-2xl w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl max-h-[92vh] flex flex-col">
         {/* 🌟 Ambient Top Glow */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl pointer-events-none" />
 
@@ -215,33 +215,36 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
           </div>
 
           {/* 🔘 Quick Section Jump Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 text-xs no-scrollbar">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs no-scrollbar">
             <button
               type="button"
               onClick={() => scrollToSection("emp-sec-identity")}
-              className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-semibold whitespace-nowrap text-[11px] border border-blue-500/20"
+              className="px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-all font-bold whitespace-nowrap text-xs border border-blue-500/25 shadow-xs flex items-center gap-1.5"
             >
-              {isAr ? "1. الهوية والأساسيات" : "1. Identity"}
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+              <span>{isAr ? "1. الهوية والأساسيات" : "1. Identity"}</span>
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("emp-sec-contact")}
-              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all font-semibold whitespace-nowrap text-[11px] border border-emerald-500/20"
+              className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all font-bold whitespace-nowrap text-xs border border-emerald-500/25 shadow-xs flex items-center gap-1.5"
             >
-              {isAr ? "2. التواصل والعنوان" : "2. Contact"}
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>{isAr ? "2. التواصل والإقامة" : "2. Contact & Residency"}</span>
             </button>
             <button
               type="button"
               onClick={() => scrollToSection("emp-sec-job")}
-              className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all font-semibold whitespace-nowrap text-[11px] border border-purple-500/20"
+              className="px-3 py-1.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 transition-all font-bold whitespace-nowrap text-xs border border-purple-500/25 shadow-xs flex items-center gap-1.5"
             >
-              {isAr ? "3. العمل والمؤسسة" : "3. Job & Establishment"}
+              <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+              <span>{isAr ? "3. العمل والمؤسسة" : "3. Job & Establishment"}</span>
             </button>
           </div>
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form id="employee-dialog-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 👤 Section 1: Personal & Identity Information */}
           <div id="emp-sec-identity" className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -264,18 +267,16 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 error={errors.employeeNumber?.message}
                 hint={!isEdit ? (isAr ? "توليد تسلسلي" : "Auto sequence") : undefined}
               >
-                <div className="relative flex items-center">
+                <div className="flex gap-2 items-center">
                   <Input
                     {...register("employeeNumber")}
                     placeholder={loadingAutoNumber ? "جاري توليد الرقم..." : "EMP-0001"}
-                    className={cn(
-                      "h-11 rounded-xl font-mono font-bold text-sm bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60",
-                      !isEdit && "pe-28"
-                    )}
+                    className="h-11 rounded-xl font-mono font-bold text-sm bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 flex-1"
                   />
                   {!isEdit && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       disabled={loadingAutoNumber}
                       onClick={async () => {
                         const res = await refetchAutoNumber();
@@ -284,12 +285,12 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                           toast.success(`تم توليد رقم الموظف: ${res.data}`);
                         }
                       }}
-                      className="absolute end-1.5 flex items-center gap-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1.5 text-[11px] font-semibold transition-colors border border-emerald-500/20 shadow-xs"
+                      className="h-11 px-3.5 rounded-xl border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition-colors"
                       title="توليد رقم وظيفي تسلسلي جديد تلقائياً"
                     >
-                      <Sparkles className="h-3 w-3" />
+                      <Sparkles className="h-3.5 w-3.5" />
                       <span>{loadingAutoNumber ? "..." : isAr ? "توليد تلقائي" : "Auto"}</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
               </FormField>
@@ -322,17 +323,18 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 icon={Languages}
                 hint={isAr ? "التهجئة الرسمية" : "Official spelling"}
               >
-                <div className="relative flex items-center">
+                <div className="flex gap-2 items-center">
                   <Input
                     {...register("fullNameEn", {
                       onChange: () => setManuallyEditedEn(true),
                     })}
                     placeholder={isAr ? "مثال: Mohammed Abdullah Salem Alghamdi" : "e.g. Mohammed Abdullah Salem Alghamdi"}
                     dir="ltr"
-                    className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 pe-28"
+                    className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 flex-1"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => {
                       const ar = watch("fullNameAr");
                       if (!ar || !ar.trim()) {
@@ -344,12 +346,12 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                       setValue("fullNameEn", translated, { shouldValidate: true, shouldDirty: true });
                       toast.success(isAr ? `تمت ترجمة الاسم: ${translated}` : `Transliterated: ${translated}`);
                     }}
-                    className="absolute end-1.5 flex items-center gap-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 px-2.5 py-1.5 text-[11px] font-semibold transition-colors border border-blue-500/20 shadow-xs"
+                    className="h-11 px-3.5 rounded-xl border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition-colors"
                     title="إعادة ترجمة وتعريب الاسم من العربي تلقائياً"
                   >
-                    <Sparkles className="h-3 w-3 text-blue-500" />
+                    <Sparkles className="h-3.5 w-3.5 text-blue-500" />
                     <span>{isAr ? "ترجمة ذكية" : "Translate"}</span>
-                  </button>
+                  </Button>
                 </div>
               </FormField>
 
@@ -550,27 +552,28 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
             </div>
           </div>
-
-          {/* 🌟 Deluxe Action Buttons Footer */}
-          <DialogFooter className="pt-2 gap-2 sm:gap-0 sticky bottom-0 bg-background/90 backdrop-blur-md pb-1">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl border-border/80 px-5 font-semibold hover:bg-muted"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold text-sm px-6 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
-            >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
-              <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ ملف الموظف" : "Save Employee")}</span>
-            </Button>
-          </DialogFooter>
         </form>
+
+        {/* 🌟 Deluxe Action Buttons Footer */}
+        <DialogFooter className="shrink-0 px-6 sm:px-8 py-3.5 border-t border-border/80 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-xl border-border/80 px-6 font-semibold hover:bg-muted"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            form="employee-dialog-form"
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white font-bold text-sm px-8 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
+            <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ ملف الموظف" : "Save Employee")}</span>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

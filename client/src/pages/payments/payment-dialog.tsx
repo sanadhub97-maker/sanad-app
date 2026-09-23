@@ -159,7 +159,7 @@ export function PaymentDialog({
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 💰 Section 1: Financial Calculations */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -419,27 +419,28 @@ export function PaymentDialog({
               />
             </div>
           </div>
-
-          {/* 🌟 Deluxe Action Buttons Footer */}
-          <DialogFooter className="pt-2 gap-2 sm:gap-0 sticky bottom-0 bg-background/90 backdrop-blur-md pb-1">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl border-border/80 px-5 font-semibold hover:bg-muted"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white font-bold text-sm px-6 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
-            >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
-              <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ سند الصرف" : "Save Payment")}</span>
-            </Button>
-          </DialogFooter>
         </form>
+
+        {/* 🌟 Deluxe Action Buttons Footer */}
+        <DialogFooter className="shrink-0 px-6 sm:px-8 py-3.5 border-t border-border/80 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-xl border-border/80 px-6 font-semibold hover:bg-muted"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            form="payment-dialog-form"
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white font-bold text-sm px-8 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
+            <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ سند الصرف" : "Save Payment")}</span>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

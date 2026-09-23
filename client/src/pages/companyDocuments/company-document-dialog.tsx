@@ -147,7 +147,7 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
+        <form id="company-doc-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 📄 Section 1: Document Classification & Identity */}
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] dark:bg-amber-500/[0.04] p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-amber-500/10">
@@ -385,27 +385,28 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
               />
             </div>
           </div>
-
-          {/* 🌟 Deluxe Action Buttons Footer */}
-          <DialogFooter className="pt-3 gap-2 sm:gap-0 sticky bottom-0 bg-background/90 backdrop-blur-md pb-1 border-t border-border/50">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl border-border/80 px-6 font-semibold hover:bg-muted"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-11 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white font-bold text-sm px-7 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
-            >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
-              <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ الوثيقة" : "Save Document")}</span>
-            </Button>
-          </DialogFooter>
         </form>
+
+        {/* 🌟 Deluxe Action Buttons Footer */}
+        <DialogFooter className="shrink-0 px-6 sm:px-8 py-3.5 border-t border-border/80 bg-muted/20 backdrop-blur-md flex items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-xl border-border/80 px-6 font-semibold hover:bg-muted"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            form="company-doc-form"
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white font-bold text-sm px-8 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
+            <span>{isEdit ? (isAr ? "حفظ التعديلات" : "Save Changes") : (isAr ? "حفظ الوثيقة" : "Save Document")}</span>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

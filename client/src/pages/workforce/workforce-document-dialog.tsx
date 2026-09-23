@@ -325,7 +325,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
+        <form id="workforce-doc-form" onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* Document Type Selector (when adding new) */}
           {!isEdit && (
             <div className="space-y-1.5">
@@ -530,35 +530,36 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
               className="rounded-xl border-border/80 bg-muted/20 text-xs"
             />
           </FormField>
-
-          <DialogFooter className="border-t border-border/50 pt-4 gap-3 sticky bottom-0 bg-background/90 backdrop-blur-md pb-1">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl px-6 font-semibold"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className={`h-11 rounded-xl gap-2 font-bold text-white shadow-lg min-w-[140px] px-7 transition-all ${toneStyle.btn}`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.loading")}
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="h-4 w-4" />
-                  {isEdit ? t("common.save") : t("common.create")}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
         </form>
+
+        <DialogFooter className="border-t border-border/60 shrink-0 px-6 sm:px-8 py-3.5 gap-3 bg-muted/20 backdrop-blur-md flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-xl px-6 font-semibold"
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            form="workforce-doc-form"
+            type="submit"
+            disabled={isSubmitting}
+            className={`h-11 rounded-xl gap-2 font-bold text-white shadow-lg min-w-[140px] px-8 transition-all ${toneStyle.btn}`}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("common.loading")}
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                {isEdit ? t("common.save") : t("common.create")}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

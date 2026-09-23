@@ -26,17 +26,25 @@ export function applyDocumentDirection(lang: string) {
   }
 }
 
+const savedLang = typeof window !== "undefined" ? localStorage.getItem("i18nextLng") : null;
+const initialLang = savedLang === "en" ? "en" : "ar";
+
+if (typeof window !== "undefined" && (!savedLang || (savedLang !== "ar" && savedLang !== "en"))) {
+  localStorage.setItem("i18nextLng", "ar");
+}
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: { en: { translation: en }, ar: { translation: ar } },
+    lng: initialLang,
     fallbackLng: "ar",
     interpolation: { escapeValue: false },
-    detection: { order: ["localStorage", "navigator"], caches: ["localStorage"] },
+    detection: { order: ["localStorage"], caches: ["localStorage"], lookupLocalStorage: "i18nextLng" },
   });
 
 i18n.on("languageChanged", applyDocumentDirection);
-applyDocumentDirection(i18n.language || "ar");
+applyDocumentDirection(initialLang);
 
 export default i18n;
