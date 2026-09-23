@@ -560,8 +560,8 @@
       "sendTestTo": "Send test email to..."
     },
     "whatsapp": {
-      "title": "WhatsApp Business API",
-      "description": "Official WhatsApp Business Cloud API only — never WhatsApp Web automation.",
+      "title": "WhatsApp alerts",
+      "description": "Choose how alerts are sent and which numbers receive expiry notifications.",
       "enable": "Enable WhatsApp sending",
       "provider": "Provider",
       "apiUrl": "API URL",
