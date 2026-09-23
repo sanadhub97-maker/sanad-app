@@ -27,13 +27,12 @@ export interface RenderPdfOptions {
 }
 
 /**
- * 👑 Executive Luxury PDF Renderer
- * Generates official corporate-grade A4 PDF documents with:
- * - Ultra-high precision typography (Cairo & Tajawal)
- * - Gold & Navy Royal dual-tone header
- * - Document security border & official reference stamp
- * - Official corporate signatures & circular stamp box
- * - Clean Puppeteer footer with Arabic page numbering
+ * 👑 Executive Corporate PDF Renderer
+ * Produces pixel-perfect official reports with:
+ * - Proper print margins preventing content cutoff
+ * - Cairo & Tajawal typography
+ * - Clean bilingual headers without bidirectional text reversal
+ * - Official corporate signatures and circular compliance seal
  */
 export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
   const browser = await getBrowser();
@@ -47,8 +46,8 @@ export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = 
       displayHeaderFooter: true,
       headerTemplate: "<span></span>",
       footerTemplate: `
-        <div style="width:100%; font-size:8pt; color:#64748b; display:flex; justify-content:space-between; padding:0 14mm; font-family:'Cairo','Segoe UI',sans-serif; border-top:1px solid #e2e8f0; padding-top:4px;" dir="rtl">
-          <span>${options.footerLabel ?? "🔒 وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق"}</span>
+        <div style="width:100%; font-size:7.5pt; color:#64748b; display:flex; justify-content:space-between; padding:0 14mm; font-family:'Cairo','Segoe UI',sans-serif; border-top:1px solid #cbd5e1; padding-top:3px;" dir="rtl">
+          <span>${options.footerLabel ?? "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق"}</span>
           <span>صفحة <span class="pageNumber"></span> من <span class="totalPages"></span></span>
         </div>`,
       margin: { top: "14mm", bottom: "16mm", left: "12mm", right: "12mm" },
@@ -64,6 +63,7 @@ export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = 
 
 export function pdfDocumentShell(opts: {
   title: string;
+  titleEn?: string;
   dir?: "rtl" | "ltr";
   companyNameAr?: string | null;
   companyNameEn?: string | null;
@@ -72,14 +72,16 @@ export function pdfDocumentShell(opts: {
   bodyHtml: string;
   generatedAt?: Date;
   classification?: string;
+  landscape?: boolean;
 }): string {
   const dir = opts.dir ?? "rtl";
   const companyNameAr = opts.companyNameAr || "منظومة سند لإدارة الموارد البشرية والامتثال";
   const companyNameEn = opts.companyNameEn || "SanaD Enterprise HR & Compliance Suite";
-  const classification = opts.classification || "وثيقة رسمية معتمدة | Official Document";
+  const classification = opts.classification || "وثيقة إدارية رسمية معتمدة | Official Document";
 
   const now = opts.generatedAt ?? new Date();
-  const dateFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   return `<!doctype html>
 <html dir="${dir}" lang="${dir === "rtl" ? "ar" : "en"}">
@@ -90,152 +92,182 @@ export function pdfDocumentShell(opts: {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 0; }
+  @page {
+    size: ${opts.landscape ? "A4 landscape" : "A4 portrait"};
+    margin: 12mm 14mm 14mm 14mm;
+  }
   * { box-sizing: border-box; }
   body {
     font-family: ${dir === "rtl" ? "'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif" : "'Inter', 'Cairo', 'Segoe UI', sans-serif"};
-    color: #0f172a;
+    color: #1e293b;
     background: #ffffff;
     margin: 0;
     padding: 0;
-    font-size: 11pt;
-    line-height: 1.5;
+    font-size: 9pt;
+    line-height: 1.45;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* 🌟 Royal Header Accent Line */
-  .royal-accent-bar {
-    height: 4px;
-    background: linear-gradient(90deg, #0B1B3D 0%, #C59A45 50%, #0B1B3D 100%);
+  /* 🌟 Royal Accent Bar */
+  .royal-top-stripe {
+    height: 3px;
+    background: linear-gradient(90deg, #1e3a8a 0%, #c59a45 50%, #1e3a8a 100%);
     width: 100%;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     border-radius: 2px;
   }
 
-  /* 🏛️ Official Document Header */
-  .header {
+  /* 🏛️ Header Top: Company Branding (Right) vs Document Meta (Left) */
+  .doc-header-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1.5px solid #cbd5e1;
-    padding-bottom: 14px;
-    margin-bottom: 18px;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
   }
-  .header-brand {
+  .company-brand-box {
     display: flex;
     align-items: center;
     gap: 12px;
   }
-  .header-logo {
-    height: 52px;
+  .company-logo-img {
+    height: 48px;
     width: auto;
     object-fit: contain;
   }
-  .header-title-box h2 {
+  .company-names h2 {
     font-size: 13pt;
     font-weight: 800;
-    color: #0B1B3D;
+    color: #0b1b3d;
     margin: 0;
-    letter-spacing: -0.3px;
+    line-height: 1.3;
   }
-  .header-title-box p {
-    font-size: 8pt;
+  .company-names p {
+    font-size: 7.5pt;
     font-weight: 600;
     color: #64748b;
     margin: 2px 0 0 0;
   }
 
-  .header-meta-box {
+  .doc-meta-card {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 6px 12px;
     text-align: ${dir === "rtl" ? "left" : "right"};
-  }
-  .header-meta-box .doc-title-main {
-    font-size: 14pt;
-    font-weight: 900;
-    color: #0B1B3D;
-    margin: 0;
-  }
-  .header-meta-box .badge-classification {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
     font-size: 8pt;
-    font-weight: 700;
     color: #475569;
-    margin-top: 4px;
+    line-height: 1.5;
   }
-  .header-meta-box .doc-ref {
+  .doc-meta-card .meta-item strong {
+    color: #0f172a;
+    font-family: 'Cairo', sans-serif;
+  }
+  .doc-meta-card .meta-code {
     font-family: monospace;
-    font-size: 8.5pt;
     font-weight: 700;
     color: #0284c7;
-    margin-top: 3px;
-  }
-  .header-meta-box .doc-date {
-    font-size: 8pt;
-    color: #64748b;
-    margin-top: 2px;
   }
 
-  /* 📦 Executive Section Card */
-  .section-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+  /* 🏷️ Dedicated Document Title Banner */
+  .doc-title-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+  }
+  .title-content h1 {
+    font-size: 13.5pt;
+    font-weight: 900;
+    color: #0b1b3d;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .title-content .title-subtitle-en {
+    font-size: 8pt;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 1px;
+  }
+  .title-badge {
     background: #ffffff;
-    margin-bottom: 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+  }
+
+  /* 📦 Section Styling */
+  .section-card {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    margin-bottom: 12px;
     overflow: hidden;
   }
   .section-header {
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
-    padding: 8px 14px;
-    font-size: 10.5pt;
+    padding: 6px 12px;
+    font-size: 9pt;
     font-weight: 800;
-    color: #0F172A;
+    color: #0b1b3d;
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-  .section-body {
-    padding: 12px 14px;
   }
 
   /* 📊 Executive Tables */
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
+    margin-bottom: 8px;
   }
   th, td {
-    padding: 7px 10px;
-    font-size: 9.5pt;
+    padding: 5px 8px;
+    font-size: 8.5pt;
     text-align: ${dir === "rtl" ? "right" : "left"};
     border-bottom: 1px solid #e2e8f0;
+    border-inline: 1px solid #f1f5f9;
   }
   th {
-    background: #0f172a;
+    background: #1e293b;
     color: #ffffff;
     font-weight: 700;
-    font-size: 9pt;
-    letter-spacing: 0.3px;
+    font-size: 8pt;
+    text-align: center;
+    border-color: #334155;
+    vertical-align: middle;
   }
-  tbody tr:nth-child(even) {
+  th .th-sub {
+    font-size: 6.5pt;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-top: 1px;
+    letter-spacing: 0.2px;
+  }
+  tbody tr:nth-child(even) td {
     background: #f8fafc;
   }
 
   /* 🏷️ Status Badges */
   .badge-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
+    display: inline-block;
+    padding: 1.5px 7px;
     border-radius: 9999px;
-    font-size: 8pt;
+    font-size: 7.5pt;
     font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
   }
   .status-VALID, .status-ACTIVE {
     background: #dcfce7;
@@ -253,97 +285,160 @@ export function pdfDocumentShell(opts: {
     border: 1px solid #fecdd3;
   }
 
-  /* 💰 Financial KPI Box */
-  .kpi-total-card {
-    background: linear-gradient(135deg, #0B1B3D 0%, #1E3A8A 100%);
-    border-radius: 12px;
-    color: #ffffff;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 16px 0;
+  /* 🔍 Empty State */
+  .empty-state-card {
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    margin: 8px 0;
   }
-  .kpi-total-card .amount-label {
+  .empty-state-title {
     font-size: 10pt;
-    color: #93c5fd;
-    font-weight: 600;
+    font-weight: 800;
+    color: #334155;
+    margin-bottom: 3px;
   }
-  .kpi-total-card .amount-val {
-    font-size: 18pt;
-    font-weight: 900;
-    color: #ffffff;
-    font-family: 'Cairo', monospace;
+  .empty-state-desc {
+    font-size: 8pt;
+    color: #64748b;
   }
 
-  /* ✍️ Signature & Approval Matrix */
-  .signature-matrix {
-    margin-top: 32px;
+  /* 🏁 Summary & Totals Bar */
+  .report-summary-bar {
     display: flex;
     justify-content: space-between;
-    gap: 16px;
+    align-items: center;
+    padding: 7px 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 8pt;
+    color: #475569;
+    margin-top: 8px;
+  }
+  .report-summary-bar .summary-kpi {
+    font-weight: 800;
+    color: #0b1b3d;
+    font-size: 8.5pt;
+  }
+
+  /* ✍️ Official Signatures & Seal Section */
+  .signature-matrix {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 14px;
     page-break-inside: avoid;
     break-inside: avoid;
   }
-  .signature-box {
+  .sig-card {
     flex: 1;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    padding: 10px;
     background: #ffffff;
-    min-height: 90px;
-    position: relative;
+    overflow: hidden;
   }
-  .signature-box .box-title {
-    font-size: 9pt;
-    font-weight: 800;
-    color: #0B1B3D;
-    border-bottom: 1px dashed #cbd5e1;
-    padding-bottom: 4px;
-    margin-bottom: 30px;
-  }
-  .signature-box .box-line {
-    border-top: 1px solid #94a3b8;
-    margin-top: 20px;
-    font-size: 8pt;
-    color: #64748b;
+  .sig-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 5px 10px;
     text-align: center;
-    padding-top: 2px;
+  }
+  .sig-card-header .sig-title-ar {
+    font-size: 8.5pt;
+    font-weight: 800;
+    color: #0b1b3d;
+  }
+  .sig-card-header .sig-title-en {
+    font-size: 6.5pt;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .sig-card-body {
+    padding: 10px 12px;
+    font-size: 7.5pt;
+    color: #475569;
+  }
+  .sig-row {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .sig-dots {
+    border-bottom: 1px dotted #94a3b8;
+    flex: 1;
+    height: 10px;
   }
 
-  /* ⭕ Official Circular Stamp */
-  .stamp-box {
-    width: 95px;
-    height: 95px;
-    border: 2px dashed #94a3b8;
-    border-radius: 50%;
+  /* ⭕ Official Circular Seal */
+  .sig-seal-box {
+    width: 130px;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .official-seal-circle {
+    width: 82px;
+    height: 82px;
+    border: 2px dashed #94a3b8;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    font-size: 8pt;
+    padding: 4px;
+  }
+  .seal-stars {
+    font-size: 6.5pt;
+    color: #c59a45;
+    letter-spacing: 2px;
+  }
+  .seal-text-ar {
+    font-size: 7pt;
+    font-weight: 800;
+    color: #0b1b3d;
+    line-height: 1.1;
+    margin: 2px 0;
+  }
+  .seal-text-en {
+    font-size: 5.5pt;
     font-weight: 700;
-    color: #94a3b8;
-    margin: 0 auto;
+    color: #64748b;
+    letter-spacing: 0.5px;
   }
 </style>
 </head>
 <body>
-  <div class="royal-accent-bar"></div>
-  <div class="header">
-    <div class="header-brand">
-      ${opts.logoDataUrl ? `<img src="${opts.logoDataUrl}" class="header-logo" alt="Logo" />` : ""}
-      <div class="header-title-box">
+  <div class="royal-top-stripe"></div>
+
+  <!-- 🏛️ Header Top: Company (Right) vs Meta (Left) -->
+  <div class="doc-header-top">
+    <div class="company-brand-box">
+      ${opts.logoDataUrl ? `<img src="${opts.logoDataUrl}" class="company-logo-img" alt="Logo" />` : ""}
+      <div class="company-names">
         <h2>${companyNameAr}</h2>
         <p>${companyNameEn}</p>
       </div>
     </div>
-    <div class="header-meta-box">
-      <h1 class="doc-title-main">${opts.title}</h1>
-      <div><span class="badge-classification">${classification}</span></div>
-      ${opts.referenceNumber ? `<div class="doc-ref">REF: ${opts.referenceNumber}</div>` : ""}
-      <div class="doc-date">${dateFormatted}</div>
+    <div class="doc-meta-card">
+      <div class="meta-item"><span>تاريخ الإصدار: </span><strong>${dateStr}</strong></div>
+      <div class="meta-item"><span>وقت الطباعة: </span><strong dir="ltr">${timeStr}</strong></div>
+      ${opts.referenceNumber ? `<div class="meta-item"><span>الرقم المرجعي: </span><span class="meta-code">${opts.referenceNumber}</span></div>` : ""}
     </div>
+  </div>
+
+  <!-- 🏷️ Document Title Banner -->
+  <div class="doc-title-banner">
+    <div class="title-content">
+      <h1>${opts.title}</h1>
+      ${opts.titleEn ? `<div class="title-subtitle-en">${opts.titleEn}</div>` : ""}
+    </div>
+    <span class="title-badge">${classification}</span>
   </div>
 
   ${opts.bodyHtml}

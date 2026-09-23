@@ -2,6 +2,7 @@ import ExcelJS from "exceljs";
 
 export interface ColumnDef<T> {
   header: string;
+  subHeader?: string;
   key: keyof T & string;
   width?: number;
   format?: (value: unknown, row: T) => string | number | Date | null;
@@ -50,7 +51,10 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   });
 
   // Track max string length per column for intelligent auto-width calculation
-  const colLengths: number[] = columns.map((c) => Math.max(c.header.length, 10));
+  const colLengths: number[] = columns.map((c) => {
+    const fullHeader = c.subHeader ? `${c.header} (${c.subHeader})` : c.header;
+    return Math.max(fullHeader.length, 10);
+  });
 
   // 👑 Row 1: Royal Navy Corporate Title Banner
   sheet.mergeCells(1, 1, 1, totalCols);
@@ -90,7 +94,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   columns.forEach((col, idx) => {
     const colNumber = idx + 1;
     const cell = sheet.getCell(4, colNumber);
-    cell.value = col.header;
+    cell.value = col.subHeader ? `${col.header} (${col.subHeader})` : col.header;
     cell.border = {
       top: { style: "medium", color: { argb: "FF0F172A" } },
       bottom: { style: "medium", color: { argb: "FF0F172A" } },
@@ -206,7 +210,7 @@ function csvEscape(value: unknown): string {
 }
 
 export function buildCsv<T extends Record<string, unknown>>(columns: ColumnDef<T>[], rows: T[]): string {
-  const header = columns.map((c) => csvEscape(c.header)).join(",");
+  const header = columns.map((c) => csvEscape(c.subHeader ? `${c.header} (${c.subHeader})` : c.header)).join(",");
   const lines = rows.map((row) =>
     columns.map((c) => csvEscape(c.format ? c.format(row[c.key], row) : row[c.key])).join(",")
   );

@@ -166,22 +166,41 @@ export function employeeProfilePdf(
 
     <!-- ✍️ Signatures & Official Stamp Matrix -->
     <div class="signature-matrix">
-      <div class="signature-box">
-        <div class="box-title">إعداد قسم شؤون الموظفين (HR Specialist)</div>
-        <div class="box-line">التوقيع والتاريخ: _________________</div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">إعداد شؤون الموظفين</div>
+          <div class="sig-title-en">HR Operations Specialist</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
-      <div class="signature-box" style="display:flex; align-items:center; justify-content:center;">
-        <div class="stamp-box">الختم الرسمي المعتمد<br/>OFFICIAL STAMP</div>
+      <div class="sig-seal-box">
+        <div class="official-seal-circle">
+          <div class="seal-stars">★★★★★</div>
+          <div class="seal-text-ar">شؤون الموظفين<br/>معتمد</div>
+          <div class="seal-text-en">HR DEPARTMENT</div>
+        </div>
       </div>
-      <div class="signature-box">
-        <div class="box-title">اعتماد المدير العام (General Manager)</div>
-        <div class="box-line">الاعتماد والتاريخ: _________________</div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">اعتماد المدير العام</div>
+          <div class="sig-title-en">General Manager Approval</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
     </div>
   `;
 
   return pdfDocumentShell({
     title: "الملف التعريفي والمهني للموظف",
+    titleEn: "Employee Profile & Official HR Dossier",
     dir: "rtl",
     companyNameAr: branding.company?.nameAr,
     companyNameEn: branding.company?.nameEn,
@@ -300,26 +319,52 @@ export function paymentReceiptPdf(
 
     <!-- ✍️ Financial Approvals & Stamp Matrix -->
     <div class="signature-matrix">
-      <div class="signature-box">
-        <div class="box-title">المستلم / المفوض بالصرف (Recipient)</div>
-        <div class="box-line">التوقيع والتاريخ: _________________</div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">المستلم / المفوض بالصرف</div>
+          <div class="sig-title-en">Recipient / Authorized Receiver</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
-      <div class="signature-box">
-        <div class="box-title">المحاسب المالي (Accountant)</div>
-        <div class="box-line">التوقيع والتدقيق: _________________</div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">المحاسب المالي</div>
+          <div class="sig-title-en">Financial Accountant</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التدقيق:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
-      <div class="signature-box" style="display:flex; align-items:center; justify-content:center;">
-        <div class="stamp-box">الختم المالي المعتمد<br/>FINANCIAL STAMP</div>
+      <div class="sig-seal-box">
+        <div class="official-seal-circle">
+          <div class="seal-stars">★★★★★</div>
+          <div class="seal-text-ar">الإدارة المالية<br/>معتمد للصرف</div>
+          <div class="seal-text-en">FINANCIAL SEAL</div>
+        </div>
       </div>
-      <div class="signature-box">
-        <div class="box-title">الاعتماد المالي (Authorized Approval)</div>
-        <div class="box-line">الاعتماد النهائي: _________________</div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">الاعتماد المالي العام</div>
+          <div class="sig-title-en">Financial Authorization</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
     </div>
   `;
 
   return pdfDocumentShell({
     title: "سند صرف مالي رسمي معتمد",
+    titleEn: "Official Payment Voucher & Disbursement Order",
     dir: "rtl",
     companyNameAr: branding.company?.nameAr,
     companyNameEn: branding.company?.nameEn,
@@ -332,74 +377,124 @@ export function paymentReceiptPdf(
 
 export interface ReportColumn {
   header: string;
+  subHeader?: string;
   render: (row: Record<string, unknown>) => string;
+}
+
+export interface TableReportPdfOptions {
+  titleEn?: string;
+  landscape?: boolean;
+  classification?: string;
 }
 
 /**
  * 📊 Official Corporate Table Report PDF
  */
-export function tableReportPdf(title: string, columns: ReportColumn[], rows: Record<string, unknown>[], branding: Branding) {
-  const body = `
+export function tableReportPdf(
+  title: string,
+  columns: ReportColumn[],
+  rows: Record<string, unknown>[],
+  branding: Branding,
+  opts?: TableReportPdfOptions
+) {
+  const isLandscape = opts?.landscape ?? columns.length > 5;
+
+  const contentHtml = rows.length > 0
+    ? `
     <div class="section-card">
       <div class="section-header">
         <span>جدول البيانات والنتائج (${rows.length} سجل مطابق)</span>
-        <span style="font-size:8.5pt; color:#64748b;">تاريخ التصدير: ${fmtDate(new Date())}</span>
+        <span style="font-size:8pt; color:#64748b; font-weight:600;">تاريخ التصدير: ${fmtDate(new Date())}</span>
       </div>
       <div class="section-body" style="padding:0;">
         <table style="margin:0; border:none;">
           <thead>
             <tr>
-              <th style="width:30px; text-align:center;">#</th>
-              ${columns.map((c) => `<th>${c.header}</th>`).join("")}
+              <th style="width:34px; text-align:center;">#</th>
+              ${columns
+                .map(
+                  (c) =>
+                    `<th><div>${c.header}</div>${c.subHeader ? `<div class="th-sub">${c.subHeader}</div>` : ""}</th>`
+                )
+                .join("")}
             </tr>
           </thead>
           <tbody>
-            ${
-              rows.length
-                ? rows
-                    .map(
-                      (row, idx) =>
-                        `<tr>
-                          <td style="text-align:center; font-family:monospace; color:#64748b;">${idx + 1}</td>
-                          ${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}
-                        </tr>`
-                    )
-                    .join("")
-                : `<tr><td colspan="${columns.length + 1}" style="text-align:center; color:#94a3b8; padding:24px;">لا توجد سجلات تطابق الفلاتر المحددة</td></tr>`
-            }
+            ${rows
+              .map(
+                (row, idx) =>
+                  `<tr>
+                    <td style="text-align:center; font-family:monospace; color:#64748b; font-size:8pt;">${idx + 1}</td>
+                    ${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}
+                  </tr>`
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
     </div>
 
     <!-- End of report summary -->
-    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:9pt; color:#475569; margin-top:12px;">
-      <span>✓ نهاية التقرير الرسمي — تم الاستخراج آلياً عبر منظومة سند لإدارة الموارد البشرية</span>
-      <span style="font-weight:700;">إجمالي السجلات: ${rows.length} سجل</span>
+    <div class="report-summary-bar">
+      <span>✓ نهاية التقرير الرسمي — تم الاستخراج آلياً عبر منظومة سند لإدارة الموارد البشرية والامتثال</span>
+      <span class="summary-kpi">إجمالي السجلات: ${rows.length} سجل</span>
     </div>
+  `
+    : `
+    <div class="empty-state-card">
+      <div style="font-size:24pt; margin-bottom:6px;">📋</div>
+      <div class="empty-state-title">لا توجد سجلات مطابقة لمعايير البحث الحالية</div>
+      <div class="empty-state-desc">لم يتم العثور على أي نتائج في قاعدة البيانات بناءً على الفلاتر والخيارات المحددة في هذا التقرير.</div>
+    </div>
+  `;
 
-    <div class="signature-matrix" style="margin-top:24px;">
-      <div class="signature-box">
-        <div class="box-title">إعداد التقرير وتدقيقه</div>
-        <div class="box-line">التوقيع: _________________</div>
+  const body = `
+    ${contentHtml}
+
+    <div class="signature-matrix">
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">إعداد التقرير وتدقيقه</div>
+          <div class="sig-title-en">Prepared & Audited By</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
-      <div class="signature-box" style="display:flex; align-items:center; justify-content:center;">
-        <div class="stamp-box">ختم الرقابة والامتثال<br/>COMPLIANCE STAMP</div>
+
+      <div class="sig-seal-box">
+        <div class="official-seal-circle">
+          <div class="seal-stars">★★★★★</div>
+          <div class="seal-text-ar">ختم الرقابة<br/>والاعتماد</div>
+          <div class="seal-text-en">OFFICIAL SEAL</div>
+        </div>
       </div>
-      <div class="signature-box">
-        <div class="box-title">اعتماد الإدارة العامة</div>
-        <div class="box-line">التوقيع والاعتماد: _________________</div>
+
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">اعتماد الإدارة العامة</div>
+          <div class="sig-title-en">Executive Management Approval</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
       </div>
     </div>
   `;
 
   return pdfDocumentShell({
     title,
+    titleEn: opts?.titleEn,
+    landscape: isLandscape,
     dir: "rtl",
     companyNameAr: branding.company?.nameAr,
     companyNameEn: branding.company?.nameEn,
     logoDataUrl: branding.logoDataUrl,
-    classification: "تقرير تنفيذي معتمد | Executive Report",
+    classification: opts?.classification || "تقرير تنفيذي رسمي معتمد | Official Executive Report",
     bodyHtml: body,
   });
 }

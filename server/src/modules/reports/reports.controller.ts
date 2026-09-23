@@ -8,9 +8,21 @@ import * as service from "@/modules/reports/reports.service";
 
 type Row = Record<string, unknown>;
 
-async function respond(res: Response, opts: { title: string; filenameBase: string; format: string; columns: ColumnDef<Row>[]; rows: Row[] }) {
-  const { title, filenameBase, format, columns, rows } = opts;
+async function respond(
+  res: Response,
+  opts: {
+    title: string;
+    titleEn?: string;
+    filenameBase: string;
+    format: string;
+    columns: ColumnDef<Row>[];
+    rows: Row[];
+    landscape?: boolean;
+  }
+) {
+  const { title, titleEn, filenameBase, format, columns, rows, landscape } = opts;
   const branding = await getBrandingContext();
+  const isLandscape = landscape ?? columns.length > 5;
 
   if (format === "xlsx") {
     const companyTitle = branding.company?.nameAr
@@ -18,7 +30,7 @@ async function respond(res: Response, opts: { title: string; filenameBase: strin
       : undefined;
 
     const buffer = await buildWorkbook(title, columns, rows, {
-      title,
+      title: titleEn ? `${title} (${titleEn})` : title,
       companyName: companyTitle,
     });
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -36,6 +48,7 @@ async function respond(res: Response, opts: { title: string; filenameBase: strin
   if (format === "pdf") {
     const pdfColumns = columns.map((c) => ({
       header: c.header,
+      subHeader: c.subHeader,
       render: (row: Row) => {
         const raw = row[c.key];
         const value = c.format ? c.format(raw, row) : raw;
@@ -49,8 +62,14 @@ async function respond(res: Response, opts: { title: string; filenameBase: strin
         return value === null || value === undefined ? "—" : String(value);
       },
     }));
-    const html = tableReportPdf(title, pdfColumns, rows, branding);
-    const pdf = await renderHtmlToPdf(html, { footerLabel: title, landscape: columns.length > 5 });
+    const html = tableReportPdf(title, pdfColumns, rows, branding, {
+      titleEn,
+      landscape: isLandscape,
+    });
+    const pdf = await renderHtmlToPdf(html, {
+      footerLabel: titleEn ? `${title} — ${titleEn}` : title,
+      landscape: isLandscape,
+    });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filenameBase}.pdf"`);
     return res.send(pdf);
@@ -63,22 +82,24 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
   const rows = await service.employeesReport(req.query as never);
   await respond(res, {
-    title: "تقرير الموظفين الشامل | Employees Comprehensive Report",
+    title: "تقرير الموظفين الشامل",
+    titleEn: "Comprehensive Employees & Workforce Report",
     filenameBase: "employees-report",
+    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "الرقم الوظيفي | Emp #", key: "employeeNumber" },
-      { header: "اسم الموظف | Full Name", key: "fullName" },
-      { header: "الجنسية | Nationality", key: "nationality" },
-      { header: "المسمى الوظيفي | Job Title", key: "jobTitle" },
-      { header: "القسم الإداري | Department", key: "department" },
-      { header: "الفرع / المنشأة | Branch", key: "branch" },
-      { header: "حالة العمل | Status", key: "employmentStatus" },
-      { header: "انتهاء الإقامة | Iqama Expiry", key: "iqamaExpiryDate" },
-      { header: "حالة الإقامة | Iqama Status", key: "iqamaStatus" },
-      { header: "انتهاء الجواز | Passport Expiry", key: "passportExpiryDate" },
-      { header: "حالة الجواز | Passport Status", key: "passportStatus" },
+      { header: "الرقم الوظيفي", subHeader: "Emp ID", key: "employeeNumber" },
+      { header: "اسم الموظف", subHeader: "Full Name", key: "fullName" },
+      { header: "الجنسية", subHeader: "Nationality", key: "nationality" },
+      { header: "المسمى الوظيفي", subHeader: "Job Title", key: "jobTitle" },
+      { header: "القسم الإداري", subHeader: "Department", key: "department" },
+      { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
+      { header: "حالة العمل", subHeader: "Status", key: "employmentStatus" },
+      { header: "انتهاء الإقامة", subHeader: "Iqama Expiry", key: "iqamaExpiryDate" },
+      { header: "حالة الإقامة", subHeader: "Iqama Status", key: "iqamaStatus" },
+      { header: "انتهاء الجواز", subHeader: "Passport Expiry", key: "passportExpiryDate" },
+      { header: "حالة الجواز", subHeader: "Passport Status", key: "passportStatus" },
     ],
   });
 });
@@ -87,16 +108,18 @@ export const documents = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
   const rows = await service.documentsReport(req.query as never);
   await respond(res, {
-    title: "تقرير صلاحية ومتابعة الوثائق الرسمية | Documents Expiration Report",
+    title: "تقرير متابعة الوثائق الرسمية والامتثال",
+    titleEn: "Official Documents & Compliance Expiration Report",
     filenameBase: "documents-expiration-report",
+    landscape: false,
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "الوثيقة | Document", key: "label" },
-      { header: "نوع المصدر | Source", key: "sourceType" },
-      { header: "الموظف المرتبط | Employee", key: "employeeName" },
-      { header: "تاريخ الانتهاء | Expiry Date", key: "expiryDate" },
-      { header: "حالة الصلاحية | Status", key: "status" },
+      { header: "الوثيقة الرسمية", subHeader: "Document", key: "label" },
+      { header: "نوع المصدر", subHeader: "Source", key: "sourceType" },
+      { header: "الموظف المرتبط", subHeader: "Employee", key: "employeeName" },
+      { header: "تاريخ الانتهاء", subHeader: "Expiry Date", key: "expiryDate" },
+      { header: "حالة الصلاحية", subHeader: "Status", key: "status" },
     ],
   });
 });
@@ -105,20 +128,22 @@ export const payments = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
   const rows = await service.paymentsReport(req.query as never);
   await respond(res, {
-    title: "تقرير سندات الصرف والمصروفات التشغيلية | Payments & Expenses Report",
+    title: "تقرير سندات الصرف والمصروفات التشغيلية",
+    titleEn: "Payment Vouchers & Operational Expenses Report",
     filenameBase: "payments-report",
+    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "رقم السند | Payment #", key: "paymentNumber" },
-      { header: "تاريخ السند | Date", key: "paymentDate" },
-      { header: "بند الصرف | Category", key: "category" },
-      { header: "طريقة الدفع | Method", key: "method" },
-      { header: "الفرع / المؤسسة | Branch", key: "branch" },
-      { header: "الموظف / المستفيد | Beneficiary", key: "employee" },
-      { header: "المبلغ الأساسي (ر.س) | Amount", key: "amount" },
-      { header: "الضريبة (ر.س) | VAT", key: "vat" },
-      { header: "الإجمالي (ر.س) | Total", key: "total" },
+      { header: "رقم السند", subHeader: "Voucher #", key: "paymentNumber" },
+      { header: "تاريخ السند", subHeader: "Date", key: "paymentDate" },
+      { header: "بند الصرف", subHeader: "Category", key: "category" },
+      { header: "طريقة الدفع", subHeader: "Method", key: "method" },
+      { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
+      { header: "الموظف / المستفيد", subHeader: "Beneficiary", key: "employee" },
+      { header: "المبلغ الأساسي", subHeader: "Amount (SAR)", key: "amount" },
+      { header: "الضريبة", subHeader: "VAT (SAR)", key: "vat" },
+      { header: "المبلغ الإجمالي", subHeader: "Total (SAR)", key: "total" },
     ],
   });
 });
@@ -127,17 +152,19 @@ export const activity = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
   const rows = await service.activityReport(req.query as never);
   await respond(res, {
-    title: "سجل العمليات والتدقيق الإداري | Audit & Activity Log",
+    title: "سجل العمليات والتدقيق الإداري",
+    titleEn: "System Audit & Administrative Activity Log",
     filenameBase: "audit-activity-report",
+    landscape: true,
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "التاريخ والوقت | Timestamp", key: "date" },
-      { header: "المستخدم | User", key: "user" },
-      { header: "العملية | Action", key: "action" },
-      { header: "الموديول | Module", key: "module" },
-      { header: "المعرف | Record ID", key: "recordId" },
-      { header: "تفاصيل العملية | Description", key: "description" },
+      { header: "التاريخ والوقت", subHeader: "Timestamp", key: "date" },
+      { header: "المستخدم", subHeader: "User", key: "user" },
+      { header: "العملية", subHeader: "Action", key: "action" },
+      { header: "الموديول", subHeader: "Module", key: "module" },
+      { header: "المعرف", subHeader: "Record ID", key: "recordId" },
+      { header: "تفاصيل العملية", subHeader: "Description", key: "description" },
     ],
   });
 });
