@@ -31,8 +31,14 @@ export function createApp() {
           ...helmet.contentSecurityPolicy.getDefaultDirectives(),
           "img-src": ["'self'", "data:", "blob:", "https:"],
           "connect-src": ["'self'", "https:", "blob:"],
+          // Allow embedding only inside the sept.cloud subdomain that mirrors this app —
+          // not left wide open to arbitrary third-party sites.
+          "frame-ancestors": ["'self'", "https://sept.cloud", "https://sanad-hr.sept.cloud"],
         },
       },
+      // X-Frame-Options can't express a specific allowed origin (only SAMEORIGIN/DENY),
+      // so it's disabled in favor of the CSP frame-ancestors directive above.
+      frameguard: false,
       crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
