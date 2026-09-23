@@ -49,7 +49,7 @@ export function AppShell() {
         initial={false}
         animate={{ width: collapsed ? 76 : 260 }}
         transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="hidden lg:flex flex-col bg-card/95 dark:bg-[#070C18]/95 text-foreground dark:text-white shrink-0 border-e border-border/80 dark:border-white/[0.08] relative z-20 shadow-sm dark:shadow-2xl dark:shadow-black/50 backdrop-blur-xl transition-colors"
+        className="hidden lg:flex flex-col bg-card/90 dark:bg-[#060913]/95 text-foreground dark:text-white shrink-0 border-e border-border/70 dark:border-white/[0.08] relative z-20 shadow-sm dark:shadow-2xl dark:shadow-black/50 backdrop-blur-2xl transition-colors specular-border"
       >
         {/* Top Brand Header */}
         <div className="flex h-16 items-center justify-between px-3.5 border-b border-border/80 dark:border-white/[0.08] bg-muted/20 dark:bg-black/10">

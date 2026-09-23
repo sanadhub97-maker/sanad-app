@@ -361,89 +361,93 @@ export function WorkforceDocumentsView({
         transition={{ duration: 0.3 }}
         className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4"
       >
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-blue-500/40 hover:bg-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">
+        <div className="group relative overflow-hidden rounded-3xl border border-blue-200/80 dark:border-blue-900/40 bg-card/90 backdrop-blur-xl p-5 transition-all duration-300 shadow-luxury hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500/60 specular-border">
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-blue-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">
               {t("workforce.stats.total")}
             </span>
             <AppleIcon
               icon={DocIcon}
               tone={tone}
               size="md"
-              className="transition-transform duration-200 group-hover:scale-110"
+              className="transition-transform duration-200 group-hover:scale-110 shadow-sm"
             />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-foreground font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
               {stats.total}
             </span>
-            <span className="text-[10px] text-muted-foreground font-medium">
+            <span className="text-[11px] text-muted-foreground font-medium">
               {isAr ? "سجل مسجل" : "records"}
             </span>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-emerald-500/40 hover:bg-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">
+        <div className="group relative overflow-hidden rounded-3xl border border-emerald-200/80 dark:border-emerald-900/40 bg-card/90 backdrop-blur-xl p-5 transition-all duration-300 shadow-luxury hover:-translate-y-1 hover:border-emerald-400 dark:hover:border-emerald-500/60 specular-border">
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-emerald-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">
               {t("workforce.stats.valid")}
             </span>
             <AppleIcon
               icon={CheckCircle2}
               tone="emerald"
               size="md"
-              className="transition-transform duration-200 group-hover:scale-110"
+              className="transition-transform duration-200 group-hover:scale-110 shadow-sm"
             />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-sans">
               {stats.valid}
             </span>
-            <span className="inline-block rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="inline-block rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               {isAr ? "سارية" : "valid"}
             </span>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-amber-500/40 hover:bg-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">
+        <div className="group relative overflow-hidden rounded-3xl border border-amber-200/80 dark:border-amber-900/40 bg-card/90 backdrop-blur-xl p-5 transition-all duration-300 shadow-luxury hover:-translate-y-1 hover:border-amber-400 dark:hover:border-amber-500/60 specular-border">
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-amber-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">
               {t("workforce.stats.expiringSoon")}
             </span>
             <AppleIcon
               icon={AlertTriangle}
               tone="amber"
               size="md"
-              className="transition-transform duration-200 group-hover:scale-110"
+              className="transition-transform duration-200 group-hover:scale-110 shadow-sm"
             />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-sans">
               {stats.expiringSoon}
             </span>
-            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
               {isAr ? "بحاجة لتجديد" : "renew soon"}
             </span>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/60 p-4 transition-all duration-300 card-luxury-hover hover:border-rose-500/40 hover:bg-card">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">
+        <div className="group relative overflow-hidden rounded-3xl border border-rose-200/80 dark:border-rose-900/40 bg-card/90 backdrop-blur-xl p-5 transition-all duration-300 shadow-luxury hover:-translate-y-1 hover:border-rose-400 dark:hover:border-rose-500/60 specular-border">
+          <div className="pointer-events-none absolute -bottom-8 -start-8 h-24 w-24 rounded-full bg-rose-500/15 blur-xl group-hover:scale-125 transition-transform" />
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground/90">
               {t("workforce.stats.expired")}
             </span>
             <AppleIcon
               icon={AlertOctagon}
               tone="rose"
               size="md"
-              className="transition-transform duration-200 group-hover:scale-110"
+              className="transition-transform duration-200 group-hover:scale-110 shadow-sm"
             />
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-rose-600 dark:text-rose-400 font-mono">
+          <div className="relative z-10 mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-rose-600 dark:text-rose-400 font-sans">
               {stats.expired}
             </span>
-            <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
+            <span className="inline-block rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">
               {isAr ? "عاجل" : "expired"}
             </span>
           </div>
@@ -451,7 +455,7 @@ export function WorkforceDocumentsView({
       </motion.div>
 
       {/* Advanced Filter Ribbon */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card/40 p-3 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-border/80 bg-card/90 p-3.5 backdrop-blur-xl shadow-luxury specular-border">
         <div className="flex flex-wrap items-center gap-2">
           {/* Status Tabs */}
           <div className="flex rounded-xl bg-muted/60 p-1 border border-border/50 text-xs font-medium">

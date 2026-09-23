@@ -82,7 +82,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/80 bg-card/85 dark:bg-[#070B14]/85 px-4 sm:px-6 backdrop-blur-2xl transition-colors">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-4 sm:px-6 backdrop-blur-2xl transition-colors specular-border shadow-xs">
       <Button
         variant="ghost"
         size="icon"
@@ -103,7 +103,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           variant="outline"
           size="sm"
           onClick={toggleLanguage}
-          className="h-9 gap-1.5 rounded-xl border-border/80 bg-background/70 px-3 text-xs font-bold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all active:scale-95 shadow-xs"
+          className="h-9 gap-1.5 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] px-3 text-xs font-bold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all active:scale-95 shadow-2xs"
           title={isAr ? "Switch to English" : "التحويل إلى العربية"}
         >
           <Globe className="h-3.5 w-3.5 text-blue-500" />
@@ -115,7 +115,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           variant="outline"
           size="icon"
           onClick={handleToggleTheme}
-          className="h-9 w-9 rounded-xl border-border/80 bg-background/70 text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-200 active:scale-95 shadow-xs"
+          className="h-9 w-9 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all duration-200 active:scale-95 shadow-2xs"
           title={isDark ? (isAr ? "التبديل إلى الوضع النهاري" : "Switch to Light Mode") : (isAr ? "التبديل إلى الوضع الليلي" : "Switch to Dark Mode")}
         >
           {isDark ? (

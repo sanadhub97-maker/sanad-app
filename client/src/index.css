@@ -6,8 +6,8 @@
   :root {
     --font-sans: "Plus Jakarta Sans", "Cairo", "Tajawal", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 
-    /* Light Theme: Pristine Porcelain Slate with Deep Royal Navy & Indigo */
-    --background: 216 33% 98%; /* #F8FAFD */
+    /* Light Theme: Pristine Pearl Porcelain Slate with Deep Royal Navy & Indigo */
+    --background: 216 35% 97.8%; /* #F7F9FD */
     --foreground: 224 58% 11%;
 
     --card: 0 0% 100%;
@@ -16,21 +16,21 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 58% 11%;
 
-    --primary: 224 64% 16%; /* Deep Royal Navy */
+    --primary: 224 68% 18%; /* Deep Royal Executive Navy */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 220 28% 95%;
     --secondary-foreground: 224 58% 14%;
 
-    --accent: 221 83% 53%; /* Vibrant Royal Sapphire */
+    --accent: 221 84% 54%; /* Vibrant Royal Sapphire */
     --accent-foreground: 210 40% 98%;
 
-    --muted: 218 25% 94%;
-    --muted-foreground: 218 16% 45%;
+    --muted: 218 26% 94.5%;
+    --muted-foreground: 218 16% 44%;
 
     --border: 216 22% 89%;
     --input: 216 22% 89%;
-    --ring: 221 83% 53%;
+    --ring: 221 84% 54%;
 
     --destructive: 0 75% 54%;
     --destructive-foreground: 210 40% 98%;
@@ -44,37 +44,37 @@
     --info: 199 89% 46%;
     --info-foreground: 210 40% 98%;
 
-    --radius: 0.875rem;
+    --radius: 1rem;
   }
 
   .dark,
   :root.dark,
   html.dark {
-    /* Dark Theme: Deep Obsidian Midnight with Luminous Sapphire & Emerald */
-    --background: 224 45% 5.5%; /* #070B14 */
-    --foreground: 214 32% 96%;
+    /* Dark Theme: Ultra-Deep Obsidian Midnight with Electric Sapphire & Emerald */
+    --background: 224 48% 4.5%; /* #060913 */
+    --foreground: 214 34% 96%;
 
-    --card: 224 42% 8.5%; /* #0C1220 */
-    --card-foreground: 214 32% 96%;
+    --card: 224 42% 7.8%; /* #080E1B */
+    --card-foreground: 214 34% 96%;
 
-    --popover: 224 42% 8.5%;
-    --popover-foreground: 214 32% 96%;
+    --popover: 224 42% 7.8%;
+    --popover-foreground: 214 34% 96%;
 
-    --primary: 217 91% 60%; /* Glowing Electric Sapphire */
-    --primary-foreground: 224 45% 6%;
+    --primary: 217 92% 61%; /* Glowing Electric Sapphire */
+    --primary-foreground: 224 48% 5%;
 
-    --secondary: 224 30% 14%;
-    --secondary-foreground: 214 32% 96%;
+    --secondary: 224 30% 13%;
+    --secondary-foreground: 214 34% 96%;
 
-    --accent: 217 91% 60%;
-    --accent-foreground: 224 45% 6%;
+    --accent: 217 92% 61%;
+    --accent-foreground: 224 48% 5%;
 
-    --muted: 224 25% 14%;
-    --muted-foreground: 218 18% 66%;
+    --muted: 224 28% 12%;
+    --muted-foreground: 218 20% 68%;
 
-    --border: 224 24% 15%;
-    --input: 224 24% 15%;
-    --ring: 217 91% 60%;
+    --border: 224 24% 14%;
+    --input: 224 24% 14%;
+    --ring: 217 92% 61%;
 
     --destructive: 0 72% 58%;
     --destructive-foreground: 210 40% 98%;
@@ -138,16 +138,60 @@
   /* Executive Liquid Glass Panels */
   .glass-panel {
     background: hsl(var(--card) / 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid hsl(var(--border) / 0.75);
   }
 
   .glass-header {
     background: hsl(var(--card) / 0.82);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border-bottom: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  /* Ultra-Luxury Card Panel with Inset Specular Sheen */
+  .card-luxury {
+    background: hsl(var(--card) / 0.9);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid hsl(var(--border) / 0.7);
+    border: 1px solid hsl(var(--border) / 0.8);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
+  }
+  .dark .card-luxury {
+    background: hsl(var(--card) / 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  }
+
+  /* Executive Liquid Glass Dock / Floating Bar */
+  .liquid-glass-dock {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid hsl(var(--border) / 0.8);
+    box-shadow: 0 14px 44px -12px rgba(0, 0, 0, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  }
+  .dark .liquid-glass-dock {
+    background: rgba(8, 14, 27, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 65px -15px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  }
+
+  /* Executive Signature Gradient Button */
+  .btn-luxury-gradient {
+    background: linear-gradient(135deg, #147EFB 0%, #4F46E5 50%, #06B6D4 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 18px -2px rgba(20, 126, 251, 0.35);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-luxury-gradient:hover {
+    box-shadow: 0 8px 25px -4px rgba(20, 126, 251, 0.5);
+    transform: translateY(-1.5px);
+  }
+  .btn-luxury-gradient:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px -2px rgba(20, 126, 251, 0.3);
   }
 
   /* Specular Micro-Border Top Highlight */
@@ -160,12 +204,12 @@
     inset-inline: 0;
     top: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
     pointer-events: none;
     z-index: 1;
   }
   .dark .specular-border::before {
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4) 30%, rgba(255, 255, 255, 0.3) 50%, rgba(99, 102, 241, 0.4) 70%, transparent);
   }
 
   /* Chromatic Glow Accents */

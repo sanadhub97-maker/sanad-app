@@ -200,8 +200,9 @@ export function DataTable<T extends object>({
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
               className="h-9 w-9 rounded-xl border-border/80 bg-background/80 disabled:opacity-40 hover:bg-muted shadow-xs transition-transform active:scale-95"
+              title={t("common.previous", { defaultValue: "Previous" })}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
             </Button>
             <div className="flex items-center px-3 py-1.5 text-xs font-bold text-foreground bg-background/80 border border-border/80 rounded-xl shadow-xs">
               {page} / {totalPages}
@@ -212,8 +213,9 @@ export function DataTable<T extends object>({
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
               className="h-9 w-9 rounded-xl border-border/80 bg-background/80 disabled:opacity-40 hover:bg-muted shadow-xs transition-transform active:scale-95"
+              title={t("common.next", { defaultValue: "Next" })}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </div>
         </div>
