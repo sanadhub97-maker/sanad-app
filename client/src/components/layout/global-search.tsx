@@ -60,8 +60,11 @@ export function GlobalSearch() {
         onClick={() => setOpen(true)}
       >
         <Search className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors me-2 shrink-0" />
-        <span className="truncate hidden sm:inline">
-          {isAr ? "البحث السريع (موظف، إقامة، مستند...)" : "Quick search (employees, docs, payments...)"}
+        <span className="truncate hidden xl:inline">
+          {isAr ? "البحث السريع (موظف، إقامة...)" : "Quick search (employees, docs...)"}
+        </span>
+        <span className="truncate hidden sm:inline xl:hidden">
+          {isAr ? "البحث السريع..." : "Quick search..."}
         </span>
         <span className="sm:hidden">{isAr ? "بحث..." : "Search..."}</span>
         <div className="ms-auto flex items-center gap-0.5">

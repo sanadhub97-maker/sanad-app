@@ -15,6 +15,7 @@ import {
 import { GlobalSearch } from "@/components/layout/global-search";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { CompanyBadge } from "@/components/layout/company-badge";
+import { LiveCalendarClock } from "@/components/layout/live-calendar-clock";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { logout as logoutRequest } from "@/api/auth";
@@ -83,30 +84,41 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-4 sm:px-6 backdrop-blur-2xl transition-colors specular-border shadow-xs">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="lg:hidden text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl"
-        onClick={onOpenMobileNav}
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-2 sm:gap-3 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-3 sm:px-5 backdrop-blur-2xl transition-colors specular-border shadow-xs">
+      {/* 1. Leading Section: Mobile Toggle + Company Badge + Divider + Quick Search */}
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink min-w-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden text-muted-foreground hover:text-foreground h-9 w-9 rounded-xl shrink-0"
+          onClick={onOpenMobileNav}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
 
-      <CompanyBadge isDark={isDark} />
+        <CompanyBadge isDark={isDark} />
 
-      {/* Global Search Bar */}
-      <div className="flex-1 max-w-md">
-        <GlobalSearch />
+        <div className="h-5 w-px bg-border/70 dark:bg-white/10 hidden sm:block shrink-0" />
+
+        {/* Global Search Bar */}
+        <div className="w-32 sm:w-44 md:w-52 lg:w-56 shrink min-w-[110px]">
+          <GlobalSearch />
+        </div>
       </div>
 
-      <div className="ms-auto flex items-center gap-2 sm:gap-2.5">
+      {/* 2. Center Section: Executive Live Calendar & Digital Clock */}
+      <div className="flex items-center justify-center shrink-0 mx-1 sm:mx-2">
+        <LiveCalendarClock />
+      </div>
+
+      {/* 3. Trailing Section: Language + Theme + Notifications + User Menu */}
+      <div className="ms-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
         {/* Language Switcher Pill */}
         <Button
           variant="outline"
           size="sm"
           onClick={toggleLanguage}
-          className="h-9 gap-1.5 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] px-3 text-xs font-bold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all active:scale-95 shadow-2xs"
+          className="h-9 gap-1.5 rounded-xl border-border/80 bg-background/80 dark:bg-white/[0.04] px-2.5 sm:px-3 text-xs font-bold text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all active:scale-95 shadow-2xs"
           title={isAr ? "Switch to English" : "التحويل إلى العربية"}
         >
           <Globe className="h-3.5 w-3.5 text-blue-500" />
@@ -131,7 +143,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         {/* Notification Bell */}
         <NotificationBell />
 
-        <div className="h-4 w-px bg-border/70 mx-1 hidden sm:block" />
+        <div className="h-5 w-px bg-border/70 dark:bg-white/10 mx-0.5 sm:mx-1 hidden sm:block shrink-0" />
 
         {/* User Dropdown */}
         <DropdownMenu>
