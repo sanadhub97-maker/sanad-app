@@ -5,7 +5,7 @@ import { daysUntil } from "@/services/expiration";
 import { getExpirationRules, markExpirationScanRun } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
-import { sendWhatsapp, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
+import { sendWhatsapp } from "@/services/whatsapp";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
 
 // Roles considered "responsible" for expiration alerts in this build — a
@@ -153,7 +153,7 @@ export async function runExpirationScan() {
       // The numbers configured in Settings → WhatsApp decide who gets alerts.
       // With Meta and no list configured, fall back to notify-role users' phones.
       const phones =
-        whatsappPhones.length > 0 || whatsappSettings.provider === CALLMEBOT_PROVIDER
+        whatsappPhones.length > 0 || ["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "")
           ? whatsappPhones
           : recipients.flatMap((r) => (r.phone ? [r.phone] : []));
       for (const phone of phones) {

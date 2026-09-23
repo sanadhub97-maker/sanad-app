@@ -72,6 +72,9 @@ router.put(
   auditLog(AuditAction.UPDATE, "settings"),
   controller.updateWhatsappRecipients
 );
-router.post("/whatsapp/test",requirePermission("settings.edit"), validate({ body: testWhatsappSchema }), controller.testWhatsapp);
+router.get("/whatsapp/web/status", requirePermission("settings.view"), controller.getWhatsappWebStatus);
+router.post("/whatsapp/web/connect", requirePermission("settings.edit"), auditLog(AuditAction.UPDATE, "settings"), controller.connectWhatsappWeb);
+router.post("/whatsapp/web/logout", requirePermission("settings.edit"), auditLog(AuditAction.UPDATE, "settings"), controller.logoutWhatsappWeb);
+router.post("/whatsapp/test", requirePermission("settings.edit"), validate({ body: testWhatsappSchema }), controller.testWhatsapp);
 
 export default router;

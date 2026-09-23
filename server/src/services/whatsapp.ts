@@ -3,6 +3,7 @@ import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import { getRecipientApiKey, normalizePhone } from "@/services/whatsappRecipients";
+import { sendViaWhatsappWeb, WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
 
 export const CALLMEBOT_PROVIDER = "CALLMEBOT";
 const CALLMEBOT_API_URL = "https://api.callmebot.com/whatsapp.php";
@@ -46,6 +47,10 @@ export async function getWhatsappConfig(): Promise<WhatsappConfig> {
  */
 export async function sendWhatsapp(toPhoneE164: string, message: string): Promise<SendResult> {
   const config = await getWhatsappConfig();
+  if (config.provider === WHATSAPP_WEB_PROVIDER) {
+    if (!config.enabled) return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
+    return sendViaWhatsappWeb(normalizePhone(toPhoneE164), message);
+  }
   if (config.provider === CALLMEBOT_PROVIDER) return sendViaCallMeBot(config, toPhoneE164, message);
   return sendViaMetaCloud(config, toPhoneE164, message);
 }

@@ -83,11 +83,21 @@ export const settingsApi = {
   getWhatsapp: async () => (await api.get<{ data: WhatsappSettingsView }>("/settings/whatsapp")).data.data,
   updateWhatsapp: async (input: WhatsappSettingsInput) => (await api.put("/settings/whatsapp", input)).data,
   testWhatsapp: async (to: string) => (await api.post<{ message: string }>("/settings/whatsapp/test", { to })).data,
+  getWhatsappWebStatus: async () => (await api.get<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/status")).data.data,
+  connectWhatsappWeb: async () => (await api.post<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/connect")).data.data,
+  logoutWhatsappWeb: async () => (await api.post<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/logout")).data.data,
   getWhatsappRecipients: async () =>
     (await api.get<{ data: WhatsappRecipient[] }>("/settings/whatsapp/recipients")).data.data,
   updateWhatsappRecipients: async (recipients: WhatsappRecipientInput[]) =>
     (await api.put<{ data: WhatsappRecipient[] }>("/settings/whatsapp/recipients", { recipients })).data.data,
 };
+
+export interface WhatsappWebStatus {
+  status: "disconnected" | "connecting" | "qr" | "connected";
+  qr: string | null;
+  phone: string | null;
+  lastError: string | null;
+}
 
 export interface WhatsappRecipient {
   id: string;

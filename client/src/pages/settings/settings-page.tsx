@@ -1208,7 +1208,13 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
     watch,
     formState: { isSubmitting },
   } = useForm<WhatsappSettingsInput>({
-    values: data ? { ...data, provider: data.provider === "CALLMEBOT" ? "CALLMEBOT" : "META", apiKey: "" } : undefined,
+    values: data
+      ? {
+          ...data,
+          provider: data.provider === "CALLMEBOT" || data.provider === "WHATSAPP_WEB" ? data.provider : "META",
+          apiKey: "",
+        }
+      : undefined,
   });
 
   const [showApiKey, setShowApiKey] = useState(false);
@@ -1224,6 +1230,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 
   const isEnabled = watch("enabled");
   const isCallMeBot = watch("provider") === "CALLMEBOT";
+  const isWhatsappWeb = watch("provider") === "WHATSAPP_WEB";
 
   if (isLoading || !data) {
     return (
@@ -1257,7 +1264,9 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               <div className="flex items-center gap-3">
                 <Badge variant={isEnabled ? "success" : "secondary"} className="text-xs px-3 py-1">
                   {isEnabled
-                    ? isCallMeBot
+                    ? isWhatsappWeb
+                      ? isRtl ? "الربط بـ QR نشط" : "QR link active"
+                      : isCallMeBot
                       ? isRtl ? "CallMeBot نشط" : "CallMeBot Active"
                       : isRtl ? "واتساب كلاود API نشط" : "WhatsApp Cloud API Active"
                     : isRtl ? "معطل" : "Disabled"}
@@ -1280,8 +1289,9 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                     control={control}
                     name="provider"
                     render={({ field }) => (
-                      <div className="grid grid-cols-2 gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
                         {[
+                          { value: "WHATSAPP_WEB", label: isRtl ? "ربط رقم بكود QR (مجاني)" : "Link a number by QR (free)" },
                           { value: "CALLMEBOT", label: isRtl ? "CallMeBot (مجاني)" : "CallMeBot (free)" },
                           { value: "META", label: isRtl ? "واتساب الرسمي (Meta)" : "Official (Meta Cloud API)" },
                         ].map((opt) => (
@@ -1306,7 +1316,18 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                 </InputField>
               </div>
 
-              {isCallMeBot ? (
+              {isWhatsappWeb ? (
+                <div className="sm:col-span-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs leading-relaxed space-y-1.5">
+                  <p className="font-bold text-foreground">
+                    {isRtl ? "النظام هيبعت التنبيهات من رقم واتساب إنت بتربطه مرة واحدة." : "Alerts are sent from a WhatsApp number you link once."}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {isRtl
+                      ? "فعّل الخاصية واحفظ، وبعدين اربط الرقم من صندوق الربط تحت. ده ربط غير رسمي زي واتساب ويب، وواتساب ممكن يحظر الرقم لو اعتبره إرسال آلي، فاستخدم رقم احتياطي مش رقمك الأساسي."
+                      : "Enable and save, then link the number in the box below. This is an unofficial link like WhatsApp Web; WhatsApp may ban a number it flags as automated, so use a spare number, not your main one."}
+                  </p>
+                </div>
+              ) : isCallMeBot ? (
                 <>
                   <div className="sm:col-span-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 text-xs leading-relaxed space-y-2">
                     <p className="font-bold text-foreground">
@@ -1417,8 +1438,122 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         </div>
       </form>
 
+      {isWhatsappWeb && data.provider === "WHATSAPP_WEB" && data.enabled && (
+        <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} />
+      )}
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
     </div>
+  );
+}
+
+function WhatsappWebLinkCard({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
+  const queryClient = useQueryClient();
+  const { data: status } = useQuery({
+    queryKey: ["settings", "whatsapp", "web-status"],
+    queryFn: settingsApi.getWhatsappWebStatus,
+    // Poll while waiting for a scan or a (re)connection; stop once settled.
+    refetchInterval: (q) => {
+      const s = q.state.data?.status;
+      return s === "qr" || s === "connecting" ? 2500 : false;
+    },
+  });
+
+  const connect = useMutation({
+    mutationFn: settingsApi.connectWhatsappWeb,
+    onSuccess: (s) => queryClient.setQueryData(["settings", "whatsapp", "web-status"], s),
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+  const logout = useMutation({
+    mutationFn: settingsApi.logoutWhatsappWeb,
+    onSuccess: (s) => {
+      queryClient.setQueryData(["settings", "whatsapp", "web-status"], s);
+      toast.success(isRtl ? "تم فك ربط الرقم" : "Number unlinked");
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  const s = status?.status ?? "disconnected";
+
+  return (
+    <Card className="specular-border overflow-hidden border-border/80">
+      <CardHeader className="pb-3 border-b border-border/40">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+              <MessageSquare className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-foreground">{isRtl ? "ربط رقم الإرسال" : "Sending number"}</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground">
+                {isRtl ? "الرقم اللي النظام هيبعت منه التنبيهات" : "The number alerts are sent from"}
+              </CardDescription>
+            </div>
+          </div>
+          <Badge variant={s === "connected" ? "success" : "secondary"} className="text-xs px-3 py-1 shrink-0">
+            {s === "connected"
+              ? isRtl ? "مربوط" : "Linked"
+              : s === "qr"
+                ? isRtl ? "في انتظار المسح" : "Waiting for scan"
+                : s === "connecting"
+                  ? isRtl ? "جاري الاتصال..." : "Connecting..."
+                  : isRtl ? "غير مربوط" : "Not linked"}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-5">
+        {s === "connected" ? (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-foreground">
+              {isRtl ? "التنبيهات بتتبعت من الرقم: " : "Alerts are sent from: "}
+              <bdi dir="ltr" className="font-mono font-bold">{status?.phone}</bdi>
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!canEdit || logout.isPending}
+              onClick={() => logout.mutate()}
+              className="rounded-xl h-10 text-xs font-bold text-destructive"
+            >
+              {logout.isPending && <Loader2 className="h-4 w-4 animate-spin me-2" />}
+              {isRtl ? "فك الربط" : "Unlink"}
+            </Button>
+          </div>
+        ) : s === "qr" && status?.qr ? (
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <img src={status.qr} alt="WhatsApp QR" className="h-56 w-56 rounded-xl border border-border bg-white p-2" />
+            <ol className="list-decimal ps-5 space-y-1.5 text-sm text-muted-foreground">
+              <li>{isRtl ? "افتح واتساب على موبايل الرقم اللي عايز تبعت منه" : "Open WhatsApp on the phone you'll send from"}</li>
+              <li>{isRtl ? "الإعدادات ← الأجهزة المرتبطة ← ربط جهاز" : "Settings → Linked devices → Link a device"}</li>
+              <li>{isRtl ? "امسح الكود ده، والصفحة هتتحدث لوحدها" : "Scan this code — this page updates by itself"}</li>
+            </ol>
+          </div>
+        ) : s === "connecting" ? (
+          <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            {isRtl ? "جاري الاتصال بواتساب..." : "Connecting to WhatsApp..."}
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {status?.lastError
+                ? status.lastError
+                : isRtl
+                  ? "مفيش رقم مربوط. اضغط ربط عشان يظهر كود QR تمسحه من الموبايل."
+                  : "No number linked. Click Link to show a QR code to scan."}
+            </p>
+            <Button
+              type="button"
+              disabled={!canEdit || connect.isPending}
+              onClick={() => connect.mutate()}
+              className="rounded-xl h-10 px-6 bg-primary text-primary-foreground font-black text-xs"
+            >
+              {connect.isPending && <Loader2 className="h-4 w-4 animate-spin me-2" />}
+              {isRtl ? "ربط رقم" : "Link a number"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

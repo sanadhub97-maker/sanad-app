@@ -6,6 +6,7 @@ import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
+import * as whatsappWeb from "@/services/whatsappWeb";
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.getCompanySettings() });
@@ -57,7 +58,19 @@ export const updateWhatsappRecipients = asyncHandler(async (req: Request, res: R
   res.json({ data: await saveRecipients(req.body.recipients) });
 });
 
-export const testWhatsapp =asyncHandler(async (req: Request, res: Response) => {
+export const getWhatsappWebStatus = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({ data: whatsappWeb.getWhatsappWebStatus() });
+});
+export const connectWhatsappWeb = asyncHandler(async (_req: Request, res: Response) => {
+  await whatsappWeb.startWhatsappWeb();
+  res.json({ data: whatsappWeb.getWhatsappWebStatus() });
+});
+export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Response) => {
+  await whatsappWeb.logoutWhatsappWeb();
+  res.json({ data: whatsappWeb.getWhatsappWebStatus() });
+});
+
+export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
   const { company } = await getBrandingContext();
   const companyName = company?.nameAr || company?.nameEn;
   const message = [
