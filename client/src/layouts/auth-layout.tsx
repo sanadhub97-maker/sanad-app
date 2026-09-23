@@ -71,7 +71,13 @@ export function AuthLayout() {
           
           {/* 🚀 Left Showcase Column (Brand Authority & Feature Showcase) */}
           <div className="hidden lg:flex lg:col-span-7 flex-col justify-center space-y-8 pe-4">
-            
+
+            <img
+              src="/brand/sanad-logo.png"
+              alt="SanaD HR"
+              className="h-40 xl:h-48 w-auto self-start drop-shadow-[0_10px_30px_rgba(180,130,40,0.25)]"
+            />
+
             {/* Top Eyebrow Badge */}
             <div className="inline-flex items-center gap-2.5 rounded-full border border-cyan-400/30 bg-gradient-to-r from-blue-500/10 via-cyan-500/15 to-indigo-500/10 px-4 py-1.5 text-xs font-bold text-cyan-300 backdrop-blur-xl w-fit shadow-[0_0_20px_-3px_rgba(6,182,212,0.3)] specular-border">
               <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
@@ -187,7 +193,7 @@ export function AuthLayout() {
 
                 {/* Mobile Brand Header */}
                 <div className="lg:hidden mb-6 flex justify-center">
-                  <BrandLogo />
+                  <img src="/brand/sanad-logo.png" alt="SanaD HR" className="h-32 w-auto" />
                 </div>
 
                 <AnimatePresence mode="wait" initial={false}>
