@@ -100,7 +100,8 @@ export interface PrintSignaturesSettings {
 
 export type PrintThemeId =
   | "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze"
-  | "turquoise" | "slate" | "amethyst" | "olive" | "crimson";
+  | "turquoise" | "slate" | "amethyst" | "olive" | "crimson"
+  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism";
 
 export const settingsApi = {
   getPrintSignatures: async () =>

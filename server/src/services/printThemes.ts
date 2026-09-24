@@ -9,7 +9,9 @@
 // and position:fixed elements in the body (drawn in between). The first
 // page additionally gets the theme's letterhead.
 
-export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze", "turquoise", "slate", "amethyst", "olive", "crimson"] as const;
+export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze", "turquoise", "slate", "amethyst", "olive", "crimson",
+  "ledger", "blueprint", "mono", "ribbon", "mosaic", "ocean", "sadu", "glass", "gazette", "prism",
+] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
 export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
 
@@ -829,7 +831,573 @@ const crimson: PrintTheme = {
     ),
 };
 
-const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson };
+// ---------------------------------------------------------------------------
+// Designs 13–22: each with its own letterhead layout and table treatment.
+// ---------------------------------------------------------------------------
+
+const cls = (ctx: ShellContext) => esc(ctx.classification.split("|")[0].trim());
+
+// 13. Ledger: forest green + ledger red — accounting paper with a red double
+// margin rule, a document-number box and ruled rows.
+const LG = "#1f4d3a";
+const LR = "#b3261e";
+const ledger: PrintTheme = {
+  id: "ledger",
+  margin: { top: "12mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#fbfaf3", accent: LG, "accent-ink": "#ffffff", metal: LR, "metal-deep": LR,
+      "metal-soft": "#eef3ee", row: "transparent", line: "rgba(31,77,58,.18)", "line-strong": "rgba(31,77,58,.45)",
+      radius: "0px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "27mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(LG))}")`,
+    }) +
+    LUX_BASE +
+    `
+  html { background: linear-gradient(270deg, transparent 20mm, ${LR} 20mm 20.35mm, transparent 20.35mm 21mm, ${LR} 21mm 21.35mm, transparent 21.35mm), #fbfaf3; }
+  .lux thead th { background: transparent; color: ${LG}; border-top: 1px solid ${LG}; border-bottom: 3px double ${LG}; font-weight: 700; }
+  .lux thead th .th-sub { color: #6b7d72; opacity: 1; }
+  .lux tbody td:first-child { color: ${LR}; font-weight: 700; }
+  .lux .section-card { border: none; background: transparent; }
+  .lux .section-header { background: transparent; border-bottom: 1px solid ${LG}; }
+  .lg-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 5mm; margin-bottom: 5mm; }
+  .lg-brand { display: flex; align-items: center; gap: 3mm; }
+  .lg-brand .lg { width: 14mm; height: 14mm; object-fit: contain; }
+  .lg-brand .monogram { width: 14mm; height: 14mm; border: .5mm solid ${LG}; color: ${LG}; font-size: 14pt; }
+  .lg-co-ar { font-family: 'Amiri', serif; font-size: 14pt; font-weight: 700; color: ${LG}; line-height: 1.3; }
+  .lg-co-en { font-size: 6.8pt; color: #6b7d72; letter-spacing: .1em; direction: ltr; text-align: right; }
+  .lg-box { border: 1px solid ${LG}; font-size: 7.2pt; min-width: 52mm; }
+  .lg-box div { display: flex; justify-content: space-between; gap: 3mm; padding: 1.1mm 2.5mm; }
+  .lg-box div + div { border-top: 1px solid rgba(31,77,58,.25); }
+  .lg-box span { color: #6b7d72; } .lg-box b { color: ${LG}; font-weight: 700; }
+  .lg-box .hd { background: ${LG}; color: #fff; font-weight: 700; justify-content: center; }
+  .lg-title { border-bottom: 3px double ${LG}; padding-bottom: 2mm; margin-bottom: 5mm; display: flex; justify-content: space-between; align-items: flex-end; gap: 4mm; }
+  .lg-title h1 { margin: 0; font-family: 'Amiri', serif; font-size: 21pt; color: ${LG}; line-height: 1.2; }
+  .lg-title .en { font-size: 7.6pt; letter-spacing: .16em; color: ${LR}; text-transform: uppercase; direction: ltr; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="lg-top">
+    <div class="lg-brand">${logo(ctx, "lg")}<div><div class="lg-co-ar">${esc(ctx.companyNameAr)}</div><div class="lg-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+    <div class="lg-box">
+      <div class="hd">${cls(ctx)}</div>
+      ${ctx.referenceNumber ? `<div><span>رقم المستند</span><b class="ltr">${esc(ctx.referenceNumber)}</b></div>` : ""}
+      <div><span>تاريخ الإصدار</span><b class="ltr">${ctx.dateStr}</b></div>
+      <div><span>وقت الطباعة</span><b class="ltr">${ctx.timeStr}</b></div>
+      ${ctx.highlight ? `<div><span>${esc(ctx.highlight.label)}</span><b>${esc(ctx.highlight.value)}</b></div>` : ""}
+    </div>
+  </div>
+  <div class="lg-title"><h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}</div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:14mm;right:27mm;top:6mm;height:.4mm;background:${LG};"></div>`, "#fbfaf3"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:27mm;top:4mm;border-top:3px double ${LG};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#6b7d72;"><span>${label}</span><span>${PAGE_NO}</span></div>`, "#fbfaf3"),
+};
+
+// 14. Blueprint: blueprint blue + cyan — an engineering-grid header with an
+// architectural title block, and fully ruled grid tables.
+const BP = "#0b3d91";
+const CY = "#5ec8f2";
+const GRID = `linear-gradient(rgba(255,255,255,.22) .25mm, transparent .25mm) 0 0 / 25mm 25mm, linear-gradient(90deg, rgba(255,255,255,.22) .25mm, transparent .25mm) 0 0 / 25mm 25mm, linear-gradient(rgba(255,255,255,.09) .15mm, transparent .15mm) 0 0 / 5mm 5mm, linear-gradient(90deg, rgba(255,255,255,.09) .15mm, transparent .15mm) 0 0 / 5mm 5mm`;
+const blueprint: PrintTheme = {
+  id: "blueprint",
+  margin: { top: "10mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: BP, "accent-ink": "#ffffff", metal: CY, "metal-deep": "#1976b8",
+      "metal-soft": "#eaf2fd", row: "#f6f9fe", line: "#c9d8ef", "line-strong": "#8fb0dd",
+      radius: "0px", heading: "'IBM Plex Sans Arabic', sans-serif", foil: FOIL.silver, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(BP))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux table { border: 1px solid ${BP}; }
+  .lux th, .lux td { border: 1px solid #c9d8ef; }
+  .lux thead th { background: #eaf2fd; color: ${BP}; border: 1px solid #9fbbe3; border-bottom: 2px solid ${BP}; font-weight: 700; }
+  .lux thead th .th-sub { color: #1976b8; font-family: 'IBM Plex Mono', monospace; opacity: 1; letter-spacing: .06em; text-transform: uppercase; }
+  .lux tbody td:first-child { font-family: 'IBM Plex Mono', monospace; color: ${BP}; }
+  .bp-hero { margin: 0 -14mm 6mm; background: ${GRID}, ${BP}; color: #fff; padding: 7mm 14mm 6mm; display: grid; grid-template-columns: 1fr 68mm; gap: 6mm; align-items: end; }
+  .bp-brand { display: flex; align-items: center; gap: 3mm; margin-bottom: 5mm; }
+  .bp-brand .lg { width: 13mm; height: 13mm; object-fit: contain; background: #fff; padding: 1mm; }
+  .bp-brand .monogram { width: 13mm; height: 13mm; border: .4mm solid #fff; color: #fff; font-size: 13pt; }
+  .bp-co-ar { font-size: 12pt; font-weight: 700; line-height: 1.3; }
+  .bp-co-en { font-family: 'IBM Plex Mono', monospace; font-size: 6.4pt; color: ${CY}; letter-spacing: .08em; direction: ltr; text-align: right; }
+  .bp-hero h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 22pt; line-height: 1.15; font-weight: 700; }
+  .bp-hero .en { font-family: 'IBM Plex Mono', monospace; font-size: 7.2pt; color: ${CY}; letter-spacing: .14em; text-transform: uppercase; direction: ltr; text-align: right; margin-top: 1mm; }
+  .bp-block { border: .4mm solid #fff; font-size: 7pt; }
+  .bp-block div { display: grid; grid-template-columns: 22mm 1fr; }
+  .bp-block div + div { border-top: .25mm solid rgba(255,255,255,.6); }
+  .bp-block span { padding: 1.2mm 2mm; color: ${CY}; border-left: .25mm solid rgba(255,255,255,.6); }
+  .bp-block b { padding: 1.2mm 2mm; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="bp-hero">
+    <div>
+      <div class="bp-brand">${logo(ctx, "lg")}<div><div class="bp-co-ar">${esc(ctx.companyNameAr)}</div><div class="bp-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+      <h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}
+    </div>
+    <div class="bp-block">
+      <div><span>التصنيف</span><b style="font-family:inherit">${cls(ctx)}</b></div>
+      ${ctx.referenceNumber ? `<div><span>المرجع</span><b>${esc(ctx.referenceNumber)}</b></div>` : ""}
+      <div><span>التاريخ</span><b>${ctx.dateStr}</b></div>
+      <div><span>الوقت</span><b>${ctx.timeStr}</b></div>
+      ${ctx.highlight ? `<div><span>${esc(ctx.highlight.label)}</span><b>${esc(ctx.highlight.value)}</b></div>` : ""}
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("10mm", `<div style="position:absolute;left:0;right:0;top:0;height:2mm;background:${BP};"></div><div style="position:absolute;left:0;right:0;top:2mm;height:.4mm;background:${CY};"></div>`),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:4mm;border-top:.4mm solid ${BP};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:${BP};font-family:'Courier New',monospace;"><span>${label}</span><span>${PAGE_NO}</span></div>`),
+};
+
+// 15. Mono: black + highlighter yellow — minimal Swiss layout, an oversized
+// title and hairline tables with no fills.
+const INK = "#111111";
+const YEL = "#f2c230";
+const mono: PrintTheme = {
+  id: "mono",
+  margin: { top: "12mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: INK, "accent-ink": "#ffffff", metal: YEL, "metal-deep": "#8a6d00",
+      "metal-soft": "#fafafa", row: "transparent", line: "#e6e6e6", "line-strong": "#9a9a9a",
+      radius: "0px", heading: "'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${INK}, ${INK})`, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(INK))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux thead th { background: transparent; color: ${INK}; border-color: transparent; border-bottom: 2px solid ${INK}; font-weight: 700; font-size: 7.4pt; letter-spacing: .03em; }
+  .lux thead th .th-sub { color: #8a8a8a; opacity: 1; }
+  .lux .section-card { border: none; border-radius: 0; }
+  .lux .section-header { background: transparent; border-bottom: none; padding-inline: 0; font-size: 8pt; letter-spacing: .04em; }
+  .lux .report-summary-bar { background: transparent; border: none; border-top: 2px solid ${INK}; border-radius: 0; padding-inline: 0; }
+  .mn-top { display: flex; justify-content: space-between; align-items: center; font-size: 7.2pt; color: #6a6a6a; margin-bottom: 9mm; }
+  .mn-brand { display: flex; align-items: center; gap: 2.5mm; }
+  .mn-brand .lg { width: 11mm; height: 11mm; object-fit: contain; }
+  .mn-brand .monogram { width: 11mm; height: 11mm; background: ${INK}; color: #fff; font-size: 12pt; }
+  .mn-brand b { display: block; color: ${INK}; font-size: 9.5pt; }
+  .mn-ref { display: flex; gap: 5mm; }
+  .mn-ref b { color: ${INK}; font-weight: 600; }
+  .mn-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; border-bottom: 3mm solid ${INK}; padding-bottom: 3mm; margin-bottom: 6mm; }
+  .mn-head h1 { margin: 0; font-size: 30pt; font-weight: 700; line-height: 1.1; color: ${INK}; }
+  .mn-head h1 span { background: linear-gradient(transparent 58%, ${YEL} 58%, ${YEL} 92%, transparent 92%); padding: 0 1mm; }
+  .mn-head .en { font-size: 7.4pt; color: #6a6a6a; letter-spacing: .22em; text-transform: uppercase; direction: ltr; text-align: right; margin-bottom: 1.5mm; }
+  .mn-num { text-align: left; }
+  .mn-num b { display: block; font-size: 36pt; line-height: .9; font-weight: 700; color: ${INK}; }
+  .mn-num span { font-size: 7pt; color: #6a6a6a; }
+`,
+  letterhead: (ctx) => `
+  <div class="mn-top">
+    <div class="mn-brand">${logo(ctx, "lg")}<div><b>${esc(ctx.companyNameAr)}</b>${esc(ctx.companyNameEn)}</div></div>
+    <div class="mn-ref">${refLines(ctx)}</div>
+  </div>
+  <div class="mn-head">
+    <div>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}<h1><span>${esc(ctx.title)}</span></h1></div>
+    ${ctx.highlight ? `<div class="mn-num"><b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span></div>` : ""}
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", ""),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:4mm;border-top:.8mm solid ${INK};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#6a6a6a;"><span>${label}</span><span style="color:${INK};font-weight:700;">${PAGE_NO}</span></div>`),
+};
+
+// 16. Ribbon: teal + coral — a bookmark ribbon hangs from the top edge with
+// the logo; table rows are separate rounded cards.
+const RT = "#125b67";
+const RC = "#e07a5f";
+const ribbon: PrintTheme = {
+  id: "ribbon",
+  margin: { top: "10mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#fffdf9", accent: RT, "accent-ink": "#ffffff", metal: RC, "metal-deep": "#b8543a",
+      "metal-soft": "#f6f1ea", row: "#f6f1ea", line: "transparent", "line-strong": "#d9c9b8",
+      radius: "3mm", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: FOIL.bronze, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(RT))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux .report-table, .lux .section-body > table { border-collapse: separate; border-spacing: 0 1.3mm; }
+  .lux .report-table tbody td, .lux .section-body > table tbody td { background: #f6f1ea; border: none; }
+  .lux .report-table tbody tr:nth-child(even) td { background: #efe7dc; }
+  .lux .report-table tbody td:first-child, .lux .report-table thead th:first-child { border-radius: 0 2.2mm 2.2mm 0; }
+  .lux .report-table tbody td:last-child, .lux .report-table thead th:last-child { border-radius: 2.2mm 0 0 2.2mm; }
+  .lux thead th { border-bottom: none; }
+  .lux tbody td:first-child { color: ${RC}; font-weight: 700; }
+  .lux .section-card { border: none; background: transparent; }
+  .lux .section-header { background: transparent; border-bottom: 2px solid ${RC}; border-radius: 0; }
+  .rb-head { position: relative; padding-right: 30mm; min-height: 44mm; margin-bottom: 4mm; }
+  .rb-ribbon { position: absolute; right: 3mm; top: 0; width: 21mm; height: 42mm; background: ${RT}; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%); display: flex; align-items: flex-start; justify-content: center; padding-top: 5mm; }
+  .rb-ribbon::after { content: ""; position: absolute; inset: 0 2.2mm; border-left: .3mm dashed rgba(255,255,255,.5); border-right: .3mm dashed rgba(255,255,255,.5); }
+  .rb-ribbon .lg, .rb-ribbon .monogram { width: 14mm; height: 14mm; border-radius: 50%; background: #fff; object-fit: contain; padding: 1.4mm; position: relative; z-index: 1; }
+  .rb-ribbon .monogram { color: ${RT}; font-size: 13pt; }
+  .rb-co-ar { font-size: 12pt; font-weight: 700; color: ${RT}; line-height: 1.3; padding-top: 3mm; }
+  .rb-co-en { font-size: 6.8pt; color: #8a7d70; letter-spacing: .1em; direction: ltr; text-align: right; }
+  .rb-head h1 { margin: 5mm 0 0; font-family: 'Reem Kufi', sans-serif; font-size: 22pt; color: ${RT}; line-height: 1.2; }
+  .rb-head .en { font-size: 7.4pt; color: ${RC}; letter-spacing: .18em; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 600; }
+  .rb-chips { display: flex; flex-wrap: wrap; gap: 2mm; margin-top: 3mm; }
+  .rb-chips span { border: .3mm solid ${RC}; border-radius: 99px; padding: .6mm 3mm; font-size: 7pt; color: #7a6a5d; }
+  .rb-chips b { color: ${RT}; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="rb-head">
+    <div class="rb-ribbon">${logo(ctx, "lg")}</div>
+    <div class="rb-co-ar">${esc(ctx.companyNameAr)}</div>
+    <div class="rb-co-en">${esc(ctx.companyNameEn)}</div>
+    <h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}
+    <div class="rb-chips">${refLines(ctx)}${ctx.highlight ? `<span>${esc(ctx.highlight.label)} <b>${esc(ctx.highlight.value)}</b></span>` : ""}</div>
+  </div>`,
+  decor: "",
+  // The ribbon's top reaches the page edge on every page, like a bookmark.
+  headerTemplate: tpl("10mm", `<div style="position:absolute;right:18mm;width:21mm;top:0;bottom:0;background:${RT};"></div><div style="position:absolute;left:0;right:0;top:0;height:.8mm;background:${RC};"></div>`, "#fffdf9"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:15mm;right:15mm;top:5mm;display:flex;justify-content:space-between;align-items:center;font-size:7pt;color:#8a7d70;"><span>${label}</span><span style="background:${RT};color:#fff;border-radius:99px;padding:.6mm 3mm;">${PAGE_NO}</span></div>`, "#fffdf9"),
+};
+
+// 17. Mosaic: cobalt + terracotta + saffron — a Moroccan zellige tile band
+// at the top and bottom of every page.
+const COB = "#1c3f94";
+const TER = "#c1502e";
+const SAF = "#e0a526";
+function zelligeTile() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#fbf4e6"/><path d="M20 4l4.2 9.8L34 18l-9.8 4.2L20 32l-4.2-9.8L6 18l9.8-4.2z" fill="${COB}" transform="translate(0 2)"/><circle cx="20" cy="20" r="3.2" fill="${SAF}"/><path d="M0 0h7L0 7zM40 0h-7l7 7zM0 40h7l-7-7zM40 40h-7l7-7z" fill="${TER}"/></svg>`;
+}
+const mosaic: PrintTheme = {
+  id: "mosaic",
+  margin: { top: "15mm", bottom: "18mm" },
+  css:
+    vars({
+      paper: "#fdfaf4", accent: COB, "accent-ink": "#fbf4e6", metal: SAF, "metal-deep": TER,
+      "metal-soft": "#f6ecda", row: "#f7efe0", line: "#eadcc3", "line-strong": "#d2b98e",
+      radius: "2px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(COB))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux thead th { border-bottom: 1mm solid ${SAF}; }
+  .lux tbody td:first-child { color: ${TER}; font-weight: 700; }
+  .mz-head { text-align: center; display: grid; justify-items: center; gap: 1mm; margin-bottom: 4mm; }
+  .mz-oct { width: 22mm; height: 22mm; background: ${COB}; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); display: grid; place-items: center; }
+  .mz-oct .lg, .mz-oct .monogram { width: 15mm; height: 15mm; object-fit: contain; background: #fff; padding: 1.3mm; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+  .mz-oct .monogram { color: ${COB}; font-size: 14pt; }
+  .mz-co-ar { font-family: 'Amiri', serif; font-size: 17pt; font-weight: 700; color: ${COB}; line-height: 1.25; }
+  .mz-co-en { font-size: 7.4pt; letter-spacing: .18em; color: ${TER}; text-transform: uppercase; font-weight: 600; direction: ltr; }
+  .mz-title { text-align: center; margin-bottom: 5mm; }
+  .mz-title h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 21pt; color: ${TER}; line-height: 1.25; }
+  .mz-title .rule { width: 36mm; height: 1.2mm; margin: 1.5mm auto; background: linear-gradient(90deg, ${COB} 0 33%, ${SAF} 33% 66%, ${TER} 66%); }
+  .mz-meta { display: flex; justify-content: center; gap: 5mm; font-size: 7.2pt; color: #7a6b58; }
+  .mz-meta b { color: ${COB}; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="mz-head">
+    <div class="mz-oct">${logo(ctx, "lg")}</div>
+    <div class="mz-co-ar">${esc(ctx.companyNameAr)}</div>
+    <div class="mz-co-en">${esc(ctx.companyNameEn)}</div>
+  </div>
+  <div class="mz-title">
+    <h1>${esc(ctx.title)}</h1>
+    <div class="rule"></div>
+    <div class="mz-meta">${ctx.titleEn ? `<span>${esc(ctx.titleEn)}</span>` : ""}${refLines(ctx)}</div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("15mm", `<div style="position:absolute;left:0;right:0;top:0;height:8mm;background:url('${dataUri(zelligeTile())}') 0 0 / 8mm 8mm;"></div><div style="position:absolute;left:0;right:0;top:8mm;height:.8mm;background:${COB};"></div>`, "#fdfaf4"),
+  footerTemplate: (label) =>
+    tpl("18mm", `<div dir="rtl" style="position:absolute;left:15mm;right:15mm;top:2mm;display:flex;justify-content:space-between;font-size:7pt;color:#7a6b58;"><span>${label}</span><span>${PAGE_NO}</span></div><div style="position:absolute;left:0;right:0;bottom:6mm;height:.8mm;background:${COB};"></div><div style="position:absolute;left:0;right:0;bottom:0;height:6mm;background:url('${dataUri(zelligeTile())}') 0 0 / 6mm 6mm;"></div>`, "#fdfaf4"),
+};
+
+// 18. Ocean: deep ocean blue + turquoise — a gradient header with a wave
+// edge and light aqua tables.
+const OC = "#0a4d68";
+const AQ = "#05bfdb";
+const ocean: PrintTheme = {
+  id: "ocean",
+  margin: { top: "9mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: OC, "accent-ink": OC, metal: AQ, "metal-deep": "#088395",
+      "metal-soft": "#e6f7fb", row: "#f6fbfd", line: "#e0eef2", "line-strong": "#9fd3de",
+      radius: "3px", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${OC}, ${AQ})`, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(OC))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux thead th { background: #e6f7fb; color: ${OC}; border-color: #e6f7fb; border-bottom: 2px solid ${AQ}; font-weight: 700; }
+  .lux thead th .th-sub { color: #088395; opacity: 1; }
+  .lux .kpi-total-card { background: linear-gradient(120deg, ${OC}, #088395); color: #fff; }
+  .lux .amount-val { background: none; color: #fff; }
+  .oc-hero { position: relative; margin: 0 -15mm 5mm; padding: 8mm 15mm 16mm; background: linear-gradient(120deg, ${OC}, #088395 55%, ${AQ}); color: #fff; }
+  .oc-hero svg { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 11mm; }
+  .oc-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 5mm; }
+  .oc-brand { display: flex; align-items: center; gap: 3mm; }
+  .oc-brand .lg, .oc-brand .monogram { width: 14mm; height: 14mm; border-radius: 50%; background: #fff; object-fit: contain; padding: 1.4mm; }
+  .oc-brand .monogram { color: ${OC}; font-size: 13pt; }
+  .oc-co-ar { font-size: 12pt; font-weight: 700; line-height: 1.3; }
+  .oc-co-en { font-size: 6.8pt; opacity: .8; letter-spacing: .1em; direction: ltr; text-align: right; }
+  .oc-ref { display: grid; gap: .5mm; font-size: 7pt; opacity: .9; text-align: left; white-space: nowrap; }
+  .oc-ref b { font-weight: 600; }
+  .oc-hero h1 { margin: 6mm 0 0; font-family: 'Reem Kufi', sans-serif; font-size: 22pt; line-height: 1.2; }
+  .oc-hero .en { font-size: 7.4pt; letter-spacing: .18em; opacity: .85; text-transform: uppercase; direction: ltr; text-align: right; }
+`,
+  letterhead: (ctx) => `
+  <div class="oc-hero">
+    <div class="oc-row">
+      <div class="oc-brand">${logo(ctx, "lg")}<div><div class="oc-co-ar">${esc(ctx.companyNameAr)}</div><div class="oc-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+      <div class="oc-ref">${refLines(ctx)}${ctx.highlight ? `<span>${esc(ctx.highlight.label)} <b>${esc(ctx.highlight.value)}</b></span>` : ""}</div>
+    </div>
+    <h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}
+    <svg viewBox="0 0 600 60" preserveAspectRatio="none"><path d="M0 34Q75 4 150 28T300 24T450 30T600 16V60H0Z" fill="#ffffff"/><path d="M0 44Q90 18 180 38T360 34T600 30" fill="none" stroke="${AQ}" stroke-width="2" opacity=".6"/></svg>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("9mm", `<div style="position:absolute;left:0;right:0;top:0;height:2.2mm;background:linear-gradient(90deg,${OC},${AQ});"></div>`),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div dir="rtl" style="position:absolute;left:15mm;right:15mm;top:5mm;display:flex;justify-content:space-between;align-items:center;gap:4mm;font-size:7pt;color:#5d7f8a;"><span>${label}</span><span style="flex:1;height:.4mm;background:linear-gradient(90deg,${AQ},${OC});"></span><span>${PAGE_NO}</span></div>`),
+};
+
+// 19. Sadu: Sadu red + black + ivory + ochre — the Najdi Al-Sadu weave down
+// the side of every page and along the top.
+const SR = "#8e1b1b";
+const SB = "#1a1a1a";
+const SI = "#f7f0e1";
+const SO = "#c8963e";
+function saduTile(vertical: boolean) {
+  const h = `<rect width="24" height="12" fill="${SB}"/><path d="M0 12L6 1 12 12zM12 12L18 1 24 12z" fill="${SR}"/><path d="M12 3.5L14 6 12 8.5 10 6z" fill="${SI}"/><path d="M0 0h24v1.2H0zM0 10.8h24V12H0z" fill="${SO}"/>`;
+  return vertical
+    ? `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="24" viewBox="0 0 12 24"><g transform="rotate(90 6 6) translate(0 0)">${h}</g></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="12" viewBox="0 0 24 12">${h}</svg>`;
+}
+const sadu: PrintTheme = {
+  id: "sadu",
+  margin: { top: "13mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: SI, accent: SB, "accent-ink": SI, metal: SR, "metal-deep": SR,
+      "metal-soft": "#f1e6cf", row: "rgba(200,150,62,.1)", line: "#e4d6b8", "line-strong": "#c7ad7c",
+      radius: "0px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "15mm", "pad-l": "21mm",
+      seal: `url("${dataUri(rosetteSvg(SR))}")`,
+    }) +
+    LUX_BASE +
+    `
+  html { background: url("${dataUri(saduTile(true))}") left top / 10mm 20mm repeat-y, ${SI}; }
+  .lux thead th { border-bottom: 1mm solid ${SR}; }
+  .lux tbody td:first-child { color: ${SR}; font-weight: 700; }
+  .sd-head { display: grid; grid-template-columns: 1fr 58mm; gap: 5mm; align-items: stretch; margin-bottom: 5mm; }
+  .sd-brand { display: flex; align-items: center; gap: 3mm; margin-bottom: 3mm; }
+  .sd-brand .lg { width: 14mm; height: 14mm; object-fit: contain; }
+  .sd-brand .monogram { width: 14mm; height: 14mm; background: ${SR}; color: ${SI}; font-size: 14pt; }
+  .sd-co-ar { font-family: 'Amiri', serif; font-size: 14pt; font-weight: 700; color: ${SB}; line-height: 1.3; }
+  .sd-co-en { font-size: 6.8pt; color: #7a6a4f; letter-spacing: .12em; direction: ltr; text-align: right; text-transform: uppercase; }
+  .sd-head h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 25pt; color: ${SR}; line-height: 1.2; }
+  .sd-head .en { font-size: 7.4pt; color: ${SO}; letter-spacing: .2em; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 700; }
+  .sd-box { background: ${SB}; color: ${SI}; padding: 4mm 5mm; display: flex; flex-direction: column; justify-content: center; gap: 1mm; font-size: 7.2pt; border-bottom: 1.2mm solid ${SR}; }
+  .sd-box b { color: #fff; font-weight: 600; }
+  .sd-box .big { font-family: 'Cormorant Garamond', serif; font-size: 26pt; line-height: 1; color: ${SO}; }
+`,
+  letterhead: (ctx) => `
+  <div class="sd-head">
+    <div>
+      <div class="sd-brand">${logo(ctx, "lg")}<div><div class="sd-co-ar">${esc(ctx.companyNameAr)}</div><div class="sd-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+      ${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}<h1>${esc(ctx.title)}</h1>
+    </div>
+    <div class="sd-box">
+      ${ctx.highlight ? `<div class="big">${esc(ctx.highlight.value)}</div><div>${esc(ctx.highlight.label)}</div>` : `<div><b>${cls(ctx)}</b></div>`}
+      ${refLines(ctx)}
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("13mm", `<div style="position:absolute;left:0;width:10mm;top:0;bottom:0;background:${SB};"></div><div style="position:absolute;left:10mm;right:0;top:0;height:5mm;background:url('${dataUri(saduTile(false))}') 0 0 / 10mm 5mm;"></div>`, SI),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div style="position:absolute;left:0;width:10mm;top:0;bottom:0;background:${SB};"></div><div dir="rtl" style="position:absolute;left:21mm;right:15mm;top:4mm;border-top:.8mm solid ${SR};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#7a6a4f;"><span>${label}</span><span>${PAGE_NO}</span></div>`, SI),
+};
+
+// 20. Glass: graphite + indigo — a modern rounded card with a soft glow and a
+// rounded table with a light header.
+const GL = "#334155";
+const IND = "#6366f1";
+const glass: PrintTheme = {
+  id: "glass",
+  margin: { top: "11mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#f6f8fb", accent: GL, "accent-ink": "#475569", metal: IND, "metal-deep": "#4f46e5",
+      "metal-soft": "#eef2ff", row: "transparent", line: "#e8edf3", "line-strong": "#c3cbd8",
+      radius: "4mm", heading: "'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${IND}, #a855f7)`, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(IND))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-card { overflow: hidden; box-shadow: 0 .4mm 1.6mm rgba(15,23,42,.06); }
+  .lux .section-header { background: #fff; border-bottom: 1px solid #e8edf3; color: ${GL}; }
+  .lux thead th { background: #f1f5f9; color: #475569; border-color: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-weight: 600; }
+  .lux thead th .th-sub { color: #94a3b8; opacity: 1; }
+  .lux .report-summary-bar, .lux .kpi-total-card { border-radius: 4mm; }
+  .lux .kpi-total-card { background: linear-gradient(120deg, ${GL}, ${IND}); color: #fff; border: none; }
+  .lux .amount-val { background: none; color: #fff; }
+  .gl-card { position: relative; overflow: hidden; background: #fff; border-radius: 5mm; padding: 6mm 7mm; margin-bottom: 5mm; box-shadow: 0 .6mm 2.4mm rgba(15,23,42,.08); }
+  .gl-card::before { content: ""; position: absolute; left: -14mm; top: -18mm; width: 62mm; height: 62mm; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,.28), rgba(168,85,247,.12) 45%, transparent 70%); }
+  .gl-in { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+  .gl-brand { display: flex; align-items: center; gap: 3mm; margin-bottom: 5mm; }
+  .gl-brand .lg { width: 12mm; height: 12mm; object-fit: contain; border-radius: 3mm; }
+  .gl-brand .monogram { width: 12mm; height: 12mm; border-radius: 3mm; background: linear-gradient(135deg, ${IND}, #a855f7); color: #fff; font-size: 12pt; }
+  .gl-co-ar { font-size: 11pt; font-weight: 700; color: ${GL}; line-height: 1.3; }
+  .gl-co-en { font-size: 6.6pt; color: #94a3b8; direction: ltr; text-align: right; }
+  .gl-card h1 { margin: 0; font-size: 21pt; font-weight: 700; color: #0f172a; line-height: 1.2; }
+  .gl-card .en { font-size: 7.2pt; color: ${IND}; letter-spacing: .14em; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 600; margin-top: .8mm; }
+  .gl-pills { display: flex; flex-wrap: wrap; gap: 1.5mm; margin-top: 3mm; }
+  .gl-pills span { background: #f1f5f9; border-radius: 99px; padding: .6mm 2.6mm; font-size: 6.8pt; color: #64748b; }
+  .gl-pills b { color: ${GL}; font-weight: 600; }
+  .gl-num { text-align: center; background: #eef2ff; border-radius: 4mm; padding: 3mm 5mm; }
+  .gl-num b { display: block; font-size: 24pt; line-height: 1; color: ${IND}; font-weight: 700; }
+  .gl-num span { font-size: 6.8pt; color: #64748b; }
+`,
+  letterhead: (ctx) => `
+  <div class="gl-card"><div class="gl-in">
+    <div>
+      <div class="gl-brand">${logo(ctx, "lg")}<div><div class="gl-co-ar">${esc(ctx.companyNameAr)}</div><div class="gl-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+      <h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}
+      <div class="gl-pills">${refLines(ctx)}</div>
+    </div>
+    ${ctx.highlight ? `<div class="gl-num"><b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span></div>` : ""}
+  </div></div>`,
+  decor: "",
+  headerTemplate: tpl("11mm", "", "#f6f8fb"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:4.5mm;display:flex;justify-content:space-between;align-items:center;font-size:7pt;color:#94a3b8;"><span>${label}</span><span style="background:#fff;border:1px solid #e2e8f0;border-radius:99px;padding:.6mm 3mm;color:#475569;">${PAGE_NO}</span></div>`, "#f6f8fb"),
+};
+
+// 21. Gazette: ink black + dark red — a newspaper masthead, serif type and
+// three-rule "booktabs" tables.
+const GZ = "#1a1a1a";
+const GR = "#8b0000";
+const gazette: PrintTheme = {
+  id: "gazette",
+  margin: { top: "12mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#fbf9f4", accent: GZ, "accent-ink": GZ, metal: GR, "metal-deep": GR,
+      "metal-soft": "#f3efe6", row: "transparent", line: "transparent", "line-strong": "#8a8579",
+      radius: "0px", heading: "'Amiri', serif", foil: `linear-gradient(90deg, ${GZ}, ${GZ})`, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(GZ))}")`,
+    }) +
+    LUX_BASE +
+    `
+  body.lux { font-family: 'Amiri', 'IBM Plex Sans Arabic', serif; }
+  .lux table { border-top: 2px solid ${GZ}; border-bottom: 2px solid ${GZ}; }
+  .lux thead th { background: transparent; color: ${GZ}; border-color: transparent; border-bottom: 1px solid ${GZ}; font-weight: 700; }
+  .lux thead th .th-sub { color: #6b665c; opacity: 1; font-style: italic; }
+  .lux th, .lux td { border-bottom-color: transparent; }
+  .lux tbody td { padding-top: 1.4mm; padding-bottom: 1.4mm; }
+  .lux tbody td:first-child { color: ${GR}; }
+  .lux .section-card { border: none; background: transparent; }
+  .lux .section-header { background: transparent; border-bottom: 1px solid ${GZ}; padding-inline: 0; font-size: 10pt; }
+  .lux .report-summary-bar { background: transparent; border: none; border-radius: 0; padding-inline: 0; }
+  .gz-date { display: flex; justify-content: space-between; font-size: 7.2pt; color: #6b665c; border-top: 1px solid ${GZ}; border-bottom: 1px solid ${GZ}; padding: 1mm 0; }
+  .gz-date b { color: ${GZ}; }
+  .gz-mast { text-align: center; padding: 3mm 0 2mm; border-bottom: 3px double ${GZ}; margin-bottom: 4mm; display: grid; justify-items: center; gap: 1mm; }
+  .gz-mast .lg { height: 13mm; max-width: 40mm; object-fit: contain; }
+  .gz-mast .monogram { width: 13mm; height: 13mm; border: 1px solid ${GZ}; font-size: 14pt; }
+  .gz-mast .co { font-family: 'Amiri', serif; font-size: 27pt; font-weight: 700; color: ${GZ}; line-height: 1.15; }
+  .gz-mast .coen { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: .3em; text-transform: uppercase; color: #3d3a34; direction: ltr; font-weight: 700; }
+  .gz-kicker { font-size: 7.6pt; color: ${GR}; font-weight: 700; letter-spacing: .08em; }
+  .gz-head { margin-bottom: 5mm; }
+  .gz-head h1 { margin: .5mm 0 0; font-family: 'Amiri', serif; font-size: 24pt; color: ${GZ}; line-height: 1.2; }
+  .gz-head .deck { font-size: 8.4pt; color: #4d4a43; font-style: italic; margin-top: .6mm; }
+`,
+  letterhead: (ctx) => `
+  <div class="gz-date"><span>${ctx.referenceNumber ? `العدد <b class="ltr">${esc(ctx.referenceNumber)}</b>` : cls(ctx)}</span><span>تاريخ الإصدار <b class="ltr">${ctx.dateStr}</b></span><span>وقت الطباعة <b class="ltr">${ctx.timeStr}</b></span></div>
+  <div class="gz-mast">${logo(ctx, "lg")}<div class="co">${esc(ctx.companyNameAr)}</div><div class="coen">${esc(ctx.companyNameEn)}</div></div>
+  <div class="gz-head">
+    <div class="gz-kicker">${cls(ctx)}${ctx.highlight ? ` — ${esc(ctx.highlight.value)} ${esc(ctx.highlight.label)}` : ""}</div>
+    <h1>${esc(ctx.title)}</h1>
+    ${ctx.titleEn ? `<div class="deck">${esc(ctx.titleEn)}</div>` : ""}
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:16mm;right:16mm;top:6mm;border-top:3px double ${GZ};"></div>`, "#fbf9f4"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:4mm;border-top:1px solid ${GZ};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#6b665c;font-family:Georgia,serif;"><span>${label}</span><span>${PAGE_NO}</span></div>`, "#fbf9f4"),
+};
+
+// 22. Prism: black + silver + ice blue — a faceted, crystal-cut header.
+const PB = "#1c1c1e";
+const SIL = "#c0c4cc";
+const ICE = "#7dd3fc";
+function prismSvg() {
+  // A jittered point grid split into triangles, shaded by position.
+  const W = 600, H = 170, C = 12, R = 4;
+  const pt = (i: number, j: number) => {
+    const edgeX = i === 0 || i === C, edgeY = j === 0 || j === R;
+    const jx = edgeX ? 0 : Math.sin(i * 12.9898 + j * 78.233) * 18;
+    const jy = edgeY ? 0 : Math.cos(i * 39.346 + j * 11.135) * 12;
+    return [(i * W) / C + jx, (j * H) / R + jy];
+  };
+  const shades = ["#1c1c1e", "#232327", "#2b2c31", "#34363c", "#3d4047"];
+  const tris: string[] = [];
+  for (let i = 0; i < C; i++) {
+    for (let j = 0; j < R; j++) {
+      const [a, b, c, d] = [pt(i, j), pt(i + 1, j), pt(i, j + 1), pt(i + 1, j + 1)];
+      const k = Math.abs(Math.round(Math.sin(i * 3.7 + j * 1.3) * 4));
+      const ice = (i * 7 + j * 3) % 11 === 0;
+      const f1 = ice ? ICE : shades[k % shades.length];
+      const f2 = shades[(k + 2) % shades.length];
+      const P = (p: number[]) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+      tris.push(`<polygon points="${P(a)} ${P(b)} ${P(c)}" fill="${f1}"${ice ? ' opacity=".35"' : ""}/>`);
+      tris.push(`<polygon points="${P(b)} ${P(d)} ${P(c)}" fill="${f2}"/>`);
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" width="100%" height="100%"><rect width="${W}" height="${H}" fill="${PB}"/>${tris.join("")}<g stroke="rgba(255,255,255,.06)" stroke-width=".6">${tris.length ? "" : ""}</g></svg>`;
+}
+const prism: PrintTheme = {
+  id: "prism",
+  margin: { top: "10mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: PB, "accent-ink": SIL, metal: ICE, "metal-deep": "#0369a1",
+      "metal-soft": "#f1f5f9", row: "#f4f5f7", line: "#e5e7eb", "line-strong": "#b8bcc4",
+      radius: "0px", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: FOIL.silver, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(PB))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux thead th { border-bottom: 1mm solid ${ICE}; }
+  .lux tbody td:first-child { color: #0369a1; font-weight: 700; }
+  .pr-hero { position: relative; margin: 0 -14mm 6mm; height: 46mm; color: #fff; overflow: hidden; }
+  .pr-hero .art { position: absolute; inset: 0; }
+  .pr-in { position: relative; height: 100%; padding: 7mm 14mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .pr-row { display: flex; justify-content: space-between; align-items: center; gap: 4mm; }
+  .pr-brand { display: flex; align-items: center; gap: 3mm; }
+  .pr-hex { width: 15mm; height: 15mm; clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); background: ${FOIL.silver}; display: grid; place-items: center; }
+  .pr-hex .lg { width: 10mm; height: 10mm; object-fit: contain; }
+  .pr-hex .monogram { color: ${PB}; font-size: 13pt; }
+  .pr-co-ar { font-size: 12pt; font-weight: 700; line-height: 1.3; }
+  .pr-co-en { font-size: 6.8pt; color: ${SIL}; letter-spacing: .1em; direction: ltr; text-align: right; }
+  .pr-ref { display: grid; gap: .5mm; font-size: 7pt; color: ${SIL}; text-align: left; white-space: nowrap; }
+  .pr-ref b { color: #fff; font-weight: 600; }
+  .pr-in h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 22pt; line-height: 1.15; }
+  .pr-in .en { font-size: 7.4pt; color: ${ICE}; letter-spacing: .2em; text-transform: uppercase; direction: ltr; text-align: right; }
+  .pr-num { text-align: center; }
+  .pr-num b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 34pt; line-height: .9; font-weight: 700; background: ${FOIL.silver}; -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .pr-num span { font-size: 6.8pt; color: ${SIL}; }
+`,
+  letterhead: (ctx) => `
+  <div class="pr-hero"><div class="art">${prismSvg()}</div>
+    <div class="pr-in">
+      <div class="pr-row">
+        <div class="pr-brand"><div class="pr-hex">${logo(ctx, "lg")}</div><div><div class="pr-co-ar">${esc(ctx.companyNameAr)}</div><div class="pr-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+        <div class="pr-ref">${refLines(ctx)}</div>
+      </div>
+      <div class="pr-row" style="align-items:flex-end">
+        <div>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}<h1>${esc(ctx.title)}</h1></div>
+        ${ctx.highlight ? `<div class="pr-num"><b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span></div>` : ""}
+      </div>
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("10mm", `<div style="position:absolute;left:0;right:0;top:0;height:3mm;background:${PB};"></div><div style="position:absolute;left:0;right:0;top:3mm;height:.5mm;background:${ICE};"></div>`),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:5mm;display:flex;justify-content:space-between;align-items:center;gap:4mm;font-size:7pt;color:#6b7280;"><span>${label}</span><span style="flex:1;height:.4mm;background:${FOIL.silver};"></span><span>${PAGE_NO}</span></div>`),
+};
+
+const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson, ledger, blueprint, mono, ribbon, mosaic, ocean, sadu, glass, gazette, prism };
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {
   return isPrintThemeId(id) ? THEMES[id] : THEMES[DEFAULT_PRINT_THEME];

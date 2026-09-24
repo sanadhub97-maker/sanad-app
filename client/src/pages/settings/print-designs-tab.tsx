@@ -11,7 +11,9 @@ import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PrintSignaturesCard } from "./print-signatures-card";
 
-type Layout = "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right" | "arch" | "split" | "damask" | "dunes" | "stripe";
+type Layout =
+  | "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right" | "arch" | "split" | "damask" | "dunes" | "stripe"
+  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism";
 
 interface Design {
   id: PrintThemeId;
@@ -39,6 +41,16 @@ const DESIGNS: Design[] = [
   { id: "slate", nameAr: "الأردوازي", nameEn: "Slate", descAr: "رمادي أردوازي وذهبي وردي، رأس مقسوم بلونين وجداول خفيفة بخطوط رفيعة.", descEn: "Slate and rose gold, a split two-tone header and light hairline tables.", paper: "#ffffff", accent: "#2f3e4e", metal: "#b76e79", layout: "split", ink: 1 },
   { id: "amethyst", nameAr: "الأرجواني", nameEn: "Amethyst", descAr: "أرجواني ملكي وذهبي، نقش دمشقي خفيف على الصفحة كلها وشريط مائل على الزاوية.", descEn: "Royal purple and gold, a faint damask across the page and a corner sash.", paper: "#fdfbf7", accent: "#3b1f4e", metal: "#b8954f", layout: "damask", ink: 2 },
   { id: "olive", nameAr: "الزيتوني", nameEn: "Olive", descAr: "زيتوني ورملي، عنوان كبير بخط الرقعة وشريط كثبان رملية أسفل كل صفحة.", descEn: "Olive and desert sand, a large calligraphic title and a sand-dune band on every page.", paper: "#fbf8f0", accent: "#4a5a2a", metal: "#c8a86b", layout: "dunes", ink: 2 },
+  { id: "ledger", nameAr: "المحاسبي", nameEn: "Ledger", descAr: "أخضر غامق وأحمر محاسبي، ورق دفتر بهامش أحمر مزدوج ومربع رقم المستند، وجدول بسطور مسطّرة.", descEn: "Forest green and ledger red: ledger paper with a red double margin, a document-number box and ruled rows.", paper: "#fbfaf3", accent: "#1f4d3a", metal: "#b3261e", layout: "ledger", ink: 1 },
+  { id: "blueprint", nameAr: "المعماري", nameEn: "Blueprint", descAr: "أزرق هندسي وسماوي، رأس بشبكة المخططات الهندسية ومربع بيانات معماري، وجدول بشبكة خلايا كاملة.", descEn: "Blueprint blue and cyan: an engineering-grid header with an architectural title block and fully ruled tables.", paper: "#ffffff", accent: "#0b3d91", metal: "#5ec8f2", layout: "blueprint", ink: 3 },
+  { id: "mono", nameAr: "النقي", nameEn: "Mono", descAr: "أسود وأصفر، تصميم بسيط بعنوان ضخم مع قلم تحديد أصفر وخط أسود عريض، وجداول خفيفة بدون خلفيات.", descEn: "Black and highlighter yellow: a minimal layout, an oversized highlighted title and hairline tables.", paper: "#ffffff", accent: "#111111", metal: "#f2c230", layout: "mono", ink: 1 },
+  { id: "ribbon", nameAr: "الشريطي", nameEn: "Ribbon", descAr: "تركوازي ومرجاني، شريط علامة كتاب نازل من أعلى الصفحة فيه الشعار، وصفوف الجدول كروت مستديرة.", descEn: "Teal and coral: a bookmark ribbon with the logo hangs from the top; table rows are rounded cards.", paper: "#fffdf9", accent: "#125b67", metal: "#e07a5f", layout: "ribbon", ink: 2 },
+  { id: "mosaic", nameAr: "الفسيفسائي", nameEn: "Mosaic", descAr: "كوبالت وتيراكوتا وزعفراني، شريط زليج مغربي أعلى وأسفل كل صفحة، وشعار داخل مثمن.", descEn: "Cobalt, terracotta and saffron: a Moroccan zellige tile band on every page and an octagonal logo.", paper: "#fdfaf4", accent: "#1c3f94", metal: "#e0a526", layout: "mosaic", ink: 2 },
+  { id: "ocean", nameAr: "البحري", nameEn: "Ocean", descAr: "أزرق محيطي وفيروزي، رأس متدرّج بحافة موجة، وجدول برأس فاتح.", descEn: "Ocean blue and turquoise: a gradient header with a wave edge and light aqua tables.", paper: "#ffffff", accent: "#0a4d68", metal: "#05bfdb", layout: "ocean", ink: 3 },
+  { id: "sadu", nameAr: "السدو", nameEn: "Sadu", descAr: "أحمر وأسود وعاجي، نقشة السدو النجدية على جانب كل صفحة وأعلاها، وعنوان بخط الرقعة.", descEn: "Sadu red, black and ivory: the Najdi Al-Sadu weave down the side of every page, and a calligraphic title.", paper: "#f7f0e1", accent: "#1a1a1a", metal: "#8e1b1b", layout: "sadu", ink: 2 },
+  { id: "glass", nameAr: "الزجاجي", nameEn: "Glass", descAr: "جرافيتي ونيلي، كارت عصري مستدير بتوهج ناعم، وجدول مستدير برأس فاتح.", descEn: "Graphite and indigo: a modern rounded card with a soft glow and a rounded table with a light header.", paper: "#f6f8fb", accent: "#334155", metal: "#6366f1", layout: "glass", ink: 1 },
+  { id: "gazette", nameAr: "الصحفي", nameEn: "Gazette", descAr: "أسود وأحمر داكن، ترويسة جريدة بخط نسخ كبير، وجداول بثلاث خطوط فقط على الطريقة الصحفية.", descEn: "Ink black and dark red: a newspaper masthead in serif type and three-rule tables.", paper: "#fbf9f4", accent: "#1a1a1a", metal: "#8b0000", layout: "gazette", ink: 1 },
+  { id: "prism", nameAr: "الماسي", nameEn: "Prism", descAr: "أسود وفضي وأزرق ثلجي، رأس بقصّات ماسية متعددة الأوجه، وشعار داخل سداسي فضي.", descEn: "Black, silver and ice blue: a faceted, crystal-cut header and a silver hexagon logo.", paper: "#ffffff", accent: "#1c1c1e", metal: "#7dd3fc", layout: "prism", ink: 3 },
   { id: "crimson", nameAr: "القرمزي", nameEn: "Crimson", descAr: "قرمزي وجرافيتي، شريط علوي بخطوط مائلة وكتلة عنوان مقسومة بزاوية.", descEn: "Crimson and graphite, a diagonal-striped top bar and an angled split title block.", paper: "#ffffff", accent: "#2b2d31", metal: "#9b1c31", layout: "stripe", ink: 2 },
 ];
 
@@ -93,6 +105,21 @@ function Thumb({ d }: { d: Design }) {
         <div className="absolute inset-x-0 top-0 h-[5px]" style={{ background: d.accent }}>
           <div className="h-full w-2/5" style={{ background: `repeating-linear-gradient(-45deg, ${d.metal} 0 3px, ${d.accent} 3px 6px)` }} />
         </div>
+      )}
+      {d.layout === "ledger" && (
+        <div className="absolute inset-y-0 right-[14px] w-[4px] border-x" style={{ borderColor: d.metal }} />
+      )}
+      {d.layout === "ribbon" && (
+        <div className="absolute right-[6px] top-0 h-[40px] w-[16px]" style={{ background: d.accent, clipPath: "polygon(0 0,100% 0,100% 100%,50% 82%,0 100%)" }} />
+      )}
+      {d.layout === "mosaic" && (
+        <>
+          <div className="absolute inset-x-0 top-0 h-[7px]" style={{ background: `repeating-linear-gradient(90deg, ${d.accent} 0 5px, #e0a526 5px 7px, #c1502e 7px 10px)` }} />
+          <div className="absolute inset-x-0 bottom-0 h-[5px]" style={{ background: `repeating-linear-gradient(90deg, ${d.accent} 0 5px, #e0a526 5px 7px, #c1502e 7px 10px)` }} />
+        </>
+      )}
+      {d.layout === "sadu" && (
+        <div className="absolute inset-y-0 left-0 w-[8px]" style={{ background: `repeating-linear-gradient(180deg, ${d.metal} 0 5px, #1a1a1a 5px 8px, #c8963e 8px 9px)` }} />
       )}
       {d.layout === "lattice" && (
         <>
@@ -175,6 +202,75 @@ function Thumb({ d }: { d: Design }) {
         )}
         {d.layout === "stripe" && (
           <div className="-mx-[12px] h-[20px]" style={{ background: `linear-gradient(105deg, ${d.accent} 0 30%, ${d.metal} 30%)` }} />
+        )}
+        {d.layout === "ledger" && (
+          <div className="flex items-start justify-between border-b-[3px] border-double pb-1 pr-[10px]" style={{ borderColor: d.accent }}>
+            <div className="h-[16px] w-[26px] border" style={{ borderColor: d.accent }}><div className="h-[4px]" style={{ background: d.accent }} /></div>
+            <div className="h-[6px] w-1/2 rounded-full" style={{ background: d.accent }} />
+          </div>
+        )}
+        {d.layout === "blueprint" && (
+          <div
+            className="-mx-[12px] -mt-[12px] flex h-[36px] items-end justify-between p-2"
+            style={{ background: `linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px) 0 0/8px 8px, linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px) 0 0/8px 8px, ${d.accent}` }}
+          >
+            <div className="h-[16px] w-[26px] border border-white/80" />
+            <div className="h-[5px] w-1/2 rounded-full bg-white" />
+          </div>
+        )}
+        {d.layout === "mono" && (
+          <div className="border-b-[4px] pb-1" style={{ borderColor: d.accent }}>
+            <div className="ml-auto h-[9px] w-3/4" style={{ background: `linear-gradient(transparent 55%, ${d.metal} 55%)` }}>
+              <div className="h-[6px] w-full rounded-sm" style={{ background: d.accent, opacity: 0.85 }} />
+            </div>
+          </div>
+        )}
+        {d.layout === "ribbon" && (
+          <div className="flex flex-col items-end gap-1 pr-[22px]">
+            <div className="h-[6px] w-2/3 rounded-full" style={{ background: d.accent }} />
+            <div className="flex gap-1"><span className="h-[5px] w-[14px] rounded-full border" style={{ borderColor: d.metal }} /><span className="h-[5px] w-[14px] rounded-full border" style={{ borderColor: d.metal }} /></div>
+          </div>
+        )}
+        {d.layout === "mosaic" && (
+          <div className="mt-[4px] flex flex-col items-center gap-1">
+            <div className="h-5 w-5" style={{ background: d.accent, clipPath: "polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)" }} />
+            <div className="h-[4px] w-14 rounded-full" style={{ background: "#c1502e" }} />
+          </div>
+        )}
+        {d.layout === "ocean" && (
+          <div className="relative -mx-[12px] -mt-[12px] h-[38px] overflow-hidden" style={{ background: `linear-gradient(120deg, ${d.accent}, ${d.metal})` }}>
+            <div className="absolute right-2 top-3 h-[5px] w-1/2 rounded-full bg-white" />
+            <div className="absolute -bottom-[10px] -left-[10%] h-[20px] w-[120%] rounded-[50%] bg-white" />
+          </div>
+        )}
+        {d.layout === "sadu" && (
+          <div className="grid grid-cols-[1fr_40%] gap-1.5 pl-[8px]">
+            <div className="flex flex-col items-end gap-1"><div className="h-[7px] w-full rounded-full" style={{ background: d.metal }} /></div>
+            <div className="order-first h-[20px]" style={{ background: d.accent, borderBottom: `2px solid ${d.metal}` }} />
+          </div>
+        )}
+        {d.layout === "glass" && (
+          <div className="relative overflow-hidden rounded-[6px] bg-white p-1.5 shadow-sm">
+            <div className="absolute -left-3 -top-4 h-10 w-10 rounded-full" style={{ background: `radial-gradient(circle, ${d.metal}55, transparent 70%)` }} />
+            <div className="ml-auto h-[6px] w-2/3 rounded-full" style={{ background: d.accent }} />
+            <div className="mt-1 ml-auto h-[4px] w-1/3 rounded-full" style={{ background: d.metal }} />
+          </div>
+        )}
+        {d.layout === "gazette" && (
+          <div className="flex flex-col items-center gap-[3px]">
+            <div className="h-px w-full" style={{ background: d.accent }} />
+            <div className="h-[8px] w-3/4 rounded-sm" style={{ background: d.accent }} />
+            <div className="h-[3px] w-full border-y" style={{ borderColor: d.accent }} />
+            <div className="ml-auto h-[3px] w-1/4" style={{ background: d.metal }} />
+          </div>
+        )}
+        {d.layout === "prism" && (
+          <div
+            className="-mx-[12px] -mt-[12px] flex h-[36px] items-end justify-end p-2"
+            style={{ background: `linear-gradient(135deg, #2b2c31 25%, #1c1c1e 25% 50%, #3d4047 50% 60%, ${d.metal}55 60% 66%, #232327 66%)` }}
+          >
+            <div className="h-[5px] w-1/2 rounded-full" style={{ background: "#c0c4cc" }} />
+          </div>
         )}
         {d.layout === "spine-right" && (
           <div className="flex items-center justify-between border-b pb-1" style={{ borderColor: `${d.metal}55` }}>
