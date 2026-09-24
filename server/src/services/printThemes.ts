@@ -95,10 +95,34 @@ const dataUri = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(s
 // Page-level art is drawn as the page background rather than with
 // position:fixed, which Chrome does not reliably repeat onto the first page.
 // It is vertical (side rules, side columns), so it lines up on every page.
+//
+// PDF rule for every design: no linear gradient may contain a transparent
+// stop (Chrome 148+ drops those from PDFs) and no repeating-linear-gradient
+// (never printed reliably) — fade into the paper colour, and draw stripes and
+// grids as SVG tiles instead.
 
-/** Two thin rules 7mm in from one side edge (direction 90deg = left). */
-function doubleRule(direction: string, color: string) {
-  return `linear-gradient(${direction}, transparent 7mm, ${color} 7mm 7.35mm, transparent 7.35mm 7.85mm, ${color} 7.85mm 8.2mm, transparent 8.2mm)`;
+/** Two thin rules 7mm in from both side edges, over the paper colour —
+ * one opaque gradient across the page. */
+function doubleRules(color: string, paper: string) {
+  const r = (a: string, b: string) => `${color} ${a} ${b}`;
+  const p = (a: string, b: string) => `${paper} ${a} ${b}`;
+  return `linear-gradient(90deg, ${[
+    p("0", "7mm"), r("7mm", "7.35mm"), p("7.35mm", "7.85mm"), r("7.85mm", "8.2mm"),
+    p("8.2mm", "calc(100% - 8.2mm)"),
+    r("calc(100% - 8.2mm)", "calc(100% - 7.85mm)"), p("calc(100% - 7.85mm)", "calc(100% - 7.35mm)"),
+    r("calc(100% - 7.35mm)", "calc(100% - 7mm)"), p("calc(100% - 7mm)", "100%"),
+  ].join(", ")})`;
+}
+
+/** 45° two-colour stripes as a seamless tile. */
+function stripeTile(a: string, b: string) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" fill="${b}"/><path d="M-5 5L5-5M-5 25L25-5M15 25L25 15" stroke="${a}" stroke-width="7"/></svg>`;
+}
+
+/** A blueprint grid tile: fine 5mm lines and a stronger 25mm line. */
+function gridTile() {
+  const minor = [20, 40, 60, 80].map((v) => `<path d="M${v} 0V100M0 ${v}H100"/>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><g stroke="#ffffff" fill="none"><g stroke-width=".6" opacity=".09">${minor}</g><path d="M0 .5H100M.5 0V100" stroke-width="1" opacity=".22"/></g></svg>`;
 }
 
 /** One 18mm-square tile of the mashrabiya lattice for the bronze side column. */
@@ -224,7 +248,7 @@ const royal: PrintTheme = {
     }) +
     LUX_BASE +
     `
-  html { background: ${doubleRule("90deg", ROYAL_GOLD)}, ${doubleRule("270deg", ROYAL_GOLD)}, #fbf8f1; }
+  html { background: ${doubleRules(ROYAL_GOLD, "#fbf8f1")}; }
   .watermark { position: fixed; top: 50%; left: 50%; width: 120mm; height: 120mm; transform: translate(-50%, -50%); opacity: .045; }
   .r-hero { position: relative; margin: 0 -8.4mm 5mm; height: 36mm; background: #0a1a33; overflow: hidden; }
   .r-hero .g { position: absolute; inset: 0; opacity: .55; }
@@ -241,7 +265,7 @@ const royal: PrintTheme = {
   .r-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 24pt; line-height: 1.25; color: #0a1a33; font-weight: 700; }
   .r-title .en { font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: .35em; color: ${ROYAL_GOLD}; font-weight: 700; text-transform: uppercase; }
   .r-orn { display: flex; align-items: center; justify-content: center; gap: 3mm; color: ${ROYAL_GOLD}; margin-top: 1.5mm; font-size: 8pt; }
-  .r-orn i { width: 32mm; height: .35mm; background: linear-gradient(90deg, transparent, ${ROYAL_GOLD}); }
+  .r-orn i { width: 32mm; height: .35mm; background: linear-gradient(90deg, #fbf8f1, ${ROYAL_GOLD}); }
   .r-orn i:last-child { transform: scaleX(-1); }
   .r-class { font-size: 7pt; color: #8a7f6b; margin-top: 1mm; }
 `,
@@ -339,7 +363,7 @@ const executive: PrintTheme = {
     LUX_BASE +
     `
   .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
-  html { background: url("${dataUri(wavesSvg(CHAMP, true).replace('<g ', '<g opacity=".7" '))}") left top / 12mm 140mm repeat-y, linear-gradient(90deg, #121110 0 12mm, transparent 12mm), #ffffff; }
+  html { background: url("${dataUri(wavesSvg(CHAMP, true).replace('<g ', '<g opacity=".7" '))}") left top / 12mm 140mm repeat-y, linear-gradient(90deg, #121110 0 12mm, #ffffff 12mm); }
   .x-top { margin: 0 -14mm 5mm -14mm; background: #121110; color: #fff; padding: 9mm 14mm 7mm 14mm; }
   .x-brand { display: flex; justify-content: space-between; align-items: center; gap: 4mm; margin-bottom: 7mm; }
   .x-brand-l { display: flex; align-items: center; gap: 4mm; }
@@ -406,7 +430,7 @@ const burgundy: PrintTheme = {
   .m-meta { display: flex; justify-content: center; gap: 6mm; font-size: 7.2pt; color: #7d6a5d; border-top: 1px solid #e6dccb; border-bottom: 1px solid #e6dccb; padding: 1.2mm 0; width: 100%; margin-top: 1.5mm; }
   .m-meta b { color: ${WINE}; font-weight: 600; }
   .m-title { display: flex; align-items: center; gap: 5mm; margin-bottom: 1mm; }
-  .m-title i { flex: 1; height: .35mm; background: linear-gradient(90deg, transparent, ${WINE_GOLD}); }
+  .m-title i { flex: 1; height: .35mm; background: linear-gradient(90deg, #fcf9f3, ${WINE_GOLD}); }
   .m-title i:last-child { transform: scaleX(-1); }
   .m-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 23pt; color: ${WINE}; line-height: 1.25; white-space: nowrap; }
   .m-sub { text-align: center; font-size: 7.4pt; color: #9a8676; margin-bottom: 5mm; }
@@ -503,7 +527,7 @@ const bronze: PrintTheme = {
     }) +
     LUX_BASE +
     `
-  html { background: url("${dataUri(spineTile("#c98f5f"))}") right top / 18mm 18mm repeat-y, linear-gradient(270deg, ${ESP} 0 18mm, #c98f5f 18mm 18.8mm, transparent 18.8mm), #faf6f0; }
+  html { background: url("${dataUri(spineTile("#c98f5f"))}") right top / 18mm 18mm repeat-y, linear-gradient(270deg, ${ESP} 0 18mm, #c98f5f 18mm 18.8mm, #faf6f0 18.8mm); }
   .b-emb { position: absolute; right: 2.5mm; top: 0; width: 13mm; height: 13mm; border-radius: 50%; background: ${FOIL.bronze}; display: grid; place-items: center; }
   .b-emb .lg { width: 11mm; height: 11mm; border-radius: 50%; background: #fff; object-fit: contain; padding: 1.2mm; }
   .b-emb .monogram { width: 11mm; height: 11mm; border-radius: 50%; background: ${ESP}; color: #e6bf94; font-size: 12pt; }
@@ -687,7 +711,7 @@ const amethyst: PrintTheme = {
   .a-title { text-align: center; margin-bottom: 5mm; }
   .a-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 23pt; color: ${PUR}; line-height: 1.25; }
   .a-flour { display: flex; align-items: center; justify-content: center; gap: 2.5mm; color: ${PUR_GOLD}; font-size: 8pt; }
-  .a-flour i { width: 26mm; height: .35mm; background: linear-gradient(90deg, transparent, ${PUR_GOLD}); }
+  .a-flour i { width: 26mm; height: .35mm; background: linear-gradient(90deg, #fdfbf7, ${PUR_GOLD}); }
   .a-flour i:last-child { transform: scaleX(-1); }
   .a-meta { display: flex; justify-content: center; gap: 5mm; font-size: 7.1pt; color: #7a6b80; margin-top: 1.5mm; }
   .a-meta b { color: ${PUR}; font-weight: 600; }
@@ -781,7 +805,7 @@ const olive: PrintTheme = {
 // a diagonally split title block.
 const CRIM = "#9b1c31";
 const GRAPH = "#2b2d31";
-const STRIPES = `repeating-linear-gradient(-45deg, ${CRIM} 0 2mm, ${GRAPH} 2mm 4mm)`;
+const STRIPES = `url('${dataUri(stripeTile(CRIM, GRAPH))}') 0 0 / 4mm 4mm`;
 const crimson: PrintTheme = {
   id: "crimson",
   margin: { top: "12mm", bottom: "15mm" },
@@ -804,7 +828,7 @@ const crimson: PrintTheme = {
   .c-co-en { font-size: 6.8pt; color: #7d7f86; letter-spacing: .08em; direction: ltr; text-align: right; }
   .c-ref { display: grid; gap: .5mm; font-size: 7pt; color: #7d7f86; text-align: left; white-space: nowrap; }
   .c-ref b { color: ${GRAPH}; font-weight: 600; }
-  .c-title { margin: 0 -14mm 6mm; display: flex; align-items: stretch; min-height: 24mm; background: linear-gradient(105deg, ${GRAPH} 0 30%, transparent 30%), ${CRIM}; color: #fff; }
+  .c-title { margin: 0 -14mm 6mm; display: flex; align-items: stretch; min-height: 24mm; background: linear-gradient(105deg, ${GRAPH} 0 30%, ${CRIM} 30%); color: #fff; }
   .c-title .t { flex: 1; padding: 4mm 14mm 4mm 6mm; display: flex; flex-direction: column; justify-content: center; }
   .c-title h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 20pt; line-height: 1.2; font-weight: 700; }
   .c-title .en { font-size: 7.4pt; letter-spacing: .2em; opacity: .85; text-transform: uppercase; direction: ltr; text-align: right; }
@@ -853,7 +877,7 @@ const ledger: PrintTheme = {
     }) +
     LUX_BASE +
     `
-  html { background: linear-gradient(270deg, transparent 20mm, ${LR} 20mm 20.35mm, transparent 20.35mm 21mm, ${LR} 21mm 21.35mm, transparent 21.35mm), #fbfaf3; }
+  html { background: linear-gradient(270deg, #fbfaf3 20mm, ${LR} 20mm 20.35mm, #fbfaf3 20.35mm 21mm, ${LR} 21mm 21.35mm, #fbfaf3 21.35mm); }
   .lux thead th { background: transparent; color: ${LG}; border-top: 1px solid ${LG}; border-bottom: 3px double ${LG}; font-weight: 700; }
   .lux thead th .th-sub { color: #6b7d72; opacity: 1; }
   .lux tbody td:first-child { color: ${LR}; font-weight: 700; }
@@ -896,7 +920,7 @@ const ledger: PrintTheme = {
 // architectural title block, and fully ruled grid tables.
 const BP = "#0b3d91";
 const CY = "#5ec8f2";
-const GRID = `linear-gradient(rgba(255,255,255,.22) .25mm, transparent .25mm) 0 0 / 25mm 25mm, linear-gradient(90deg, rgba(255,255,255,.22) .25mm, transparent .25mm) 0 0 / 25mm 25mm, linear-gradient(rgba(255,255,255,.09) .15mm, transparent .15mm) 0 0 / 5mm 5mm, linear-gradient(90deg, rgba(255,255,255,.09) .15mm, transparent .15mm) 0 0 / 5mm 5mm`;
+const GRID = `url("${dataUri(gridTile())}") 0 0 / 25mm 25mm`;
 const blueprint: PrintTheme = {
   id: "blueprint",
   margin: { top: "10mm", bottom: "15mm" },
@@ -978,7 +1002,7 @@ const mono: PrintTheme = {
   .mn-ref b { color: ${INK}; font-weight: 600; }
   .mn-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; border-bottom: 3mm solid ${INK}; padding-bottom: 3mm; margin-bottom: 6mm; }
   .mn-head h1 { margin: 0; font-size: 30pt; font-weight: 700; line-height: 1.1; color: ${INK}; }
-  .mn-head h1 span { background: linear-gradient(transparent 58%, ${YEL} 58%, ${YEL} 92%, transparent 92%); padding: 0 1mm; }
+  .mn-head h1 span { background: linear-gradient(#ffffff 58%, ${YEL} 58%, ${YEL} 92%, #ffffff 92%); padding: 0 1mm; }
   .mn-head .en { font-size: 7.4pt; color: #6a6a6a; letter-spacing: .22em; text-transform: uppercase; direction: ltr; text-align: right; margin-bottom: 1.5mm; }
   .mn-num { text-align: left; }
   .mn-num b { display: block; font-size: 36pt; line-height: .9; font-weight: 700; color: ${INK}; }

@@ -20,7 +20,7 @@ function launchBrowser(): Promise<Browser> {
 async function getBrowser(): Promise<Browser> {
   if (browserPromise) {
     const existing = await browserPromise.catch(() => null);
-    if (existing?.isConnected()) return existing;
+    if (existing?.connected) return existing;
     // The cached browser process died (crash/OOM) — relaunch instead of
     // staying stuck returning a dead browser to every request until restart.
     browserPromise = null;
