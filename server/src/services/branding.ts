@@ -13,12 +13,25 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   return { buffer: await storage.read(logoFile.storedName), mimeType: logoFile.mimeType };
 }
 
+// Stamp/signature images, shrunk once per file and kept: they print about
+// 3cm wide, and embedding a multi-megabyte photo made every PDF slow and heavy.
+const printAssetCache = new Map<string, string>();
+
 async function fileDataUrl(fileId: string | null | undefined) {
   if (!fileId) return null;
+  const cached = printAssetCache.get(fileId);
+  if (cached) return cached;
   const file = await prisma.file.findUnique({ where: { id: fileId } });
   if (!file) return null;
   try {
-    return `data:${file.mimeType};base64,${(await storage.read(file.storedName)).toString("base64")}`;
+    const raw = await storage.read(file.storedName);
+    let url = `data:${file.mimeType};base64,${raw.toString("base64")}`;
+    if (file.mimeType.startsWith("image/") && file.mimeType !== "image/svg+xml") {
+      const png = await sharp(raw).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true }).png().toBuffer();
+      url = `data:image/png;base64,${png.toString("base64")}`;
+    }
+    printAssetCache.set(fileId, url);
+    return url;
   } catch (err) {
     logger.warn({ err, fileId }, "Could not read a print asset");
     return null;
