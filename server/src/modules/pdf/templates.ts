@@ -39,8 +39,8 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
           ${b.en ? `<div class="sig-title-en">${escHtml(b.en)}</div>` : ""}
         </div>
         <div class="sig-card-body">
-          <div class="sig-row sig-name-row"><span class="sig-label">الاسم:</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
-          <div class="sig-row sig-sign-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">الاسم:</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
+          <div class="sig-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
           <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">${date}</span></div>
         </div>
       </div>`;

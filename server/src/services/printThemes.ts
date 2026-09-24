@@ -182,7 +182,7 @@ const LUX_BASE = `
   .lux .sig-title-ar { font-family: var(--heading); color: var(--accent); font-size: 10pt; }
   .lux .sig-title-en { color: var(--metal-deep); letter-spacing: .06em; }
   .lux .sig-card-body { padding: 10px 2px; }
-  .lux .sig-dots { border-bottom-color: var(--line-strong); }
+  .lux .sig-dots, .lux .sig-name, .lux .sig-date { border-bottom-color: var(--line-strong); }
   .lux .official-seal-circle { width: 96px; height: 96px; border: none; border-radius: 50%; background: var(--seal) center / contain no-repeat; padding: 0; }
   .lux .seal-stars { color: var(--metal-deep); font-size: 5.5pt; }
   .lux .seal-text-ar { color: var(--accent); font-size: 6.6pt; }

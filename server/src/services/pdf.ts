@@ -488,12 +488,16 @@ export function pdfDocumentShell(opts: {
   .ref-code { font-family: monospace; font-size: 9pt; color: #2563eb; }
   .total-th { background: #1e3a8a !important; }
   .total-cell { font-weight: 900; color: #1e3a8a; background: #f0fdf4; }
-  .sig-label { white-space: nowrap; }
-  .sig-name-row { align-items: center; min-height: 11mm; }
-  .sig-name { flex: 1; display: flex; align-items: center; justify-content: flex-start; border-bottom: 1px dotted #94a3b8; min-height: 11mm; padding: 1px 4px; }
-  .sig-name img { max-height: 10mm; max-width: 100%; object-fit: contain; }
-  .sig-sign-row { min-height: 10mm; align-items: flex-end; }
-  .sig-date { flex: 1; font-family: 'IBM Plex Mono', monospace; font-weight: 600; letter-spacing: .04em; text-align: start; border-bottom: 1px dotted #94a3b8; padding: 0 4px; }
+  /* Signature box rows: one grid for name, signature and date — the same
+     height, a fixed label column, and the value centred on its line. */
+  .sig-card-body .sig-row { display: grid; grid-template-columns: 13mm 1fr; align-items: stretch; column-gap: 2mm; height: 11mm; margin: 0 0 1.5mm; }
+  .sig-card-body .sig-row:last-child { margin-bottom: 0; }
+  .sig-label { white-space: nowrap; align-self: center; }
+  .sig-card-body .sig-dots,
+  .sig-name,
+  .sig-date { height: auto; display: flex; align-items: center; justify-content: center; border-bottom: 1px dotted #94a3b8; }
+  .sig-name img { max-height: 9.5mm; max-width: 100%; object-fit: contain; }
+  .sig-date { font-family: 'IBM Plex Mono', monospace; font-size: 9pt; font-weight: 700; letter-spacing: .06em; }
   .stamp-img { width: 30mm; height: 30mm; object-fit: contain; }
   .signature-matrix.seal-only { justify-content: center; }
   .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
