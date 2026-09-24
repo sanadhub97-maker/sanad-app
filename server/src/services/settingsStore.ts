@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration";
+import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
 
@@ -77,4 +78,17 @@ export function markExpirationScanRun() {
 
 export function setAppearanceSettings(value: AppearanceSettings) {
   return setSetting(APPEARANCE_KEY, value);
+}
+
+const PRINT_THEME_KEY = "print.theme";
+
+/** The print design chosen in Settings → Print (see services/printThemes). */
+export async function getPrintThemeSetting(): Promise<PrintThemeId> {
+  const { theme } = await getSetting<{ theme: string }>(PRINT_THEME_KEY, { theme: DEFAULT_PRINT_THEME });
+  return isPrintThemeId(theme) ? theme : DEFAULT_PRINT_THEME;
+}
+
+export async function setPrintThemeSetting(theme: PrintThemeId) {
+  await setSetting(PRINT_THEME_KEY, { theme });
+  return theme;
 }

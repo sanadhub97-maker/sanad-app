@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
+import { getPrintThemeSetting } from "@/services/settingsStore";
 
 async function readPrintLogo(company: { printLogoFileId: string | null; logoFileId: string | null } | null) {
   // A dedicated print logo wins; otherwise the light-mode logo (prints are on white paper).
@@ -19,7 +20,8 @@ export async function getBrandingContext() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   const logo = await readPrintLogo(company);
   const logoDataUrl = logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null;
-  return { company, logoDataUrl };
+  const printTheme = await getPrintThemeSetting();
+  return { company, logoDataUrl, printTheme };
 }
 
 /** The print logo as a PNG for Excel, which only embeds PNG/JPEG/GIF (the

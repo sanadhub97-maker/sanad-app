@@ -73,7 +73,12 @@ export interface CompanyBranding {
   logoDarkFileId: string | null;
 }
 
+export type PrintThemeId = "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze";
+
 export const settingsApi = {
+  getPrintTheme: async () => (await api.get<{ data: { theme: PrintThemeId } }>("/settings/print-theme")).data.data.theme,
+  updatePrintTheme: async (theme: PrintThemeId) =>
+    (await api.put<{ data: { theme: PrintThemeId }; message: string }>("/settings/print-theme", { theme })).data,
   getBranding: async () => (await api.get<{ data: CompanyBranding }>("/settings/branding")).data.data,
   getCompany: async () => (await api.get<{ data: CompanySettings }>("/settings/company")).data.data,
   updateCompany: async (input: CompanySettings) => (await api.put<{ data: CompanySettings; message: string }>("/settings/company", input)).data,

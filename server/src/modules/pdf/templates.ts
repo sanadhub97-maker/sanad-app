@@ -2,7 +2,11 @@ import { pdfDocumentShell } from "@/services/pdf";
 import { daysRemainingLabel } from "@/services/expiration";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 
-type Branding = { company: { nameAr?: string | null; nameEn?: string | null } | null; logoDataUrl: string | null };
+type Branding = {
+  company: { nameAr?: string | null; nameEn?: string | null } | null;
+  logoDataUrl: string | null;
+  printTheme?: string | null;
+};
 
 function fmtDate(d: Date | null | undefined) {
   if (!d) return "—";
@@ -57,8 +61,8 @@ export function employeeProfilePdf(
     <!-- 👤 Section 1: Personal & Employment Information -->
     <div class="section-card">
       <div class="section-header">
-        <span>📋 البيانات الشخصية والوظيفية الأساسية (Personal & Employment Information)</span>
-        <span style="font-family:monospace; font-size:9pt; color:#2563eb;">#${employee.employeeNumber}</span>
+        <span>البيانات الشخصية والوظيفية الأساسية (Personal & Employment Information)</span>
+        <span class="ref-code">#${employee.employeeNumber}</span>
       </div>
       <div class="section-body">
         <table>
@@ -99,7 +103,7 @@ export function employeeProfilePdf(
     <!-- 🪪 Section 2: Iqama & Passport Details -->
     <div class="section-card">
       <div class="section-header">
-        <span>🪪 وثائق الهوية والإقامة وجواز السفر (Identity & Passports)</span>
+        <span>وثائق الهوية والإقامة وجواز السفر (Identity & Passports)</span>
       </div>
       <div class="section-body">
         <table>
@@ -132,7 +136,7 @@ export function employeeProfilePdf(
     <!-- 📁 Section 3: Official Workforce Documents Schedule -->
     <div class="section-card">
       <div class="section-header">
-        <span>📁 جدول المستندات والتراخيص الرسمية الملحقة (${employee.documents.length} وثائق)</span>
+        <span>جدول المستندات والتراخيص الرسمية الملحقة (${employee.documents.length} وثائق)</span>
       </div>
       <div class="section-body">
         <table>
@@ -210,6 +214,7 @@ export function employeeProfilePdf(
     logoDataUrl: branding.logoDataUrl,
     referenceNumber: employee.employeeNumber,
     classification: "ملف موظف رسمي | Official HR Dossier",
+    theme: branding.printTheme,
     bodyHtml: body,
   });
 }
@@ -245,7 +250,7 @@ export function paymentReceiptPdf(
     <div class="kpi-total-card">
       <div>
         <div class="amount-label">المبلغ الإجمالي المستحق والمصروف (شامل ضريبة القيمة المضافة)</div>
-        <div style="font-size:9pt; color:#cbd5e1; margin-top:2px;">Total Payable & Disbursed (VAT Included)</div>
+        <div class="amount-sub">Total Payable & Disbursed (VAT Included)</div>
       </div>
       <div class="amount-val">
         ${totalNum} <span style="font-size:11pt; font-weight:700;">ر.س SAR</span>
@@ -256,7 +261,7 @@ export function paymentReceiptPdf(
     <div class="section-card">
       <div class="section-header">
         <span>بيانات قيد الصرف والمؤسسة (Voucher & Establishment Details)</span>
-        <span style="font-family:monospace; font-size:9pt; color:#0284c7;">#${payment.paymentNumber}</span>
+        <span class="ref-code">#${payment.paymentNumber}</span>
       </div>
       <div class="section-body">
         <table>
@@ -298,7 +303,7 @@ export function paymentReceiptPdf(
         <span>البيان والتفاصيل المالية (Description & Financial Breakdown)</span>
       </div>
       <div class="section-body">
-        <p style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:10pt;">
+        <p class="desc-box">
           <strong>البيان: </strong>${payment.description ?? "لا يوجد بيان مسجل لهذا السند."}
         </p>
 
@@ -307,14 +312,14 @@ export function paymentReceiptPdf(
             <tr>
               <th style="text-align:center;">المبلغ الأساسي (خالي الضريبة)</th>
               <th style="text-align:center;">ضريبة القيمة المضافة (VAT)</th>
-              <th style="text-align:center; background:#1e3a8a;">المبلغ الإجمالي المعتمد</th>
+              <th class="total-th" style="text-align:center;">المبلغ الإجمالي المعتمد</th>
             </tr>
           </thead>
           <tbody>
             <tr style="text-align:center; font-family:'Cairo',monospace; font-size:11pt; font-weight:700;">
               <td style="text-align:center;">${amountNum} ر.س</td>
               <td style="text-align:center;">${vatNum} ر.س</td>
-              <td style="text-align:center; font-weight:900; color:#1e3a8a; background:#f0fdf4;">${totalNum} ر.س</td>
+              <td class="total-cell" style="text-align:center;">${totalNum} ر.س</td>
             </tr>
           </tbody>
         </table>
@@ -375,6 +380,8 @@ export function paymentReceiptPdf(
     logoDataUrl: branding.logoDataUrl,
     referenceNumber: payment.paymentNumber,
     classification: "سند صرف معتمد | Payment Voucher",
+    theme: branding.printTheme,
+    highlight: { value: totalNum, label: "ريال سعودي" },
     bodyHtml: body,
   });
 }
@@ -447,8 +454,7 @@ export function tableReportPdf(
   `
     : `
     <div class="empty-state-card">
-      <div style="font-size:24pt; margin-bottom:6px;">📋</div>
-      <div class="empty-state-title">لا توجد سجلات مطابقة لمعايير البحث الحالية</div>
+            <div class="empty-state-title">لا توجد سجلات مطابقة لمعايير البحث الحالية</div>
       <div class="empty-state-desc">لم يتم العثور على أي نتائج في قاعدة البيانات بناءً على الفلاتر والخيارات المحددة في هذا التقرير.</div>
     </div>
   `;
@@ -499,6 +505,8 @@ export function tableReportPdf(
     companyNameEn: branding.company?.nameEn,
     logoDataUrl: branding.logoDataUrl,
     classification: opts?.classification || "تقرير تنفيذي رسمي معتمد | Official Executive Report",
+    theme: branding.printTheme,
+    highlight: { value: String(rows.length).padStart(2, "0"), label: "سجل في التقرير" },
     bodyHtml: body,
   });
 }

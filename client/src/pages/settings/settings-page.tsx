@@ -39,6 +39,7 @@ import {
   Sliders,
   AlertTriangle,
   Laptop,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { cn } from "@/lib/utils";
+import { PrintDesignsTab } from "./print-designs-tab";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -104,6 +106,14 @@ export default function SettingsPage() {
             </TabsTrigger>
 
             <TabsTrigger
+              value="print"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
+            >
+              <AppleIcon icon={Printer} tone="indigo" size="xs" />
+              <span>{t("settings.tabs.print")}</span>
+            </TabsTrigger>
+
+            <TabsTrigger
               value="expiration"
               className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
             >
@@ -137,6 +147,11 @@ export default function SettingsPage() {
         {/* Tab 2: Appearance & Brand */}
         <TabsContent value="appearance" className="focus-visible:outline-none">
           <AppearanceTab canEdit={canEdit} isRtl={isRtl} />
+        </TabsContent>
+
+        {/* Print designs */}
+        <TabsContent value="print" className="focus-visible:outline-none">
+          <PrintDesignsTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 3: Expiration Rules */}

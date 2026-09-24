@@ -87,6 +87,8 @@ const EXACT: Record<string, string> = {
   "Validation failed": "البيانات المدخلة غير صحيحة، يرجى مراجعة الحقول.",
   "WhatsApp is not configured yet — save the WhatsApp settings first.": "واتساب غير مُعد بعد — احفظ إعدادات واتساب أولاً.",
   "WhatsApp settings saved.": "تم حفظ إعدادات واتساب.",
+  "Print design saved.": "تم حفظ تصميم الطباعة.",
+  "Unknown print design.": "تصميم الطباعة غير معروف.",
   "Automatic translation is unavailable right now. Please type the English text.":
     "الترجمة التلقائية غير متاحة حالياً، يرجى كتابة النص بالإنجليزي.",
   "You cannot delete your own account.": "لا يمكنك حذف حسابك الشخصي.",

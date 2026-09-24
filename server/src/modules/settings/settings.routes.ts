@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { z } from "zod";
+import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -36,6 +38,16 @@ router.put(
   validate({ body: appearanceSettingsSchema }),
   auditLog(AuditAction.UPDATE, "settings"),
   controller.updateAppearance
+);
+
+router.get("/print-theme", requirePermission("settings.view"), controller.getPrintTheme);
+router.get("/print-theme/preview", requirePermission("settings.view"), controller.previewPrintTheme);
+router.put(
+  "/print-theme",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ theme: z.enum(PRINT_THEME_IDS) }) }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updatePrintTheme
 );
 
 router.get("/expiration-rules", requirePermission("settings.view"), controller.getExpiration);

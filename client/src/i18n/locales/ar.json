@@ -648,7 +648,8 @@
       "appearance": "المظهر",
       "expiration": "قواعد الانتهاء",
       "email": "البريد الإلكتروني",
-      "whatsapp": "واتساب"
+      "whatsapp": "واتساب",
+      "print": "الطباعة"
     },
     "company": {
       "title": "هوية المنشأة",

@@ -648,7 +648,8 @@
       "appearance": "Appearance",
       "expiration": "Expiration Rules",
       "email": "Email",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "print": "Print"
     },
     "company": {
       "title": "Company Identity",

@@ -7,6 +7,50 @@ import { sendWhatsapp } from "@/services/whatsapp";
 import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
+import { prisma } from "@/lib/prisma";
+import { getPrintThemeSetting, setPrintThemeSetting } from "@/services/settingsStore";
+import { isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
+import { tableReportPdf } from "@/modules/pdf/templates";
+import { renderHtmlToPdf } from "@/services/pdf";
+
+export const getPrintTheme = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({ data: { theme: await getPrintThemeSetting() } });
+});
+export const updatePrintTheme = asyncHandler(async (req: Request, res: Response) => {
+  const theme = await setPrintThemeSetting((req.body as { theme: PrintThemeId }).theme);
+  res.json({ data: { theme }, message: "Print design saved." });
+});
+
+/** A real report (the establishments list) in the requested design, so the
+ * admin sees the actual PDF before choosing it. */
+export const previewPrintTheme = asyncHandler(async (req: Request, res: Response) => {
+  const theme = String(req.query.theme ?? "");
+  if (!isPrintThemeId(theme)) throw ApiError.badRequest("Unknown print design.");
+  const branches = await prisma.branch.findMany({
+    where: { deletedAt: null },
+    orderBy: { code: "asc" },
+    take: 60,
+    include: { _count: { select: { employees: { where: { deletedAt: null } } } } },
+  });
+  const branding = { ...(await getBrandingContext()), printTheme: theme };
+  const html = tableReportPdf(
+    "تقرير المؤسسات والمنشآت",
+    [
+      { header: "اسم المؤسسة", subHeader: "Establishment", render: (r) => String(r.name) },
+      { header: "الرمز", subHeader: "Code", render: (r) => `<span class="nowrap">${r.code}</span>` },
+      { header: "المدينة", subHeader: "City", render: (r) => String(r.city ?? "—") },
+      { header: "الموظفون", subHeader: "Staff", render: (r) => String(r.staff) },
+      { header: "الحالة", subHeader: "Status", render: (r) => `<span class="badge-status status-${r.status}">${r.status === "ACTIVE" ? "نشط" : "غير نشط"}</span>` },
+    ],
+    branches.map((b) => ({ name: b.name, code: b.code, city: b.city, staff: b._count.employees, status: b.status })),
+    branding,
+    { titleEn: "Establishments Report" }
+  );
+  const pdf = await renderHtmlToPdf(html, { footerLabel: "تقرير المؤسسات والمنشآت — معاينة تصميم الطباعة" });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename="print-design-${theme}.pdf"`);
+  res.send(pdf);
+});
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.getCompanySettings() });

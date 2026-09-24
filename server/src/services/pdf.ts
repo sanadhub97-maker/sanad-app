@@ -1,5 +1,6 @@
 import puppeteer, { Browser } from "puppeteer";
 import { logger } from "@/lib/logger";
+import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
 
 let browserPromise: Promise<Browser> | null = null;
 
@@ -52,23 +53,28 @@ export interface RenderPdfOptions {
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
   const page = await browser.newPage();
   try {
+    // The shell stamps its design into the page; margins and the per-page
+    // header/footer come from that design.
+    const theme = getPrintTheme(html.match(/<meta name="print-theme" content="(\w+)"/)?.[1]);
+    const footerLabel = options.footerLabel ?? "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق";
+    // A4 at 96dpi: fixed-position page decoration is laid out against the
+    // viewport, so it must match the paper or the first page comes out wrong.
+    await page.setViewport({ width: 794, height: 1123 });
     await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20000 });
     await Promise.race([
       page.evaluateHandle("document.fonts.ready"),
-      new Promise((resolve) => setTimeout(resolve, 2500)),
+      new Promise((resolve) => setTimeout(resolve, 5000)),
     ]).catch(() => undefined);
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: "<span></span>",
-      footerTemplate: `
-        <div style="width:100%; font-size:7.5pt; color:#64748b; display:flex; justify-content:space-between; padding:0 14mm; font-family:'Cairo','Segoe UI',sans-serif; border-top:1px solid #cbd5e1; padding-top:3px;" dir="rtl">
-          <span>${options.footerLabel ?? "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق"}</span>
-          <span>صفحة <span class="pageNumber"></span> من <span class="totalPages"></span></span>
-        </div>`,
-      margin: { top: "14mm", bottom: "16mm", left: "12mm", right: "12mm" },
+      headerTemplate: theme.headerTemplate,
+      footerTemplate: theme.footerTemplate(footerLabel),
+      // No side margins: designs draw full-bleed side columns and the body's
+      // own padding keeps the content in.
+      margin: { top: theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
     });
     return Buffer.from(pdf);
   } finally {
@@ -106,15 +112,35 @@ export function pdfDocumentShell(opts: {
   bodyHtml: string;
   generatedAt?: Date;
   classification?: string;
+  /** Print design id from Settings → Print (see services/printThemes). */
+  theme?: string | null;
+  highlight?: ShellContext["highlight"];
 }): string {
   const dir = opts.dir ?? "rtl";
   const companyNameAr = opts.companyNameAr || "منظومة سند لإدارة الموارد البشرية والامتثال";
   const companyNameEn = opts.companyNameEn || "SanaD Enterprise HR & Compliance Suite";
   const classification = opts.classification || "وثيقة إدارية رسمية معتمدة | Official Document";
 
+  // Riyadh time: the server clock (Render) is UTC.
   const now = opts.generatedAt ?? new Date();
-  const dateStr = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-  const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const part = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", ...o }).format(now);
+  const dateStr = part({ day: "2-digit", month: "2-digit", year: "numeric" });
+  const timeStr = part({ hour: "2-digit", minute: "2-digit", hour12: false });
+
+  const theme = getPrintTheme(opts.theme);
+  const ctx: ShellContext = {
+    title: opts.title,
+    titleEn: opts.titleEn,
+    companyNameAr,
+    companyNameEn,
+    logoDataUrl: opts.logoDataUrl,
+    referenceNumber: opts.referenceNumber,
+    classification,
+    dateStr,
+    timeStr,
+    highlight: opts.highlight,
+  };
+  const isClassic = theme.id === "classic";
 
   return `<!doctype html>
 <html dir="${dir}" lang="${dir === "rtl" ? "ar" : "en"}">
@@ -123,12 +149,10 @@ export function pdfDocumentShell(opts: {
 <title>${opts.title}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="print-theme" content="${theme.id}">
+<link href="${PRINT_FONTS_HREF}" rel="stylesheet">
 <style>
-  @page {
-    size: A4 portrait;
-    margin: 12mm 14mm 14mm 14mm;
-  }
+  @page { size: A4 portrait; }
   * { box-sizing: border-box; }
   body {
     font-family: ${dir === "rtl" ? "'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif" : "'Inter', 'Cairo', 'Segoe UI', sans-serif"};
@@ -456,9 +480,27 @@ export function pdfDocumentShell(opts: {
     color: #64748b;
     letter-spacing: 0.5px;
   }
+  /* Shared pieces the templates use */
+  .kpi-total-card { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #0b1b3d; color: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+  .amount-label { font-size: 10pt; font-weight: 800; }
+  .amount-sub { font-size: 8pt; color: #cbd5e1; margin-top: 2px; }
+  .amount-val { font-size: 20pt; font-weight: 900; white-space: nowrap; }
+  .ref-code { font-family: monospace; font-size: 9pt; color: #2563eb; }
+  .total-th { background: #1e3a8a !important; }
+  .total-cell { font-weight: 900; color: #1e3a8a; background: #f0fdf4; }
+  .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
+${theme.css}
 </style>
 </head>
-<body>
+<body class="${isClassic ? "" : "lux"}">
+${isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx)}
+
+  ${opts.bodyHtml}
+</body>
+</html>`;
+
+  function classicHeader() {
+    return `
   <div class="royal-top-stripe"></div>
 
   <!-- 🏛️ Header Top: Company (Right) vs Meta (Left) -->
@@ -484,9 +526,6 @@ export function pdfDocumentShell(opts: {
       ${opts.titleEn ? `<div class="title-subtitle-en">${opts.titleEn}</div>` : ""}
     </div>
     <span class="title-badge">${classification}</span>
-  </div>
-
-  ${opts.bodyHtml}
-</body>
-</html>`;
+  </div>`;
+  }
 }
