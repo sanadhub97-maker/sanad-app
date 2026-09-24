@@ -13,10 +13,12 @@ import { computeStatus, ExpirationRules } from "@/services/expiration";
 export interface TrackableItem {
   key: string; // stable id used for notification dedupe keys
   sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT";
-  label: string;
+  label: string; // English; backs the in-app/email notification text
+  labelAr: string; // Arabic, for Arabic reports and the WhatsApp alert
   expiryDate: Date;
   employeeId?: string;
-  employeeName?: string;
+  employeeName?: string; // English name, falling back to Arabic
+  employeeNameAr?: string; // Arabic name, falling back to English
   recordId: string;
 }
 
@@ -39,14 +41,17 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
 
   for (const emp of employees) {
     const name = emp.fullNameEn || emp.fullNameAr;
+    const nameAr = emp.fullNameAr || name;
     if (emp.iqamaExpiryDate) {
       items.push({
         key: `employee-iqama-${emp.id}`,
         sourceType: "EMPLOYEE_IQAMA",
         label: `${name} — Iqama`,
+        labelAr: `${nameAr} — إقامة`,
         expiryDate: emp.iqamaExpiryDate,
         employeeId: emp.id,
         employeeName: name,
+        employeeNameAr: nameAr,
         recordId: emp.id,
       });
     }
@@ -55,9 +60,11 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         key: `employee-passport-${emp.id}`,
         sourceType: "EMPLOYEE_PASSPORT",
         label: `${name} — Passport`,
+        labelAr: `${nameAr} — جواز سفر`,
         expiryDate: emp.passportExpiryDate,
         employeeId: emp.id,
         employeeName: name,
+        employeeNameAr: nameAr,
         recordId: emp.id,
       });
     }
@@ -66,13 +73,16 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
   for (const doc of employeeDocuments) {
     if (!doc.expiryDate) continue;
     const name = doc.employee.fullNameEn || doc.employee.fullNameAr;
+    const nameAr = doc.employee.fullNameAr || name;
     items.push({
       key: `employee-document-${doc.id}`,
       sourceType: "EMPLOYEE_DOCUMENT",
       label: `${name} — ${doc.name || doc.type}`,
+      labelAr: `${nameAr} — ${doc.name || doc.type}`,
       expiryDate: doc.expiryDate,
       employeeId: doc.employeeId,
       employeeName: name,
+      employeeNameAr: nameAr,
       recordId: doc.id,
     });
   }
@@ -83,6 +93,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       key: `company-document-${doc.id}`,
       sourceType: "COMPANY_DOCUMENT",
       label: doc.name,
+      labelAr: doc.name,
       expiryDate: doc.expiryDate,
       recordId: doc.id,
     });

@@ -48,7 +48,7 @@ function formatDateAr(d: Date): string {
  * above, which still backs the in-app/email channels. */
 function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?: string | null): string {
   const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType];
-  const subject = item.employeeName ? `${item.employeeName} — ${typeLabel}` : item.label;
+  const subject = item.employeeNameAr ? `${item.employeeNameAr} — ${typeLabel}` : item.labelAr;
   const dateStr = formatDateAr(new Date(item.expiryDate));
   const statusLine =
     threshold === "expired" ? "⚠️ *منتهية الصلاحية*" : `⏳ *متبقٍ ${threshold} يوم على الانتهاء*`;

@@ -9,6 +9,13 @@ import * as service from "@/modules/reports/reports.service";
 
 type Row = Record<string, unknown>;
 
+const EMPLOYMENT_STATUS_AR: Record<string, string> = {
+  ACTIVE: "على رأس العمل",
+  INACTIVE: "غير نشط",
+  ON_LEAVE: "في إجازة",
+  TERMINATED: "منتهي الخدمة",
+};
+
 async function respond(
   res: Response,
   opts: {
@@ -90,7 +97,7 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
       { header: "المسمى الوظيفي", subHeader: "Job Title", key: "jobTitle" },
       { header: "القسم الإداري", subHeader: "Department", key: "department" },
       { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
-      { header: "حالة العمل", subHeader: "Status", key: "employmentStatus" },
+      { header: "حالة العمل", subHeader: "Status", key: "employmentStatus", format: (v) => EMPLOYMENT_STATUS_AR[v as string] ?? (v as string) },
       { header: "انتهاء الإقامة", subHeader: "Iqama Expiry", key: "iqamaExpiryDate" },
       { header: "حالة الإقامة", subHeader: "Iqama Status", key: "iqamaStatus" },
       { header: "انتهاء الجواز", subHeader: "Passport Expiry", key: "passportExpiryDate" },

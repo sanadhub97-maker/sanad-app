@@ -31,7 +31,9 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
 
   return rows.map((e) => ({
     employeeNumber: e.employeeNumber,
-    fullName: e.fullNameEn || e.fullNameAr,
+    // Arabic first: the PDF/Excel reports are Arabic. The screen picks by language.
+    fullName: e.fullNameAr || e.fullNameEn,
+    fullNameEn: e.fullNameEn || e.fullNameAr,
     nationality: e.nationality,
     jobTitle: e.jobTitle,
     department: e.department,
@@ -60,9 +62,11 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
     .sort((a, b) => a.expiryDate.getTime() - b.expiryDate.getTime())
     .slice(0, REPORT_ROW_CAP)
     .map((i) => ({
-      label: i.label,
+      label: i.labelAr,
+      labelEn: i.label,
       sourceType: i.sourceType,
-      employeeName: i.employeeName ?? null,
+      employeeName: i.employeeNameAr ?? null,
+      employeeNameEn: i.employeeName ?? null,
       expiryDate: i.expiryDate,
       status: i.status,
     }));
@@ -90,7 +94,7 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
     type: p.type,
     method: p.method,
     branch: p.branch?.name ?? null,
-    employee: p.employee ? p.employee.fullNameEn || p.employee.fullNameAr : null,
+    employee: p.employee ? p.employee.fullNameAr || p.employee.fullNameEn : null,
     amount: Number(p.amount),
     vat: Number(p.vat),
     total: Number(p.total),

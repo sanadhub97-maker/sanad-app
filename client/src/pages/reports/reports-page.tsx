@@ -17,13 +17,14 @@ import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { tr } from "@/i18n";
 
-type EmployeeRow = { employeeNumber: string; fullName: string; department: string | null; branch: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
-type DocumentRow = { label: string; sourceType: string; employeeName: string | null; expiryDate: string; status: string };
+type EmployeeRow = { employeeNumber: string; fullName: string; fullNameEn: string; department: string | null; branch: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
+type DocumentRow = { label: string; labelEn: string; sourceType: string; employeeName: string | null; employeeNameEn: string | null; expiryDate: string; status: string };
 type PaymentRow = { paymentNumber: string; paymentDate: string; category: string; branch: string | null; total: number };
 type ActivityRow = { date: string; user: string; action: string; module: string; description: string | null };
 
 export default function ReportsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const [params] = useSearchParams();
   const [tab, setTab] = useState(params.get("tab") ?? "employees");
   const [statusFilter, setStatusFilter] = useState(params.get("status") ?? "");
@@ -172,7 +173,7 @@ export default function ReportsPage() {
                     {((employees as EmployeeRow[]) ?? []).map((row, i) => (
                       <TableRow key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                         <TableCell className="font-mono text-xs font-bold text-foreground">{row.employeeNumber}</TableCell>
-                        <TableCell className="font-bold text-sm text-foreground">{row.fullName}</TableCell>
+                        <TableCell className="font-bold text-sm text-foreground">{isAr ? row.fullName : row.fullNameEn}</TableCell>
                         <TableCell className="text-xs">{row.department ?? "—"}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{row.branch ?? "—"}</TableCell>
                         <TableCell className="text-xs font-medium">{t(`status.${row.employmentStatus}`, { defaultValue: row.employmentStatus })}</TableCell>
@@ -220,9 +221,9 @@ export default function ReportsPage() {
                   <TableBody>
                     {((documents as DocumentRow[]) ?? []).map((row, i) => (
                       <TableRow key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                        <TableCell className="font-bold text-sm text-foreground">{row.label}</TableCell>
+                        <TableCell className="font-bold text-sm text-foreground">{isAr ? row.label : row.labelEn}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{t(`reportSourceTypes.${row.sourceType}`, { defaultValue: row.sourceType })}</TableCell>
-                        <TableCell className="text-xs font-medium">{row.employeeName ?? "—"}</TableCell>
+                        <TableCell className="text-xs font-medium">{(isAr ? row.employeeName : row.employeeNameEn) ?? "—"}</TableCell>
                         <TableCell className="font-mono text-xs">{formatDate(row.expiryDate)}</TableCell>
                         <TableCell>
                           <StatusBadge status={row.status as never} />
