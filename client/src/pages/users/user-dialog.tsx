@@ -69,7 +69,9 @@ export function UserDialog({
     formState: { errors, isSubmitting },
   } = useForm<z.infer<ReturnType<typeof makeCreateSchema>> & Partial<z.infer<ReturnType<typeof makeUpdateSchema>>>>({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt on a language switch so messages follow it
-    resolver: zodResolver(useMemo(isEdit ? makeUpdateSchema : makeCreateSchema, [isEdit, isAr])) as never,
+    resolver: zodResolver(
+      useMemo<z.ZodTypeAny>(() => (isEdit ? makeUpdateSchema() : makeCreateSchema()), [isEdit, isAr])
+    ) as never,
     defaultValues: { roleIds: [], isActive: true },
   });
 
