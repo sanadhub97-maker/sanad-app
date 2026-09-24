@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { namePair, nameInitials } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -44,7 +45,7 @@ import { EMPLOYEE_DOCUMENT_TYPE_ICONS } from "@/lib/document-type-icons";
 import type { EmployeeDocument } from "@/types/models";
 
 export default function EmployeeProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
@@ -72,7 +73,8 @@ export default function EmployeeProfilePage() {
 
   if (isLoading || !employee) return <div className="text-sm text-muted-foreground p-6">{t("common.loading")}</div>;
 
-  const initials = (employee.fullNameEn || employee.fullNameAr).slice(0, 2).toUpperCase();
+  const names = namePair(employee.fullNameAr, employee.fullNameEn, i18n.language === "ar");
+  const initials = nameInitials(names.primary);
 
   const allDocuments = employee.documents ?? [];
   const docTypeCounts = allDocuments.reduce<Record<string, number>>((acc, d) => {
@@ -137,10 +139,12 @@ export default function EmployeeProfilePage() {
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2.5">
               <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
-                {employee.fullNameEn || employee.fullNameAr}
+                {names.primary}
               </h2>
-              {employee.fullNameEn && employee.fullNameAr && employee.fullNameEn !== employee.fullNameAr && (
-                <span className="text-sm text-muted-foreground font-medium">({employee.fullNameAr})</span>
+              {names.secondary && (
+                <span className="text-sm text-muted-foreground font-medium">
+                  (<bdi>{names.secondary}</bdi>)
+                </span>
               )}
               <EmploymentStatusBadge status={employee.employmentStatus} />
             </div>

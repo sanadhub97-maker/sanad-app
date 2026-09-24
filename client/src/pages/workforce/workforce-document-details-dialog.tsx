@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { namePair, nameInitials } from "@/lib/names";
+import { documentAuthority } from "./authority";
 import { Link } from "react-router-dom";
 import {
   FileText,
@@ -63,9 +65,12 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
   const Icon = meta.icon;
   const days = document.expiryDate ? daysUntil(document.expiryDate) : null;
   const docNumber = document.documentNumber || document.iqamaNumber || document.passportNumber;
-  const authority = document.issuingAuthority || document.passportCountry;
-  const empNameAr = document.fullNameAr || document.employee?.fullNameAr || "—";
-  const empNameEn = document.fullNameEn || document.employee?.fullNameEn;
+  const authority = documentAuthority({ ...document, type: rawType }, isAr);
+  const empNames = namePair(
+    document.fullNameAr || document.employee?.fullNameAr,
+    document.fullNameEn || document.employee?.fullNameEn,
+    isAr
+  );
   const empNumber = document.employeeNumber || document.employee?.employeeNumber;
   const empId = document.employeeId || document.employee?.id || document.id;
   const branchName = document.branch?.name || document.employee?.branch?.name;
@@ -84,7 +89,7 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
             <AppleIcon icon={Icon} tone={meta.tone} size="md" />
             <div className="min-w-0 flex-1">
               <DialogTitle className="text-xl font-bold tracking-tight text-foreground truncate">
-                {document.name || (isAr ? meta.labelAr : meta.labelEn)}
+                {CATEGORY_META[rawType] ? (isAr ? meta.labelAr : meta.labelEn) : document.name || (isAr ? meta.labelAr : meta.labelEn)}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border/60">
@@ -156,11 +161,11 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
             </div>
             <div className="flex items-center gap-3 pt-1">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 text-sm font-bold text-primary">
-                {empNameAr.slice(0, 2)}
+                {nameInitials(empNames.primary)}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-foreground truncate">{empNameAr}</span>
+                  <span className="font-bold text-sm text-foreground truncate">{empNames.primary || "—"}</span>
                   {empNumber && (
                     <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/50">
                       #{empNumber}
@@ -168,7 +173,7 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center gap-3 mt-1">
-                  {empNameEn && <span>{empNameEn}</span>}
+                  {empNames.secondary && <span>{empNames.secondary}</span>}
                   {branchName && (
                     <span className="flex items-center gap-1">
                       <Building className="h-3 w-3" /> {branchName}

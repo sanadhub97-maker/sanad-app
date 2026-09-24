@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { namePair, nameInitials } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -29,7 +30,7 @@ import { AppleIcon } from "@/components/common/apple-icon";
 const columnHelper = createColumnHelper<Employee>();
 
 export default function EmployeesListPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
@@ -90,9 +91,8 @@ export default function EmployeesListPage() {
       header: t("employees.table.fullName"),
       cell: (c) => {
         const row = c.row.original;
-        const name = row.fullNameAr || row.fullNameEn || "";
-        const secondary = row.fullNameEn && row.fullNameAr && row.fullNameEn !== row.fullNameAr ? row.fullNameEn : "";
-        const initials = name.split(" ").slice(0, 2).map((p: string) => p[0]).join("") || "E";
+        const { primary: name, secondary } = namePair(row.fullNameAr, row.fullNameEn, i18n.language === "ar");
+        const initials = nameInitials(name, "E");
         return (
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm">

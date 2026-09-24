@@ -269,8 +269,9 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       ...item,
       type: "IQAMA",
       category: "IQAMA",
-      name: "هوية مقيم / إقامة",
-      issuingAuthority: "الجوازات السعودية",
+      // No name/authority: the client labels iqamas in the viewer's language.
+      name: null,
+      issuingAuthority: null,
     }));
     return { ...res, data: mapped };
   }
@@ -281,8 +282,8 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       ...item,
       type: "PASSPORT",
       category: "PASSPORT",
-      name: "جواز سفر",
-      issuingAuthority: (item as any).passportCountry || "إدارة الجوازات",
+      name: null,
+      issuingAuthority: (item as any).passportCountry || null,
     }));
     return { ...res, data: mapped };
   }
@@ -430,9 +431,9 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       branch: emp.branch,
       type: "IQAMA",
       category: "IQAMA",
-      name: "هوية مقيم / إقامة",
+      name: null,
       documentNumber: emp.iqamaNumber,
-      issuingAuthority: "الجوازات السعودية",
+      issuingAuthority: null,
       issueDate: emp.iqamaIssueDate,
       expiryDate: emp.iqamaExpiryDate,
       daysRemaining: days,
@@ -455,9 +456,9 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       branch: emp.branch,
       type: "PASSPORT",
       category: "PASSPORT",
-      name: "جواز سفر",
+      name: null,
       documentNumber: emp.passportNumber,
-      issuingAuthority: emp.passportCountry || "إدارة الجوازات",
+      issuingAuthority: emp.passportCountry || null,
       issueDate: emp.passportIssueDate,
       expiryDate: emp.passportExpiryDate,
       daysRemaining: days,

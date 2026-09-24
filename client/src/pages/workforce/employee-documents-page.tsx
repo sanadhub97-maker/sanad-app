@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { namePair, nameInitials } from "@/lib/names";
+import { documentAuthority } from "./authority";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
@@ -175,8 +177,11 @@ export default function EmployeeDocumentsPage() {
           header: isAr ? "الموظف" : "Employee",
           cell: (c) => {
             const emp = c.row.original;
-            const nameAr = emp.fullNameAr || emp.employee?.fullNameAr || "—";
-            const nameEn = emp.fullNameEn || emp.employee?.fullNameEn;
+            const { primary: name, secondary: otherName } = namePair(
+              emp.fullNameAr || emp.employee?.fullNameAr,
+              emp.fullNameEn || emp.employee?.fullNameEn,
+              isAr
+            );
             const empNum = emp.employeeNumber || emp.employee?.employeeNumber;
             const empId = emp.employeeId || emp.employee?.id || emp.id;
             const branchName = emp.branch?.name || emp.employee?.branch?.name;
@@ -184,7 +189,7 @@ export default function EmployeeDocumentsPage() {
             return (
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/20 text-xs font-bold text-primary shadow-2xs">
-                  {nameAr.slice(0, 2)}
+                  {nameInitials(name)}
                 </div>
                 <div className="min-w-0">
                   <Link
@@ -192,15 +197,15 @@ export default function EmployeeDocumentsPage() {
                     className="font-bold text-sm text-foreground hover:text-primary transition-colors flex items-center gap-1 group"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="truncate">{nameAr}</span>
+                    <span className="truncate">{name || "—"}</span>
                     <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0" />
                   </Link>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                     {empNum && (
                       <span className="font-mono text-[11px] font-medium">#{empNum}</span>
                     )}
-                    {nameEn && (
-                      <span className="text-[11px] opacity-80 truncate max-w-[120px]">{nameEn}</span>
+                    {otherName && (
+                      <span className="text-[11px] opacity-80 truncate max-w-[120px]">{otherName}</span>
                     )}
                     {branchName && (
                       <span className="flex items-center gap-1 text-[11px] opacity-80">
@@ -271,7 +276,7 @@ export default function EmployeeDocumentsPage() {
       ),
 
       columnHelper.accessor(
-        (row) => row.issuingAuthority || row.passportCountry || "—",
+        (row) => documentAuthority({ ...row, type: row.type || (row.iqamaNumber ? "IQAMA" : "PASSPORT") }, isAr) || "—",
         {
           id: "authority",
           header: isAr ? "الجهة / الدولة" : "Authority / Country",
@@ -440,7 +445,7 @@ export default function EmployeeDocumentsPage() {
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
               {stats.total}
             </span>
-            <span className="text-[11px] text-muted-foreground font-medium">وثيقة مسجلة</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{isAr ? "وثيقة مسجلة" : "documents"}</span>
           </div>
         </div>
 
@@ -457,7 +462,7 @@ export default function EmployeeDocumentsPage() {
               {stats.valid}
             </span>
             <span className="inline-block rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-              سارية
+              {isAr ? "سارية" : "Valid"}
             </span>
           </div>
         </div>
@@ -475,7 +480,7 @@ export default function EmployeeDocumentsPage() {
               {stats.expiringSoon}
             </span>
             <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
-              تستوجب التجديد
+              {isAr ? "تستوجب التجديد" : "Needs renewal"}
             </span>
           </div>
         </div>
@@ -493,7 +498,7 @@ export default function EmployeeDocumentsPage() {
               {stats.expired}
             </span>
             <span className="inline-block rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">
-              إجراء عاجل
+              {isAr ? "إجراء عاجل" : "Action needed"}
             </span>
           </div>
         </div>
