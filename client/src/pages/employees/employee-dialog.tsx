@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useAutoTranslate } from "@/hooks/use-auto-translate";
+import { EnglishInput } from "@/components/common/english-input";
 import { localized } from "@/lib/names";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -113,6 +115,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: DEFAULTS,
   });
+  const auto = useAutoTranslate<FormValues>({ getValues, setValue }, [{ ar: "nationality", en: "nationalityEn", kind: "nationality" }, { ar: "city", en: "cityEn" }, { ar: "jobTitle", en: "jobTitleEn" }, { ar: "department", en: "departmentEn" }], open);
 
   // Auto-fetch next employee number if creating
   const {
@@ -363,16 +366,17 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
 
               <FormField label={t("employees.fields.nationality")} icon={Globe}>
                 <Input
-                  {...register("nationality")}
+                  {...register("nationality", { onChange: auto.arChange("nationalityEn") })}
                   placeholder={isAr ? "مثال: سعودي، مصري، أردني..." : "e.g. Saudi"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60"
                 />
               </FormField>
 
               <FormField label={t("employees.fields.nationalityEn")} icon={Globe}>
-                <Input
-                  {...register("nationalityEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("nationalityEn", { onChange: auto.enChange("nationalityEn") })}
+                  onTranslate={() => auto.translateNow("nationalityEn")}
+                  busy={auto.busy.nationalityEn}
                   placeholder="e.g. Egyptian"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60"
                 />
@@ -448,16 +452,17 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
 
               <FormField label={t("employees.fields.city")} icon={MapPin}>
                 <Input
-                  {...register("city")}
+                  {...register("city", { onChange: auto.arChange("cityEn") })}
                   placeholder={isAr ? "مثال: الرياض، جدة، الخبر..." : "e.g. Riyadh"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/60"
                 />
               </FormField>
 
               <FormField label={t("employees.fields.cityEn")} icon={MapPin}>
-                <Input
-                  {...register("cityEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("cityEn", { onChange: auto.enChange("cityEn") })}
+                  onTranslate={() => auto.translateNow("cityEn")}
+                  busy={auto.busy.cityEn}
                   placeholder="e.g. Bisha"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/60"
                 />
@@ -490,16 +495,17 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <FormField label={t("employees.fields.jobTitle")} icon={Briefcase}>
                 <Input
-                  {...register("jobTitle")}
+                  {...register("jobTitle", { onChange: auto.arChange("jobTitleEn") })}
                   placeholder={isAr ? "مثال: مدير عمليات، مهندس، محاسب..." : "e.g. Operations Manager"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
 
               <FormField label={t("employees.fields.jobTitleEn")} icon={Briefcase}>
-                <Input
-                  {...register("jobTitleEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("jobTitleEn", { onChange: auto.enChange("jobTitleEn") })}
+                  onTranslate={() => auto.translateNow("jobTitleEn")}
+                  busy={auto.busy.jobTitleEn}
                   placeholder="e.g. Operations Manager"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
@@ -507,16 +513,17 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
 
               <FormField label={t("employees.fields.department")} icon={FolderKanban}>
                 <Input
-                  {...register("department")}
+                  {...register("department", { onChange: auto.arChange("departmentEn") })}
                   placeholder={isAr ? "مثال: الموارد البشرية، المالية، المبيعات..." : "e.g. Human Resources"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
 
               <FormField label={t("employees.fields.departmentEn")} icon={FolderKanban}>
-                <Input
-                  {...register("departmentEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("departmentEn", { onChange: auto.enChange("departmentEn") })}
+                  onTranslate={() => auto.translateNow("departmentEn")}
+                  busy={auto.busy.departmentEn}
                   placeholder="e.g. Human Resources"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />

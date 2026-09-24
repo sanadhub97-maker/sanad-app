@@ -1,4 +1,6 @@
 import { useEffect, useMemo } from "react";
+import { useAutoTranslate } from "@/hooks/use-auto-translate";
+import { EnglishInput } from "@/components/common/english-input";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -71,6 +73,7 @@ export function BranchDialog({
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: { status: "ACTIVE" },
   });
+  const auto = useAutoTranslate<FormValues>({ getValues, setValue }, [{ ar: "name", en: "nameEn" }, { ar: "city", en: "cityEn" }], open);
 
   useEffect(() => {
     if (open) {
@@ -169,16 +172,17 @@ export function BranchDialog({
             <div className="grid gap-4 sm:grid-cols-12">
               <FormField label={t("branches.fields.name")} required error={errors.name?.message} icon={Building2} className="sm:col-span-6">
                 <Input
-                  {...register("name")}
+                  {...register("name", { onChange: auto.arChange("nameEn") })}
                   placeholder={isAr ? "مثال: مؤسسة الرياض الرئيسية" : "e.g. Riyadh Est."}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
                 />
               </FormField>
 
               <FormField label={t("branches.fields.nameEn")} icon={Building2} className="sm:col-span-6">
-                <Input
-                  {...register("nameEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("nameEn", { onChange: auto.enChange("nameEn") })}
+                  onTranslate={() => auto.translateNow("nameEn")}
+                  busy={auto.busy.nameEn}
                   placeholder="e.g. Riyadh Main Establishment"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
                 />
@@ -258,16 +262,17 @@ export function BranchDialog({
             <div className="grid gap-4 sm:grid-cols-12">
               <FormField label={t("branches.fields.city")} icon={MapPin} className="sm:col-span-3">
                 <Input
-                  {...register("city")}
+                  {...register("city", { onChange: auto.arChange("cityEn") })}
                   placeholder={isAr ? "الرياض، جدة، الدمام..." : "Riyadh, Jeddah..."}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
                 />
               </FormField>
 
               <FormField label={t("branches.fields.cityEn")} icon={MapPin} className="sm:col-span-3">
-                <Input
-                  {...register("cityEn")}
-                  dir="ltr"
+                <EnglishInput
+                  {...register("cityEn", { onChange: auto.enChange("cityEn") })}
+                  onTranslate={() => auto.translateNow("cityEn")}
+                  busy={auto.busy.cityEn}
                   placeholder="e.g. Riyadh"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
                 />

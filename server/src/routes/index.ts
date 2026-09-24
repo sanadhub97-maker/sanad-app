@@ -14,6 +14,7 @@ import dashboardRoutes from "@/modules/dashboard/dashboard.routes";
 import reportsRoutes from "@/modules/reports/reports.routes";
 import importExportRoutes from "@/modules/importExport/importExport.routes";
 import searchRoutes from "@/modules/search/search.routes";
+import translateRoutes from "@/modules/translate/translate.routes";
 import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocuments.routes";
 
 const router = Router();
@@ -34,5 +35,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/import-export", importExportRoutes);
 router.use("/search", searchRoutes);
+router.use("/translate", translateRoutes);
 
 export default router;
