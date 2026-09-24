@@ -96,7 +96,9 @@ export interface PrintSignaturesSettings {
   signatureFileId: string | null;
 }
 
-export type PrintThemeId = "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze";
+export type PrintThemeId =
+  | "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze"
+  | "turquoise" | "slate" | "amethyst" | "olive" | "crimson";
 
 export const settingsApi = {
   getPrintSignatures: async () =>

@@ -9,7 +9,7 @@
 // and position:fixed elements in the body (drawn in between). The first
 // page additionally gets the theme's letterhead.
 
-export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze"] as const;
+export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze", "turquoise", "slate", "amethyst", "olive", "crimson"] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
 export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
 
@@ -542,7 +542,294 @@ const bronze: PrintTheme = {
        <div dir="rtl" style="position:absolute;left:14mm;right:30mm;top:6mm;display:flex;align-items:center;gap:4mm;font-size:7pt;color:#9a8878;"><span>${label}</span><span style="flex:1;height:.3mm;background:${FOIL.bronze};"></span><span>${PAGE_NO}</span></div>`, "#faf6f0"),
 };
 
-const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze };
+// 8. Turquoise: turquoise + copper, a mihrab arch holding the logo, copper
+// corner brackets on every page.
+const TQ = "#0e5e63";
+const COPPER = "#b87333";
+const STAR8 = (c: string) =>
+  `<svg viewBox="0 0 20 20" width="100%" height="100%"><path d="M10 0l2.9 7.1L20 10l-7.1 2.9L10 20l-2.9-7.1L0 10l7.1-2.9z" fill="${c}"/></svg>`;
+const corners = (top: boolean, color: string) => {
+  const edge = top ? "top" : "bottom";
+  const b = `${edge}:5mm;width:14mm;height:9mm;border-${edge}:.8mm solid ${color};`;
+  return `<div style="position:absolute;left:6mm;${b}border-left:.8mm solid ${color};"></div><div style="position:absolute;right:6mm;${b}border-right:.8mm solid ${color};"></div>`;
+};
+const turquoise: PrintTheme = {
+  id: "turquoise",
+  margin: { top: "16mm", bottom: "18mm" },
+  css:
+    vars({
+      paper: "#fbfaf6", accent: TQ, "accent-ink": "#f6e3cf", metal: COPPER, "metal-deep": "#8c5424",
+      "metal-soft": "#eef5f4", row: "#f3f8f7", line: "#dce8e6", "line-strong": "#a9c6c2",
+      radius: "3px", heading: "'Amiri', serif", foil: FOIL.bronze, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(TQ))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .t-head { display: grid; justify-items: center; gap: 1mm; text-align: center; margin-bottom: 3mm; }
+  .t-arch { position: relative; width: 22mm; height: 27mm; }
+  .t-arch svg { position: absolute; inset: 0; }
+  .t-arch .lg, .t-arch .monogram { position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%); width: 13mm; height: 13mm; border-radius: 50%; background: #fff; object-fit: contain; padding: 1.3mm; }
+  .t-arch .monogram { color: ${TQ}; font-size: 14pt; font-family: 'Amiri', serif; }
+  .t-co-ar { font-family: 'Amiri', serif; font-size: 17pt; font-weight: 700; color: ${TQ}; line-height: 1.25; }
+  .t-co-en { font-size: 7.6pt; letter-spacing: .16em; color: ${COPPER}; text-transform: uppercase; font-weight: 600; direction: ltr; }
+  .t-titlebar { display: flex; align-items: center; justify-content: center; gap: 4mm; border-top: 1px solid #cfe0dd; border-bottom: 1px solid #cfe0dd; padding: 3mm 0; margin-bottom: 1.5mm; background: #eef5f4; }
+  .t-titlebar .st { width: 5mm; height: 5mm; }
+  .t-titlebar h1 { margin: 0; font-family: 'Amiri', serif; font-size: 20pt; color: ${TQ}; line-height: 1.2; }
+  .t-titlebar .en { font-size: 7.4pt; color: ${COPPER}; letter-spacing: .14em; text-transform: uppercase; direction: ltr; text-align: center; font-weight: 600; }
+  .t-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 5mm; font-size: 7.2pt; color: #5d7471; margin-bottom: 5mm; }
+  .t-meta b { color: ${TQ}; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="t-head">
+    <div class="t-arch"><svg viewBox="0 0 100 120" preserveAspectRatio="none"><path d="M6 118V56Q6 20 50 3Q94 20 94 56V118Z" fill="${TQ}" stroke="${COPPER}" stroke-width="3"/><path d="M16 118V60Q16 30 50 15Q84 30 84 60V118" fill="none" stroke="${COPPER}" stroke-width="1.2" opacity=".7"/></svg>${logo(ctx, "lg")}</div>
+    <div class="t-co-ar">${esc(ctx.companyNameAr)}</div>
+    <div class="t-co-en">${esc(ctx.companyNameEn)}</div>
+  </div>
+  <div class="t-titlebar"><span class="st">${STAR8(COPPER)}</span><div><h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}</div><span class="st">${STAR8(COPPER)}</span></div>
+  <div class="t-meta">${refLines(ctx)}<span>${esc(ctx.classification.split("|")[0].trim())}</span></div>`,
+  decor: "",
+  headerTemplate: tpl("16mm", `${corners(true, COPPER)}<div style="position:absolute;left:22mm;right:22mm;top:5mm;height:.5mm;background:${TQ};"></div>`, "#fbfaf6"),
+  footerTemplate: (label) =>
+    tpl(
+      "18mm",
+      `${corners(false, COPPER)}<div dir="rtl" style="position:absolute;left:24mm;right:24mm;bottom:5.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#5d7471;"><span>${label}</span><span style="color:${COPPER};">✦</span><span>${PAGE_NO}</span></div>`,
+      "#fbfaf6"
+    ),
+};
+
+// 9. Slate: slate grey + rose gold, split two-tone letterhead, light
+// hairline tables instead of a dark header row.
+const SLATE = "#2f3e4e";
+const ROSE = "#b76e79";
+const slate: PrintTheme = {
+  id: "slate",
+  margin: { top: "11mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: SLATE, "accent-ink": "#ffffff", metal: ROSE, "metal-deep": "#95525c",
+      "metal-soft": "#f6f1f2", row: "#fafafa", line: "#e8e8ea", "line-strong": "#c9b6b9",
+      radius: "0px", heading: "'IBM Plex Sans Arabic', sans-serif", foil: "linear-gradient(100deg,#8e5560,#e3b3ba 40%,#b76e79 60%,#d9a3ab)", "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(ROSE))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux thead th { background: transparent; color: ${SLATE}; border-color: transparent; border-bottom: 2px solid ${ROSE}; font-weight: 700; }
+  .lux thead th .th-sub { color: #8a8f96; opacity: 1; }
+  .lux tbody tr:nth-child(even) td { background: transparent; }
+  .lux .section-card { border: none; border-top: 1px solid ${SLATE}; border-radius: 0; }
+  .lux .section-header { background: transparent; border-bottom: 1px solid #e8e8ea; }
+  .sl-split { display: grid; grid-template-columns: 1fr 58mm; margin: 0 -14mm 6mm; min-height: 44mm; }
+  .sl-main { padding: 6mm 14mm 5mm 8mm; display: flex; flex-direction: column; justify-content: space-between; gap: 4mm; border-bottom: 1px solid #e8e8ea; }
+  .sl-brand { display: flex; align-items: center; gap: 3mm; }
+  .sl-brand .lg { width: 12mm; height: 12mm; object-fit: contain; }
+  .sl-brand .monogram { width: 12mm; height: 12mm; background: ${SLATE}; color: #fff; font-size: 13pt; }
+  .sl-co-ar { font-size: 11pt; font-weight: 700; color: ${SLATE}; line-height: 1.3; }
+  .sl-co-en { font-size: 6.8pt; color: #8a8f96; letter-spacing: .08em; direction: ltr; text-align: right; }
+  .sl-main h1 { margin: 0; font-size: 22pt; font-weight: 700; color: ${SLATE}; line-height: 1.15; }
+  .sl-main .en { font-size: 7.6pt; color: ${ROSE}; letter-spacing: .18em; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 600; margin-top: 1mm; }
+  .sl-side { background: ${SLATE} radial-gradient(rgba(255,255,255,.14) .35mm, transparent .4mm) 0 0 / 3mm 3mm; color: #fff; padding: 6mm 7mm; display: flex; flex-direction: column; justify-content: space-between; gap: 3mm; }
+  .sl-big b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 38pt; line-height: .9; font-weight: 700; background: var(--foil); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sl-big span { font-size: 7pt; color: #c9d1da; }
+  .sl-ref { display: grid; gap: .6mm; font-size: 6.8pt; color: #c9d1da; }
+  .sl-ref b { color: #fff; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="sl-split">
+    <div class="sl-main">
+      <div class="sl-brand">${logo(ctx, "lg")}<div><div class="sl-co-ar">${esc(ctx.companyNameAr)}</div><div class="sl-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+      <div><h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}</div>
+    </div>
+    <div class="sl-side">
+      ${ctx.highlight ? `<div class="sl-big"><b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span></div>` : `<div class="sl-big"><span>${esc(ctx.classification.split("|")[0].trim())}</span></div>`}
+      <div class="sl-ref">${refLines(ctx)}</div>
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("11mm", `<div style="position:absolute;left:0;width:58mm;top:0;height:3mm;background:${SLATE};"></div><div style="position:absolute;left:58mm;right:0;top:0;height:.5mm;background:${ROSE};"></div>`),
+  footerTemplate: (label) =>
+    tpl(
+      "15mm",
+      `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:5mm;display:flex;justify-content:space-between;align-items:center;font-size:7pt;color:#8a8f96;border-top:.3mm solid ${ROSE};padding-top:1.5mm;"><span>${label}</span><span>${PAGE_NO}</span></div>`
+    ),
+};
+
+// 10. Amethyst: royal purple + gold, a faint damask over the whole page and
+// a sash across the first page's corner.
+const PUR = "#3b1f4e";
+const PUR_GOLD = "#b8954f";
+function damaskTile(color: string) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g fill="none" stroke="${color}" stroke-width="1" opacity=".07"><path d="M32 6c7 8 7 16 0 24c-7-8-7-16 0-24zM32 58c7-8 7-16 0-24c-7 8-7 16 0 24zM6 32c8-7 16-7 24 0c-8 7-16 7-24 0zM58 32c-8-7-16-7-24 0c8 7 16 7 24 0z"/><circle cx="32" cy="32" r="3"/><circle cx="0" cy="0" r="6"/><circle cx="64" cy="0" r="6"/><circle cx="0" cy="64" r="6"/><circle cx="64" cy="64" r="6"/></g></svg>`;
+}
+const amethyst: PrintTheme = {
+  id: "amethyst",
+  margin: { top: "13mm", bottom: "17mm" },
+  css:
+    vars({
+      paper: "#fdfbf7", accent: PUR, "accent-ink": "#f1ddb0", metal: PUR_GOLD, "metal-deep": "#8f6d31",
+      "metal-soft": "#f3edf5", row: "rgba(59,31,78,.035)", line: "#e7e0ea", "line-strong": "#c7b6cd",
+      radius: "4px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(PUR))}")`,
+    }) +
+    LUX_BASE +
+    `
+  html { background: url("${dataUri(damaskTile(PUR))}") 0 0 / 17mm 17mm, #fdfbf7; }
+  .lux thead th:first-child { border-top-right-radius: 3mm; }
+  .lux thead th:last-child { border-top-left-radius: 3mm; }
+  .a-sash { position: absolute; top: 9mm; right: -17mm; width: 68mm; height: 8mm; transform: rotate(45deg); background: ${PUR}; border-top: .5mm solid ${PUR_GOLD}; border-bottom: .5mm solid ${PUR_GOLD}; color: #f1ddb0; font-size: 7pt; font-weight: 700; display: grid; place-items: center; letter-spacing: .1em; }
+  .a-head { text-align: center; display: grid; justify-items: center; gap: 1mm; margin-bottom: 3mm; }
+  .a-medal { width: 25mm; height: 25mm; background: url("${dataUri(rosetteSvg(PUR_GOLD))}") center / contain no-repeat; display: grid; place-items: center; }
+  .a-medal .lg { width: 13.5mm; height: 13.5mm; object-fit: contain; border-radius: 50%; }
+  .a-medal .monogram { color: ${PUR}; font-family: 'Amiri', serif; font-size: 16pt; }
+  .a-co-ar { font-family: 'Amiri', serif; font-size: 17pt; font-weight: 700; color: ${PUR}; line-height: 1.25; }
+  .a-co-en { font-family: 'Cormorant Garamond', serif; font-size: 8.6pt; letter-spacing: .2em; color: ${PUR_GOLD}; text-transform: uppercase; font-weight: 700; direction: ltr; }
+  .a-title { text-align: center; margin-bottom: 5mm; }
+  .a-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 23pt; color: ${PUR}; line-height: 1.25; }
+  .a-flour { display: flex; align-items: center; justify-content: center; gap: 2.5mm; color: ${PUR_GOLD}; font-size: 8pt; }
+  .a-flour i { width: 26mm; height: .35mm; background: linear-gradient(90deg, transparent, ${PUR_GOLD}); }
+  .a-flour i:last-child { transform: scaleX(-1); }
+  .a-meta { display: flex; justify-content: center; gap: 5mm; font-size: 7.1pt; color: #7a6b80; margin-top: 1.5mm; }
+  .a-meta b { color: ${PUR}; font-weight: 600; }
+`,
+  letterhead: (ctx) => `
+  <div class="a-sash">OFFICIAL · رسمي</div>
+  <div class="a-head">
+    <div class="a-medal">${logo(ctx, "lg")}</div>
+    <div class="a-co-ar">${esc(ctx.companyNameAr)}</div>
+    <div class="a-co-en">${esc(ctx.companyNameEn)}</div>
+  </div>
+  <div class="a-title">
+    <h1>${esc(ctx.title)}</h1>
+    <div class="a-flour"><i></i>❦${ctx.titleEn ? ` <span style="letter-spacing:.12em;font-size:7pt;text-transform:uppercase;">${esc(ctx.titleEn)}</span> ` : ""}❦<i></i></div>
+    <div class="a-meta">${refLines(ctx)}</div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("13mm", `<div style="position:absolute;left:0;right:0;top:0;height:2.2mm;background:${PUR};"></div><div style="position:absolute;left:0;right:0;top:2.2mm;height:.6mm;background:${FOIL.gold};"></div>`, "#fdfbf7"),
+  footerTemplate: (label) =>
+    tpl(
+      "17mm",
+      `<div style="position:absolute;left:0;right:0;bottom:0;height:8mm;background:${PUR};"></div><div style="position:absolute;left:0;right:0;bottom:8mm;height:.6mm;background:${FOIL.gold};"></div>
+       <div dir="rtl" style="position:absolute;left:16mm;right:16mm;bottom:2.6mm;display:flex;justify-content:space-between;font-size:7pt;color:#e6d3a8;"><span>${label}</span><span>${PAGE_NO}</span></div>`,
+      "#fdfbf7"
+    ),
+};
+
+// 11. Olive: olive + desert sand, a large calligraphic title and a band of
+// sand dunes at the foot of every page.
+const OLIVE = "#4a5a2a";
+const SAND = "#c8a86b";
+function duneSvg(color: string) {
+  const lines: string[] = [];
+  for (let k = 0; k < 6; k++) {
+    const pts: string[] = [];
+    for (let x = 0; x <= 600; x += 6) {
+      const y = 12 + k * 7 + 5 * Math.sin(x / 55 + k * 0.9) + 3 * Math.sin(x / 23 - k);
+      pts.push(`${x} ${y.toFixed(1)}`);
+    }
+    lines.push(`<path d="M${pts.join("L")}" opacity="${(0.35 + k * 0.1).toFixed(2)}"/>`);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 60" preserveAspectRatio="none" width="100%" height="100%"><g fill="none" stroke="${color}" stroke-width="1.1">${lines.join("")}</g></svg>`;
+}
+const olive: PrintTheme = {
+  id: "olive",
+  margin: { top: "10mm", bottom: "22mm" },
+  css:
+    vars({
+      paper: "#fbf8f0", accent: OLIVE, "accent-ink": "#f4ecd6", metal: SAND, "metal-deep": "#8e7440",
+      "metal-soft": "#f3ecda", row: "#f6f0e1", line: "#e8dfc9", "line-strong": "#cdbb92",
+      radius: "2px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(OLIVE))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .o-top { display: flex; justify-content: space-between; align-items: center; gap: 4mm; padding-bottom: 3mm; border-bottom: 1px solid #e3d8bd; margin-bottom: 5mm; }
+  .o-brand { display: flex; align-items: center; gap: 3mm; }
+  .o-brand .lg { width: 13mm; height: 13mm; object-fit: contain; }
+  .o-brand .monogram { width: 13mm; height: 13mm; border-radius: 50%; background: ${OLIVE}; color: #f4ecd6; font-size: 13pt; }
+  .o-co-ar { font-family: 'Amiri', serif; font-size: 13pt; font-weight: 700; color: ${OLIVE}; line-height: 1.3; }
+  .o-co-en { font-size: 6.8pt; letter-spacing: .12em; color: #8e7440; text-transform: uppercase; direction: ltr; text-align: right; }
+  .o-ref { display: grid; gap: .5mm; font-size: 7pt; color: #857a60; text-align: left; white-space: nowrap; }
+  .o-ref b { color: ${OLIVE}; font-weight: 600; }
+  .o-title { border-right: 2mm solid ${SAND}; padding: 1mm 5mm 1mm 0; margin-bottom: 6mm; }
+  .o-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 30pt; color: ${OLIVE}; line-height: 1.15; }
+  .o-title .en { font-size: 8pt; letter-spacing: .24em; color: #8e7440; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 600; }
+  .o-title .cls { font-size: 7.2pt; color: #857a60; margin-top: 1mm; }
+`,
+  letterhead: (ctx) => `
+  <div class="o-top">
+    <div class="o-brand">${logo(ctx, "lg")}<div><div class="o-co-ar">${esc(ctx.companyNameAr)}</div><div class="o-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+    <div class="o-ref">${refLines(ctx)}</div>
+  </div>
+  <div class="o-title">
+    ${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}
+    <h1>${esc(ctx.title)}</h1>
+    <div class="cls">${esc(ctx.classification.split("|")[0].trim())}${ctx.highlight ? ` · ${esc(ctx.highlight.value)} ${esc(ctx.highlight.label)}` : ""}</div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("10mm", `<div style="position:absolute;left:15mm;right:15mm;top:5mm;height:.4mm;background:${OLIVE};"></div>`, "#fbf8f0"),
+  footerTemplate: (label) =>
+    tpl(
+      "22mm",
+      `<div style="position:absolute;left:0;right:0;bottom:0;height:13mm;background:#efe3c4;">${duneSvg(SAND)}</div><div style="position:absolute;left:0;right:0;bottom:13mm;height:.5mm;background:${OLIVE};"></div>
+       <div dir="rtl" style="position:absolute;left:15mm;right:15mm;bottom:4.5mm;display:flex;justify-content:space-between;font-size:7pt;color:${OLIVE};font-weight:600;"><span>${label}</span><span>${PAGE_NO}</span></div>`,
+      "#fbf8f0"
+    ),
+};
+
+// 12. Crimson: crimson + graphite, a striped graphite bar on every page and
+// a diagonally split title block.
+const CRIM = "#9b1c31";
+const GRAPH = "#2b2d31";
+const STRIPES = `repeating-linear-gradient(-45deg, ${CRIM} 0 2mm, ${GRAPH} 2mm 4mm)`;
+const crimson: PrintTheme = {
+  id: "crimson",
+  margin: { top: "12mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: GRAPH, "accent-ink": "#ffffff", metal: CRIM, "metal-deep": CRIM,
+      "metal-soft": "#f7f2f3", row: "#f6f6f7", line: "#e6e6e9", "line-strong": "#b9babf",
+      radius: "0px", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: "linear-gradient(100deg,#9b1c31,#d8495f)", "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(CRIM))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux tbody td:first-child { color: ${CRIM}; font-weight: 700; }
+  .c-top { display: flex; justify-content: space-between; align-items: center; gap: 4mm; margin-bottom: 4mm; }
+  .c-brand { display: flex; align-items: center; gap: 3mm; }
+  .c-brand .lg { width: 13mm; height: 13mm; object-fit: contain; }
+  .c-brand .monogram { width: 13mm; height: 13mm; background: ${CRIM}; color: #fff; font-size: 13pt; }
+  .c-co-ar { font-size: 12pt; font-weight: 700; color: ${GRAPH}; line-height: 1.3; }
+  .c-co-en { font-size: 6.8pt; color: #7d7f86; letter-spacing: .08em; direction: ltr; text-align: right; }
+  .c-ref { display: grid; gap: .5mm; font-size: 7pt; color: #7d7f86; text-align: left; white-space: nowrap; }
+  .c-ref b { color: ${GRAPH}; font-weight: 600; }
+  .c-title { margin: 0 -14mm 6mm; display: flex; align-items: stretch; min-height: 24mm; background: linear-gradient(105deg, ${GRAPH} 0 30%, transparent 30%), ${CRIM}; color: #fff; }
+  .c-title .t { flex: 1; padding: 4mm 14mm 4mm 6mm; display: flex; flex-direction: column; justify-content: center; }
+  .c-title h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 20pt; line-height: 1.2; font-weight: 700; }
+  .c-title .en { font-size: 7.4pt; letter-spacing: .2em; opacity: .85; text-transform: uppercase; direction: ltr; text-align: right; }
+  .c-title .n { width: 44mm; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-left: 8mm; }
+  .c-title .n b { font-family: 'Cormorant Garamond', serif; font-size: 32pt; line-height: .95; font-weight: 700; }
+  .c-title .n span { font-size: 6.8pt; color: #c9cad0; }
+`,
+  letterhead: (ctx) => `
+  <div class="c-top">
+    <div class="c-brand">${logo(ctx, "lg")}<div><div class="c-co-ar">${esc(ctx.companyNameAr)}</div><div class="c-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+    <div class="c-ref">${refLines(ctx)}</div>
+  </div>
+  <div class="c-title">
+    <div class="t">${ctx.titleEn ? `<div class="en">${esc(ctx.titleEn)}</div>` : ""}<h1>${esc(ctx.title)}</h1></div>
+    <div class="n">${ctx.highlight ? `<b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span>` : `<span>${esc(ctx.classification.split("|")[0].trim())}</span>`}</div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:0;right:0;top:0;height:5mm;background:${GRAPH};"></div><div style="position:absolute;left:0;width:60mm;top:0;height:5mm;background:${STRIPES};"></div>`),
+  footerTemplate: (label) =>
+    tpl(
+      "15mm",
+      `<div style="position:absolute;left:14mm;right:14mm;top:4mm;height:.6mm;background:${CRIM};"></div>
+       <div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:6mm;display:flex;justify-content:space-between;font-size:7pt;color:#7d7f86;"><span>${label}</span><span>${PAGE_NO}</span></div>`
+    ),
+};
+
+const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson };
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {
   return isPrintThemeId(id) ? THEMES[id] : THEMES[DEFAULT_PRINT_THEME];

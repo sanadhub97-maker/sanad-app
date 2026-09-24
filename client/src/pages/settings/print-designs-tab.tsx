@@ -11,7 +11,7 @@ import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PrintSignaturesCard } from "./print-signatures-card";
 
-type Layout = "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right";
+type Layout = "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right" | "arch" | "split" | "damask" | "dunes" | "stripe";
 
 interface Design {
   id: PrintThemeId;
@@ -35,6 +35,11 @@ const DESIGNS: Design[] = [
   { id: "burgundy", nameAr: "العنابي", nameEn: "Burgundy", descAr: "عنابي وذهبي عتيق، شرائط زخرفة متشابكة وميدالية مركزية للشعار.", descEn: "Wine and antique gold, interlaced lattice strips and a centred logo medallion.", paper: "#fcf9f3", accent: "#561022", metal: "#b3924f", layout: "lattice", ink: 2 },
   { id: "sapphire", nameAr: "الياقوتي", nameEn: "Sapphire", descAr: "أزرق ياقوتي وفضي بلاتيني، رأس مائل بشبكة ماسية وبطاقة عنوان عائمة.", descEn: "Sapphire blue and platinum, a slanted diamond-lattice header and a floating title card.", paper: "#ffffff", accent: "#0d2a63", metal: "#aeb7c4", layout: "slant", ink: 3 },
   { id: "bronze", nameAr: "البرونزي", nameEn: "Bronze", descAr: "بني قهوة وبرونزي، عمود مشربية جانبي وشعار في ميدالية برونزية.", descEn: "Espresso and bronze, a mashrabiya side column and a bronze logo medallion.", paper: "#faf6f0", accent: "#2e2019", metal: "#a8683c", layout: "spine-right", ink: 2 },
+  { id: "turquoise", nameAr: "الفيروزي", nameEn: "Turquoise", descAr: "فيروزي ونحاسي، الشعار داخل قوس محراب، وزوايا نحاسية على كل صفحة.", descEn: "Turquoise and copper, the logo inside a mihrab arch, copper corners on every page.", paper: "#fbfaf6", accent: "#0e5e63", metal: "#b87333", layout: "arch", ink: 1 },
+  { id: "slate", nameAr: "الأردوازي", nameEn: "Slate", descAr: "رمادي أردوازي وذهبي وردي، رأس مقسوم بلونين وجداول خفيفة بخطوط رفيعة.", descEn: "Slate and rose gold, a split two-tone header and light hairline tables.", paper: "#ffffff", accent: "#2f3e4e", metal: "#b76e79", layout: "split", ink: 1 },
+  { id: "amethyst", nameAr: "الأرجواني", nameEn: "Amethyst", descAr: "أرجواني ملكي وذهبي، نقش دمشقي خفيف على الصفحة كلها وشريط مائل على الزاوية.", descEn: "Royal purple and gold, a faint damask across the page and a corner sash.", paper: "#fdfbf7", accent: "#3b1f4e", metal: "#b8954f", layout: "damask", ink: 2 },
+  { id: "olive", nameAr: "الزيتوني", nameEn: "Olive", descAr: "زيتوني ورملي، عنوان كبير بخط الرقعة وشريط كثبان رملية أسفل كل صفحة.", descEn: "Olive and desert sand, a large calligraphic title and a sand-dune band on every page.", paper: "#fbf8f0", accent: "#4a5a2a", metal: "#c8a86b", layout: "dunes", ink: 2 },
+  { id: "crimson", nameAr: "القرمزي", nameEn: "Crimson", descAr: "قرمزي وجرافيتي، شريط علوي بخطوط مائلة وكتلة عنوان مقسومة بزاوية.", descEn: "Crimson and graphite, a diagonal-striped top bar and an angled split title block.", paper: "#ffffff", accent: "#2b2d31", metal: "#9b1c31", layout: "stripe", ink: 2 },
 ];
 
 /** A small drawing of the page layout in the design's colours. */
@@ -65,6 +70,30 @@ function Thumb({ d }: { d: Design }) {
       {d.layout === "frame" && <div className="absolute inset-[5px] border-[3px] border-double" style={{ borderColor: d.metal }} />}
       {d.layout === "spine-left" && <div className="absolute inset-y-0 left-0 w-[9px]" style={{ background: d.accent, boxShadow: `inset -1px 0 0 ${d.metal}` }} />}
       {d.layout === "spine-right" && <div className="absolute inset-y-0 right-0 w-[13px]" style={{ background: d.accent, boxShadow: `inset 1px 0 0 ${d.metal}` }} />}
+      {d.layout === "damask" && (
+        <>
+          <div className="absolute inset-0 opacity-[.08]" style={{ backgroundImage: `radial-gradient(${d.accent} 1.2px, transparent 1.5px)`, backgroundSize: "9px 9px" }} />
+          <div className="absolute -right-[14px] top-[10px] h-[7px] w-[60px] rotate-45" style={{ background: d.accent, borderBlock: `1px solid ${d.metal}` }} />
+          <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: d.accent }} />
+          <div className="absolute inset-x-0 bottom-0 h-[6px]" style={{ background: d.accent }} />
+        </>
+      )}
+      {d.layout === "arch" && (
+        <>
+          <div className="absolute left-[4px] top-[4px] h-[8px] w-[12px] border-l-2 border-t-2" style={{ borderColor: d.metal }} />
+          <div className="absolute right-[4px] top-[4px] h-[8px] w-[12px] border-r-2 border-t-2" style={{ borderColor: d.metal }} />
+          <div className="absolute bottom-[4px] left-[4px] h-[8px] w-[12px] border-b-2 border-l-2" style={{ borderColor: d.metal }} />
+          <div className="absolute bottom-[4px] right-[4px] h-[8px] w-[12px] border-b-2 border-r-2" style={{ borderColor: d.metal }} />
+        </>
+      )}
+      {d.layout === "dunes" && (
+        <div className="absolute inset-x-0 bottom-0 h-[16px]" style={{ background: `repeating-radial-gradient(ellipse at 50% 140%, ${d.metal}55 0 2px, #efe3c4 2px 5px)`, borderTop: `1px solid ${d.accent}` }} />
+      )}
+      {d.layout === "stripe" && (
+        <div className="absolute inset-x-0 top-0 h-[5px]" style={{ background: d.accent }}>
+          <div className="h-full w-2/5" style={{ background: `repeating-linear-gradient(-45deg, ${d.metal} 0 3px, ${d.accent} 3px 6px)` }} />
+        </div>
+      )}
       {d.layout === "lattice" && (
         <>
           <div className="absolute inset-x-0 top-0 h-[6px]" style={{ background: d.accent, borderBottom: `1px solid ${d.metal}` }} />
@@ -114,6 +143,38 @@ function Thumb({ d }: { d: Design }) {
             <div className="h-5 w-5 rounded-full border-[3px]" style={{ borderColor: d.metal }} />
             <div className="h-[4px] w-14 rounded-full" style={{ background: d.accent }} />
           </div>
+        )}
+        {d.layout === "arch" && (
+          <div className="flex flex-col items-center gap-1">
+            <div className="h-[22px] w-[18px] rounded-t-full border-2" style={{ background: d.accent, borderColor: d.metal }} />
+            <div className="h-[8px] w-full" style={{ background: `${d.accent}14`, borderBlock: `1px solid ${d.accent}33` }} />
+          </div>
+        )}
+        {d.layout === "split" && (
+          <div className="-mx-[12px] -mt-[12px] grid h-[36px] grid-cols-[1fr_38%]">
+            <div className="flex flex-col justify-end gap-1 p-2">
+              <div className="h-[4px] w-2/3 self-end rounded-full" style={{ background: d.accent }} />
+              <div className="h-[2px] w-1/3 self-end rounded-full" style={{ background: d.metal }} />
+            </div>
+            <div className="order-first flex items-center justify-center" style={{ background: d.accent }}>
+              <div className="h-[8px] w-[14px] rounded-sm" style={{ background: d.metal }} />
+            </div>
+          </div>
+        )}
+        {d.layout === "damask" && (
+          <div className="flex flex-col items-center gap-1">
+            <div className="h-5 w-5 rounded-full border-[3px]" style={{ borderColor: d.metal }} />
+            <div className="h-[4px] w-14 rounded-full" style={{ background: d.accent }} />
+          </div>
+        )}
+        {d.layout === "dunes" && (
+          <div className="flex flex-col items-end gap-1 border-r-[3px] pr-1.5" style={{ borderColor: d.metal }}>
+            <div className="h-[7px] w-3/4 rounded-full" style={{ background: d.accent }} />
+            <div className="h-[2px] w-1/3 rounded-full" style={{ background: d.metal }} />
+          </div>
+        )}
+        {d.layout === "stripe" && (
+          <div className="-mx-[12px] h-[20px]" style={{ background: `linear-gradient(105deg, ${d.accent} 0 30%, ${d.metal} 30%)` }} />
         )}
         {d.layout === "spine-right" && (
           <div className="flex items-center justify-between border-b pb-1" style={{ borderColor: `${d.metal}55` }}>
