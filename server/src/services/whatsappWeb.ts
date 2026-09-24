@@ -11,17 +11,34 @@ import { env } from "@/config/env";
 
 const AUTH_KEY = "whatsapp.web.session";
 
-export type WebStatus = "disconnected" | "connecting" | "qr" | "connected";
+/** "pairing": waiting for the 8-character code to be typed on the phone;
+ * "finishing": scanned/entered — WhatsApp is completing the link. */
+export type WebStatus = "disconnected" | "connecting" | "qr" | "pairing" | "finishing" | "connected";
 
-const state: { status: WebStatus; qr: string | null; phone: string | null; lastError: string | null } = {
+const state: {
+  status: WebStatus;
+  qr: string | null;
+  pairingCode: string | null;
+  phone: string | null;
+  lastError: string | null;
+} = {
   status: "disconnected",
   qr: null,
+  pairingCode: null,
   phone: null,
   lastError: null,
 };
 
 let sock: WASocket | null = null;
 let starting: Promise<void> | null = null;
+
+// The session being linked stays in memory across the reconnects WhatsApp
+// asks for during linking: reloading it from the database could pick up a
+// copy saved before the last credentials update and break the link.
+type AuthData = { creds: AuthenticationState["creds"]; keys: Record<string, Record<string, unknown>> };
+let authCache: AuthData | null = null;
+// Saves run one at a time, in order, so an older snapshot never lands last.
+let saveChain: Promise<void> = Promise.resolve();
 
 // Baileys is ESM-only; this CommonJS server has to load it with a real dynamic
 // import (TypeScript would otherwise compile `import()` into `require()`).
@@ -50,6 +67,8 @@ async function persistSession(baileys: typeof import("@whiskeysockets/baileys"),
 }
 
 async function clearSession() {
+  authCache = null;
+  await saveChain.catch(() => undefined);
   await prisma.setting.deleteMany({ where: { key: AUTH_KEY } });
 }
 
@@ -57,12 +76,19 @@ export async function hasStoredSession() {
   return Boolean(await prisma.setting.findUnique({ where: { key: AUTH_KEY } }));
 }
 
-async function openSocket() {
+async function openSocket(pairPhone?: string) {
   const baileys = await importEsm("@whiskeysockets/baileys");
-  const stored = await loadStoredSession(baileys);
-  const creds = stored?.creds ?? baileys.initAuthCreds();
-  const keys: Record<string, Record<string, unknown>> = stored?.keys ?? {};
-  const save = () => persistSession(baileys, creds, keys);
+  if (!authCache) {
+    const stored = await loadStoredSession(baileys);
+    authCache = stored ?? { creds: baileys.initAuthCreds(), keys: {} };
+  }
+  const { creds, keys } = authCache;
+  const save = () => {
+    saveChain = saveChain
+      .then(() => persistSession(baileys, creds, keys))
+      .catch((err) => logger.error({ err }, "Could not save the WhatsApp session"));
+    return saveChain;
+  };
 
   const auth: AuthenticationState = {
     creds,
@@ -90,8 +116,9 @@ async function openSocket() {
   };
 
   const { version } = await baileys.fetchLatestBaileysVersion().catch(() => ({ version: undefined }));
-  state.status = "connecting";
+  if (state.status !== "finishing") state.status = "connecting";
   state.lastError = null;
+  let pairingRequested = false;
 
   const socket = baileys.default({
     auth,
@@ -108,14 +135,42 @@ async function openSocket() {
 
   socket.ev.on("connection.update", async (update) => {
     if (socket !== sock) return; // a newer socket superseded this one
-    if (update.qr) {
-      state.status = "qr";
-      state.qr = await QRCode.toDataURL(update.qr, { margin: 1, width: 280 });
+    if (update.qr && !creds.me) {
+      if (pairPhone) {
+        // Linking by phone number: the socket is ready once it offers a QR;
+        // ask for an 8-character code instead and show that.
+        if (!pairingRequested) {
+          pairingRequested = true;
+          try {
+            const code = await socket.requestPairingCode(pairPhone);
+            state.pairingCode = code.length === 8 ? code.slice(0, 4) + "-" + code.slice(4) : code;
+            state.status = "pairing";
+          } catch (err) {
+            logger.error({ err }, "WhatsApp pairing code request failed");
+            state.lastError = "تعذر طلب كود الربط — تأكد من الرقم وحاول تاني، أو استخدم مسح QR";
+            state.status = "disconnected";
+            sock = null;
+            socket.end(undefined);
+          }
+        }
+      } else {
+        state.status = "qr";
+        state.qr = await QRCode.toDataURL(update.qr, { margin: 1, width: 280 });
+      }
+    }
+    if (update.isNewLogin) {
+      // Scanned / code entered: WhatsApp now restarts the connection to finish.
+      state.status = "finishing";
+      state.qr = null;
+      state.pairingCode = null;
+      await save();
     }
     if (update.connection === "open") {
       state.status = "connected";
       state.qr = null;
-      state.phone = socket.user?.id ? `+${socket.user.id.split(":")[0].split("@")[0]}` : null;
+      state.pairingCode = null;
+      state.phone = socket.user?.id ? "+" + socket.user.id.split(":")[0].split("@")[0] : null;
+      await save();
       logger.info({ phone: state.phone }, "WhatsApp Web linked");
     }
     if (update.connection === "close") {
@@ -125,28 +180,33 @@ async function openSocket() {
       if (code === baileys.DisconnectReason.loggedOut) {
         state.status = "disconnected";
         state.phone = null;
-        state.lastError = "تم فك الربط من الموبايل";
+        state.pairingCode = null;
+        state.lastError = "تم فك الربط من الموبايل — اربط الرقم تاني";
         await clearSession();
       } else if (code === baileys.DisconnectReason.connectionReplaced) {
         // Another server instance (e.g. a fresh deploy) took over the session — let it.
         state.status = "disconnected";
-      } else if (!creds.registered) {
-        // The QR was never scanned before WhatsApp gave up on it — don't keep
+      } else if (code === baileys.DisconnectReason.restartRequired || creds.me) {
+        // 515 right after a scan is WhatsApp's normal "reconnect to finish
+        // linking"; for a linked session any other drop is a reconnect too.
+        if (state.status !== "finishing") state.status = "connecting";
+        const delay = code === baileys.DisconnectReason.restartRequired ? 0 : 3000;
+        setTimeout(() => void startWhatsappWeb(pairPhone).catch(() => undefined), delay);
+      } else {
+        // Never scanned before WhatsApp gave up on the code — stop instead of
         // generating codes nobody is looking at.
         state.status = "disconnected";
-        state.lastError = "انتهت مهلة مسح الكود — اضغط ربط رقم تاني";
+        state.pairingCode = null;
+        state.lastError = pairPhone ? "انتهت مهلة كود الربط — اطلب كود جديد" : "انتهت مهلة مسح الكود — اضغط ربط رقم تاني";
         await clearSession();
-      } else {
-        state.status = "connecting";
-        setTimeout(() => void startWhatsappWeb().catch(() => undefined), 3000);
       }
     }
   });
 }
 
-export async function startWhatsappWeb() {
+export async function startWhatsappWeb(pairPhone?: string) {
   if (sock || starting) return starting ?? undefined;
-  starting = openSocket()
+  starting = openSocket(pairPhone)
     .catch((err) => {
       state.status = "disconnected";
       state.lastError = (err as Error).message;
@@ -158,12 +218,27 @@ export async function startWhatsappWeb() {
   return starting;
 }
 
+/** Starts linking from the settings page, by QR (no phone) or by an
+ * 8-character pairing code for the given number. Any half-finished attempt
+ * is dropped first so switching between the two methods works. */
+export async function beginLinking(pairPhone?: string) {
+  if (state.status === "connected" && sock) return;
+  if (state.status === "finishing") return; // already completing a link
+  const current = sock;
+  sock = null;
+  if (current) current.end(undefined);
+  if (starting) await starting.catch(() => undefined);
+  await clearSession();
+  Object.assign(state, { status: "connecting", qr: null, pairingCode: null, lastError: null });
+  await startWhatsappWeb(pairPhone ? pairPhone.replace(/\D/g, "") : undefined);
+}
+
 export async function logoutWhatsappWeb() {
   const current = sock;
   sock = null;
   if (current) await current.logout().catch(() => current.end(undefined));
   await clearSession();
-  Object.assign(state, { status: "disconnected", qr: null, phone: null, lastError: null });
+  Object.assign(state, { status: "disconnected", qr: null, pairingCode: null, phone: null, lastError: null });
 }
 
 export function getWhatsappWebStatus() {
@@ -174,7 +249,7 @@ async function waitForConnection(timeoutMs: number) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (state.status === "connected" && sock) return sock;
-    if (state.status === "qr") return null; // needs a human to scan — don't wait
+    if (state.status === "qr" || state.status === "pairing") return null; // needs a human — don't wait
     await new Promise((r) => setTimeout(r, 500));
   }
   return state.status === "connected" ? sock : null;

@@ -138,8 +138,8 @@ export const updateWhatsappRecipients = asyncHandler(async (req: Request, res: R
 export const getWhatsappWebStatus = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: whatsappWeb.getWhatsappWebStatus() });
 });
-export const connectWhatsappWeb = asyncHandler(async (_req: Request, res: Response) => {
-  await whatsappWeb.startWhatsappWeb();
+export const connectWhatsappWeb = asyncHandler(async (req: Request, res: Response) => {
+  await whatsappWeb.beginLinking((req.body as { phone?: string } | undefined)?.phone);
   res.json({ data: whatsappWeb.getWhatsappWebStatus() });
 });
 export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Response) => {

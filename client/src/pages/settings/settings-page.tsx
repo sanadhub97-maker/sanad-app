@@ -1485,18 +1485,20 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 
 function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRtl: boolean; saved: boolean }) {
   const queryClient = useQueryClient();
+  const [method, setMethod] = useState<"qr" | "code">("qr");
+  const [pairPhone, setPairPhone] = useState("");
   const { data: status } = useQuery({
     queryKey: ["settings", "whatsapp", "web-status"],
     queryFn: settingsApi.getWhatsappWebStatus,
-    // Poll while waiting for a scan or a (re)connection; stop once settled.
+    // Poll while a link is in progress; stop once settled.
     refetchInterval: (q) => {
       const s = q.state.data?.status;
-      return s === "qr" || s === "connecting" ? 2500 : false;
+      return s === "qr" || s === "pairing" || s === "connecting" || s === "finishing" ? 2000 : false;
     },
   });
 
   const connect = useMutation({
-    mutationFn: settingsApi.connectWhatsappWeb,
+    mutationFn: (phone?: string) => settingsApi.connectWhatsappWeb(phone),
     onSuccess: (s) => queryClient.setQueryData(["settings", "whatsapp", "web-status"], s),
     onError: (err) => toast.error(getErrorMessage(err)),
   });
@@ -1510,6 +1512,23 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
   });
 
   const s = status?.status ?? "disconnected";
+  const phoneDigits = pairPhone.replace(/\D/g, "");
+  const phoneValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
+  const start = () => connect.mutate(method === "code" ? "+" + phoneDigits : undefined);
+  const inProgress = s === "qr" || s === "pairing" || s === "connecting";
+
+  const badge =
+    s === "connected"
+      ? isRtl ? "مربوط" : "Linked"
+      : s === "qr"
+        ? isRtl ? "في انتظار المسح" : "Waiting for scan"
+        : s === "pairing"
+          ? isRtl ? "في انتظار إدخال الكود" : "Waiting for the code"
+          : s === "finishing"
+            ? isRtl ? "جاري إتمام الربط" : "Finishing link"
+            : s === "connecting"
+              ? isRtl ? "جاري الاتصال..." : "Connecting..."
+              : isRtl ? "غير مربوط" : "Not linked";
 
   return (
     <Card className="specular-border overflow-hidden border-border/80">
@@ -1527,17 +1546,11 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
             </div>
           </div>
           <Badge variant={s === "connected" ? "success" : "secondary"} className="text-xs px-3 py-1 shrink-0">
-            {s === "connected"
-              ? isRtl ? "مربوط" : "Linked"
-              : s === "qr"
-                ? isRtl ? "في انتظار المسح" : "Waiting for scan"
-                : s === "connecting"
-                  ? isRtl ? "جاري الاتصال..." : "Connecting..."
-                  : isRtl ? "غير مربوط" : "Not linked"}
+            {badge}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="pt-5">
+      <CardContent className="pt-5 space-y-4">
         {s === "connected" ? (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="text-sm text-foreground">
@@ -1555,13 +1568,43 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
               {isRtl ? "فك الربط" : "Unlink"}
             </Button>
           </div>
+        ) : s === "finishing" ? (
+          <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-emerald-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-foreground">{isRtl ? "تم المسح — جاري إتمام الربط" : "Scanned — finishing the link"}</p>
+              <p className="text-muted-foreground">
+                {isRtl
+                  ? "سيب واتساب مفتوح على الموبايل ومتصل بالإنترنت لحد ما يظهر هنا «مربوط». ده بياخد من ثواني لدقيقة."
+                  : "Keep WhatsApp open and online on the phone until this shows “Linked”. It takes a few seconds to a minute."}
+              </p>
+            </div>
+          </div>
         ) : s === "qr" && status?.qr ? (
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <img src={status.qr} alt="WhatsApp QR" className="h-56 w-56 rounded-xl border border-border bg-white p-2" />
+            <div className="space-y-3">
+              <ol className="list-decimal ps-5 space-y-1.5 text-sm text-muted-foreground">
+                <li>{isRtl ? "افتح واتساب على موبايل الرقم اللي عايز تبعت منه" : "Open WhatsApp on the phone you'll send from"}</li>
+                <li>{isRtl ? "الإعدادات ← الأجهزة المرتبطة ← ربط جهاز" : "Settings → Linked devices → Link a device"}</li>
+                <li>{isRtl ? "امسح الكود ده، وسيب الموبايل مفتوح لحد ما الصفحة تقول «مربوط»" : "Scan this code and keep the phone open until this page shows “Linked”"}</li>
+              </ol>
+              <p className="text-xs text-muted-foreground">
+                {isRtl ? "الكود بيتجدد لوحده كل شوية. لو الكاميرا مش بتقرأه، استخدم «كود برقم الهاتف»." : "The code refreshes by itself. If the camera won't read it, use “Code by phone number”."}
+              </p>
+            </div>
+          </div>
+        ) : s === "pairing" && status?.pairingCode ? (
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="rounded-2xl border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 px-6 py-5 text-center">
+              <div className="text-xs text-muted-foreground mb-1">{isRtl ? "كود الربط" : "Pairing code"}</div>
+              <div dir="ltr" className="font-mono text-3xl font-black tracking-[0.3em] text-foreground select-all">{status.pairingCode}</div>
+            </div>
             <ol className="list-decimal ps-5 space-y-1.5 text-sm text-muted-foreground">
-              <li>{isRtl ? "افتح واتساب على موبايل الرقم اللي عايز تبعت منه" : "Open WhatsApp on the phone you'll send from"}</li>
+              <li>{isRtl ? "افتح واتساب على موبايل الرقم ده" : "Open WhatsApp on that phone"}</li>
               <li>{isRtl ? "الإعدادات ← الأجهزة المرتبطة ← ربط جهاز" : "Settings → Linked devices → Link a device"}</li>
-              <li>{isRtl ? "امسح الكود ده، والصفحة هتتحدث لوحدها" : "Scan this code — this page updates by itself"}</li>
+              <li>{isRtl ? "اضغط «الربط برقم الهاتف بدلاً من ذلك» تحت الكاميرا" : "Tap “Link with phone number instead” under the camera"}</li>
+              <li>{isRtl ? "اكتب الكود ده، والصفحة هتتحدث لوحدها" : "Type this code — this page updates by itself"}</li>
             </ol>
           </div>
         ) : s === "connecting" ? (
@@ -1570,26 +1613,72 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
             {isRtl ? "جاري الاتصال بواتساب..." : "Connecting to WhatsApp..."}
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className={cn("text-sm", saved ? "text-muted-foreground" : "font-semibold text-amber-600 dark:text-amber-400")}>
+          <div className="space-y-4">
+            <p className={cn("text-sm", saved && !status?.lastError ? "text-muted-foreground" : "font-semibold text-amber-600 dark:text-amber-400")}>
               {!saved
                 ? isRtl
-                  ? "فعّل الخاصية واضغط «حفظ» فوق الأول، وبعدين اضغط ربط رقم."
-                  : "Enable the feature and click Save above first, then Link a number."
+                  ? "فعّل الخاصية واضغط «حفظ» فوق الأول، وبعدين اربط الرقم."
+                  : "Enable the feature and click Save above first, then link the number."
                 : status?.lastError
                   ? status.lastError
                   : isRtl
-                    ? "مفيش رقم مربوط. اضغط ربط عشان يظهر كود QR تمسحه من الموبايل."
-                    : "No number linked. Click Link to show a QR code to scan."}
+                    ? "مفيش رقم مربوط. اختار طريقة الربط:"
+                    : "No number linked. Choose how to link it:"}
             </p>
+            <div className="grid gap-2 sm:grid-cols-2" role="radiogroup">
+              {(
+                [
+                  ["qr", isRtl ? "مسح كود QR" : "Scan a QR code", isRtl ? "بكاميرا الموبايل من الأجهزة المرتبطة" : "With the phone camera, from Linked devices"],
+                  ["code", isRtl ? "كود برقم الهاتف" : "Code by phone number", isRtl ? "تكتب كود من 8 حروف على الموبايل — أدق لو الكاميرا مش بتقرأ" : "Type an 8-character code on the phone — best if the camera won't scan"],
+                ] as const
+              ).map(([id, title, hint]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={method === id}
+                  onClick={() => setMethod(id)}
+                  className={cn(
+                    "rounded-xl border p-3 text-start transition-colors",
+                    method === id ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/70 hover:bg-muted/40"
+                  )}
+                >
+                  <div className="text-sm font-bold">{title}</div>
+                  <div className="text-xs text-muted-foreground">{hint}</div>
+                </button>
+              ))}
+            </div>
+            {method === "code" && (
+              <div className="space-y-1">
+                <Label htmlFor="wa-pair-phone" className="text-xs font-bold">
+                  {isRtl ? "رقم الواتساب اللي هتبعت منه (بكود الدولة)" : "The WhatsApp number to send from (with country code)"}
+                </Label>
+                <Input
+                  id="wa-pair-phone"
+                  dir="ltr"
+                  inputMode="tel"
+                  placeholder="+966 5X XXX XXXX"
+                  value={pairPhone}
+                  onChange={(e) => setPairPhone(e.target.value)}
+                  className="h-10 rounded-xl font-mono max-w-xs"
+                />
+              </div>
+            )}
             <Button
               type="button"
-              disabled={!canEdit || !saved || connect.isPending}
-              onClick={() => connect.mutate()}
+              disabled={!canEdit || !saved || connect.isPending || inProgress || (method === "code" && !phoneValid)}
+              onClick={start}
               className="rounded-xl h-10 px-6 bg-primary text-primary-foreground font-black text-xs"
             >
               {connect.isPending && <Loader2 className="h-4 w-4 animate-spin me-2" />}
-              {isRtl ? "ربط رقم" : "Link a number"}
+              {method === "code" ? (isRtl ? "اطلب كود الربط" : "Get a pairing code") : isRtl ? "اعرض كود QR" : "Show QR code"}
+            </Button>
+          </div>
+        )}
+        {(s === "qr" || s === "pairing") && (
+          <div className="flex justify-end">
+            <Button type="button" variant="ghost" size="sm" disabled={!canEdit || connect.isPending} onClick={() => logout.mutate()} className="text-xs">
+              {isRtl ? "إلغاء وتغيير طريقة الربط" : "Cancel and change method"}
             </Button>
           </div>
         )}

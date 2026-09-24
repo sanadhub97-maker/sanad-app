@@ -130,7 +130,8 @@ export const settingsApi = {
   updateWhatsapp: async (input: WhatsappSettingsInput) => (await api.put("/settings/whatsapp", input)).data,
   testWhatsapp: async (to: string) => (await api.post<{ message: string }>("/settings/whatsapp/test", { to })).data,
   getWhatsappWebStatus: async () => (await api.get<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/status")).data.data,
-  connectWhatsappWeb: async () => (await api.post<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/connect")).data.data,
+  connectWhatsappWeb: async (phone?: string) =>
+    (await api.post<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/connect", phone ? { phone } : {})).data.data,
   logoutWhatsappWeb: async () => (await api.post<{ data: WhatsappWebStatus }>("/settings/whatsapp/web/logout")).data.data,
   getWhatsappRecipients: async () =>
     (await api.get<{ data: WhatsappRecipient[] }>("/settings/whatsapp/recipients")).data.data,
@@ -139,8 +140,10 @@ export const settingsApi = {
 };
 
 export interface WhatsappWebStatus {
-  status: "disconnected" | "connecting" | "qr" | "connected";
+  status: "disconnected" | "connecting" | "qr" | "pairing" | "finishing" | "connected";
   qr: string | null;
+  /** 8-character code to type on the phone when linking by number. */
+  pairingCode: string | null;
   phone: string | null;
   lastError: string | null;
 }
