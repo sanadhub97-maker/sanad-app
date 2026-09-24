@@ -42,6 +42,13 @@ export function toDateInputValue(value: string | Date | null | undefined): strin
   return date.toISOString().slice(0, 10);
 }
 
+/** Today's date as yyyy-mm-dd in the user's local time zone. Not
+ * toISOString(), which is UTC — in Riyadh that's still "yesterday" until 3am. */
+export function todayInputValue(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function daysUntil(date: string | Date | null | undefined): number | null {
   if (!date) return null;
   const target = typeof date === "string" ? new Date(date) : date;

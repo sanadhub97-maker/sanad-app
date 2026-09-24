@@ -35,7 +35,7 @@ import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } fr
 import { employeesApi } from "@/api/employees";
 import { EmployeePicker } from "@/components/common/employee-picker";
 import { getErrorMessage } from "@/lib/api";
-import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
+import { toDateInputValue, nullsToUndefined, todayInputValue } from "@/lib/utils";
 import type { Payment } from "@/types/models";
 
 // Keep in sync with server/src/modules/payments/payments.schemas.ts.
@@ -112,7 +112,7 @@ export function PaymentDialog({
       category: PAYMENT_CATEGORIES[0],
       method: PAYMENT_METHODS[0],
       vat: 0,
-      paymentDate: new Date().toISOString().slice(0, 10),
+      paymentDate: todayInputValue(),
     },
   });
 
@@ -145,7 +145,7 @@ export function PaymentDialog({
               category: PAYMENT_CATEGORIES[0],
               method: PAYMENT_METHODS[0],
               vat: 0,
-              paymentDate: new Date().toISOString().slice(0, 10),
+              paymentDate: todayInputValue(),
             }
       );
     }
