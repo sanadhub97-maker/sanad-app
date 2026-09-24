@@ -492,3 +492,9 @@
   }
 }
 
+
+/* Settings → Appearance → compact mode: Tailwind sizes are in rem, so a
+   smaller root size tightens the whole interface (text, spacing, controls). */
+html.compact {
+  font-size: 14px;
+}

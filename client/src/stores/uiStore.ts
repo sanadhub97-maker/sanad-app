@@ -11,6 +11,10 @@ interface UiState {
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setAnimationsEnabled: (enabled: boolean) => void;
+  /** The admin's Settings → Appearance values last applied in this browser. A
+   * saved change is applied once; after that the viewer's own toggles win. */
+  appliedAppearance: { sidebarStyle?: string; animationsEnabled?: boolean };
+  markAppearanceApplied: (patch: { sidebarStyle?: string; animationsEnabled?: boolean }) => void;
 }
 
 // Per-viewer UI convenience state (§34). Authoritative appearance defaults
@@ -27,6 +31,8 @@ export const useUiStore = create<UiState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
       setAnimationsEnabled: (enabled) => set({ animationsEnabled: enabled }),
+      appliedAppearance: {},
+      markAppearanceApplied: (patch) => set((s) => ({ appliedAppearance: { ...s.appliedAppearance, ...patch } })),
     }),
     { name: "sanad-ui-preferences" }
   )
