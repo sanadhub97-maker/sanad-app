@@ -1822,6 +1822,8 @@ function InputField({
 }
 
 interface AssetUploadCardProps {
+  /** Chip text; defaults to "Company Logo" / "Favicon". */
+  badge?: string;
   title: string;
   subtitle: string;
   aspectHint: string;
@@ -1834,7 +1836,8 @@ interface AssetUploadCardProps {
   isRtl?: boolean;
 }
 
-function AssetUploadCard({
+export function AssetUploadCard({
+  badge,
   title,
   subtitle,
   aspectHint,
@@ -1891,7 +1894,7 @@ function AssetUploadCard({
           <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
         <Badge variant="outline" className="text-[10px] text-muted-foreground shrink-0">
-          {previewType === "logo" ? (isRtl ? "شعار المنشأة" : "Company Logo") : "Favicon"}
+          {badge ?? (previewType === "logo" ? (isRtl ? "شعار المنشأة" : "Company Logo") : "Favicon")}
         </Badge>
       </div>
 

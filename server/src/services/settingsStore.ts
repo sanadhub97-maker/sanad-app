@@ -92,3 +92,63 @@ export async function setPrintThemeSetting(theme: PrintThemeId) {
   await setSetting(PRINT_THEME_KEY, { theme });
   return theme;
 }
+
+// Signature boxes and the seal at the end of every printed document
+// (Settings → Print). Defaults are the texts the templates always had.
+export interface SignatureBox {
+  ar: string;
+  en: string;
+}
+export interface DocumentSignatures {
+  boxes: SignatureBox[];
+  sealAr: string;
+  sealEn: string;
+}
+export type SignatureDocument = "report" | "voucher" | "profile";
+export interface PrintSignatures {
+  showSignatures: boolean;
+  showSeal: boolean;
+  report: DocumentSignatures;
+  voucher: DocumentSignatures;
+  profile: DocumentSignatures;
+}
+
+export const DEFAULT_PRINT_SIGNATURES: PrintSignatures = {
+  showSignatures: true,
+  showSeal: true,
+  report: {
+    boxes: [
+      { ar: "إعداد التقرير وتدقيقه", en: "Prepared & Audited By" },
+      { ar: "اعتماد الإدارة العامة", en: "Executive Management Approval" },
+    ],
+    sealAr: "ختم الرقابة\nوالاعتماد",
+    sealEn: "OFFICIAL SEAL",
+  },
+  voucher: {
+    boxes: [
+      { ar: "المستلم / المفوض بالصرف", en: "Recipient / Authorized Receiver" },
+      { ar: "المحاسب المالي", en: "Financial Accountant" },
+      { ar: "الاعتماد المالي العام", en: "Financial Authorization" },
+    ],
+    sealAr: "الإدارة المالية\nمعتمد للصرف",
+    sealEn: "FINANCIAL SEAL",
+  },
+  profile: {
+    boxes: [
+      { ar: "إعداد شؤون الموظفين", en: "HR Operations Specialist" },
+      { ar: "اعتماد المدير العام", en: "General Manager Approval" },
+    ],
+    sealAr: "شؤون الموظفين\nمعتمد",
+    sealEn: "HR DEPARTMENT",
+  },
+};
+
+const PRINT_SIGNATURES_KEY = "print.signatures";
+
+export function getPrintSignatures(): Promise<PrintSignatures> {
+  return getSetting(PRINT_SIGNATURES_KEY, DEFAULT_PRINT_SIGNATURES);
+}
+
+export function setPrintSignatures(value: PrintSignatures) {
+  return setSetting(PRINT_SIGNATURES_KEY, value);
+}

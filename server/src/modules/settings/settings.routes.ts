@@ -41,6 +41,32 @@ router.put(
 );
 
 router.get("/print-theme", requirePermission("settings.view"), controller.getPrintTheme);
+const signatureBox = z.object({ ar: z.string().trim().min(1).max(80), en: z.string().trim().max(80).default("") });
+const documentSignatures = z.object({
+  boxes: z.array(signatureBox).max(3),
+  sealAr: z.string().trim().max(60).default(""),
+  sealEn: z.string().trim().max(40).default(""),
+});
+router.get("/print-signatures", requirePermission("settings.view"), controller.getPrintSignaturesSettings);
+router.put(
+  "/print-signatures",
+  requirePermission("settings.edit"),
+  validate({
+    body: z.object({
+      signatures: z.object({
+        showSignatures: z.boolean(),
+        showSeal: z.boolean(),
+        report: documentSignatures,
+        voucher: documentSignatures,
+        profile: documentSignatures,
+      }),
+      stampFileId: z.string().min(1).nullable(),
+      signatureFileId: z.string().min(1).nullable(),
+    }),
+  }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updatePrintSignaturesSettings
+);
 router.get("/print-theme/preview", requirePermission("settings.view"), controller.previewPrintTheme);
 router.put(
   "/print-theme",

@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
-import { getPrintThemeSetting } from "@/services/settingsStore";
+import { getPrintThemeSetting, getPrintSignatures } from "@/services/settingsStore";
 
 async function readPrintLogo(company: { printLogoFileId: string | null; logoFileId: string | null } | null) {
   // A dedicated print logo wins; otherwise the light-mode logo (prints are on white paper).
@@ -13,6 +13,18 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   return { buffer: await storage.read(logoFile.storedName), mimeType: logoFile.mimeType };
 }
 
+async function fileDataUrl(fileId: string | null | undefined) {
+  if (!fileId) return null;
+  const file = await prisma.file.findUnique({ where: { id: fileId } });
+  if (!file) return null;
+  try {
+    return `data:${file.mimeType};base64,${(await storage.read(file.storedName)).toString("base64")}`;
+  } catch (err) {
+    logger.warn({ err, fileId }, "Could not read a print asset");
+    return null;
+  }
+}
+
 /** Company identity + logo (as a data: URL) for embedding into PDF/print
  * templates (§28/§33/§54) — logo/stamp/signature always come from whatever
  * the admin uploaded in Settings → Company, never hard-coded. */
@@ -20,8 +32,13 @@ export async function getBrandingContext() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   const logo = await readPrintLogo(company);
   const logoDataUrl = logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null;
-  const printTheme = await getPrintThemeSetting();
-  return { company, logoDataUrl, printTheme };
+  const [printTheme, signatures, stampDataUrl, signatureDataUrl] = await Promise.all([
+    getPrintThemeSetting(),
+    getPrintSignatures(),
+    fileDataUrl(company?.stampFileId),
+    fileDataUrl(company?.signatureFileId),
+  ]);
+  return { company, logoDataUrl, printTheme, signatures, stampDataUrl, signatureDataUrl };
 }
 
 /** The print logo as a PNG for Excel, which only embeds PNG/JPEG/GIF (the

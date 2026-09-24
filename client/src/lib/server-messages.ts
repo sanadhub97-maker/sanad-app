@@ -88,6 +88,7 @@ const EXACT: Record<string, string> = {
   "WhatsApp is not configured yet — save the WhatsApp settings first.": "واتساب غير مُعد بعد — احفظ إعدادات واتساب أولاً.",
   "WhatsApp settings saved.": "تم حفظ إعدادات واتساب.",
   "Print design saved.": "تم حفظ تصميم الطباعة.",
+  "Signature settings saved.": "تم حفظ إعدادات التوقيعات والختم.",
   "Unknown print design.": "تصميم الطباعة غير معروف.",
   "Automatic translation is unavailable right now. Please type the English text.":
     "الترجمة التلقائية غير متاحة حالياً، يرجى كتابة النص بالإنجليزي.",

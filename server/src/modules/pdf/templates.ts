@@ -1,4 +1,5 @@
 import { pdfDocumentShell } from "@/services/pdf";
+import { DEFAULT_PRINT_SIGNATURES, type PrintSignatures, type SignatureDocument } from "@/services/settingsStore";
 import { daysRemainingLabel } from "@/services/expiration";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 
@@ -6,7 +7,53 @@ type Branding = {
   company: { nameAr?: string | null; nameEn?: string | null } | null;
   logoDataUrl: string | null;
   printTheme?: string | null;
+  signatures?: PrintSignatures;
+  stampDataUrl?: string | null;
+  signatureDataUrl?: string | null;
 };
+
+const escHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** Signature boxes and the seal closing a document, as configured in
+ * Settings → Print. The seal sits before the last (approving) box; an
+ * uploaded stamp image replaces the drawn seal, and an uploaded signature
+ * image is placed in the last box. */
+function signatureBlock(kind: SignatureDocument, branding: Branding) {
+  const cfg = branding.signatures ?? DEFAULT_PRINT_SIGNATURES;
+  const doc = cfg[kind] ?? DEFAULT_PRINT_SIGNATURES[kind];
+  const boxes = cfg.showSignatures ? doc.boxes : [];
+  if (!boxes.length && !cfg.showSeal) return "";
+
+  const box = (b: { ar: string; en: string }, isLast: boolean) => `
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">${escHtml(b.ar)}</div>
+          ${b.en ? `<div class="sig-title-en">${escHtml(b.en)}</div>` : ""}
+        </div>
+        <div class="sig-card-body">
+          ${isLast && branding.signatureDataUrl ? `<div class="sig-image"><img src="${branding.signatureDataUrl}" alt="" /></div>` : ""}
+          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+        </div>
+      </div>`;
+  const seal = !cfg.showSeal
+    ? ""
+    : branding.stampDataUrl
+      ? `<div class="sig-seal-box"><img class="stamp-img" src="${branding.stampDataUrl}" alt="" /></div>`
+      : `<div class="sig-seal-box">
+        <div class="official-seal-circle">
+          <div class="seal-stars">★★★★★</div>
+          <div class="seal-text-ar">${escHtml(doc.sealAr).replace(/\n/g, "<br/>")}</div>
+          ${doc.sealEn ? `<div class="seal-text-en">${escHtml(doc.sealEn)}</div>` : ""}
+        </div>
+      </div>`;
+
+  const parts = boxes.map((b, i) => box(b, i === boxes.length - 1));
+  // The seal goes before the approving (last) box, or alone when there are no boxes.
+  if (seal) parts.splice(Math.max(parts.length - 1, 0), 0, seal);
+  return `<div class="signature-matrix${boxes.length ? "" : " seal-only"}">${parts.join("")}</div>`;
+}
 
 function fmtDate(d: Date | null | undefined) {
   if (!d) return "—";
@@ -171,38 +218,7 @@ export function employeeProfilePdf(
       </div>
     </div>
 
-    <!-- ✍️ Signatures & Official Stamp Matrix -->
-    <div class="signature-matrix">
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">إعداد شؤون الموظفين</div>
-          <div class="sig-title-en">HR Operations Specialist</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-      <div class="sig-seal-box">
-        <div class="official-seal-circle">
-          <div class="seal-stars">★★★★★</div>
-          <div class="seal-text-ar">شؤون الموظفين<br/>معتمد</div>
-          <div class="seal-text-en">HR DEPARTMENT</div>
-        </div>
-      </div>
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">اعتماد المدير العام</div>
-          <div class="sig-title-en">General Manager Approval</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-    </div>
+    ${signatureBlock("profile", branding)}
   `;
 
   return pdfDocumentShell({
@@ -326,49 +342,7 @@ export function paymentReceiptPdf(
       </div>
     </div>
 
-    <!-- ✍️ Financial Approvals & Stamp Matrix -->
-    <div class="signature-matrix">
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">المستلم / المفوض بالصرف</div>
-          <div class="sig-title-en">Recipient / Authorized Receiver</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">المحاسب المالي</div>
-          <div class="sig-title-en">Financial Accountant</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التدقيق:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-      <div class="sig-seal-box">
-        <div class="official-seal-circle">
-          <div class="seal-stars">★★★★★</div>
-          <div class="seal-text-ar">الإدارة المالية<br/>معتمد للصرف</div>
-          <div class="seal-text-en">FINANCIAL SEAL</div>
-        </div>
-      </div>
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">الاعتماد المالي العام</div>
-          <div class="sig-title-en">Financial Authorization</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-    </div>
+    ${signatureBlock("voucher", branding)}
   `;
 
   return pdfDocumentShell({
@@ -462,39 +436,7 @@ export function tableReportPdf(
   const body = `
     ${contentHtml}
 
-    <div class="signature-matrix">
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">إعداد التقرير وتدقيقه</div>
-          <div class="sig-title-en">Prepared & Audited By</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-
-      <div class="sig-seal-box">
-        <div class="official-seal-circle">
-          <div class="seal-stars">★★★★★</div>
-          <div class="seal-text-ar">ختم الرقابة<br/>والاعتماد</div>
-          <div class="seal-text-en">OFFICIAL SEAL</div>
-        </div>
-      </div>
-
-      <div class="sig-card">
-        <div class="sig-card-header">
-          <div class="sig-title-ar">اعتماد الإدارة العامة</div>
-          <div class="sig-title-en">Executive Management Approval</div>
-        </div>
-        <div class="sig-card-body">
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>الاعتماد:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
-        </div>
-      </div>
-    </div>
+    ${signatureBlock("report", branding)}
   `;
 
   return pdfDocumentShell({

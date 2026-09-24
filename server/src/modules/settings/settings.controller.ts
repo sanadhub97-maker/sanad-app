@@ -8,7 +8,26 @@ import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
 import { prisma } from "@/lib/prisma";
-import { getPrintThemeSetting, setPrintThemeSetting } from "@/services/settingsStore";
+import { getPrintThemeSetting, setPrintThemeSetting, getPrintSignatures, setPrintSignatures, type PrintSignatures } from "@/services/settingsStore";
+
+export const getPrintSignaturesSettings = asyncHandler(async (_req: Request, res: Response) => {
+  const [signatures, company] = await Promise.all([
+    getPrintSignatures(),
+    prisma.companySettings.findUnique({ where: { id: 1 }, select: { stampFileId: true, signatureFileId: true } }),
+  ]);
+  res.json({ data: { signatures, stampFileId: company?.stampFileId ?? null, signatureFileId: company?.signatureFileId ?? null } });
+});
+
+export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, res: Response) => {
+  const body = req.body as { signatures: PrintSignatures; stampFileId: string | null; signatureFileId: string | null };
+  await setPrintSignatures(body.signatures);
+  // The stamp and signature images live on the company record.
+  await prisma.companySettings.updateMany({
+    where: { id: 1 },
+    data: { stampFileId: body.stampFileId, signatureFileId: body.signatureFileId },
+  });
+  res.json({ data: body, message: "Signature settings saved." });
+});
 import { isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { tableReportPdf } from "@/modules/pdf/templates";
 import { renderHtmlToPdf } from "@/services/pdf";

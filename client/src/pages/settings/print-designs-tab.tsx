@@ -9,6 +9,7 @@ import { settingsApi, type PrintThemeId } from "@/api/settings";
 import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PrintSignaturesCard } from "./print-signatures-card";
 
 type Layout = "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right";
 
@@ -156,6 +157,7 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
   }
 
   return (
+    <div className="space-y-6">
     <Card className="rounded-2xl border border-border/80 shadow-sm">
       <CardHeader className="space-y-1">
         <div className="flex items-center gap-3">
@@ -243,5 +245,7 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
         )}
       </CardContent>
     </Card>
+    <PrintSignaturesCard canEdit={canEdit} isRtl={isRtl} />
+    </div>
   );
 }

@@ -73,9 +73,36 @@ export interface CompanyBranding {
   logoDarkFileId: string | null;
 }
 
+export interface SignatureBox {
+  ar: string;
+  en: string;
+}
+export interface DocumentSignatures {
+  boxes: SignatureBox[];
+  sealAr: string;
+  sealEn: string;
+}
+export type SignatureDocument = "report" | "voucher" | "profile";
+export interface PrintSignatures {
+  showSignatures: boolean;
+  showSeal: boolean;
+  report: DocumentSignatures;
+  voucher: DocumentSignatures;
+  profile: DocumentSignatures;
+}
+export interface PrintSignaturesSettings {
+  signatures: PrintSignatures;
+  stampFileId: string | null;
+  signatureFileId: string | null;
+}
+
 export type PrintThemeId = "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze";
 
 export const settingsApi = {
+  getPrintSignatures: async () =>
+    (await api.get<{ data: PrintSignaturesSettings }>("/settings/print-signatures")).data.data,
+  updatePrintSignatures: async (input: PrintSignaturesSettings) =>
+    (await api.put<{ data: PrintSignaturesSettings; message: string }>("/settings/print-signatures", input)).data,
   getPrintTheme: async () => (await api.get<{ data: { theme: PrintThemeId } }>("/settings/print-theme")).data.data.theme,
   updatePrintTheme: async (theme: PrintThemeId) =>
     (await api.put<{ data: { theme: PrintThemeId }; message: string }>("/settings/print-theme", { theme })).data,
