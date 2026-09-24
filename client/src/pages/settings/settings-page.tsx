@@ -1824,6 +1824,8 @@ function InputField({
 interface AssetUploadCardProps {
   /** Chip text; defaults to "Company Logo" / "Favicon". */
   badge?: string;
+  /** Served from the public file route (logos). Other uploads load with the session. */
+  isPublic?: boolean;
   title: string;
   subtitle: string;
   aspectHint: string;
@@ -1838,6 +1840,7 @@ interface AssetUploadCardProps {
 
 export function AssetUploadCard({
   badge,
+  isPublic = true,
   title,
   subtitle,
   aspectHint,
@@ -1916,7 +1919,7 @@ export function AssetUploadCard({
               <AuthedFileImage
                 fileId={fileId}
                 previewUrl={localPreview}
-                isPublic={true}
+                isPublic={isPublic}
                 alt="Corporate Logo"
                 className="relative z-10 max-h-20 max-w-[200px] object-contain drop-shadow-sm transition-transform group-hover:scale-105"
               />

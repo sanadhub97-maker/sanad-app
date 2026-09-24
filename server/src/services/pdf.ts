@@ -488,8 +488,12 @@ export function pdfDocumentShell(opts: {
   .ref-code { font-family: monospace; font-size: 9pt; color: #2563eb; }
   .total-th { background: #1e3a8a !important; }
   .total-cell { font-weight: 900; color: #1e3a8a; background: #f0fdf4; }
-  .sig-image { height: 15mm; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
-  .sig-image img { max-height: 15mm; max-width: 100%; object-fit: contain; }
+  .sig-label { white-space: nowrap; }
+  .sig-name-row { align-items: center; min-height: 11mm; }
+  .sig-name { flex: 1; display: flex; align-items: center; justify-content: flex-start; border-bottom: 1px dotted #94a3b8; min-height: 11mm; padding: 1px 4px; }
+  .sig-name img { max-height: 10mm; max-width: 100%; object-fit: contain; }
+  .sig-sign-row { min-height: 10mm; align-items: flex-end; }
+  .sig-date { flex: 1; font-family: 'IBM Plex Mono', monospace; font-weight: 600; letter-spacing: .04em; text-align: start; border-bottom: 1px dotted #94a3b8; padding: 0 4px; }
   .stamp-img { width: 30mm; height: 30mm; object-fit: contain; }
   .signature-matrix.seal-only { justify-content: center; }
   .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }

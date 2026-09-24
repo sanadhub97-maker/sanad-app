@@ -76,6 +76,8 @@ export interface CompanyBranding {
 export interface SignatureBox {
   ar: string;
   en: string;
+  /** Image printed on the box's name line. */
+  nameFileId?: string | null;
 }
 export interface DocumentSignatures {
   boxes: SignatureBox[];

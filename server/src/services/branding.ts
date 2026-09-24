@@ -45,13 +45,21 @@ export async function getBrandingContext() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   const logo = await readPrintLogo(company);
   const logoDataUrl = logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null;
-  const [printTheme, signatures, stampDataUrl, signatureDataUrl] = await Promise.all([
+  const [printTheme, signatures, stampDataUrl] = await Promise.all([
     getPrintThemeSetting(),
     getPrintSignatures(),
     fileDataUrl(company?.stampFileId),
-    fileDataUrl(company?.signatureFileId),
   ]);
-  return { company, logoDataUrl, printTheme, signatures, stampDataUrl, signatureDataUrl };
+  // Name images of every signature box, by file id.
+  const nameIds = [...new Set([signatures.report, signatures.voucher, signatures.profile].flatMap((d) => d.boxes.map((b) => b.nameFileId)).filter(Boolean))] as string[];
+  const nameImages: Record<string, string> = {};
+  await Promise.all(
+    nameIds.map(async (id) => {
+      const url = await fileDataUrl(id);
+      if (url) nameImages[id] = url;
+    })
+  );
+  return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages };
 }
 
 /** The print logo as a PNG for Excel, which only embeds PNG/JPEG/GIF (the

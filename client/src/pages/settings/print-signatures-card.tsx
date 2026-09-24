@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Eye, Loader2, PenLine, Plus, Save, Stamp, Trash2 } from "lucide-react";
+import { CalendarDays, Eye, ImagePlus, Loader2, PenLine, Plus, Save, Stamp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import {
 import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { AuthedFileImage } from "@/components/common/authed-file-image";
+import { filesApi } from "@/api/files";
 import { AssetUploadCard } from "./settings-page";
 
 const DOCS: { id: SignatureDocument; ar: string; en: string }[] = [
@@ -25,8 +27,63 @@ const DOCS: { id: SignatureDocument; ar: string; en: string }[] = [
 ];
 const MAX_BOXES = 3;
 
-/** Signature boxes, seal text, and the stamp/signature images used at the
- * end of every printed document. */
+/** Upload/replace/remove the image printed on a signature box's name line. */
+function NameImagePicker({
+  fileId,
+  onChange,
+  disabled,
+  isRtl,
+}: {
+  fileId?: string | null;
+  onChange: (id: string | null) => void;
+  disabled?: boolean;
+  isRtl: boolean;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [inputId] = useState(() => `name-img-${Math.random().toString(36).slice(2)}`);
+
+  async function upload(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const uploaded = await filesApi.upload(file, "signature-name");
+      onChange(uploaded.id);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <input id={inputId} type="file" accept=".png,.jpg,.jpeg,.svg" className="hidden" disabled={disabled} onChange={(e) => upload(e.target.files?.[0])} />
+      {fileId ? (
+        <div className="flex h-10 min-w-[96px] max-w-[160px] items-center justify-center rounded-xl border border-border/70 bg-white px-2">
+          <AuthedFileImage fileId={fileId} alt={isRtl ? "صورة الاسم" : "Name image"} className="max-h-8 max-w-full object-contain" />
+        </div>
+      ) : null}
+      <label
+        htmlFor={inputId}
+        className={cn(
+          "inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-muted/50",
+          (disabled || uploading) && "pointer-events-none opacity-50"
+        )}
+      >
+        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+        {fileId ? (isRtl ? "تغيير" : "Replace") : isRtl ? "رفع صورة الاسم" : "Upload name image"}
+      </label>
+      {fileId && (
+        <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={() => onChange(null)} className="h-10 rounded-xl text-xs text-destructive hover:bg-destructive/10">
+          {isRtl ? "إزالة" : "Remove"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/** Signature boxes, seal text, and the stamp image used at the end of every
+ * printed document. */
 export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["settings", "print-signatures"], queryFn: settingsApi.getPrintSignatures });
@@ -90,8 +147,8 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
             <CardTitle className="text-lg font-bold">{isRtl ? "التوقيعات والختم" : "Signatures & Seal"}</CardTitle>
             <CardDescription className="text-xs">
               {isRtl
-                ? "خانات التوقيع والختم اللي في آخر كل مستند مطبوع. تقدر تغيّر عناوينها لكل نوع مستند، وترفع صورة ختم الشركة وتوقيع المدير."
-                : "The signature boxes and seal at the end of every printed document. Rename them per document type, and upload the company stamp and the manager's signature."}
+                ? "خانات التوقيع والختم اللي في آخر كل مستند مطبوع. تقدر تغيّر عناوينها وترفع صورة الاسم لكل خانة، وترفع صورة ختم الشركة. التوقيع بيتعمل بخط اليد، والتاريخ بيتكتب تلقائياً بتاريخ يوم الطباعة."
+                : "The signature boxes and seal at the end of every printed document. Rename each box and upload its name image, and upload the company stamp. Signatures are signed by hand; the date is filled in with the print date."}
             </CardDescription>
           </div>
         </div>
@@ -120,8 +177,8 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
           ))}
         </div>
 
-        {/* Stamp and signature images */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Stamp image */}
+        <div className="grid gap-4">
           <AssetUploadCard
             badge={isRtl ? "ختم الشركة" : "Company stamp"}
             title={isRtl ? "صورة ختم الشركة" : "Company stamp image"}
@@ -130,21 +187,9 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
             previewType="logo"
             fileId={form.stampFileId}
             module="company-stamp"
+            isPublic={false}
             onUploaded={(fid) => update((d) => void (d.stampFileId = fid))}
             onRemoved={() => update((d) => void (d.stampFileId = null))}
-            disabled={!canEdit}
-            isRtl={isRtl}
-          />
-          <AssetUploadCard
-            badge={isRtl ? "توقيع" : "Signature"}
-            title={isRtl ? "صورة توقيع المدير" : "Manager's signature image"}
-            subtitle={isRtl ? "بتظهر في آخر خانة توقيع (خانة الاعتماد)" : "Placed in the last (approval) box"}
-            aspectHint={isRtl ? "صورة PNG بخلفية شفافة" : "PNG with a transparent background"}
-            previewType="logo"
-            fileId={form.signatureFileId}
-            module="company-signature"
-            onUploaded={(fid) => update((d) => void (d.signatureFileId = fid))}
-            onRemoved={() => update((d) => void (d.signatureFileId = null))}
             disabled={!canEdit}
             isRtl={isRtl}
           />
@@ -179,7 +224,7 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
               </span>
             </div>
             {current.boxes.map((b, i) => (
-              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end">
+              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end rounded-xl border border-border/60 p-3">
                 <div className="space-y-1">
                   <Label htmlFor={`box-${doc}-${i}-ar`} className="text-xs">{isRtl ? `الخانة ${i + 1} (عربي)` : `Box ${i + 1} (Arabic)`}</Label>
                   <Input
@@ -212,6 +257,15 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
+                <div className="space-y-1 sm:col-span-3">
+                  <span className="text-xs text-muted-foreground">{isRtl ? "صورة الاسم (بتظهر في سطر الاسم)" : "Name image (printed on the name line)"}</span>
+                  <NameImagePicker
+                    fileId={b.nameFileId}
+                    disabled={!canEdit}
+                    isRtl={isRtl}
+                    onChange={(id) => update((d) => void (d.signatures[doc].boxes[i].nameFileId = id))}
+                  />
+                </div>
               </div>
             ))}
             <Button
@@ -251,6 +305,10 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
               />
             </div>
           </div>
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {isRtl ? "سطر التاريخ بيتكتب تلقائياً بتاريخ يوم الطباعة، وسطر التوقيع فاضي للتوقيع بخط اليد." : "The date line is filled in with the print date; the signature line is left blank for signing by hand."}
+          </p>
           {form.stampFileId && (
             <p className="text-xs text-amber-600 dark:text-amber-400">
               {isRtl ? "نص الختم مش هيظهر لأنك رافع صورة ختم الشركة، والصورة هي اللي بتتطبع." : "The seal text is not printed while a stamp image is uploaded."}

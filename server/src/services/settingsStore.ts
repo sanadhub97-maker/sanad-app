@@ -98,6 +98,8 @@ export async function setPrintThemeSetting(theme: PrintThemeId) {
 export interface SignatureBox {
   ar: string;
   en: string;
+  /** An image printed on the box's name line (e.g. the signer's name plate). */
+  nameFileId?: string | null;
 }
 export interface DocumentSignatures {
   boxes: SignatureBox[];

@@ -9,34 +9,42 @@ type Branding = {
   printTheme?: string | null;
   signatures?: PrintSignatures;
   stampDataUrl?: string | null;
-  signatureDataUrl?: string | null;
+  nameImages?: Record<string, string>;
 };
 
 const escHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+/** Today's date in Riyadh, dd/mm/yyyy, for the date line of signature boxes. */
+function printDate() {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date());
+}
+
 /** Signature boxes and the seal closing a document, as configured in
- * Settings → Print. The seal sits before the last (approving) box; an
- * uploaded stamp image replaces the drawn seal, and an uploaded signature
- * image is placed in the last box. */
+ * Settings → Print. The seal sits before the last (approving) box and an
+ * uploaded stamp image replaces the drawn seal. Each box shows its name
+ * image (if uploaded), a blank line to sign by hand, and the print date. */
 function signatureBlock(kind: SignatureDocument, branding: Branding) {
   const cfg = branding.signatures ?? DEFAULT_PRINT_SIGNATURES;
   const doc = cfg[kind] ?? DEFAULT_PRINT_SIGNATURES[kind];
   const boxes = cfg.showSignatures ? doc.boxes : [];
   if (!boxes.length && !cfg.showSeal) return "";
 
-  const box = (b: { ar: string; en: string }, isLast: boolean) => `
+  const date = printDate();
+  const box = (b: { ar: string; en: string; nameFileId?: string | null }) => {
+    const nameImg = b.nameFileId ? branding.nameImages?.[b.nameFileId] : null;
+    return `
       <div class="sig-card">
         <div class="sig-card-header">
           <div class="sig-title-ar">${escHtml(b.ar)}</div>
           ${b.en ? `<div class="sig-title-en">${escHtml(b.en)}</div>` : ""}
         </div>
         <div class="sig-card-body">
-          ${isLast && branding.signatureDataUrl ? `<div class="sig-image"><img src="${branding.signatureDataUrl}" alt="" /></div>` : ""}
-          <div class="sig-row"><span>الاسم:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التوقيع:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span>التاريخ:</span><span class="sig-dots"></span></div>
+          <div class="sig-row sig-name-row"><span class="sig-label">الاسم:</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
+          <div class="sig-row sig-sign-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">${date}</span></div>
         </div>
       </div>`;
+  };
   const seal = !cfg.showSeal
     ? ""
     : branding.stampDataUrl
@@ -49,7 +57,7 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
         </div>
       </div>`;
 
-  const parts = boxes.map((b, i) => box(b, i === boxes.length - 1));
+  const parts = boxes.map(box);
   // The seal goes before the approving (last) box, or alone when there are no boxes.
   if (seal) parts.splice(Math.max(parts.length - 1, 0), 0, seal);
   return `<div class="signature-matrix${boxes.length ? "" : " seal-only"}">${parts.join("")}</div>`;
