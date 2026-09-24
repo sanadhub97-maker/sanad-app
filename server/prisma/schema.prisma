@@ -472,10 +472,14 @@ model NotificationLog {
   recipient    String?
   relatedType  String?
   relatedId    String?
+  /// The text sent (WhatsApp/email), shown in the live feed in Settings.
+  message      String?
   status       NotificationLogStatus
   errorMessage String?
   sentAt       DateTime?
   createdAt    DateTime               @default(now())
+
+  @@index([channel, createdAt])
 }
 
 // ---------------------------------------------------------------------------

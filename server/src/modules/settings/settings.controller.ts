@@ -8,6 +8,14 @@ import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
 import { prisma } from "@/lib/prisma";
+import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsappLog";
+
+export const getWhatsappMessages = asyncHandler(async (req: Request, res: Response) => {
+  const q = req.query as { limit?: string; status?: string };
+  const limit = Math.min(Math.max(Number(q.limit) || 40, 1), 100);
+  const status = q.status === "SENT" || q.status === "FAILED" ? q.status : undefined;
+  res.json({ data: await listWhatsappMessages({ limit, status }) });
+});
 import { getPrintThemeSetting, setPrintThemeSetting, getPrintSignatures, setPrintSignatures, type PrintSignatures } from "@/services/settingsStore";
 
 export const getPrintSignaturesSettings = asyncHandler(async (_req: Request, res: Response) => {
@@ -158,6 +166,7 @@ export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => 
     "— نظام SanaD لإدارة الوثائق والتراخيص",
   ].join("\n");
   const result = await sendWhatsapp(req.body.to, message);
+  await recordWhatsappMessage({ to: req.body.to, message, sent: result.sent, error: result.reason, kind: "TEST" }).catch(() => undefined);
   if (!result.sent) {
     throw ApiError.badRequest(
       result.reason === "WHATSAPP_NOT_CONFIGURED"

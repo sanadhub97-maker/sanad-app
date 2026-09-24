@@ -58,6 +58,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { cn } from "@/lib/utils";
 import { PrintDesignsTab } from "./print-designs-tab";
+import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -1479,6 +1480,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} saved={data.provider === "WHATSAPP_WEB" && data.enabled} />
       )}
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
+      <WhatsappLiveFeed isRtl={isRtl} />
     </div>
   );
 }

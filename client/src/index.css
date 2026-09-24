@@ -498,3 +498,19 @@
 html.compact {
   font-size: 14px;
 }
+
+/* Settings → WhatsApp live feed: news-ticker strip. The track holds two
+   copies of the row and slides by exactly one copy, so it loops seamlessly. */
+@keyframes ticker-slide {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.ticker-track {
+  display: inline-flex;
+  width: max-content;
+  animation: ticker-slide var(--ticker-duration, 40s) linear infinite;
+}
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+}

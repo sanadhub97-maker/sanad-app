@@ -116,6 +116,7 @@ router.put(
   controller.updateWhatsappRecipients
 );
 router.get("/whatsapp/web/status", requirePermission("settings.view"), controller.getWhatsappWebStatus);
+router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
 router.post(
   "/whatsapp/web/connect",
   requirePermission("settings.edit"),

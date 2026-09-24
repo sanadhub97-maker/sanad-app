@@ -72,7 +72,9 @@ async function getRecipients() {
   });
 }
 
-async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAPP", action: () => Promise<void>) {
+type LogMeta = { recipient?: string; message?: string; relatedType?: string; relatedId?: string };
+
+async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAPP", action: () => Promise<void>, meta: LogMeta = {}) {
   const existing = await prisma.notificationLog.findUnique({ where: { dedupeKey } });
   // Only a delivered notification is final — a failed one is retried the next
   // time the scan runs, instead of being silently dropped for good.
@@ -82,8 +84,8 @@ async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAP
     await action();
     await prisma.notificationLog.upsert({
       where: { dedupeKey },
-      update: { status: "SENT", sentAt: new Date(), errorMessage: null },
-      create: { dedupeKey, channel, status: "SENT", sentAt: new Date() },
+      update: { ...meta, status: "SENT", sentAt: new Date(), errorMessage: null },
+      create: { ...meta, dedupeKey, channel, status: "SENT", sentAt: new Date() },
     });
   } catch (err) {
     logger.error({ err, dedupeKey }, "Notification dispatch failed");
@@ -91,8 +93,8 @@ async function logOnce(dedupeKey: string, channel: "SYSTEM" | "EMAIL" | "WHATSAP
     await prisma.notificationLog
       .upsert({
         where: { dedupeKey },
-        update: { status: "FAILED", errorMessage },
-        create: { dedupeKey, channel, status: "FAILED", errorMessage },
+        update: { ...meta, status: "FAILED", errorMessage },
+        create: { ...meta, dedupeKey, channel, status: "FAILED", errorMessage },
       })
       .catch(() => undefined);
   }
@@ -157,9 +159,14 @@ export async function runExpirationScan() {
           ? whatsappPhones
           : recipients.flatMap((r) => (r.phone ? [r.phone] : []));
       for (const phone of phones) {
-        await logOnce(`${dedupeBase}:WHATSAPP:${phone}`, "WHATSAPP", async () => {
-          assertSent(await sendWhatsapp(phone, whatsappMessage));
-        });
+        await logOnce(
+          `${dedupeBase}:WHATSAPP:${phone}`,
+          "WHATSAPP",
+          async () => {
+            assertSent(await sendWhatsapp(phone, whatsappMessage));
+          },
+          { recipient: phone, message: whatsappMessage, relatedType: item.sourceType, relatedId: item.recordId }
+        );
       }
     }
   }

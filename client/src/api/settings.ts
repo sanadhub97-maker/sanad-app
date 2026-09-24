@@ -103,7 +103,24 @@ export type PrintThemeId =
   | "turquoise" | "slate" | "amethyst" | "olive" | "crimson"
   | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism";
 
+export interface WhatsappMessageItem {
+  id: string;
+  to: string | null;
+  name: string | null;
+  message: string | null;
+  status: "SENT" | "FAILED" | "PENDING";
+  error: string | null;
+  kind: "ALERT" | "TEST";
+  at: string;
+}
+export interface WhatsappMessagesFeed {
+  items: WhatsappMessageItem[];
+  stats: { sentToday: number; failedToday: number; total: number };
+}
+
 export const settingsApi = {
+  getWhatsappMessages: async (status?: "SENT" | "FAILED") =>
+    (await api.get<{ data: WhatsappMessagesFeed }>("/settings/whatsapp/messages", { params: { limit: 40, status } })).data.data,
   getPrintSignatures: async () =>
     (await api.get<{ data: PrintSignaturesSettings }>("/settings/print-signatures")).data.data,
   updatePrintSignatures: async (input: PrintSignaturesSettings) =>
