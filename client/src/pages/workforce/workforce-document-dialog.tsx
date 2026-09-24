@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { localized } from "@/lib/names";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -376,7 +377,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
                   </span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  {document.branch?.name || document.employee?.branch?.name || document.jobTitle || "—"}
+                  {localized(document.branch?.name, document.branch?.nameEn) || localized(document.employee?.branch?.name, document.employee?.branch?.nameEn) || localized(document.jobTitle, document.jobTitleEn) || "—"}
                 </div>
               </div>
             </div>

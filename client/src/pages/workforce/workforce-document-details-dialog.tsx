@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { localized } from "@/lib/names";
 import { namePair, nameInitials } from "@/lib/names";
 import { documentAuthority } from "./authority";
 import { Link } from "react-router-dom";
@@ -73,7 +74,7 @@ export function WorkforceDocumentDetailsDialog({ open, onOpenChange, document, o
   );
   const empNumber = document.employeeNumber || document.employee?.employeeNumber;
   const empId = document.employeeId || document.employee?.id || document.id;
-  const branchName = document.branch?.name || document.employee?.branch?.name;
+  const branchName = localized(document.branch?.name, document.branch?.nameEn) || localized(document.employee?.branch?.name, document.employee?.branch?.nameEn);
 
   function copyText(text?: string | null) {
     if (!text) return;

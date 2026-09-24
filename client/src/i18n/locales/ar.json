@@ -230,7 +230,11 @@
       "iqamaFile": "ملف الإقامة",
       "passportNumber": "رقم جواز السفر",
       "passportCountry": "بلد إصدار الجواز",
-      "passportFile": "ملف جواز السفر"
+      "passportFile": "ملف جواز السفر",
+      "nationalityEn": "الجنسية (بالإنجليزي)",
+      "cityEn": "المدينة (بالإنجليزي)",
+      "jobTitleEn": "المسمى الوظيفي (بالإنجليزي)",
+      "departmentEn": "القسم (بالإنجليزي)"
     },
     "profile": {
       "title": "الملف الشخصي للموظف",
@@ -365,7 +369,9 @@
       "email": "البريد الإلكتروني",
       "status": "الحالة",
       "address": "العنوان",
-      "notes": "ملاحظات"
+      "notes": "ملاحظات",
+      "nameEn": "اسم المؤسسة (بالإنجليزي)",
+      "cityEn": "المدينة (بالإنجليزي)"
     }
   },
   "companyDocuments": {

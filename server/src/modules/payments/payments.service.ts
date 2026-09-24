@@ -11,7 +11,7 @@ type UpdateInput = z.infer<typeof updatePaymentSchema>;
 type ListQuery = z.infer<typeof listPaymentsQuerySchema>;
 
 const includeRelations = {
-  branch: { select: { id: true, name: true, code: true } },
+  branch: { select: { id: true, name: true, nameEn: true, code: true } },
   employee: { select: { id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true } },
   createdBy: { select: { id: true, fullName: true } },
 } as const;

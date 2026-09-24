@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { namePair, nameInitials } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useParams } from "react-router-dom";
@@ -150,13 +151,13 @@ export default function EmployeeProfilePage() {
             </div>
 
             <p className="text-sm font-medium text-muted-foreground flex flex-wrap items-center gap-2">
-              <span className="text-foreground font-semibold">{employee.jobTitle ?? tr("موظف", "Employee")}</span>
+              <span className="text-foreground font-semibold">{localized(employee.jobTitle, employee.jobTitleEn) ?? tr("موظف", "Employee")}</span>
               <span>•</span>
-              <span>{employee.department ?? tr("عام", "General")}</span>
+              <span>{localized(employee.department, employee.departmentEn) ?? tr("عام", "General")}</span>
               <span>•</span>
               <span className="inline-flex items-center gap-1 text-primary font-medium">
                 <Building2 className="h-3.5 w-3.5" />
-                {employee.branch?.name ?? t("employees.profile.noBranch")}
+                {localized(employee.branch?.name, employee.branch?.nameEn) ?? t("employees.profile.noBranch")}
               </span>
             </p>
 
@@ -200,11 +201,11 @@ export default function EmployeeProfilePage() {
               </CardHeader>
               <CardContent className="grid gap-2 sm:grid-cols-2 p-4 text-sm">
                 <InfoRow icon={Building2} tone="indigo" label={t("employees.fields.employeeNumber")} value={employee.employeeNumber} />
-                <InfoRow icon={Globe} tone="cyan" label={t("employees.fields.nationality")} value={employee.nationality} />
+                <InfoRow icon={Globe} tone="cyan" label={t("employees.fields.nationality")} value={localized(employee.nationality, employee.nationalityEn)} />
                 <InfoRow icon={Phone} tone="emerald" label={t("employees.fields.mobile")} value={employee.mobile} />
                 <InfoRow icon={Mail} tone="blue" label={t("employees.fields.email")} value={employee.email} />
                 <InfoRow icon={Calendar} tone="amber" label={t("employees.fields.joiningDate")} value={formatDate(employee.joiningDate)} />
-                <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={employee.city} />
+                <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={localized(employee.city, employee.cityEn)} />
               </CardContent>
             </Card>
 

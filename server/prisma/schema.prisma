@@ -276,8 +276,10 @@ model EmailVerificationToken {
 model Branch {
   id        String       @id @default(cuid())
   name      String
+  nameEn    String?
   code      String       @unique
   city      String?
+  cityEn    String?
   address   String?
   phone     String?
   email     String?
@@ -306,14 +308,18 @@ model Employee {
   fullNameAr       String
   fullNameEn       String?
   nationality      String?
+  nationalityEn    String?
   gender           Gender?
   dateOfBirth      DateTime?
   mobile           String?
   email            String?
   address          String?
   city             String?
+  cityEn           String?
   jobTitle         String?
+  jobTitleEn       String?
   department       String?
+  departmentEn     String?
   branchId         String?
   joiningDate      DateTime?
   employmentStatus EmploymentStatus @default(ACTIVE)

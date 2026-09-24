@@ -4,6 +4,7 @@ export interface SearchResultItem {
   type: "employee" | "companyDocument" | "payment" | "branch";
   id: string;
   title: string;
+  titleEn?: string | null;
   subtitle?: string;
   href: string;
 }

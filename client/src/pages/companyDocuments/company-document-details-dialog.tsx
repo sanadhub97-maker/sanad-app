@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { localized } from "@/lib/names";
 import {
   FileText,
   Calendar,
@@ -152,7 +153,7 @@ export function CompanyDocumentDetailsDialog({ open, onOpenChange, document, onE
                 {t("companyDocuments.fields.branch")}
               </span>
               <p className="text-sm font-semibold text-foreground truncate">
-                {document.branch?.name || "—"}
+                {localized(document.branch?.name, document.branch?.nameEn) || "—"}
               </p>
             </div>
 

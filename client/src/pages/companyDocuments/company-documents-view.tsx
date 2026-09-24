@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -90,7 +91,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
         </span>
       ),
     }),
-    columnHelper.accessor((row) => row.branch?.name, {
+    columnHelper.accessor((row) => localized(row.branch?.name, row.branch?.nameEn), {
       id: "branch",
       header: t("companyDocuments.table.branch"),
       cell: (c) => (

@@ -26,7 +26,7 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
     where,
     take: REPORT_ROW_CAP,
     orderBy: { fullNameEn: "asc" },
-    include: { branch: { select: { name: true } } },
+    include: { branch: { select: { name: true, nameEn: true } } },
   });
 
   return rows.map((e) => ({
@@ -37,7 +37,9 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
     nationality: e.nationality,
     jobTitle: e.jobTitle,
     department: e.department,
+    departmentEn: e.departmentEn,
     branch: e.branch?.name ?? null,
+    branchEn: e.branch?.nameEn ?? null,
     employmentStatus: e.employmentStatus,
     mobile: e.mobile,
     email: e.email,
@@ -84,7 +86,7 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
     where,
     take: REPORT_ROW_CAP,
     orderBy: { paymentDate: "desc" },
-    include: { branch: { select: { name: true } }, employee: { select: { fullNameAr: true, fullNameEn: true } } },
+    include: { branch: { select: { name: true, nameEn: true } }, employee: { select: { fullNameAr: true, fullNameEn: true } } },
   });
 
   return rows.map((p) => ({
@@ -94,6 +96,7 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
     type: p.type,
     method: p.method,
     branch: p.branch?.name ?? null,
+    branchEn: p.branch?.nameEn ?? null,
     employee: p.employee ? p.employee.fullNameAr || p.employee.fullNameEn : null,
     amount: Number(p.amount),
     vat: Number(p.vat),

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown, UserRound, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -6,7 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from "@/lib/utils";
 import type { Employee } from "@/types/models";
 
-type PickerEmployee = Pick<Employee, "id" | "employeeNumber" | "fullNameAr" | "fullNameEn" | "jobTitle" | "iqamaNumber" | "nationality">;
+type PickerEmployee = Pick<Employee, "id" | "employeeNumber" | "fullNameAr" | "fullNameEn" | "jobTitle" | "jobTitleEn" | "iqamaNumber" | "nationality">;
 
 function initials(name: string) {
   return name
@@ -62,7 +63,7 @@ export function EmployeePicker({
                 </span>
                 <span className="block truncate text-[11px] text-muted-foreground">
                   <bdi className="font-mono">{selected.employeeNumber}</bdi>
-                  {selected.jobTitle ? <> · <bdi>{selected.jobTitle}</bdi></> : null}
+                  {localized(selected.jobTitle, selected.jobTitleEn) ? <> · <bdi>{localized(selected.jobTitle, selected.jobTitleEn)}</bdi></> : null}
                 </span>
               </span>
               <span
@@ -123,7 +124,7 @@ export function EmployeePicker({
                     </span>
                     <span className="block truncate text-[11px] text-muted-foreground">
                       <bdi className="font-mono">{e.employeeNumber}</bdi>
-                      {e.jobTitle ? <> · <bdi>{e.jobTitle}</bdi></> : null}
+                      {localized(e.jobTitle, e.jobTitleEn) ? <> · <bdi>{localized(e.jobTitle, e.jobTitleEn)}</bdi></> : null}
                       {e.iqamaNumber ? <> · {isAr ? "إقامة" : "Iqama"} <bdi className="font-mono">{e.iqamaNumber}</bdi></> : null}
                     </span>
                   </span>

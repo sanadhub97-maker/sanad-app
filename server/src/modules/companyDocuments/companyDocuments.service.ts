@@ -15,7 +15,7 @@ type CreateInput = z.infer<typeof createCompanyDocumentSchema>;
 type UpdateInput = z.infer<typeof updateCompanyDocumentSchema>;
 type ListQuery = z.infer<typeof listCompanyDocumentsQuerySchema>;
 
-const includeBranch = { branch: { select: { id: true, name: true, code: true } } } as const;
+const includeBranch = { branch: { select: { id: true, name: true, nameEn: true, code: true } } } as const;
 
 function expiryStatusDateFilter(status: "VALID" | "EXPIRING_SOON" | "EXPIRED", thresholdDays: number) {
   const today = new Date();

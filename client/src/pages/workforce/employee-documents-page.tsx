@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { localized } from "@/lib/names";
 import { namePair, nameInitials } from "@/lib/names";
 import { documentAuthority } from "./authority";
 import { useTranslation } from "react-i18next";
@@ -184,7 +185,7 @@ export default function EmployeeDocumentsPage() {
             );
             const empNum = emp.employeeNumber || emp.employee?.employeeNumber;
             const empId = emp.employeeId || emp.employee?.id || emp.id;
-            const branchName = emp.branch?.name || emp.employee?.branch?.name;
+            const branchName = localized(emp.branch?.name, emp.branch?.nameEn) || localized(emp.employee?.branch?.name, emp.employee?.branch?.nameEn);
 
             return (
               <div className="flex items-center gap-3">
@@ -566,7 +567,7 @@ export default function EmployeeDocumentsPage() {
                   <SelectItem value="ALL">{isAr ? "جميع الفروع" : "All Branches"}</SelectItem>
                   {branches.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      <bdi>{b.name}</bdi>
+                      <bdi>{localized(b.name, b.nameEn)}</bdi>
                     </SelectItem>
                   ))}
                 </SelectContent>

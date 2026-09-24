@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { localized } from "@/lib/names";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, FileText, Search, User, Wallet } from "lucide-react";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -96,7 +97,7 @@ export function GlobalSearch() {
                 return (
                   <CommandItem
                     key={`${r.type}-${r.id}`}
-                    value={`${r.title} ${r.subtitle ?? ""}`}
+                    value={`${r.title} ${r.titleEn ?? ""} ${r.subtitle ?? ""}`}
                     onSelect={() => go(r.href)}
                     className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/80"
                   >
@@ -105,7 +106,7 @@ export function GlobalSearch() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground truncate">{r.title}</span>
+                        <span className="font-semibold text-sm text-foreground truncate">{localized(r.title, r.titleEn)}</span>
                         <span className="rounded bg-muted px-1.5 py-0.2 text-[10px] font-medium text-muted-foreground">
                           {typeLabel}
                         </span>

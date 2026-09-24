@@ -19,6 +19,7 @@ export async function list(query: ListQuery) {
       ? {
           OR: [
             { name: { contains: q, mode: "insensitive" } },
+            { nameEn: { contains: q, mode: "insensitive" } },
             { code: { contains: q, mode: "insensitive" } },
             { city: { contains: q, mode: "insensitive" } },
           ],
@@ -96,5 +97,5 @@ export async function getNextCode(): Promise<string> {
 }
 
 export async function listAllActive() {
-  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, code: true }, orderBy: { name: "asc" } });
+  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true }, orderBy: { name: "asc" } });
 }

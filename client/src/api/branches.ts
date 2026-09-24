@@ -25,6 +25,6 @@ export const branchesApi = {
 };
 
 export async function listActiveBranches() {
-  const res = await api.get<{ data: { id: string; name: string; code: string }[] }>("/branches/active");
+  const res = await api.get<{ data: { id: string; name: string; nameEn?: string | null; code: string }[] }>("/branches/active");
   return res.data.data;
 }

@@ -16,10 +16,11 @@ import { reportsApi, type ReportFormat } from "@/api/reports";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { tr } from "@/i18n";
+import { localized } from "@/lib/names";
 
-type EmployeeRow = { employeeNumber: string; fullName: string; fullNameEn: string; department: string | null; branch: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
+type EmployeeRow = { employeeNumber: string; fullName: string; fullNameEn: string; department: string | null; departmentEn: string | null; branch: string | null; branchEn: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
 type DocumentRow = { label: string; labelEn: string; sourceType: string; employeeName: string | null; employeeNameEn: string | null; expiryDate: string; status: string };
-type PaymentRow = { paymentNumber: string; paymentDate: string; category: string; branch: string | null; total: number };
+type PaymentRow = { paymentNumber: string; paymentDate: string; category: string; branch: string | null; branchEn: string | null; total: number };
 type ActivityRow = { date: string; user: string; action: string; module: string; description: string | null };
 
 export default function ReportsPage() {
@@ -174,8 +175,8 @@ export default function ReportsPage() {
                       <TableRow key={i} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
                         <TableCell className="font-mono text-xs font-bold text-foreground">{row.employeeNumber}</TableCell>
                         <TableCell className="font-bold text-sm text-foreground">{isAr ? row.fullName : row.fullNameEn}</TableCell>
-                        <TableCell className="text-xs">{row.department ?? "—"}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{row.branch ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{localized(row.department, row.departmentEn) ?? "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{localized(row.branch, row.branchEn) ?? "—"}</TableCell>
                         <TableCell className="text-xs font-medium">{t(`status.${row.employmentStatus}`, { defaultValue: row.employmentStatus })}</TableCell>
                         <TableCell className="flex items-center gap-2">
                           <span className="font-mono text-xs">{formatDate(row.iqamaExpiryDate)}</span>
@@ -263,7 +264,7 @@ export default function ReportsPage() {
                         <TableCell className="font-mono text-xs font-bold text-foreground">{row.paymentNumber}</TableCell>
                         <TableCell className="font-mono text-xs">{formatDate(row.paymentDate)}</TableCell>
                         <TableCell className="text-xs font-medium">{t(`paymentCategories.${row.category}`, { defaultValue: row.category })}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{row.branch ?? "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{localized(row.branch, row.branchEn) ?? "—"}</TableCell>
                         <TableCell className="font-mono font-bold text-sm text-foreground">{formatCurrency(row.total)}</TableCell>
                       </TableRow>
                     ))}

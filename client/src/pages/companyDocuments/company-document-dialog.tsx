@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { localized } from "@/lib/names";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -272,7 +273,7 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
                       <SelectContent className="rounded-xl shadow-xl">
                         {(branches ?? []).map((b) => (
                           <SelectItem key={b.id} value={b.id}>
-                            <bdi>{b.name}</bdi>
+                            <bdi>{localized(b.name, b.nameEn)}</bdi>
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -11,7 +11,7 @@ type CreateInput = z.infer<typeof createEmployeeSchema>;
 type UpdateInput = z.infer<typeof updateEmployeeSchema>;
 type ListQuery = z.infer<typeof listEmployeesQuerySchema>;
 
-const includeBranch = { branch: { select: { id: true, name: true, code: true } } } as const;
+const includeBranch = { branch: { select: { id: true, name: true, nameEn: true, code: true } } } as const;
 
 async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; passportExpiryDate: Date | null }>(
   employee: T

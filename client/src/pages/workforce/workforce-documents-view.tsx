@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -176,17 +177,17 @@ export function WorkforceDocumentsView({
     ),
     columnHelper.accessor(
       (row) =>
-        row.branch?.name ||
-        row.employee?.branch?.name ||
-        row.jobTitle ||
+        localized(row.branch?.name, row.branch?.nameEn) ||
+        localized(row.employee?.branch?.name, row.employee?.branch?.nameEn) ||
+        localized(row.jobTitle, row.jobTitleEn) ||
         "—",
       {
         id: "department",
         header: isAr ? "الفرع / المسمى" : "Branch / Job",
         cell: (c) => {
           const emp = c.row.original;
-          const branchName = emp.branch?.name || emp.employee?.branch?.name;
-          const job = emp.jobTitle;
+          const branchName = localized(emp.branch?.name, emp.branch?.nameEn) || localized(emp.employee?.branch?.name, emp.employee?.branch?.nameEn);
+          const job = localized(emp.jobTitle, emp.jobTitleEn);
 
           return (
             <div className="space-y-0.5">
@@ -499,7 +500,7 @@ export function WorkforceDocumentsView({
                 <SelectItem value="ALL">{isAr ? "جميع المؤسسات والشركات" : "All Establishments"}</SelectItem>
                 {branches.map((b) => (
                   <SelectItem key={b.id} value={b.id}>
-                    <bdi>{b.name}</bdi>
+                    <bdi>{localized(b.name, b.nameEn)}</bdi>
                   </SelectItem>
                 ))}
               </SelectContent>

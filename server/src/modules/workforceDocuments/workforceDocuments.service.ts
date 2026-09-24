@@ -47,7 +47,7 @@ export async function listIqamas(query: ListWorkforceQuery) {
     where,
     orderBy: { iqamaExpiryDate: "asc" },
     include: {
-      branch: { select: { id: true, name: true, code: true } },
+      branch: { select: { id: true, name: true, nameEn: true, code: true } },
     },
   });
 
@@ -61,6 +61,7 @@ export async function listIqamas(query: ListWorkforceQuery) {
       fullNameAr: emp.fullNameAr,
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
+      jobTitleEn: emp.jobTitleEn,
       branch: emp.branch,
       type: "IQAMA",
       documentNumber: emp.iqamaNumber,
@@ -126,7 +127,7 @@ export async function listPassports(query: ListWorkforceQuery) {
     where,
     orderBy: { passportExpiryDate: "asc" },
     include: {
-      branch: { select: { id: true, name: true, code: true } },
+      branch: { select: { id: true, name: true, nameEn: true, code: true } },
     },
   });
 
@@ -140,6 +141,7 @@ export async function listPassports(query: ListWorkforceQuery) {
       fullNameAr: emp.fullNameAr,
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
+      jobTitleEn: emp.jobTitleEn,
       branch: emp.branch,
       type: "PASSPORT",
       documentNumber: emp.passportNumber,
@@ -211,7 +213,7 @@ export async function listGeneralDocuments(
           employeeNumber: true,
           fullNameAr: true,
           fullNameEn: true,
-          branch: { select: { id: true, name: true, code: true } },
+          branch: { select: { id: true, name: true, nameEn: true, code: true } },
         },
       },
     },
@@ -394,11 +396,11 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
   const [iqamaEmps, passportEmps, generalDocs] = await Promise.all([
     prisma.employee.findMany({
       where: empIqamaWhere,
-      include: { branch: { select: { id: true, name: true, code: true } } },
+      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
     }),
     prisma.employee.findMany({
       where: empPassportWhere,
-      include: { branch: { select: { id: true, name: true, code: true } } },
+      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
     }),
     prisma.employeeDocument.findMany({
       where: docWhere,
@@ -409,7 +411,7 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
             employeeNumber: true,
             fullNameAr: true,
             fullNameEn: true,
-            branch: { select: { id: true, name: true, code: true } },
+            branch: { select: { id: true, name: true, nameEn: true, code: true } },
           },
         },
       },
@@ -428,6 +430,7 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       fullNameAr: emp.fullNameAr,
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
+      jobTitleEn: emp.jobTitleEn,
       branch: emp.branch,
       type: "IQAMA",
       category: "IQAMA",
@@ -453,6 +456,7 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       fullNameAr: emp.fullNameAr,
       fullNameEn: emp.fullNameEn,
       jobTitle: emp.jobTitle,
+      jobTitleEn: emp.jobTitleEn,
       branch: emp.branch,
       type: "PASSPORT",
       category: "PASSPORT",
@@ -674,7 +678,7 @@ export async function createDocument(input: any) {
           employeeNumber: true,
           fullNameAr: true,
           fullNameEn: true,
-          branch: { select: { id: true, name: true } },
+          branch: { select: { id: true, name: true, nameEn: true } },
         },
       },
     },
@@ -697,7 +701,7 @@ export async function updateDocument(id: string, input: any) {
         iqamaExpiryDate: input.expiryDate !== undefined ? input.expiryDate : undefined,
         iqamaFileId: input.fileId !== undefined ? input.fileId : undefined,
       },
-      include: { branch: { select: { id: true, name: true, code: true } } },
+      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
     });
     return {
       id,
@@ -724,7 +728,7 @@ export async function updateDocument(id: string, input: any) {
         passportFileId: input.fileId !== undefined ? input.fileId : undefined,
         passportCountry: input.issuingAuthority !== undefined ? input.issuingAuthority : undefined,
       },
-      include: { branch: { select: { id: true, name: true, code: true } } },
+      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
     });
     return {
       id,
@@ -789,7 +793,7 @@ export async function updateDocument(id: string, input: any) {
           employeeNumber: true,
           fullNameAr: true,
           fullNameEn: true,
-          branch: { select: { id: true, name: true } },
+          branch: { select: { id: true, name: true, nameEn: true } },
         },
       },
     },

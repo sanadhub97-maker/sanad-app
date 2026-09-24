@@ -6,8 +6,10 @@ export const branchStatusEnum = z.enum(["ACTIVE", "INACTIVE"]);
 
 export const createBranchSchema = z.object({
   name: z.string().min(2).max(150),
+  nameEn: emptyToUndefined(z.string().max(150).optional()),
   code: z.string().min(1).max(30),
   city: emptyToUndefined(z.string().max(100).optional()),
+  cityEn: emptyToUndefined(z.string().max(100).optional()),
   address: emptyToUndefined(z.string().max(255).optional()),
   phone: emptyToUndefined(z.string().max(30).optional()),
   email: emptyToUndefined(z.string().email().optional()),

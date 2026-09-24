@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 export interface SearchResultItem {
   type: "employee" | "companyDocument" | "payment" | "branch";
   id: string;
-  title: string;
+  title: string; // Arabic where the record has one
+  titleEn?: string | null; // shown when the UI is in English
   subtitle?: string;
   href: string;
 }
@@ -38,7 +39,7 @@ export async function globalSearch(q: string): Promise<SearchResultItem[]> {
       take: 5,
     }),
     prisma.branch.findMany({
-      where: { deletedAt: null, OR: [{ name: insensitive }, { code: insensitive }] },
+      where: { deletedAt: null, OR: [{ name: insensitive }, { nameEn: insensitive }, { code: insensitive }] },
       take: 5,
     }),
   ]);
@@ -49,8 +50,9 @@ export async function globalSearch(q: string): Promise<SearchResultItem[]> {
     results.push({
       type: "employee",
       id: e.id,
-      title: e.fullNameEn || e.fullNameAr,
-      subtitle: `Employee #${e.employeeNumber}${e.iqamaNumber ? ` · Iqama ${e.iqamaNumber}` : ""}`,
+      title: e.fullNameAr || e.fullNameEn || "",
+      titleEn: e.fullNameEn,
+      subtitle: `#${e.employeeNumber}${e.iqamaNumber ? ` · ${e.iqamaNumber}` : ""}`,
       href: `/employees/${e.id}`,
     });
   }
@@ -61,7 +63,7 @@ export async function globalSearch(q: string): Promise<SearchResultItem[]> {
     results.push({ type: "payment", id: p.id, title: p.paymentNumber, subtitle: p.referenceNumber ?? undefined, href: `/payments/${p.id}` });
   }
   for (const b of branches) {
-    results.push({ type: "branch", id: b.id, title: b.name, subtitle: b.code, href: `/branches/${b.id}` });
+    results.push({ type: "branch", id: b.id, title: b.name, titleEn: b.nameEn, subtitle: b.code, href: `/branches/${b.id}` });
   }
 
   return results;

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { localized } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Building2, Edit, Eye, Plus, Trash2 } from "lucide-react";
@@ -48,7 +49,8 @@ export default function BranchesPage() {
   }
 
   const columns = [
-    columnHelper.accessor("name", {
+    columnHelper.accessor((row) => localized(row.name, row.nameEn), {
+      id: "name",
       header: t("branches.table.name"),
       cell: (c) => (
         <div className="flex items-center gap-3">
@@ -65,7 +67,8 @@ export default function BranchesPage() {
         </span>
       ),
     }),
-    columnHelper.accessor("city", {
+    columnHelper.accessor((row) => localized(row.city, row.cityEn), {
+      id: "city",
       header: t("branches.table.city"),
       cell: (c) => <span className="text-xs font-medium text-muted-foreground">{c.getValue() ?? "—"}</span>,
     }),

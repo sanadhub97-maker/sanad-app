@@ -32,9 +32,11 @@ import type { Branch } from "@/types/models";
 
 const makeSchema = () =>
   z.object({
+    nameEn: z.string().optional(),
     name: z.string().min(2, tr("اسم المؤسسة مطلوب", "Establishment name is required")),
     code: z.string().min(1, tr("رمز المؤسسة مطلوب", "Establishment code is required")),
     city: z.string().optional(),
+    cityEn: z.string().optional(),
     address: z.string().optional(),
     phone: z.string().optional(),
     email: z.string().email(tr("البريد الإلكتروني غير صحيح", "Invalid email address")).optional().or(z.literal("")),
@@ -78,6 +80,8 @@ export function BranchDialog({
               ...branch,
               email: branch.email ?? "",
               city: branch.city ?? "",
+              cityEn: branch.cityEn ?? "",
+              nameEn: branch.nameEn ?? "",
               address: branch.address ?? "",
               phone: branch.phone ?? "",
               notes: branch.notes ?? "",
@@ -171,13 +175,22 @@ export function BranchDialog({
                 />
               </FormField>
 
+              <FormField label={t("branches.fields.nameEn")} icon={Building2} className="sm:col-span-6">
+                <Input
+                  {...register("nameEn")}
+                  dir="ltr"
+                  placeholder="e.g. Riyadh Main Establishment"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
+                />
+              </FormField>
+
               <FormField
                 label={t("branches.fields.code")}
                 required
                 error={errors.code?.message}
                 icon={Hash}
                 hint={!isEdit ? (isAr ? "توليد تسلسلي" : "Auto sequence") : undefined}
-                className="sm:col-span-3"
+                className="sm:col-span-6"
               >
                 <div className="relative flex items-center">
                   <Input
@@ -208,7 +221,7 @@ export function BranchDialog({
                 </div>
               </FormField>
 
-              <FormField label={t("branches.fields.status")} required icon={Activity} className="sm:col-span-3">
+              <FormField label={t("branches.fields.status")} required icon={Activity} className="sm:col-span-6">
                 <Controller
                   control={control}
                   name="status"
@@ -243,7 +256,7 @@ export function BranchDialog({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-12">
-              <FormField label={t("branches.fields.city")} icon={MapPin} className="sm:col-span-4">
+              <FormField label={t("branches.fields.city")} icon={MapPin} className="sm:col-span-3">
                 <Input
                   {...register("city")}
                   placeholder={isAr ? "الرياض، جدة، الدمام..." : "Riyadh, Jeddah..."}
@@ -251,7 +264,16 @@ export function BranchDialog({
                 />
               </FormField>
 
-              <FormField label={t("branches.fields.phone")} icon={Phone} className="sm:col-span-4">
+              <FormField label={t("branches.fields.cityEn")} icon={MapPin} className="sm:col-span-3">
+                <Input
+                  {...register("cityEn")}
+                  dir="ltr"
+                  placeholder="e.g. Riyadh"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
+                />
+              </FormField>
+
+              <FormField label={t("branches.fields.phone")} icon={Phone} className="sm:col-span-3">
                 <Input
                   {...register("phone")}
                   dir="ltr"
@@ -260,7 +282,7 @@ export function BranchDialog({
                 />
               </FormField>
 
-              <FormField label={t("branches.fields.email")} error={errors.email?.message} icon={Mail} className="sm:col-span-4">
+              <FormField label={t("branches.fields.email")} error={errors.email?.message} icon={Mail} className="sm:col-span-3">
                 <Input
                   type="email"
                   dir="ltr"

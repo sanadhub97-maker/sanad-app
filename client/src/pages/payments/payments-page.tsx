@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -81,7 +82,7 @@ export default function PaymentsPage() {
         );
       },
     }),
-    columnHelper.accessor((row) => row.branch?.name, {
+    columnHelper.accessor((row) => localized(row.branch?.name, row.branch?.nameEn), {
       id: "branch",
       header: t("payments.table.branch"),
       cell: (c) => <span className="text-xs font-medium text-muted-foreground">{c.getValue() ?? "—"}</span>,

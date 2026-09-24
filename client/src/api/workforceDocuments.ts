@@ -7,7 +7,8 @@ export interface WorkforceDocumentItem {
   fullNameAr?: string;
   fullNameEn?: string;
   jobTitle?: string;
-  branch?: { id: string; name: string; code: string } | null;
+  jobTitleEn?: string | null;
+  branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   type?: string;
   name?: string | null;
   documentNumber?: string | null;
@@ -27,7 +28,7 @@ export interface WorkforceDocumentItem {
     employeeNumber: string;
     fullNameAr: string;
     fullNameEn?: string | null;
-    branch?: { id: string; name: string; code: string } | null;
+    branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   };
 }
 

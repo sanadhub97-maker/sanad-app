@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { localized } from "@/lib/names";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -48,14 +49,18 @@ const makeSchema = () => z.object({
   fullNameAr: z.string().min(2, tr("الاسم الكامل بالعربي مطلوب", "Full Arabic name is required")),
   fullNameEn: z.string().optional(),
   nationality: z.string().optional(),
+  nationalityEn: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
   dateOfBirth: z.string().optional(),
   mobile: z.string().optional(),
   email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")).optional().or(z.literal("")),
   address: z.string().optional(),
   city: z.string().optional(),
+  cityEn: z.string().optional(),
   jobTitle: z.string().optional(),
+  jobTitleEn: z.string().optional(),
   department: z.string().optional(),
+  departmentEn: z.string().optional(),
   branchId: z.string().optional(),
   joiningDate: z.string().optional(),
   employmentStatus: z.enum(["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED"]),
@@ -364,6 +369,15 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 />
               </FormField>
 
+              <FormField label={t("employees.fields.nationalityEn")} icon={Globe}>
+                <Input
+                  {...register("nationalityEn")}
+                  dir="ltr"
+                  placeholder="e.g. Egyptian"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60"
+                />
+              </FormField>
+
               <FormField label={t("employees.fields.gender")} icon={UserCheck}>
                 <Controller
                   control={control}
@@ -440,6 +454,15 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 />
               </FormField>
 
+              <FormField label={t("employees.fields.cityEn")} icon={MapPin}>
+                <Input
+                  {...register("cityEn")}
+                  dir="ltr"
+                  placeholder="e.g. Bisha"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-emerald-500/30 focus-visible:border-emerald-500/60"
+                />
+              </FormField>
+
               <FormField label={t("employees.fields.address")} icon={Building2} className="sm:col-span-2 lg:col-span-3">
                 <Input
                   {...register("address")}
@@ -473,10 +496,28 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 />
               </FormField>
 
+              <FormField label={t("employees.fields.jobTitleEn")} icon={Briefcase}>
+                <Input
+                  {...register("jobTitleEn")}
+                  dir="ltr"
+                  placeholder="e.g. Operations Manager"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
+                />
+              </FormField>
+
               <FormField label={t("employees.fields.department")} icon={FolderKanban}>
                 <Input
                   {...register("department")}
                   placeholder={isAr ? "مثال: الموارد البشرية، المالية، المبيعات..." : "e.g. Human Resources"}
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
+                />
+              </FormField>
+
+              <FormField label={t("employees.fields.departmentEn")} icon={FolderKanban}>
+                <Input
+                  {...register("departmentEn")}
+                  dir="ltr"
+                  placeholder="e.g. Human Resources"
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
@@ -493,7 +534,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                       <SelectContent className="rounded-xl border-border shadow-xl">
                         {branches?.map((b) => (
                           <SelectItem key={b.id} value={b.id} className="rounded-lg font-medium cursor-pointer">
-                            <bdi>{b.name}</bdi>
+                            <bdi>{localized(b.name, b.nameEn)}</bdi>
                           </SelectItem>
                         ))}
                       </SelectContent>

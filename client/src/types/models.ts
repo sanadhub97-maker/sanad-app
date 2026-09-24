@@ -17,8 +17,10 @@ export interface Paginated<T> {
 export interface Branch {
   id: string;
   name: string;
+  nameEn?: string | null;
   code: string;
   city?: string | null;
+  cityEn?: string | null;
   address?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -51,16 +53,20 @@ export interface Employee {
   fullNameAr: string;
   fullNameEn?: string | null;
   nationality?: string | null;
+  nationalityEn?: string | null;
   gender?: Gender | null;
   dateOfBirth?: string | null;
   mobile?: string | null;
   email?: string | null;
   address?: string | null;
   city?: string | null;
+  cityEn?: string | null;
   jobTitle?: string | null;
+  jobTitleEn?: string | null;
   department?: string | null;
+  departmentEn?: string | null;
   branchId?: string | null;
-  branch?: { id: string; name: string; code: string } | null;
+  branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   joiningDate?: string | null;
   employmentStatus: EmploymentStatus;
   notes?: string | null;
@@ -87,7 +93,7 @@ export interface CompanyDocument {
   licenseNumber?: string | null;
   issuingAuthority?: string | null;
   branchId?: string | null;
-  branch?: { id: string; name: string; code: string } | null;
+  branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   city?: string | null;
   issueDate?: string | null;
   startDate?: string | null;
@@ -111,7 +117,7 @@ export interface Payment {
   method: string;
   paidBy?: string | null;
   branchId?: string | null;
-  branch?: { id: string; name: string; code: string } | null;
+  branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   employeeId?: string | null;
   employee?: { id: string; employeeNumber: string; fullNameAr: string; fullNameEn?: string | null } | null;
   supplierName?: string | null;

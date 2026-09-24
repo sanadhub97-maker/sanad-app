@@ -230,7 +230,11 @@
       "iqamaFile": "Iqama File",
       "passportNumber": "Passport Number",
       "passportCountry": "Passport Country",
-      "passportFile": "Passport File"
+      "passportFile": "Passport File",
+      "nationalityEn": "Nationality (English)",
+      "cityEn": "City (English)",
+      "jobTitleEn": "Job Title (English)",
+      "departmentEn": "Department (English)"
     },
     "profile": {
       "title": "Employee Profile",
@@ -365,7 +369,9 @@
       "email": "Email",
       "status": "Status",
       "address": "Address",
-      "notes": "Notes"
+      "notes": "Notes",
+      "nameEn": "Establishment Name (English)",
+      "cityEn": "City (English)"
     }
   },
   "companyDocuments": {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { localized } from "@/lib/names";
 import { namePair, nameInitials } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -108,7 +109,8 @@ export default function EmployeesListPage() {
         );
       },
     }),
-    columnHelper.accessor("jobTitle", {
+    columnHelper.accessor((row) => localized(row.jobTitle, row.jobTitleEn), {
+      id: "jobTitle",
       header: t("employees.table.jobTitle"),
       cell: (c) => (
         <span className="text-xs font-medium text-foreground">
@@ -116,7 +118,7 @@ export default function EmployeesListPage() {
         </span>
       ),
     }),
-    columnHelper.accessor((row) => row.branch?.name, {
+    columnHelper.accessor((row) => localized(row.branch?.name, row.branch?.nameEn), {
       id: "branch",
       header: t("employees.table.branch"),
       cell: (c) => (
@@ -340,7 +342,7 @@ export default function EmployeesListPage() {
                 <SelectItem value="all">{t("employees.filters.allBranches")}</SelectItem>
                 {(branches ?? []).map((b) => (
                   <SelectItem key={b.id} value={b.id}>
-                    <bdi>{b.name}</bdi>
+                    <bdi>{localized(b.name, b.nameEn)}</bdi>
                   </SelectItem>
                 ))}
               </SelectContent>

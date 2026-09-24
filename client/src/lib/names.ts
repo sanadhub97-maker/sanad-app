@@ -1,3 +1,5 @@
+import i18n, { isRtlLanguage } from "@/i18n";
+
 /** The employee name to lead with in the current language, plus the other
  * language's name as a secondary line (empty when missing or identical). */
 export function namePair(ar: string | null | undefined, en: string | null | undefined, isAr: boolean) {
@@ -19,4 +21,16 @@ export function nameInitials(name: string, fallback = "?") {
       .join("")
       .toUpperCase() || fallback
   );
+}
+
+/** A free-text value with an optional English version: the English one in
+ * English (falling back to Arabic when it was left empty), else the Arabic. */
+export function pickLang(ar: string | null | undefined, en: string | null | undefined, isAr: boolean): string | null {
+  return (isAr ? ar || en : en || ar) || null;
+}
+
+/** pickLang() for the current UI language. Components re-render on a
+ * language switch (useTranslation), so reading it at render time is safe. */
+export function localized(ar: string | null | undefined, en: string | null | undefined): string | null {
+  return pickLang(ar, en, isRtlLanguage(i18n.language));
 }

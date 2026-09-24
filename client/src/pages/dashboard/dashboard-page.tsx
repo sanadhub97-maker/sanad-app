@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { localized } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -825,7 +826,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="p-4 space-y-2">
-            {(recent?.recentEmployees ?? []).slice(0, 5).map((e: { id: string; fullNameEn?: string; fullNameAr: string; createdAt: string; jobTitle?: string }) => {
+            {(recent?.recentEmployees ?? []).slice(0, 5).map((e: { id: string; fullNameEn?: string; fullNameAr: string; createdAt: string; jobTitle?: string; jobTitleEn?: string | null }) => {
               const name = isAr ? (e.fullNameAr || e.fullNameEn) : (e.fullNameEn || e.fullNameAr);
               const initials = name?.split(" ").slice(0, 2).map((p: string) => p[0]).join("") ?? "U";
               return (
@@ -842,7 +843,7 @@ export default function DashboardPage() {
                       {name}
                     </p>
                     <p className="text-[11px] text-muted-foreground truncate">
-                      {e.jobTitle ?? (isAr ? "موظف" : "Staff")}
+                      {localized(e.jobTitle, e.jobTitleEn) ?? (isAr ? "موظف" : "Staff")}
                     </p>
                   </div>
                   <span className="text-[10px] text-muted-foreground/80 shrink-0">

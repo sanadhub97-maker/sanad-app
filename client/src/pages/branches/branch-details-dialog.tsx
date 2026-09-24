@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { localized } from "@/lib/names";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
@@ -43,7 +44,7 @@ export function BranchDetailsDialog({ open, onOpenChange, branch, onEdit }: Prop
               <AppleIcon icon={Building2} tone="indigo" size="md" />
               <div>
                 <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
-                  {branch.name}
+                  {localized(branch.name, branch.nameEn)}
                 </DialogTitle>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-muted text-foreground border border-border/60">
@@ -66,7 +67,7 @@ export function BranchDetailsDialog({ open, onOpenChange, branch, onEdit }: Prop
                 <span>{t("branches.fields.city")}</span>
               </div>
               <p className="text-sm font-semibold text-foreground">
-                {branch.city || "—"}
+                {localized(branch.city, branch.cityEn) || "—"}
               </p>
             </div>
 
