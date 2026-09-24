@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { tr } from "@/i18n";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -145,9 +146,9 @@ export default function EmployeeProfilePage() {
             </div>
 
             <p className="text-sm font-medium text-muted-foreground flex flex-wrap items-center gap-2">
-              <span className="text-foreground font-semibold">{employee.jobTitle ?? "موظف"}</span>
+              <span className="text-foreground font-semibold">{employee.jobTitle ?? tr("موظف", "Employee")}</span>
               <span>•</span>
-              <span>{employee.department ?? "عام"}</span>
+              <span>{employee.department ?? tr("عام", "General")}</span>
               <span>•</span>
               <span className="inline-flex items-center gap-1 text-primary font-medium">
                 <Building2 className="h-3.5 w-3.5" />
@@ -218,7 +219,7 @@ export default function EmployeeProfilePage() {
                   </div>
                   <p className="font-mono text-base font-bold text-foreground">{employee.iqamaNumber ?? "—"}</p>
                   <p className="text-xs text-muted-foreground">
-                    تاريخ الانتهاء: <span className="font-mono font-medium text-foreground">{formatDate(employee.iqamaExpiryDate)}</span>
+                    {tr("تاريخ الانتهاء:", "Expiry date:")} <span className="font-mono font-medium text-foreground">{formatDate(employee.iqamaExpiryDate)}</span>
                   </p>
                 </div>
 
@@ -229,7 +230,7 @@ export default function EmployeeProfilePage() {
                   </div>
                   <p className="font-mono text-base font-bold text-foreground">{employee.passportNumber ?? "—"}</p>
                   <p className="text-xs text-muted-foreground">
-                    تاريخ الانتهاء: <span className="font-mono font-medium text-foreground">{formatDate(employee.passportExpiryDate)}</span>
+                    {tr("تاريخ الانتهاء:", "Expiry date:")} <span className="font-mono font-medium text-foreground">{formatDate(employee.passportExpiryDate)}</span>
                   </p>
                 </div>
               </CardContent>
@@ -351,8 +352,8 @@ export default function EmployeeProfilePage() {
 
       {/* 🖨️ Official Print Signatures & Stamp Block */}
       <PrintDocumentFooter
-        prepTitle="إعداد قسم شؤون الموظفين (HR Specialist)"
-        authTitle="اعتماد الإدارة العامة (General Manager)"
+        prepTitle={tr("إعداد قسم شؤون الموظفين", "Prepared by HR")}
+        authTitle={tr("اعتماد الإدارة العامة", "Approved by the General Manager")}
       />
     </div>
   );

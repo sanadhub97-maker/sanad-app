@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,19 +30,21 @@ import { DateInput } from "@/components/common/date-input";
 import { workforceDocumentsApi, type WorkforceDocumentItem } from "@/api/workforceDocuments";
 import { employeesApi } from "@/api/employees";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 import { toDateInputValue } from "@/lib/utils";
 
-const schema = z.object({
-  employeeId: z.string().min(1, "يجب تحديد الموظف"),
-  documentNumber: z.string().min(1, "رقم الوثيقة مطلوب"),
-  issuingAuthority: z.string().optional(),
-  issueDate: z.string().optional(),
-  expiryDate: z.string().optional(),
-  fileId: z.string().optional(),
-  notes: z.string().optional(),
-});
+const makeSchema = () =>
+  z.object({
+    employeeId: z.string().min(1, tr("يجب تحديد الموظف", "Select an employee")),
+    documentNumber: z.string().min(1, tr("رقم الوثيقة مطلوب", "Document number is required")),
+    issuingAuthority: z.string().optional(),
+    issueDate: z.string().optional(),
+    expiryDate: z.string().optional(),
+    fileId: z.string().optional(),
+    notes: z.string().optional(),
+  });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 interface Props {
   open: boolean;
@@ -60,7 +62,7 @@ const TYPE_CONFIG = {
     titleKey: "workforce.iqamas.title",
     addKey: "workforce.iqamas.addTitle",
     numberKey: "workforce.iqamas.number",
-    authorityKey: "المهنة / الملاحظة الرسمية",
+    authorityKey: "workforce.iqamas.authority",
   },
   PASSPORT: {
     icon: BookUser,
@@ -162,7 +164,7 @@ export function WorkforceDocumentDialog({
     setValue,
     formState: { isSubmitting, errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: {
       employeeId: "",
       documentNumber: "",
@@ -458,7 +460,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
             </FormField>
 
             <FormField
-              label={cfg.authorityKey.startsWith("workforce.") ? t(cfg.authorityKey) : cfg.authorityKey}
+              label={t(cfg.authorityKey)}
               error={errors.issuingAuthority?.message}
             >
               <div className="relative">

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,6 +35,7 @@ import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } fr
 import { employeesApi } from "@/api/employees";
 import { EmployeePicker } from "@/components/common/employee-picker";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 import { toDateInputValue, nullsToUndefined, todayInputValue } from "@/lib/utils";
 import type { Payment } from "@/types/models";
 
@@ -45,14 +46,14 @@ function needsEmployee(category?: string, type?: string) {
   return !!category && EMPLOYEE_CATEGORIES.includes(category) && !(category === "VISA" && type === "WORK_VISA");
 }
 
-const schema = z.object({
+const makeSchema = () => z.object({
   paymentNumber: z.string().optional(),
-  paymentDate: z.string().min(1, "Required"),
+  paymentDate: z.string().min(1, tr("مطلوب", "Required")),
   category: z.string().min(1),
   type: z.string().optional(),
   employeeId: z.string().optional(),
   description: z.string().optional(),
-  amount: z.coerce.number().positive("Must be greater than 0"),
+  amount: z.coerce.number().positive(tr("يجب أن يكون أكبر من صفر", "Must be greater than 0")),
   vat: z.coerce.number().min(0).default(0),
   method: z.string().min(1),
   paidBy: z.string().optional(),
@@ -67,14 +68,14 @@ const schema = z.object({
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["type"],
-      message: v.category === "VISA" ? "اختر نوع التأشيرة" : "اختر نوع العملية",
+      message: v.category === "VISA" ? tr("اختر نوع التأشيرة", "Select the visa type") : tr("اختر نوع العملية", "Select the transaction type"),
     });
   }
   if (needsEmployee(v.category, v.type) && !v.employeeId) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: "اختر الموظف" });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: tr("اختر الموظف", "Select an employee") });
   }
 });
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 export function PaymentDialog({
   open,
@@ -107,7 +108,7 @@ export function PaymentDialog({
     getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: {
       category: PAYMENT_CATEGORIES[0],
       method: PAYMENT_METHODS[0],

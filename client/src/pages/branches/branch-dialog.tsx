@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,20 +26,22 @@ import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { branchesApi } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { Branch } from "@/types/models";
 
-const schema = z.object({
-  name: z.string().min(2, "اسم المؤسسة مطلوب"),
-  code: z.string().min(1, "رمز المؤسسة مطلوب"),
-  city: z.string().optional(),
-  address: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
-  notes: z.string().optional(),
-});
-type FormValues = z.infer<typeof schema>;
+const makeSchema = () =>
+  z.object({
+    name: z.string().min(2, tr("اسم المؤسسة مطلوب", "Establishment name is required")),
+    code: z.string().min(1, tr("رمز المؤسسة مطلوب", "Establishment code is required")),
+    city: z.string().optional(),
+    address: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().email(tr("البريد الإلكتروني غير صحيح", "Invalid email address")).optional().or(z.literal("")),
+    status: z.enum(["ACTIVE", "INACTIVE"]),
+    notes: z.string().optional(),
+  });
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 export function BranchDialog({
   open,
@@ -64,7 +66,7 @@ export function BranchDialog({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: { status: "ACTIVE" },
   });
 

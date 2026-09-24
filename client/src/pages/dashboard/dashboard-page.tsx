@@ -383,7 +383,7 @@ export default function DashboardPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white font-sans leading-tight">
-              {greeting}، {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
+              {greeting}{isAr ? "،" : ","} {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed font-normal">
               {isAr

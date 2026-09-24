@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { reportsApi, type ReportFormat } from "@/api/reports";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { tr } from "@/i18n";
 
 type EmployeeRow = { employeeNumber: string; fullName: string; department: string | null; branch: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
 type DocumentRow = { label: string; sourceType: string; employeeName: string | null; expiryDate: string; status: string };
@@ -65,13 +66,13 @@ export default function ReportsPage() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-60 rounded-xl p-1 shadow-luxury">
             <DropdownMenuItem
-              onSelect={() => openPdfInNewTab(`/reports/${report}`, { ...p, format: "pdf" })}
+              onSelect={() => openPdfInNewTab(`/reports/${report}`, { ...p, format: "pdf" }, `${report}-report.pdf`)}
               className="rounded-lg text-xs font-semibold gap-2 py-2 cursor-pointer"
             >
               <FileText className="h-4 w-4 text-rose-500 shrink-0" />
               <div className="flex flex-col">
-                <span>طباعة تقرير PDF الرسمي</span>
-                <span className="text-[10px] text-muted-foreground font-normal">تقرير منسق بشعار المؤسسة للطباعة المباشرة</span>
+                <span>{tr("طباعة تقرير PDF الرسمي", "Print official PDF report")}</span>
+                <span className="text-[10px] text-muted-foreground font-normal">{tr("تقرير منسق بشعار المؤسسة للطباعة المباشرة", "Formatted with your logo, ready to print")}</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -80,8 +81,8 @@ export default function ReportsPage() {
             >
               <Printer className="h-4 w-4 text-primary shrink-0" />
               <div className="flex flex-col">
-                <span>طباعة الصفحة الحالية</span>
-                <span className="text-[10px] text-muted-foreground font-normal">أمر طباعة المتصفح المباشر</span>
+                <span>{tr("طباعة الصفحة الحالية", "Print this page")}</span>
+                <span className="text-[10px] text-muted-foreground font-normal">{tr("أمر طباعة المتصفح المباشر", "Uses the browser's print dialog")}</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -106,7 +107,7 @@ export default function ReportsPage() {
                 onSelect={() => reportsApi[report].export(p, fmt)}
                 className="rounded-lg text-xs font-semibold py-1.5 cursor-pointer"
               >
-                تصدير بصيغة {fmt.toUpperCase()}
+                {tr("تصدير بصيغة", "Export as")} {fmt.toUpperCase()}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -118,30 +119,30 @@ export default function ReportsPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="التقارير التحليلية والبيانات"
-        description="معاينة وطباعة وتصدير التقارير المفصلة للموظفين والوثائق والمدفوعات وسجل النشاط."
+        title={tr("التقارير التحليلية والبيانات", "Reports & Analytics")}
+        description={tr("معاينة وطباعة وتصدير التقارير المفصلة للموظفين والوثائق والمدفوعات وسجل النشاط.", "Preview, print and export detailed reports on employees, documents, payments and activity.")}
       />
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-4">
         <TabsList className="bg-card/70 border border-border/60 p-1.5 rounded-2xl flex-wrap h-auto gap-1.5">
           <TabsTrigger value="employees" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
             <AppleIcon icon={Users} tone="indigo" size="xs" />
-            <span>تقرير الموظفين</span>
+            <span>{tr("تقرير الموظفين", "Employees")}</span>
             {Array.isArray(employees) && <span className="ms-1 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">{employees.length}</span>}
           </TabsTrigger>
           <TabsTrigger value="documents" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
             <AppleIcon icon={FileText} tone="amber" size="xs" />
-            <span>تقرير الوثائق والتراخيص</span>
+            <span>{tr("تقرير الوثائق والتراخيص", "Documents & Licenses")}</span>
             {Array.isArray(documents) && <span className="ms-1 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">{documents.length}</span>}
           </TabsTrigger>
           <TabsTrigger value="payments" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
             <AppleIcon icon={CreditCard} tone="rose" size="xs" />
-            <span>تقرير المدفوعات المالية</span>
+            <span>{tr("تقرير المدفوعات المالية", "Payments")}</span>
             {Array.isArray(payments) && <span className="ms-1 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">{payments.length}</span>}
           </TabsTrigger>
           <TabsTrigger value="activity" className="rounded-xl text-xs font-semibold px-3 py-1.5 gap-2 data-[state=active]:shadow-sm">
             <AppleIcon icon={Activity} tone="emerald" size="xs" />
-            <span>سجل نشاط النظام</span>
+            <span>{tr("سجل نشاط النظام", "Activity Log")}</span>
             {Array.isArray(activity) && <span className="ms-1 rounded-full bg-primary/10 px-1.5 py-0.2 text-[10px] text-primary">{activity.length}</span>}
           </TabsTrigger>
         </TabsList>
@@ -151,7 +152,7 @@ export default function ReportsPage() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  عرض قائمة الموظفين وحالات الإقامات المسجلة
+                  {tr("عرض قائمة الموظفين وحالات الإقامات المسجلة", "Employees and the status of their iqamas")}
                 </span>
                 <ReportActions report="employees" params={{}} />
               </div>
@@ -159,12 +160,12 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40 border-b border-border/60 hover:bg-muted/40">
-                      <TableHead className="font-bold text-xs">الرقم الوظيفي</TableHead>
-                      <TableHead className="font-bold text-xs">اسم الموظف</TableHead>
-                      <TableHead className="font-bold text-xs">القسم</TableHead>
-                      <TableHead className="font-bold text-xs">المؤسسة</TableHead>
-                      <TableHead className="font-bold text-xs">الحالة</TableHead>
-                      <TableHead className="font-bold text-xs">انتهاء الإقامة</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("الرقم الوظيفي", "Employee No.")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("اسم الموظف", "Employee Name")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("القسم", "Department")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("المؤسسة", "Establishment")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("الحالة", "Status")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("انتهاء الإقامة", "Iqama Expiry")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -174,7 +175,7 @@ export default function ReportsPage() {
                         <TableCell className="font-bold text-sm text-foreground">{row.fullName}</TableCell>
                         <TableCell className="text-xs">{row.department ?? "—"}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{row.branch ?? "—"}</TableCell>
-                        <TableCell className="text-xs font-medium">{row.employmentStatus}</TableCell>
+                        <TableCell className="text-xs font-medium">{t(`status.${row.employmentStatus}`, { defaultValue: row.employmentStatus })}</TableCell>
                         <TableCell className="flex items-center gap-2">
                           <span className="font-mono text-xs">{formatDate(row.iqamaExpiryDate)}</span>
                           <StatusBadge status={row.iqamaStatus as never} />
@@ -194,13 +195,13 @@ export default function ReportsPage() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
                   <SelectTrigger className="w-48 rounded-xl border-border/70 bg-card text-xs font-medium">
-                    <SelectValue placeholder="تصفية حسب الحالة" />
+                    <SelectValue placeholder={tr("تصفية حسب الحالة", "Filter by status")} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl shadow-luxury">
-                    <SelectItem value="all">جميع الحالات</SelectItem>
-                    <SelectItem value="VALID">سارية وممتثلة (Valid)</SelectItem>
-                    <SelectItem value="EXPIRING_SOON">توشك على الانتهاء (Expiring)</SelectItem>
-                    <SelectItem value="EXPIRED">منتهية (Expired)</SelectItem>
+                    <SelectItem value="all">{tr("جميع الحالات", "All statuses")}</SelectItem>
+                    <SelectItem value="VALID">{tr("سارية", "Valid")}</SelectItem>
+                    <SelectItem value="EXPIRING_SOON">{tr("توشك على الانتهاء", "Expiring soon")}</SelectItem>
+                    <SelectItem value="EXPIRED">{tr("منتهية", "Expired")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <ReportActions report="documents" params={{ status: statusFilter || undefined }} />
@@ -209,11 +210,11 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40 border-b border-border/60 hover:bg-muted/40">
-                      <TableHead className="font-bold text-xs">اسم الوثيقة</TableHead>
-                      <TableHead className="font-bold text-xs">نوع المصدر</TableHead>
-                      <TableHead className="font-bold text-xs">الموظف المرتبط</TableHead>
-                      <TableHead className="font-bold text-xs">تاريخ الانتهاء</TableHead>
-                      <TableHead className="font-bold text-xs">حالة الوثيقة</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("اسم الوثيقة", "Document")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("نوع المصدر", "Source")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("الموظف المرتبط", "Employee")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("تاريخ الانتهاء", "Expiry Date")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("حالة الوثيقة", "Status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -240,7 +241,7 @@ export default function ReportsPage() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  سجل المدفوعات والمصروفات المالية
+                  {tr("سجل المدفوعات والمصروفات المالية", "Payments and expenses")}
                 </span>
                 <ReportActions report="payments" params={{}} />
               </div>
@@ -248,11 +249,11 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40 border-b border-border/60 hover:bg-muted/40">
-                      <TableHead className="font-bold text-xs">رقم الدفعة</TableHead>
-                      <TableHead className="font-bold text-xs">تاريخ العملية</TableHead>
-                      <TableHead className="font-bold text-xs">التصنيف</TableHead>
-                      <TableHead className="font-bold text-xs">المؤسسة</TableHead>
-                      <TableHead className="font-bold text-xs">المبلغ الإجمالي</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("رقم الدفعة", "Payment No.")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("تاريخ العملية", "Date")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("التصنيف", "Category")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("المؤسسة", "Establishment")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("المبلغ الإجمالي", "Total")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -277,7 +278,7 @@ export default function ReportsPage() {
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">
-                  سجل التدقيق والحركات الإدارية اللحظية
+                  {tr("سجل التدقيق والحركات الإدارية اللحظية", "Audit trail of administrative actions")}
                 </span>
                 <ReportActions report="activity" params={{}} />
               </div>
@@ -285,11 +286,11 @@ export default function ReportsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/40 border-b border-border/60 hover:bg-muted/40">
-                      <TableHead className="font-bold text-xs">التاريخ والوقت</TableHead>
-                      <TableHead className="font-bold text-xs">المستخدم</TableHead>
-                      <TableHead className="font-bold text-xs">نوع الإجراء</TableHead>
-                      <TableHead className="font-bold text-xs">القسم / الوحدة</TableHead>
-                      <TableHead className="font-bold text-xs">التفاصيل والوصف</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("التاريخ والوقت", "Date & Time")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("المستخدم", "User")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("نوع الإجراء", "Action")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("القسم / الوحدة", "Module")}</TableHead>
+                      <TableHead className="font-bold text-xs">{tr("التفاصيل والوصف", "Details")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

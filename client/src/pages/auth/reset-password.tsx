@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,18 +11,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resetPassword } from "@/api/auth";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 
-const schema = z
-  .object({
-    password: z.string().min(8, "كلمة المرور يجب أن لا تقل عن 8 خانات"),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    message: "كلمات المرور غير متطابقة",
-    path: ["confirmPassword"],
-  });
+const makeSchema = () =>
+  z
+    .object({
+      password: z.string().min(8, tr("كلمة المرور يجب أن لا تقل عن 8 خانات", "Password must be at least 8 characters")),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      message: tr("كلمات المرور غير متطابقة", "Passwords do not match"),
+      path: ["confirmPassword"],
+    });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 export default function ResetPasswordPage() {
   const { t, i18n } = useTranslation();
@@ -38,7 +40,7 @@ export default function ResetPasswordPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({ resolver: zodResolver(useMemo(makeSchema, [isAr])) });
 
   async function onSubmit(values: FormValues) {
     try {
@@ -46,7 +48,9 @@ export default function ResetPasswordPage() {
       toast.success(res.message);
       navigate("/login");
     } catch (err) {
-      toast.error(getErrorMessage(err, "رابط إعادة التعيين غير صالح أو منتهي الصلاحية."));
+      toast.error(
+        getErrorMessage(err, isAr ? "رابط إعادة التعيين غير صالح أو منتهي الصلاحية." : "The reset link is invalid or has expired.")
+      );
     }
   }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { tr } from "@/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -235,7 +236,7 @@ export default function EmployeesListPage() {
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
               {summary?.totalEmployees ?? data?.meta.total ?? "—"}
             </span>
-            <span className="text-[11px] text-muted-foreground font-medium">موظف</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{tr("موظف", "employees")}</span>
           </div>
         </div>
 
@@ -260,7 +261,7 @@ export default function EmployeesListPage() {
             <span className="inline-block rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               {summary && summary.totalEmployees > 0
                 ? `${Math.round((summary.activeEmployees / summary.totalEmployees) * 100)}%`
-                : "نشط"}
+                : tr("نشط", "Active")}
             </span>
           </div>
         </div>
@@ -278,7 +279,7 @@ export default function EmployeesListPage() {
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-sans">
               {expiration?.within30 ?? summary?.expiringDocuments ?? 0}
             </span>
-            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">خلال 30 يوم</span>
+            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">{tr("خلال 30 يوم", "Within 30 days")}</span>
           </div>
         </div>
 
@@ -295,7 +296,7 @@ export default function EmployeesListPage() {
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-sans">
               {branches?.length ?? 1}
             </span>
-            <span className="text-[11px] text-muted-foreground font-medium">مؤسسة نشطة</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{tr("مؤسسة نشطة", "active")}</span>
           </div>
         </div>
       </motion.div>

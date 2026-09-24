@@ -92,7 +92,8 @@
     "required": "Required",
     "optional": "Optional",
     "deletedSuccess": "Deleted successfully.",
-    "savedSuccess": "Saved successfully."
+    "savedSuccess": "Saved successfully.",
+    "recordsReport": "Official Records Report"
   },
   "status": {
     "VALID": "Valid",
@@ -272,6 +273,12 @@
       "startDate": "Start Date",
       "expiryDate": "Expiry Date",
       "file": "File"
+    },
+    "stats": {
+      "total": "Total Employees",
+      "active": "Active",
+      "expiring": "Documents Expiring Soon",
+      "branches": "Establishments"
     }
   },
   "workforce": {
@@ -281,7 +288,8 @@
       "addTitle": "Register / Renew Iqama",
       "number": "Iqama Number",
       "issueDate": "Issue Date",
-      "expiryDate": "Expiry Date"
+      "expiryDate": "Expiry Date",
+      "authority": "Profession / Official Note"
     },
     "passports": {
       "title": "Passport Records & Travel Documents",

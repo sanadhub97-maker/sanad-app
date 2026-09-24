@@ -16,7 +16,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (!token) {
       setStatus("error");
-      setMessage("رمز التحقق مفقود أو غير صالح.");
+      setMessage(isAr ? "رمز التحقق مفقود أو غير صالح." : "The verification token is missing or invalid.");
       return;
     }
     verifyEmail(token)
@@ -26,8 +26,11 @@ export default function VerifyEmailPage() {
       })
       .catch((err) => {
         setStatus("error");
-        setMessage(getErrorMessage(err, "رابط التحقق غير صالح أو قد انتهت صلاحيته."));
+        setMessage(
+          getErrorMessage(err, isAr ? "رابط التحقق غير صالح أو قد انتهت صلاحيته." : "The verification link is invalid or has expired.")
+        );
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- verify once per token, not again on a language switch
   }, [token]);
 
   const ArrowIcon = isAr ? ArrowLeft : ArrowRight;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,14 +13,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { login } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 
-const schema = z.object({
-  email: z.string().email("صيغة البريد الإلكتروني غير صحيحة"),
-  password: z.string().min(1, "كلمة المرور مطلوبة"),
-  rememberMe: z.boolean().default(false),
-});
+const makeSchema = () =>
+  z.object({
+    email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")),
+    password: z.string().min(1, tr("كلمة المرور مطلوبة", "Password is required")),
+    rememberMe: z.boolean().default(false),
+  });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -38,7 +40,7 @@ export default function LoginPage() {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: { rememberMe: false },
   });
 

@@ -169,10 +169,10 @@ export function AuthLayout() {
                 {isAr ? "متوافق مع المنصات الرسمية:" : "Integrated With:"}
               </span>
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-300">
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">منصة قوى (Qiwa)</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">مقيم (Muqeem)</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">مدد (Mudad)</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">التأمينات (GOSI)</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "منصة قوى" : "Qiwa"}</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "مقيم" : "Muqeem"}</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "مدد" : "Mudad"}</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "التأمينات" : "GOSI"}</span>
               </div>
             </div>
 

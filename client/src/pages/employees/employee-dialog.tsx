@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,19 +38,20 @@ import { DateInput } from "@/components/common/date-input";
 import { employeesApi } from "@/api/employees";
 import { listActiveBranches } from "@/api/branches";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import { transliterateArabicName } from "@/lib/arabic-transliteration";
 import type { Employee } from "@/types/models";
 
-const schema = z.object({
-  employeeNumber: z.string().min(1, "رقم الموظف مطلوب"),
-  fullNameAr: z.string().min(2, "الاسم الكامل بالعربي مطلوب"),
+const makeSchema = () => z.object({
+  employeeNumber: z.string().min(1, tr("رقم الموظف مطلوب", "Employee number is required")),
+  fullNameAr: z.string().min(2, tr("الاسم الكامل بالعربي مطلوب", "Full Arabic name is required")),
   fullNameEn: z.string().optional(),
   nationality: z.string().optional(),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
   dateOfBirth: z.string().optional(),
   mobile: z.string().optional(),
-  email: z.string().email("صيغة البريد الإلكتروني غير صحيحة").optional().or(z.literal("")),
+  email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")).optional().or(z.literal("")),
   address: z.string().optional(),
   city: z.string().optional(),
   jobTitle: z.string().optional(),
@@ -70,7 +71,7 @@ const schema = z.object({
   passportFileId: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 const DEFAULTS: FormValues = {
   employeeNumber: "",
@@ -104,7 +105,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: DEFAULTS,
   });
 
@@ -270,7 +271,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 <div className="flex gap-2 items-center">
                   <Input
                     {...register("employeeNumber")}
-                    placeholder={loadingAutoNumber ? "جاري توليد الرقم..." : "EMP-0001"}
+                    placeholder={loadingAutoNumber ? (isAr ? "جاري توليد الرقم..." : "Generating...") : "EMP-0001"}
                     className="h-11 rounded-xl font-mono font-bold text-sm bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60 flex-1"
                   />
                   {!isEdit && (
@@ -282,11 +283,11 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                         const res = await refetchAutoNumber();
                         if (res.data) {
                           setValue("employeeNumber", res.data, { shouldValidate: true, shouldDirty: true });
-                          toast.success(`تم توليد رقم الموظف: ${res.data}`);
+                          toast.success(isAr ? `تم توليد رقم الموظف: ${res.data}` : `Employee number generated: ${res.data}`);
                         }
                       }}
                       className="h-11 px-3.5 rounded-xl border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition-colors"
-                      title="توليد رقم وظيفي تسلسلي جديد تلقائياً"
+                      title={isAr ? "توليد رقم وظيفي تسلسلي جديد تلقائياً" : "Generate the next employee number"}
                     >
                       <Sparkles className="h-3.5 w-3.5" />
                       <span>{loadingAutoNumber ? "..." : isAr ? "توليد تلقائي" : "Auto"}</span>
@@ -347,7 +348,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                       toast.success(isAr ? `تمت ترجمة الاسم: ${translated}` : `Transliterated: ${translated}`);
                     }}
                     className="h-11 px-3.5 rounded-xl border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-semibold text-xs shrink-0 flex items-center gap-1.5 shadow-xs transition-colors"
-                    title="إعادة ترجمة وتعريب الاسم من العربي تلقائياً"
+                    title={isAr ? "إعادة ترجمة وتعريب الاسم من العربي تلقائياً" : "Transliterate the name from Arabic"}
                   >
                     <Sparkles className="h-3.5 w-3.5 text-blue-500" />
                     <span>{isAr ? "ترجمة ذكية" : "Translate"}</span>

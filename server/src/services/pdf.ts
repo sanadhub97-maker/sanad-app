@@ -52,7 +52,11 @@ export interface RenderPdfOptions {
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await Promise.race([
+      page.evaluateHandle("document.fonts.ready"),
+      new Promise((resolve) => setTimeout(resolve, 2500)),
+    ]).catch(() => undefined);
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,

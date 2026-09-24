@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPassword } from "@/api/auth";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 
-const schema = z.object({ email: z.string().email("صيغة البريد الإلكتروني غير صحيحة") });
-type FormValues = z.infer<typeof schema>;
+const makeSchema = () =>
+  z.object({ email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")) });
+type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 export default function ForgotPasswordPage() {
   const { t, i18n } = useTranslation();
@@ -23,7 +25,7 @@ export default function ForgotPasswordPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({ resolver: zodResolver(useMemo(makeSchema, [isAr])) });
 
   async function onSubmit(values: FormValues) {
     try {

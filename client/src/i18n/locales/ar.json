@@ -92,7 +92,8 @@
     "required": "مطلوب",
     "optional": "اختياري",
     "deletedSuccess": "تم الحذف بنجاح.",
-    "savedSuccess": "تم الحفظ بنجاح."
+    "savedSuccess": "تم الحفظ بنجاح.",
+    "recordsReport": "تقرير السجلات والبيانات الرسمية"
   },
   "status": {
     "VALID": "سارٍ",
@@ -272,6 +273,12 @@
       "startDate": "تاريخ البدء",
       "expiryDate": "تاريخ الانتهاء",
       "file": "الملف"
+    },
+    "stats": {
+      "total": "إجمالي الموظفين",
+      "active": "على رأس العمل",
+      "expiring": "وثائق تنتهي قريباً",
+      "branches": "المؤسسات التابعة"
     }
   },
   "workforce": {
@@ -281,7 +288,8 @@
       "addTitle": "تسجيل أو تجديد إقامة",
       "number": "رقم الإقامة",
       "issueDate": "تاريخ الإصدار",
-      "expiryDate": "تاريخ الانتهاء"
+      "expiryDate": "تاريخ الانتهاء",
+      "authority": "المهنة / الملاحظة الرسمية"
     },
     "passports": {
       "title": "إدارة جوازات السفر",

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { tr } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -184,7 +185,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
               {data?.meta.total ?? docs.length}
             </span>
-            <span className="text-[11px] text-muted-foreground font-medium">وثيقة مسجلة</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{tr("وثيقة مسجلة", "documents")}</span>
           </div>
         </div>
 
@@ -199,7 +200,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
               {validCount}
             </span>
             <span className="inline-block rounded-md bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-              سارية
+              {tr("سارية", "Valid")}
             </span>
           </div>
         </div>
@@ -214,7 +215,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-sans">
               {expiringCount}
             </span>
-            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">بحاجة لتجديد</span>
+            <span className="inline-block rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">{tr("بحاجة لتجديد", "Needs renewal")}</span>
           </div>
         </div>
 
@@ -228,7 +229,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
             <span className="text-2xl sm:text-3xl font-black tracking-tight text-rose-600 dark:text-rose-400 font-sans">
               {expiredCount}
             </span>
-            <span className="inline-block rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">عاجل</span>
+            <span className="inline-block rounded-md bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">{tr("عاجل", "Urgent")}</span>
           </div>
         </div>
       </motion.div>

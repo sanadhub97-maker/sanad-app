@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,22 +26,25 @@ import { FormField } from "@/components/common/form-field";
 import { usersApi } from "@/api/users";
 import { rolesApi } from "@/api/roles";
 import { getErrorMessage } from "@/lib/api";
+import { tr } from "@/i18n";
 import { translateRoleName } from "@/lib/role-display";
 import type { AppUser } from "@/types/models";
 
-const createSchema = z.object({
-  fullName: z.string().min(2, "الاسم مطلوب"),
-  email: z.string().email("صيغة البريد الإلكتروني غير صحيحة"),
-  phone: z.string().optional(),
-  password: z.string().min(8, "كلمة المرور يجب أن لا تقل عن 8 أحرف"),
-  roleIds: z.array(z.string()).min(1, "يرجى تحديد دور وظيفي واحد على الأقل"),
-});
-const updateSchema = z.object({
-  fullName: z.string().min(2, "الاسم مطلوب"),
-  phone: z.string().optional(),
-  isActive: z.boolean(),
-  roleIds: z.array(z.string()).min(1, "يرجى تحديد دور وظيفي واحد على الأقل"),
-});
+const makeCreateSchema = () =>
+  z.object({
+    fullName: z.string().min(2, tr("الاسم مطلوب", "Name is required")),
+    email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")),
+    phone: z.string().optional(),
+    password: z.string().min(8, tr("كلمة المرور يجب أن لا تقل عن 8 أحرف", "Password must be at least 8 characters")),
+    roleIds: z.array(z.string()).min(1, tr("يرجى تحديد دور وظيفي واحد على الأقل", "Select at least one role")),
+  });
+const makeUpdateSchema = () =>
+  z.object({
+    fullName: z.string().min(2, tr("الاسم مطلوب", "Name is required")),
+    phone: z.string().optional(),
+    isActive: z.boolean(),
+    roleIds: z.array(z.string()).min(1, tr("يرجى تحديد دور وظيفي واحد على الأقل", "Select at least one role")),
+  });
 
 export function UserDialog({
   open,
@@ -64,8 +67,9 @@ export function UserDialog({
     control,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof createSchema> & Partial<z.infer<typeof updateSchema>>>({
-    resolver: zodResolver(isEdit ? updateSchema : createSchema) as never,
+  } = useForm<z.infer<ReturnType<typeof makeCreateSchema>> & Partial<z.infer<ReturnType<typeof makeUpdateSchema>>>>({
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt on a language switch so messages follow it
+    resolver: zodResolver(useMemo(isEdit ? makeUpdateSchema : makeCreateSchema, [isEdit, isAr])) as never,
     defaultValues: { roleIds: [], isActive: true },
   });
 

@@ -47,4 +47,11 @@ i18n
 i18n.on("languageChanged", applyDocumentDirection);
 applyDocumentDirection(initialLang);
 
+/** Picks the Arabic or English text for the current language. For strings
+ * built outside React (zod messages, toasts in plain modules) — call it at
+ * the moment the text is shown, not at module load, or it freezes. */
+export function tr(ar: string, en: string): string {
+  return isRtlLanguage(i18n.language) ? ar : en;
+}
+
 export default i18n;
