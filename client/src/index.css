@@ -514,3 +514,27 @@ html.compact {
 @media (prefers-reduced-motion: reduce) {
   .ticker-track { animation: none; }
 }
+
+/* 🌟 Laser scanner animation for WhatsApp Pairing Studio */
+@keyframes laser-sweep {
+  0% { transform: translateY(0%); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { transform: translateY(220px); opacity: 0; }
+}
+.laser-sweep-line {
+  animation: laser-sweep 2.4s ease-in-out infinite;
+}
+
+/* 📱 WhatsApp Phone Mockup Chat Wallpaper Pattern */
+.wa-chat-pattern {
+  background-color: #0b141a;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.wa-chat-pattern-light {
+  background-color: #efeae2;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+

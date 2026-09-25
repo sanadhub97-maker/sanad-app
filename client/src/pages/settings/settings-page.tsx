@@ -40,6 +40,10 @@ import {
   AlertTriangle,
   Laptop,
   Printer,
+  QrCode,
+  Zap,
+  Copy,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1327,27 +1331,83 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                     control={control}
                     name="provider"
                     render={({ field }) => (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 rounded-xl border border-border/70 bg-muted/40 p-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {[
-                          { value: "WHATSAPP_WEB", label: isRtl ? "ربط رقم بكود QR (مجاني)" : "Link a number by QR (free)" },
-                          { value: "CALLMEBOT", label: isRtl ? "CallMeBot (مجاني)" : "CallMeBot (free)" },
-                          { value: "META", label: isRtl ? "واتساب الرسمي (Meta)" : "Official (Meta Cloud API)" },
-                        ].map((opt) => (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            aria-pressed={field.value === opt.value}
-                            onClick={() => field.onChange(opt.value)}
-                            className={cn(
-                              "h-9 rounded-lg text-xs font-bold transition-colors",
-                              field.value === opt.value
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            )}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
+                          {
+                            value: "WHATSAPP_WEB",
+                            label: isRtl ? "ربط مباشر عبر رمز QR" : "Direct QR Web Gateway",
+                            sub: isRtl ? "تشفير سحابي E2EE بدون رسوم" : "E2EE multi-device linking",
+                            badge: isRtl ? "الأكثر استخداماً" : "Popular",
+                            icon: QrCode,
+                            color: "emerald",
+                          },
+                          {
+                            value: "CALLMEBOT",
+                            label: isRtl ? "بوابة CallMeBot الفورية" : "CallMeBot Gateway",
+                            sub: isRtl ? "إرسال سريع للأرقام المسجلة" : "Instant direct gateway",
+                            badge: isRtl ? "تفعيل سريع" : "Fast Setup",
+                            icon: Zap,
+                            color: "sky",
+                          },
+                          {
+                            value: "META",
+                            label: isRtl ? "بوابة أعمال ميتا الرسمية" : "Meta Cloud Business API",
+                            sub: isRtl ? "واجهة Meta Graph للمؤسسات" : "Official enterprise API",
+                            badge: isRtl ? "معتمد رسمياً" : "Official",
+                            icon: Building2,
+                            color: "indigo",
+                          },
+                        ].map((opt) => {
+                          const isSelected = field.value === opt.value;
+                          const IconComp = opt.icon;
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              aria-pressed={isSelected}
+                              onClick={() => field.onChange(opt.value)}
+                              className={cn(
+                                "relative group flex flex-col text-start p-3.5 rounded-2xl border transition-all cursor-pointer overflow-hidden",
+                                isSelected
+                                  ? "border-emerald-500/60 bg-gradient-to-br from-emerald-500/10 via-emerald-500/[0.04] to-transparent ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10 dark:bg-slate-900/80"
+                                  : "border-border/70 bg-background/50 hover:border-border hover:bg-muted/30"
+                              )}
+                            >
+                              {/* Specular Top Glow on Selected */}
+                              {isSelected && (
+                                <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500" />
+                              )}
+                              <div className="flex items-center justify-between w-full mb-2">
+                                <div
+                                  className={cn(
+                                    "h-8 w-8 rounded-xl flex items-center justify-center transition-colors",
+                                    isSelected
+                                      ? "bg-emerald-500 text-white shadow-xs"
+                                      : "bg-muted text-muted-foreground group-hover:text-foreground"
+                                  )}
+                                >
+                                  <IconComp className="h-4 w-4" />
+                                </div>
+                                <span
+                                  className={cn(
+                                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                                    isSelected
+                                      ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                      : "bg-muted/70 text-muted-foreground border border-border/40"
+                                  )}
+                                >
+                                  {opt.badge}
+                                </span>
+                              </div>
+                              <span className="text-xs font-black tracking-tight text-foreground mb-0.5">
+                                {opt.label}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground leading-tight">
+                                {opt.sub}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   />
@@ -1355,45 +1415,56 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               </div>
 
               {isWhatsappWeb ? (
-                <div className="sm:col-span-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs leading-relaxed space-y-1.5">
-                  <p className="font-bold text-foreground">
-                    {isRtl ? "النظام هيبعت التنبيهات من رقم واتساب إنت بتربطه مرة واحدة." : "Alerts are sent from a WhatsApp number you link once."}
-                  </p>
-                  <p className="text-muted-foreground">
+                <div className="sm:col-span-2 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-4 text-xs leading-relaxed space-y-1.5 shadow-xs">
+                  <div className="flex items-center gap-2 font-bold text-foreground">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <span>
+                      {isRtl
+                        ? "إرشادات الربط المباشر لجلسة واتساب السحابية:"
+                        : "Direct WhatsApp Session Linking Guidelines:"}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground leading-relaxed">
                     {isRtl
-                      ? "فعّل الخاصية واحفظ، وبعدين اربط الرقم من صندوق الربط تحت. ده ربط غير رسمي زي واتساب ويب، وواتساب ممكن يحظر الرقم لو اعتبره إرسال آلي، فاستخدم رقم احتياطي مش رقمك الأساسي."
-                      : "Enable and save, then link the number in the box below. This is an unofficial link like WhatsApp Web; WhatsApp may ban a number it flags as automated, so use a spare number, not your main one."}
+                      ? "يقوم نظام SanaD بإرسال إشعارات وتنبيهات المنشأة تلقائياً عبر جلسة ربط سحابية مخصصة. للحفاظ على استمرارية الخدمة وتفادي قيود الإرسال الآلي، يُوصى باستخدام شريحة رقم أعمال مخصصة للتنبيهات."
+                      : "SanaD dispatches scheduled alerts automatically via a dedicated cloud session. To preserve business continuity and avoid automation limits, using a dedicated business line is strongly recommended."}
                   </p>
                 </div>
               ) : isCallMeBot ? (
                 <>
-                  <div className="sm:col-span-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 text-xs leading-relaxed space-y-2">
-                    <p className="font-bold text-foreground">
-                      {isRtl ? "تفعيل CallMeBot (مرة واحدة لكل رقم):" : "Activate CallMeBot (once per number):"}
-                    </p>
-                    <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                  <div className="sm:col-span-2 rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 text-xs leading-relaxed space-y-2.5 shadow-xs">
+                    <div className="flex items-center gap-2 font-bold text-foreground">
+                      <Zap className="h-4 w-4 text-emerald-500" />
+                      <span>
+                        {isRtl ? "إجراءات مصادقة بوابة CallMeBot الفورية:" : "CallMeBot Authentication Procedure:"}
+                      </span>
+                    </div>
+                    <ol className="list-decimal ps-5 space-y-1.5 text-muted-foreground">
                       <li>
-                        {isRtl ? "أضف الرقم " : "Save "}
-                        <bdi dir="ltr" className="font-mono font-semibold text-foreground">+34 623 80 11 90</bdi>
-                        {isRtl ? " لجهات الاتصال" : " to your contacts"}
+                        {isRtl ? "إضافة رقم الخدمة المعتمد لجهات الاتصال في هاتفك: " : "Save the official gateway number to contacts: "}
+                        <bdi dir="ltr" className="font-mono font-bold text-foreground bg-muted/60 px-1.5 py-0.5 rounded">+34 623 80 11 90</bdi>
                       </li>
                       <li>
-                        {isRtl ? "ابعت له على واتساب: " : "Send it on WhatsApp: "}
-                        <bdi dir="ltr" className="font-mono font-semibold text-foreground">I allow callmebot to send me messages</bdi>
+                        {isRtl ? "إرسال رسالة التفعيل التالية عبر تطبيق واتساب: " : "Send the activation message on WhatsApp: "}
+                        <bdi dir="ltr" className="font-mono font-bold text-foreground bg-muted/60 px-1.5 py-0.5 rounded">I allow callmebot to send me messages</bdi>
                       </li>
-                      <li>{isRtl ? "هيرد عليك بمفتاح API، ضيف الرقم ومفتاحه في قائمة الأرقام تحت." : "It replies with an API key — add the number and its key to the recipients list below."}</li>
+                      <li>
+                        {isRtl
+                          ? "سيصلك مفتاح الترخيص والـ API الفوري؛ قم بإدراجه بجانب رقمك في قائمة المستلمين المعتمدة بالأسفل."
+                          : "You will receive an instant API key; insert it beside your number in the authorized recipients roster below."}
+                      </li>
                     </ol>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-[11px] pt-1 border-t border-border/40">
                       {isRtl
-                        ? "الخدمة المجانية بتبعت التنبيهات للرقم اللي فعّل المفتاح بس. لو رقم التفعيل مش شغال، "
-                        : "The free API only delivers to the number that activated the key. If the activation number doesn't work, "}
+                        ? "الخدمة المباشرة تتيح الإرسال الفوري للرقم المرخص له. للتحقق من مزيد من التفاصيل "
+                        : "Direct gateway delivers to the authorized number. For more details "}
                       <a
                         href="https://www.callmebot.com/blog/free-api-whatsapp-messages/"
                         target="_blank"
                         rel="noreferrer"
                         className="font-semibold text-emerald-600 dark:text-emerald-400 underline underline-offset-2"
                       >
-                        {isRtl ? "شوف الرقم الحالي على موقعهم" : "check their site for the current one"}
+                        {isRtl ? "تفضل بزيارة البوابة الرسمية" : "visit their official portal"}
                       </a>
                       .
                     </p>
@@ -1508,7 +1579,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
     mutationFn: settingsApi.logoutWhatsappWeb,
     onSuccess: (s) => {
       queryClient.setQueryData(["settings", "whatsapp", "web-status"], s);
-      toast.success(isRtl ? "تم فك ربط الرقم" : "Number unlinked");
+      toast.success(isRtl ? "تم فك ربط الجلسة بنجاح" : "Session unlinked successfully");
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
@@ -1519,121 +1590,296 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
   const start = () => connect.mutate(method === "code" ? "+" + phoneDigits : undefined);
   const inProgress = s === "qr" || s === "pairing" || s === "connecting";
 
-  const badge =
+  const badgeText =
     s === "connected"
-      ? isRtl ? "مربوط" : "Linked"
+      ? isRtl ? "جلسة نشطة ومؤمنة" : "Active & Encrypted"
       : s === "qr"
-        ? isRtl ? "في انتظار المسح" : "Waiting for scan"
+        ? isRtl ? "في انتظار المسح الضوئي" : "Awaiting QR Scan"
         : s === "pairing"
-          ? isRtl ? "في انتظار إدخال الكود" : "Waiting for the code"
+          ? isRtl ? "في انتظار إدخال الرمز" : "Awaiting Code Entry"
           : s === "finishing"
-            ? isRtl ? "جاري إتمام الربط" : "Finishing link"
+            ? isRtl ? "جاري إتمام الربط..." : "Finalizing Link..."
             : s === "connecting"
-              ? isRtl ? "جاري الاتصال..." : "Connecting..."
-              : isRtl ? "غير مربوط" : "Not linked";
+              ? isRtl ? "جاري الاتصال السحابي..." : "Connecting..."
+              : isRtl ? "غير متصل" : "Not Linked";
 
   return (
-    <Card className="specular-border overflow-hidden border-border/80">
-      <CardHeader className="pb-3 border-b border-border/40">
-        <div className="flex items-center justify-between gap-3">
+    <Card className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/95 backdrop-blur-2xl shadow-xl transition-all dark:border-white/10">
+      {/* Specular Top Hairline */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 z-10" />
+
+      <CardHeader className="pb-4 border-b border-border/60 bg-muted/20 dark:bg-slate-900/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <MessageSquare className="h-4 w-4" />
-            </div>
+            <AppleIcon icon={QrCode} tone="emerald" size="md" />
             <div>
-              <CardTitle className="text-sm font-bold text-foreground">{isRtl ? "ربط رقم الإرسال" : "Sending number"}</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                {isRtl ? "الرقم اللي النظام هيبعت منه التنبيهات" : "The number alerts are sent from"}
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-black tracking-tight text-foreground">
+                  {isRtl ? "استوديو الربط والمصادقة السحابية" : "Cloud Pairing & Linking Studio"}
+                </CardTitle>
+                <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline-block">Baileys Multi-Device</span>
+              </div>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl
+                  ? "إدارة جلسة البث المباشر وتفويض النظام بإرسال تنبيهات الأعمال المشفرة E2EE"
+                  : "Manage cloud broadcasting session and authorize automated end-to-end encrypted alerts"}
               </CardDescription>
             </div>
           </div>
-          <Badge variant={s === "connected" ? "success" : "secondary"} className="text-xs px-3 py-1 shrink-0">
-            {badge}
-          </Badge>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider shadow-xs",
+                s === "connected"
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                  : s === "qr" || s === "pairing"
+                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse"
+                  : "bg-muted text-muted-foreground border border-border/50"
+              )}
+            >
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  s === "connected"
+                    ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                    : s === "qr" || s === "pairing"
+                    ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"
+                    : "bg-slate-400"
+                )}
+              />
+              <span>{badgeText}</span>
+            </span>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-5 space-y-4">
+
+      <CardContent className="pt-6 space-y-5">
         {s === "connected" ? (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <p className="text-sm text-foreground">
-              {isRtl ? "التنبيهات بتتبعت من الرقم: " : "Alerts are sent from: "}
-              <bdi dir="ltr" className="font-mono font-bold">{status?.phone}</bdi>
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canEdit || logout.isPending}
-              onClick={() => logout.mutate()}
-              className="rounded-xl h-10 text-xs font-bold text-destructive"
-            >
-              {logout.isPending && <Loader2 className="h-4 w-4 animate-spin me-2" />}
-              {isRtl ? "فك الربط" : "Unlink"}
-            </Button>
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/[0.03] to-transparent p-5 backdrop-blur-md shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-inner ring-2 ring-emerald-500/20">
+                  <Phone className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground font-bold">
+                      {isRtl ? "جلسة الإرسال النشطة:" : "Active Gateway Line:"}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      ✓ {isRtl ? "معتمد وموثق" : "Verified"}
+                    </span>
+                  </div>
+                  <bdi dir="ltr" className="font-mono text-xl font-black text-foreground tracking-wider mt-0.5 block">
+                    {status?.phone}
+                  </bdi>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!canEdit || logout.isPending}
+                onClick={() => logout.mutate()}
+                className="rounded-xl h-11 px-5 text-xs font-bold text-destructive hover:bg-destructive/10 border-destructive/30 cursor-pointer"
+              >
+                {logout.isPending ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <Trash2 className="h-4 w-4 me-2" />}
+                {isRtl ? "إنهاء الجلسة وفك الربط" : "Terminate & Unlink"}
+              </Button>
+            </div>
           </div>
         ) : s === "finishing" ? (
-          <div className="flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
-            <Loader2 className="h-5 w-5 animate-spin text-emerald-600 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3.5 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-5 shadow-xs">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-bold text-foreground">{isRtl ? "تم المسح — جاري إتمام الربط" : "Scanned — finishing the link"}</p>
-              <p className="text-muted-foreground">
+              <p className="font-black text-foreground text-sm">
+                {isRtl ? "تمت المصادقة بنجاح — جاري مزامنة مفاتيح التشفير" : "Authenticated — Syncing Cryptographic Keys"}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {isRtl
-                  ? "سيب واتساب مفتوح على الموبايل ومتصل بالإنترنت لحد ما يظهر هنا «مربوط». ده بياخد من ثواني لدقيقة."
-                  : "Keep WhatsApp open and online on the phone until this shows “Linked”. It takes a few seconds to a minute."}
+                  ? "يرجى إبقاء الهاتف متصلاً بالإنترنت لعدة ثوانٍ؛ يتم الآن استكمال تبادل المفاتيح وتأسيس اتصال الأجهزة المتعددة الآمن."
+                  : "Keep WhatsApp open on the phone for a few moments while the multi-device connection finalizes."}
               </p>
             </div>
           </div>
         ) : s === "qr" && status?.qr ? (
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <img src={status.qr} alt="WhatsApp QR" className="h-56 w-56 rounded-xl border border-border bg-white p-2" />
-            <div className="space-y-3">
-              <ol className="list-decimal ps-5 space-y-1.5 text-sm text-muted-foreground">
-                <li>{isRtl ? "افتح واتساب على موبايل الرقم اللي عايز تبعت منه" : "Open WhatsApp on the phone you'll send from"}</li>
-                <li>{isRtl ? "الإعدادات ← الأجهزة المرتبطة ← ربط جهاز" : "Settings → Linked devices → Link a device"}</li>
-                <li>{isRtl ? "امسح الكود ده، وسيب الموبايل مفتوح لحد ما الصفحة تقول «مربوط»" : "Scan this code and keep the phone open until this page shows “Linked”"}</li>
-              </ol>
-              <p className="text-xs text-muted-foreground">
-                {isRtl ? "الكود بيتجدد لوحده كل شوية. لو الكاميرا مش بتقرأه، استخدم «كود برقم الهاتف»." : "The code refreshes by itself. If the camera won't read it, use “Code by phone number”."}
-              </p>
+          <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
+            {/* 🎯 Futuristic Scanner Studio Frame with Corner Targets & Laser Sweep */}
+            <div className="relative p-4 rounded-3xl bg-slate-950 border-2 border-emerald-500/40 shadow-2xl shadow-emerald-500/10 group overflow-hidden">
+              {/* Corner Targets */}
+              <div className="absolute top-2 start-2 w-4 h-4 border-t-2 border-s-2 border-emerald-400" />
+              <div className="absolute top-2 end-2 w-4 h-4 border-t-2 border-e-2 border-emerald-400" />
+              <div className="absolute bottom-2 start-2 w-4 h-4 border-b-2 border-s-2 border-emerald-400" />
+              <div className="absolute bottom-2 end-2 w-4 h-4 border-b-2 border-e-2 border-emerald-400" />
+
+              {/* QR Image */}
+              <div className="relative rounded-2xl overflow-hidden bg-white p-2">
+                <img src={status.qr} alt="WhatsApp QR" className="h-56 w-56 object-contain" />
+
+                {/* Animated Green Laser Sweep Line */}
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_rgba(52,211,153,1)] laser-sweep-line pointer-events-none" />
+              </div>
+
+              {/* Scanner Badge */}
+              <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-mono font-bold text-emerald-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>{isRtl ? "امسح الرمز ضوئياً بالكاميرا" : "Scan via Camera"}</span>
+              </div>
+            </div>
+
+            {/* Instruction Steps */}
+            <div className="flex-1 space-y-4 text-xs">
+              <div className="space-y-1">
+                <h4 className="text-sm font-black text-foreground">
+                  {isRtl ? "خطوات المصادقة السريعة عبر تطبيق واتساب:" : "Quick WhatsApp Authentication Steps:"}
+                </h4>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {isRtl
+                    ? "اتبع الخطوات التالية من هاتفك المحمول لمصادقة النظام كجهاز فرعي آمن:"
+                    : "Follow these steps from your mobile device to link SanaD as a trusted multi-device client:"}
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  isRtl ? "افتح تطبيق واتساب على الهاتف المخصص لبث إشعارات المنشأة." : "Open WhatsApp on the device chosen for enterprise alerts.",
+                  isRtl ? "انتقل إلى: الإعدادات ← الأجهزة المرتبطة ← ربط جهاز." : "Navigate to: Settings → Linked Devices → Link a Device.",
+                  isRtl ? "وجّه كاميرا الهاتف نحو رمز الاستجابة السريعة (QR) الظاهر أمامك." : "Point your camera at this QR code to finalize automatic authorization.",
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-3 rounded-xl bg-muted/30 border border-border/50 p-2.5">
+                    <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono font-black text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="text-foreground/90 font-medium leading-relaxed">{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  <span>{isRtl ? "يتجدد الرمز تلقائياً للحفاظ على أعلى درجات الأمان." : "Code regenerates periodically for top security."}</span>
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => logout.mutate()}
+                  className="text-xs text-destructive hover:bg-destructive/10"
+                >
+                  {isRtl ? "إلغاء والعودة" : "Cancel"}
+                </Button>
+              </div>
             </div>
           </div>
         ) : s === "pairing" && status?.pairingCode ? (
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="rounded-2xl border-2 border-dashed border-emerald-500/40 bg-emerald-500/5 px-6 py-5 text-center">
-              <div className="text-xs text-muted-foreground mb-1">{isRtl ? "كود الربط" : "Pairing code"}</div>
-              <div dir="ltr" className="font-mono text-3xl font-black tracking-[0.3em] text-foreground select-all">{status.pairingCode}</div>
+          <div className="flex flex-col lg:flex-row items-center gap-8 py-2">
+            {/* Holographic Pairing Code Block */}
+            <div className="rounded-3xl border-2 border-dashed border-emerald-500/50 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-6 text-center shadow-xl">
+              <span className="text-xs font-bold text-muted-foreground mb-2 block uppercase tracking-wider">
+                {isRtl ? "رمز المصادقة الرقمي" : "Pairing Verification Token"}
+              </span>
+              <div
+                dir="ltr"
+                className="font-mono text-3xl sm:text-4xl font-black tracking-[0.25em] text-emerald-500 dark:text-emerald-400 select-all py-2"
+              >
+                {status.pairingCode}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(status.pairingCode || "");
+                  toast.success(isRtl ? "تم نسخ الرمز" : "Code copied");
+                }}
+                className="mt-2 rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              >
+                <Copy className="h-3.5 w-3.5 me-1.5" />
+                {isRtl ? "نسخ الرمز" : "Copy Token"}
+              </Button>
             </div>
-            <ol className="list-decimal ps-5 space-y-1.5 text-sm text-muted-foreground">
-              <li>{isRtl ? "افتح واتساب على موبايل الرقم ده" : "Open WhatsApp on that phone"}</li>
-              <li>{isRtl ? "الإعدادات ← الأجهزة المرتبطة ← ربط جهاز" : "Settings → Linked devices → Link a device"}</li>
-              <li>{isRtl ? "اضغط «الربط برقم الهاتف بدلاً من ذلك» تحت الكاميرا" : "Tap “Link with phone number instead” under the camera"}</li>
-              <li>{isRtl ? "اكتب الكود ده، والصفحة هتتحدث لوحدها" : "Type this code — this page updates by itself"}</li>
-            </ol>
+
+            {/* Instruction Steps */}
+            <div className="flex-1 space-y-4 text-xs">
+              <div className="space-y-1">
+                <h4 className="text-sm font-black text-foreground">
+                  {isRtl ? "خطوات الربط برقم الهاتف:" : "Link With Phone Number Steps:"}
+                </h4>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  {isRtl
+                    ? "أدخل هذا الرمز المكون من 8 أحرف في تطبيق واتساب بهاتفك لتفعيل الجلسة:"
+                    : "Enter this 8-character verification token into WhatsApp on your phone:"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  isRtl ? "افتح تطبيق واتساب على هاتفك." : "Open WhatsApp on your mobile phone.",
+                  isRtl ? "انتقل إلى: الإعدادات ← الأجهزة المرتبطة ← ربط جهاز." : "Navigate to: Settings → Linked Devices → Link a Device.",
+                  isRtl ? "اضغط على «الربط برقم الهاتف بدلاً من ذلك» أسفل شاشة الكاميرا." : "Tap “Link with phone number instead” below the camera frame.",
+                  isRtl ? "أدخل رمز التحقق الظاهر هنا، وسيتم الربط فورياً." : "Type the token above and the connection will establish instantly.",
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-3 rounded-xl bg-muted/30 border border-border/50 p-2.5">
+                    <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono font-black text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="text-foreground/90 font-medium leading-relaxed">{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => logout.mutate()}
+                  className="text-xs text-destructive hover:bg-destructive/10"
+                >
+                  {isRtl ? "إلغاء والعودة" : "Cancel"}
+                </Button>
+              </div>
+            </div>
           </div>
         ) : s === "connecting" ? (
-          <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            {isRtl ? "جاري الاتصال بواتساب..." : "Connecting to WhatsApp..."}
+          <div className="flex items-center justify-center gap-3 py-10 text-sm font-bold text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+            <span>{isRtl ? "جاري الاتصال وتأسيس الجلسة السحابية المشفرة..." : "Establishing encrypted cloud session..."}</span>
           </div>
         ) : (
-          <div className="space-y-4">
-            <p className={cn("text-sm", saved && !status?.lastError ? "text-muted-foreground" : "font-semibold text-amber-600 dark:text-amber-400")}>
+          <div className="space-y-5">
+            <p className={cn("text-xs leading-relaxed", saved && !status?.lastError ? "text-muted-foreground" : "font-bold text-amber-600 dark:text-amber-400")}>
               {!saved
                 ? isRtl
-                  ? "فعّل الخاصية واضغط «حفظ» فوق الأول، وبعدين اربط الرقم."
-                  : "Enable the feature and click Save above first, then link the number."
+                  ? "يرجى حفظ إعدادات المزود بالأعلى أولاً بالضغط على «حفظ التغييرات»، ثم بدء الربط."
+                  : "Please save provider settings above first before initiating device pairing."
                 : status?.lastError
-                  ? status.lastError
-                  : isRtl
-                    ? "مفيش رقم مربوط. اختار طريقة الربط:"
-                    : "No number linked. Choose how to link it:"}
+                ? status.lastError
+                : isRtl
+                ? "اختر وسيلة المصادقة والربط السحابي المفضلة لديك:"
+                : "Select your preferred cloud authentication method:"}
             </p>
-            <div className="grid gap-2 sm:grid-cols-2" role="radiogroup">
+
+            {/* Method Cards */}
+            <div className="grid gap-3 sm:grid-cols-2" role="radiogroup">
               {(
                 [
-                  ["qr", isRtl ? "مسح كود QR" : "Scan a QR code", isRtl ? "بكاميرا الموبايل من الأجهزة المرتبطة" : "With the phone camera, from Linked devices"],
-                  ["code", isRtl ? "كود برقم الهاتف" : "Code by phone number", isRtl ? "تكتب كود من 8 حروف على الموبايل — أدق لو الكاميرا مش بتقرأ" : "Type an 8-character code on the phone — best if the camera won't scan"],
+                  [
+                    "qr",
+                    isRtl ? "مسح رمز الاستجابة السريعة (QR Code)" : "Scan QR Code",
+                    isRtl ? "المسح المباشر بكاميرا الهاتف من قائمة الأجهزة المرتبطة" : "Direct scan via mobile camera from Linked Devices",
+                    QrCode,
+                  ],
+                  [
+                    "code",
+                    isRtl ? "الربط بواسطة كود التحقق الرقمي" : "Pairing Token Code",
+                    isRtl ? "إدخال كود رسمي مكون من 8 رموز على الهاتف بدلاً من الكاميرا" : "Enter an 8-character pairing token directly on the device",
+                    Smartphone,
+                  ],
                 ] as const
-              ).map(([id, title, hint]) => (
+              ).map(([id, title, hint, IconComp]) => (
                 <button
                   key={id}
                   type="button"
@@ -1641,19 +1887,32 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   aria-checked={method === id}
                   onClick={() => setMethod(id)}
                   className={cn(
-                    "rounded-xl border p-3 text-start transition-colors",
-                    method === id ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/70 hover:bg-muted/40"
+                    "relative group flex items-start gap-3.5 rounded-2xl border p-4 text-start transition-all cursor-pointer",
+                    method === id
+                      ? "border-emerald-500/60 bg-gradient-to-br from-emerald-500/10 via-emerald-500/[0.03] to-transparent ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10 dark:bg-slate-900/80"
+                      : "border-border/70 bg-background/50 hover:border-border hover:bg-muted/30"
                   )}
                 >
-                  <div className="text-sm font-bold">{title}</div>
-                  <div className="text-xs text-muted-foreground">{hint}</div>
+                  <div
+                    className={cn(
+                      "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                      method === id ? "bg-emerald-500 text-white shadow-xs" : "bg-muted text-muted-foreground group-hover:text-foreground"
+                    )}
+                  >
+                    <IconComp className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-black text-foreground">{title}</div>
+                    <div className="text-[11px] text-muted-foreground leading-relaxed">{hint}</div>
+                  </div>
                 </button>
               ))}
             </div>
+
             {method === "code" && (
-              <div className="space-y-1">
-                <Label htmlFor="wa-pair-phone" className="text-xs font-bold">
-                  {isRtl ? "رقم الواتساب اللي هتبعت منه (بكود الدولة)" : "The WhatsApp number to send from (with country code)"}
+              <div className="space-y-1.5 max-w-sm pt-1">
+                <Label htmlFor="wa-pair-phone" className="text-xs font-bold text-foreground">
+                  {isRtl ? "رقم الهاتف المخصص للإرسال (مع الرمز الدولي)" : "Sending Phone Number (with Country Code)"}
                 </Label>
                 <Input
                   id="wa-pair-phone"
@@ -1662,26 +1921,24 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   placeholder="+966 5X XXX XXXX"
                   value={pairPhone}
                   onChange={(e) => setPairPhone(e.target.value)}
-                  className="h-10 rounded-xl font-mono max-w-xs"
+                  className="h-11 rounded-xl font-mono text-sm bg-background/60"
                 />
               </div>
             )}
-            <Button
-              type="button"
-              disabled={!canEdit || !saved || connect.isPending || inProgress || (method === "code" && !phoneValid)}
-              onClick={start}
-              className="rounded-xl h-10 px-6 bg-primary text-primary-foreground font-black text-xs"
-            >
-              {connect.isPending && <Loader2 className="h-4 w-4 animate-spin me-2" />}
-              {method === "code" ? (isRtl ? "اطلب كود الربط" : "Get a pairing code") : isRtl ? "اعرض كود QR" : "Show QR code"}
-            </Button>
-          </div>
-        )}
-        {(s === "qr" || s === "pairing") && (
-          <div className="flex justify-end">
-            <Button type="button" variant="ghost" size="sm" disabled={!canEdit || connect.isPending} onClick={() => logout.mutate()} className="text-xs">
-              {isRtl ? "إلغاء وتغيير طريقة الربط" : "Cancel and change method"}
-            </Button>
+
+            <div className="pt-1">
+              <Button
+                type="button"
+                disabled={!canEdit || !saved || connect.isPending || inProgress || (method === "code" && !phoneValid)}
+                onClick={start}
+                className="rounded-xl h-11 px-7 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 cursor-pointer"
+              >
+                {connect.isPending ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <QrCode className="h-4 w-4 me-2" />}
+                {method === "code"
+                  ? isRtl ? "توليد كود المصادقة الرقمي" : "Generate Pairing Token"
+                  : isRtl ? "عرض رمز الاستجابة السريعة (QR)" : "Display Live QR Code"}
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
@@ -1692,7 +1949,6 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
 type RecipientRow = { id?: string; name: string; phone: string; enabled: boolean; apiKey: string; hasApiKey: boolean };
 
 function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: boolean; isRtl: boolean; isCallMeBot: boolean }) {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ["settings", "whatsapp", "recipients"],
@@ -1721,7 +1977,7 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
       queryClient.setQueryData(["settings", "whatsapp", "recipients"], saved);
       setRows(saved.map((r) => ({ ...r, apiKey: "" })));
       setDirty(false);
-      toast.success(isRtl ? "تم حفظ أرقام الاستلام" : "Recipients saved");
+      toast.success(isRtl ? "تم حفظ دليل أرقام المستلمين بنجاح" : "Recipients roster saved successfully");
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
@@ -1741,118 +1997,178 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
   const activeCount = rows.filter((r) => r.enabled).length;
 
   return (
-    <Card className="specular-border overflow-hidden border-border/80">
-      <CardHeader className="pb-3 border-b border-border/40">
-        <div className="flex items-center justify-between gap-3">
+    <Card className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/95 backdrop-blur-2xl shadow-xl transition-all dark:border-white/10">
+      {/* Specular Top Hairline */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500 z-10" />
+
+      <CardHeader className="pb-4 border-b border-border/60 bg-muted/20 dark:bg-slate-900/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <Phone className="h-4 w-4" />
-            </div>
+            <AppleIcon icon={Phone} tone="emerald" size="md" />
             <div>
-              <CardTitle className="text-sm font-bold text-foreground">
-                {isRtl ? "الأرقام اللي بتستلم التنبيهات" : "Alert recipients"}
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-black tracking-tight text-foreground">
+                  {isRtl ? "دليل أرقام الإشعار والتنبيه المعتمدة" : "Authorized Alert Recipients Directory"}
+                </CardTitle>
+                <span className="text-[10px] font-mono text-muted-foreground hidden sm:inline-block">VIP Routing</span>
+              </div>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 {isCallMeBot
                   ? isRtl
-                    ? "كل رقم لازم يفعّل CallMeBot من موبايله ويتحط مفتاحه جنبه"
-                    : "Each number must activate CallMeBot from its own phone and have its key entered"
+                    ? "قائمة الأرقام المصادق عليها لاستلام التنبيهات مع مفاتيح ترخيص CallMeBot المخصصة"
+                    : "Authorized recipient roster configured with dedicated CallMeBot license tokens"
                   : isRtl
-                    ? "التنبيهات هتتبعت للأرقام المفعّلة في القائمة دي"
-                    : "Alerts go to the enabled numbers in this list"}
+                    ? "إدارة أرقام القيادة والمشرفين المخولين باستلام إشعارات الصلاحية والتنبيهات المجدولة فورياً"
+                    : "Manage leadership and supervisor lines authorized to receive automated scheduled alerts"}
               </CardDescription>
             </div>
           </div>
-          <Badge variant={activeCount > 0 ? "success" : "secondary"} className="text-xs px-3 py-1 shrink-0">
-            {isRtl ? `${activeCount} رقم مفعّل` : `${activeCount} active`}
-          </Badge>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{isRtl ? `${activeCount} خط إشعار نشط` : `${activeCount} Active Lines`}</span>
+            </span>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-4 space-y-3">
-        {rows.length === 0 && (
-          <p className="text-xs text-muted-foreground py-4 text-center">
-            {isRtl ? "مفيش أرقام لسه — ضيف أول رقم." : "No numbers yet — add the first one."}
-          </p>
+
+      <CardContent className="pt-6 space-y-4">
+        {rows.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border/80 bg-muted/10 py-10 px-4 text-center">
+            <Phone className="mx-auto h-8 w-8 text-muted-foreground/50 mb-2" />
+            <p className="text-sm font-bold text-foreground mb-1">
+              {isRtl ? "لم يتم تسجيل أي أرقام استلام حتى الآن" : "No recipient numbers registered yet"}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+              {isRtl
+                ? "أضف الرقم الأول للمسؤول أو المدير التنفيذي لبدء توجيه التنبيهات المباشرة إليه."
+                : "Add the first executive or supervisor line to start routing live alerts."}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {rows.map((row, index) => {
+              const needsKey = isCallMeBot && !row.hasApiKey && !row.apiKey;
+              const initials = row.name ? row.name.slice(0, 2).toUpperCase() : `#${index + 1}`;
+
+              return (
+                <div
+                  key={row.id ?? `new-${index}`}
+                  className={cn(
+                    "group relative flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all",
+                    row.enabled
+                      ? "border-border/80 bg-gradient-to-br from-background via-background/90 to-muted/20 shadow-xs hover:border-emerald-500/40"
+                      : "border-dashed border-border/60 bg-muted/20 opacity-60"
+                  )}
+                >
+                  <div className="flex flex-1 flex-col sm:flex-row sm:items-center gap-3">
+                    {/* Avatar Initials Chip */}
+                    <div
+                      className={cn(
+                        "h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-2xs",
+                        row.enabled
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                          : "bg-muted text-muted-foreground border border-border/40"
+                      )}
+                    >
+                      {initials}
+                    </div>
+
+                    {/* Name Input */}
+                    <div className="flex-1 min-w-[140px]">
+                      <Input
+                        id={`recipient-name-${index}`}
+                        value={row.name}
+                        onChange={(e) => update(index, { name: e.target.value })}
+                        placeholder={isRtl ? "اسم المسؤول أو المنصب (مثال: المدير العام)" : "Recipient Name or Role"}
+                        disabled={!canEdit}
+                        className="h-10 rounded-xl text-xs font-semibold bg-background/60"
+                      />
+                    </div>
+
+                    {/* Phone Input */}
+                    <div className="flex-1 min-w-[180px]">
+                      <Input
+                        id={`recipient-phone-${index}`}
+                        value={row.phone}
+                        onChange={(e) => update(index, { phone: e.target.value })}
+                        placeholder="+9665XXXXXXXX"
+                        dir="ltr"
+                        disabled={!canEdit}
+                        className="h-10 rounded-xl font-mono text-xs font-bold bg-background/60"
+                      />
+                    </div>
+
+                    {/* CallMeBot API Key */}
+                    {isCallMeBot && (
+                      <div className="flex-1 min-w-[140px]">
+                        <Input
+                          id={`recipient-key-${index}`}
+                          value={row.apiKey}
+                          onChange={(e) => update(index, { apiKey: e.target.value })}
+                          placeholder={row.hasApiKey ? (isRtl ? "المفتاح محفوظ ومشفّر ✓" : "Key encrypted ✓") : isRtl ? "مفتاح API الخاص بالرقم" : "API Key"}
+                          dir="ltr"
+                          disabled={!canEdit}
+                          className={cn("h-10 rounded-xl font-mono text-xs bg-background/60", needsKey && "border-amber-500/60 ring-1 ring-amber-500/30")}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions & Switch */}
+                  <div className="flex items-center justify-end gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border/40">
+                    <div className="flex items-center gap-2 me-1">
+                      <span className="text-[11px] font-bold text-muted-foreground">
+                        {row.enabled ? (isRtl ? "مفعّل" : "Active") : isRtl ? "معطّل" : "Off"}
+                      </span>
+                      <Switch
+                        checked={row.enabled}
+                        onCheckedChange={(v) => update(index, { enabled: v })}
+                        disabled={!canEdit}
+                        aria-label={isRtl ? "تفعيل الرقم" : "Enable number"}
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      title={dirty ? (isRtl ? "احفظ أولاً للاختبار" : "Save first to test") : isRtl ? "إرسال رسالة اختبار حية" : "Send live test"}
+                      disabled={!row.id || dirty || testingPhone !== null}
+                      onClick={() => sendTest(row.phone)}
+                      className="h-9 px-3 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 cursor-pointer"
+                    >
+                      {testingPhone === row.phone ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin me-1.5" />
+                      ) : (
+                        <Send className="h-3.5 w-3.5 me-1.5" />
+                      )}
+                      <span>{isRtl ? "اختبار" : "Test"}</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      title={isRtl ? "حذف الرقم" : "Remove"}
+                      disabled={!canEdit}
+                      onClick={() => {
+                        setRows((prev) => prev.filter((_, i) => i !== index));
+                        setDirty(true);
+                      }}
+                      className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
 
-        {rows.map((row, index) => {
-          const needsKey = isCallMeBot && !row.hasApiKey && !row.apiKey;
-          return (
-            <div
-              key={row.id ?? `new-${index}`}
-              className={cn(
-                "grid gap-2 rounded-xl border p-3 sm:grid-cols-[1fr_1.2fr_1fr_auto] sm:items-center",
-                row.enabled ? "border-border/70 bg-background/60" : "border-dashed border-border/60 bg-muted/20 opacity-70"
-              )}
-            >
-              <Input
-                id={`recipient-name-${index}`}
-                value={row.name}
-                onChange={(e) => update(index, { name: e.target.value })}
-                placeholder={isRtl ? "الاسم (اختياري)" : "Name (optional)"}
-                disabled={!canEdit}
-                className="h-10 rounded-lg text-sm"
-              />
-              <Input
-                id={`recipient-phone-${index}`}
-                value={row.phone}
-                onChange={(e) => update(index, { phone: e.target.value })}
-                placeholder="+9665XXXXXXXX"
-                dir="ltr"
-                disabled={!canEdit}
-                className="h-10 rounded-lg font-mono text-sm"
-              />
-              {isCallMeBot ? (
-                <Input
-                  id={`recipient-key-${index}`}
-                  value={row.apiKey}
-                  onChange={(e) => update(index, { apiKey: e.target.value })}
-                  placeholder={row.hasApiKey ? (isRtl ? "المفتاح محفوظ ✓" : "Key saved ✓") : isRtl ? "مفتاح CallMeBot" : "CallMeBot key"}
-                  dir="ltr"
-                  disabled={!canEdit}
-                  className={cn("h-10 rounded-lg font-mono text-sm", needsKey && "border-amber-500/60")}
-                />
-              ) : (
-                <span className="hidden sm:block" />
-              )}
-              <div className="flex items-center justify-end gap-1.5">
-                <Switch
-                  checked={row.enabled}
-                  onCheckedChange={(v) => update(index, { enabled: v })}
-                  disabled={!canEdit}
-                  aria-label={isRtl ? "تفعيل الرقم" : "Enable number"}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  title={dirty ? (isRtl ? "احفظ الأول" : "Save first") : isRtl ? "إرسال رسالة اختبار" : "Send test message"}
-                  disabled={!row.id || dirty || testingPhone !== null}
-                  onClick={() => sendTest(row.phone)}
-                  className="h-9 w-9 rounded-lg text-emerald-600"
-                >
-                  {testingPhone === row.phone ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  title={isRtl ? "حذف" : "Remove"}
-                  disabled={!canEdit}
-                  onClick={() => {
-                    setRows((prev) => prev.filter((_, i) => i !== index));
-                    setDirty(true);
-                  }}
-                  className="h-9 w-9 rounded-lg text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-border/40">
           <Button
             type="button"
             variant="outline"
@@ -1861,18 +2177,19 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
               setRows((prev) => [...prev, { name: "", phone: "", enabled: true, apiKey: "", hasApiKey: false }]);
               setDirty(true);
             }}
-            className="rounded-xl h-10 text-xs font-bold"
+            className="rounded-xl h-11 px-5 text-xs font-black border-border/80 hover:bg-muted cursor-pointer"
           >
-            + {isRtl ? "إضافة رقم" : "Add number"}
+            + {isRtl ? "إضافة خط إشعار جديد" : "Add New Line"}
           </Button>
+
           <Button
             type="button"
             disabled={!canEdit || !dirty || saveMutation.isPending}
             onClick={() => saveMutation.mutate()}
-            className="rounded-xl h-10 px-8 bg-primary text-primary-foreground font-black text-xs"
+            className="rounded-xl h-11 px-8 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110 cursor-pointer"
           >
             {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <Check className="h-4 w-4 me-2" />}
-            {t("common.save")}
+            {isRtl ? "حفظ التغييرات" : "Save Changes"}
           </Button>
         </div>
       </CardContent>
