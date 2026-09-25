@@ -10,6 +10,67 @@ import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
 import { prisma } from "@/lib/prisma";
 import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsappLog";
+import { getTrackableItems } from "@/services/expiringItems";
+import { daysUntil } from "@/services/expiration";
+import { getWhatsappTemplateSetting, setWhatsappTemplateSetting } from "@/services/settingsStore";
+import {
+  WHATSAPP_TEMPLATE_IDS,
+  alertContext,
+  renderWhatsappAlert,
+  type AlertContext,
+  type WhatsappTemplateId,
+} from "@/services/whatsappTemplates";
+
+/** A real document to fill the WhatsApp alert preview and test message — the
+ * next one to expire, preferring an employee's — or a labelled example when
+ * the system has none yet. */
+async function sampleAlertContext(companyName: string | null | undefined): Promise<{ context: AlertContext; real: boolean }> {
+  const ranked = (await getTrackableItems())
+    .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
+    .sort(
+      (a, b) =>
+        Number(Boolean(b.item.employeeNameAr)) - Number(Boolean(a.item.employeeNameAr)) ||
+        Number(b.days >= 0) - Number(a.days >= 0) ||
+        Math.abs(a.days) - Math.abs(b.days)
+    );
+  if (ranked[0]) return { context: alertContext(ranked[0].item, companyName), real: true };
+  return {
+    context: {
+      company: companyName || "المنشأة",
+      employeeAr: "اسم الموظف (مثال)",
+      documentAr: "الإقامة",
+      documentEn: "Iqama",
+      expiryDate: new Date(Date.now() + 7 * 86_400_000),
+      daysLeft: 7,
+    },
+    real: false,
+  };
+}
+
+// The same document in each state, so the designs can be compared as it nears expiry.
+const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
+
+export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Response) => {
+  const [{ company }, template] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting()]);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn);
+  const previews = Object.fromEntries(
+    WHATSAPP_TEMPLATE_IDS.map((id) => [
+      id,
+      Object.fromEntries(
+        Object.entries(PREVIEW_STATES).map(([state, days]) => [
+          state,
+          renderWhatsappAlert(id, { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }),
+        ])
+      ),
+    ])
+  );
+  res.json({ data: { template, sampleIsReal: real, previews } });
+});
+
+export const updateWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
+  const template = await setWhatsappTemplateSetting((req.body as { template: WhatsappTemplateId }).template);
+  res.json({ data: { template }, message: "WhatsApp message design saved." });
+});
 
 export const getWhatsappMessages = asyncHandler(async (req: Request, res: Response) => {
   const q = req.query as { limit?: string; status?: string };
@@ -157,20 +218,17 @@ export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Respons
 });
 
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const [{ company }, { provider }] = await Promise.all([getBrandingContext(), getWhatsappConfig()]);
-  const companyName = company?.nameAr || company?.nameEn;
+  const [{ company }, { provider }, template] = await Promise.all([getBrandingContext(), getWhatsappConfig(), getWhatsappTemplateSetting()]);
   const providerLabel =
     provider === WHATSAPP_WEB_PROVIDER ? "رقم مربوط بكود QR" : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : "واتساب الرسمي (Meta)";
+  // The test shows the chosen design on a real document, so it looks exactly
+  // like the alerts this number will get.
+  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn);
   const message = [
-    "✅ *اختبار الربط والتكامل المباشر — بنجاح*",
-    "━━━━━━━━━━━━━━━━━━━━━",
-    `🏢 *المنشأة:* ${companyName || "المنشأة"}`,
-    `🤖 *طريقة الإرسال:* ${providerLabel}`,
-    `📅 *تاريخ الفحص:* ${new Date().toLocaleDateString("ar-EG-u-nu-latn", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric" })}`,
-    "━━━━━━━━━━━━━━━━━━━━━",
-    "تم التحقق من جاهزية قناة الإرسال بنجاح. ستصلكم كافة التنبيهات المجدولة وتقارير المتابعة عبر هذه القناة المعتمدة.",
+    "🧪 *رسالة تجريبية من نظام SanaD*",
+    `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`,
     "",
-    "— مركز القيادة والعمليات التقنية | SanaD Gateway",
+    renderWhatsappAlert(template, context),
   ].join("\n");
   const result = await sendWhatsapp(req.body.to, message);
   await recordWhatsappMessage({ to: req.body.to, message, sent: result.sent, error: result.reason, kind: "TEST" }).catch(() => undefined);

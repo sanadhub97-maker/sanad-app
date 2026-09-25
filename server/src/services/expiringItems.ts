@@ -20,20 +20,47 @@ export interface TrackableItem {
   employeeName?: string; // English name, falling back to Arabic
   employeeNameAr?: string; // Arabic name, falling back to English
   recordId: string;
+  // Details for the WhatsApp alert (services/whatsappTemplates).
+  documentAr?: string;
+  documentEn?: string;
+  documentNumber?: string | null;
+  branchName?: string | null;
 }
+
+const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
+  HEALTH_CERTIFICATE: ["الشهادة الصحية", "Health certificate"],
+  MEDICAL_INSURANCE: ["التأمين الطبي", "Medical insurance"],
+  EMPLOYMENT_CONTRACT: ["عقد العمل", "Employment contract"],
+  VISA: ["التأشيرة", "Visa"],
+  EXIT_REENTRY_VISA: ["تأشيرة خروج وعودة", "Exit/re-entry visa"],
+  FINAL_EXIT_VISA: ["تأشيرة خروج نهائي", "Final exit visa"],
+  FLIGHT_TICKET: ["تذكرة الطيران", "Flight ticket"],
+  DRIVING_LICENSE: ["رخصة القيادة", "Driving license"],
+  OTHER: ["مستند", "Document"],
+};
 
 export async function getTrackableItems(): Promise<TrackableItem[]> {
   const [employees, employeeDocuments, companyDocuments] = await Promise.all([
     prisma.employee.findMany({
       where: { deletedAt: null, OR: [{ iqamaExpiryDate: { not: null } }, { passportExpiryDate: { not: null } }] },
-      select: { id: true, fullNameAr: true, fullNameEn: true, iqamaExpiryDate: true, passportExpiryDate: true },
+      select: {
+        id: true,
+        fullNameAr: true,
+        fullNameEn: true,
+        iqamaExpiryDate: true,
+        passportExpiryDate: true,
+        iqamaNumber: true,
+        passportNumber: true,
+        branch: { select: { name: true } },
+      },
     }),
     prisma.employeeDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null }, type: { notIn: ["IQAMA", "PASSPORT"] } },
-      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true } } },
+      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, branch: { select: { name: true } } } } },
     }),
     prisma.companyDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null } },
+      include: { branch: { select: { name: true } } },
     }),
   ]);
 
@@ -53,6 +80,10 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         employeeName: name,
         employeeNameAr: nameAr,
         recordId: emp.id,
+        documentAr: "الإقامة",
+        documentEn: "Iqama",
+        documentNumber: emp.iqamaNumber,
+        branchName: emp.branch?.name,
       });
     }
     if (emp.passportExpiryDate) {
@@ -66,6 +97,10 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         employeeName: name,
         employeeNameAr: nameAr,
         recordId: emp.id,
+        documentAr: "جواز السفر",
+        documentEn: "Passport",
+        documentNumber: emp.passportNumber,
+        branchName: emp.branch?.name,
       });
     }
   }
@@ -84,6 +119,10 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       employeeName: name,
       employeeNameAr: nameAr,
       recordId: doc.id,
+      documentAr: doc.name || EMPLOYEE_DOCUMENT_NAMES[doc.type]?.[0],
+      documentEn: doc.name || EMPLOYEE_DOCUMENT_NAMES[doc.type]?.[1],
+      documentNumber: doc.documentNumber,
+      branchName: doc.employee.branch?.name,
     });
   }
 
@@ -96,6 +135,10 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       labelAr: doc.name,
       expiryDate: doc.expiryDate,
       recordId: doc.id,
+      documentAr: doc.name,
+      documentEn: doc.name,
+      documentNumber: doc.documentNumber || doc.licenseNumber,
+      branchName: doc.branch?.name,
     });
   }
 

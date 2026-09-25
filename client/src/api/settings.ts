@@ -113,6 +113,15 @@ export interface WhatsappMessageItem {
   kind: "ALERT" | "TEST";
   at: string;
 }
+export type WhatsappTemplateId = "classic" | "card" | "compact" | "priority" | "bilingual";
+export type WhatsappPreviewState = "expired" | "week" | "month";
+export interface WhatsappTemplateSettings {
+  template: WhatsappTemplateId;
+  /** False when the system has no documents yet and the previews use an example. */
+  sampleIsReal: boolean;
+  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState, string>>;
+}
+
 export interface WhatsappMessagesFeed {
   items: WhatsappMessageItem[];
   stats: { sentToday: number; failedToday: number; total: number };
@@ -125,6 +134,10 @@ export const settingsApi = {
     (await api.get<{ data: PrintSignaturesSettings }>("/settings/print-signatures")).data.data,
   updatePrintSignatures: async (input: PrintSignaturesSettings) =>
     (await api.put<{ data: PrintSignaturesSettings; message: string }>("/settings/print-signatures", input)).data,
+  getWhatsappTemplate: async () =>
+    (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
+  updateWhatsappTemplate: async (template: WhatsappTemplateId) =>
+    (await api.put<{ data: { template: WhatsappTemplateId }; message: string }>("/settings/whatsapp/template", { template })).data,
   getPrintTheme: async () => (await api.get<{ data: { theme: PrintThemeId } }>("/settings/print-theme")).data.data.theme,
   updatePrintTheme: async (theme: PrintThemeId) =>
     (await api.put<{ data: { theme: PrintThemeId }; message: string }>("/settings/print-theme", { theme })).data,

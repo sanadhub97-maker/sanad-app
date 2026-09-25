@@ -2,11 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun } from "@/services/settingsStore";
+import { getExpirationRules, getWhatsappTemplateSetting, markExpirationScanRun } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
+import { alertContext, renderWhatsappAlert } from "@/services/whatsappTemplates";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -30,70 +31,6 @@ function severityFor(threshold: string): "CRITICAL" | "WARNING" | "INFO" {
 function messageFor(item: TrackableItem, threshold: string): string {
   if (threshold === "expired") return `${item.label} has expired.`;
   return `${item.label} will expire in ${threshold} day${threshold === "1" ? "" : "s"}.`;
-}
-
-const SOURCE_TYPE_LABELS_AR: Record<TrackableItem["sourceType"], string> = {
-  EMPLOYEE_IQAMA: "الإقامة",
-  EMPLOYEE_PASSPORT: "جواز السفر",
-  EMPLOYEE_DOCUMENT: "مستند موظف",
-  COMPANY_DOCUMENT: "وثيقة مؤسسة",
-};
-
-function formatDateAr(d: Date): string {
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-}
-
-/** A WhatsApp-specific message: branded, Arabic-first, and formatted for a
- * chat bubble (WhatsApp's `*bold*` markup) — kept separate from messageFor()
- * above, which still backs the in-app/email channels. */
-/** "يوم واحد", "يومان", "7 أيام", "30 يومًا" — Arabic counts agree with the number. */
-function daysAr(n: number): string {
-  if (n === 1) return "يوم واحد";
-  if (n === 2) return "يومان";
-  return n <= 10 ? `${n} أيام` : `${n} يومًا`;
-}
-
-function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?: string | null): string {
-  const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType] || "وثيقة رسمية";
-  // Company documents (licences, registers) have no employee: name the document instead.
-  const subjectLine = item.employeeNameAr
-    ? `👤 *اسم الموظف:* ${item.employeeNameAr}`
-    : `📌 *الوثيقة:* ${item.labelAr || typeLabel}`;
-  const dateStr = formatDateAr(new Date(item.expiryDate));
-  const isExpired = threshold === "expired";
-  const comp = companyName || "المنشأة";
-
-  if (isExpired) {
-    return [
-      "🚨 *إنذار عاجل — وثيقة منتهية الصلاحية*",
-      "━━━━━━━━━━━━━━━━━━━━━",
-      `🏢 *المنشأة:* ${comp}`,
-      subjectLine,
-      `📄 *نوع الوثيقة:* ${typeLabel}`,
-      `📅 *تاريخ الانتهاء المسجل:* ${dateStr}`,
-      "⛔ *الحالة الحالية:* *منتهية الصلاحية*",
-      "━━━━━━━━━━━━━━━━━━━━━",
-      "‼️ *تنبيه إداري فوري:*",
-      "تعتبر هذه الوثيقة متجاوزة للمهلة النظامية؛ يرجى المبادرة برفع إيصال السداد أو مستند التجديد عبر المنظومة لتفادي أي غرامات.",
-      "",
-      "— إدارة العمليات والرقابة النظامية | SanaD HR",
-    ].join("\n");
-  }
-
-  return [
-    "🔔 *تنبيه اقتراب انتهاء صلاحية وثيقة*",
-    "━━━━━━━━━━━━━━━━━━━━━",
-    `🏢 *المنشأة:* ${comp}`,
-    subjectLine,
-    `📄 *نوع الوثيقة:* ${typeLabel}`,
-    `📅 *تاريخ الانتهاء:* ${dateStr}`,
-    `⏳ *المتبقي على الانتهاء:* *${daysAr(Number(threshold))}*`,
-    "━━━━━━━━━━━━━━━━━━━━━",
-    "⚠️ *إجراء مطلوب:*",
-    "يرجى المبادرة بمتابعة إجراءات التجديد فوراً لضمان استمرارية الخدمات النظامية دون انقطاع.",
-    "",
-    "— المنظومة الرقمية لإدارة الموارد البشرية | SanaD HR",
-  ].join("\n");
 }
 
 async function getRecipients() {
@@ -137,13 +74,14 @@ function assertSent(result: { sent: boolean; reason?: string }) {
 
 export async function runExpirationScan() {
   logger.info("Starting daily expiration scan");
-  const [items, rules, emailSettings, whatsappSettings, recipients, branding] = await Promise.all([
+  const [items, rules, emailSettings, whatsappSettings, recipients, branding, whatsappTemplate] = await Promise.all([
     getTrackableItems(),
     getExpirationRules(),
     prisma.emailSettings.findUnique({ where: { id: 1 } }),
     prisma.whatsappSettings.findUnique({ where: { id: 1 } }),
     getRecipients(),
     getBrandingContext(),
+    getWhatsappTemplateSetting(),
   ]);
   const companyName = branding.company?.nameAr || branding.company?.nameEn;
   const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
@@ -182,7 +120,9 @@ export async function runExpirationScan() {
     }
 
     if (whatsappSettings?.enabled) {
-      const whatsappMessage = whatsappMessageFor(item, threshold, companyName);
+      // Formatted for a chat bubble in the design chosen in Settings → WhatsApp;
+      // message above still backs the in-app and email channels.
+      const whatsappMessage = renderWhatsappAlert(whatsappTemplate, alertContext(item, companyName));
       // The numbers configured in Settings → WhatsApp decide who gets alerts.
       // With Meta and no list configured, fall back to notify-role users' phones.
       const phones =

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
+import { WHATSAPP_TEMPLATE_IDS } from "@/services/whatsappTemplates";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -117,6 +118,14 @@ router.put(
 );
 router.get("/whatsapp/web/status", requirePermission("settings.view"), controller.getWhatsappWebStatus);
 router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
+router.get("/whatsapp/template", requirePermission("settings.view"), controller.getWhatsappTemplate);
+router.put(
+  "/whatsapp/template",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ template: z.enum(WHATSAPP_TEMPLATE_IDS) }) }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappTemplate
+);
 router.post(
   "/whatsapp/web/connect",
   requirePermission("settings.edit"),
