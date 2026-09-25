@@ -47,21 +47,42 @@ function formatDateAr(d: Date): string {
  * chat bubble (WhatsApp's `*bold*` markup) — kept separate from messageFor()
  * above, which still backs the in-app/email channels. */
 function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?: string | null): string {
-  const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType];
-  const subject = item.employeeNameAr ? `${item.employeeNameAr} — ${typeLabel}` : item.labelAr;
+  const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType] || "وثيقة رسمية";
+  const subject = item.employeeNameAr || item.labelAr || "الموظف المكرم";
   const dateStr = formatDateAr(new Date(item.expiryDate));
-  const statusLine =
-    threshold === "expired" ? "⚠️ *منتهية الصلاحية*" : `⏳ *متبقٍ ${threshold} يوم على الانتهاء*`;
+  const isExpired = threshold === "expired";
+  const comp = companyName || "المنشأة";
+
+  if (isExpired) {
+    return [
+      "🚨 *إنذار عاجل — وثيقة منتهية الصلاحية*",
+      "━━━━━━━━━━━━━━━━━━━━━",
+      `🏢 *المنشأة:* ${comp}`,
+      `👤 *اسم الموظف:* ${subject}`,
+      `📄 *نوع الوثيقة:* ${typeLabel}`,
+      `📅 *تاريخ الانتهاء المسجل:* ${dateStr}`,
+      "⛔ *الحالة الحالية:* *منتهية الصلاحية (مخالفة نظامية)*",
+      "━━━━━━━━━━━━━━━━━━━━━",
+      "‼️ *تنبيه إداري فوري:*",
+      "تعتبر هذه الوثيقة متجاوزة للمهلة النظامية؛ يرجى المبادرة برفع إيصال السداد أو مستند التجديد عبر المنظومة لتفادي أي غرامات.",
+      "",
+      "— إدارة العمليات والرقابة النظامية | SanaD HR",
+    ].join("\n");
+  }
 
   return [
-    `🔔 *تنبيه انتهاء صلاحية*${companyName ? ` — ${companyName}` : ""}`,
+    "🔔 *تنبيه اقتراب انتهاء صلاحية وثيقة*",
+    "━━━━━━━━━━━━━━━━━━━━━",
+    `🏢 *المنشأة:* ${comp}`,
+    `👤 *المستفيد:* ${subject}`,
+    `📄 *نوع الوثيقة:* ${typeLabel}`,
+    `📅 *تاريخ الانتهاء:* ${dateStr}`,
+    `⏳ *المتبقي على الانتهاء:* *${threshold} أيام فقط*`,
+    "━━━━━━━━━━━━━━━━━━━━━",
+    "⚠️ *إجراء مطلوب:*",
+    "يرجى المبادرة بمتابعة إجراءات التجديد فوراً لضمان استمرارية الخدمات النظامية دون انقطاع.",
     "",
-    `📌 ${subject}`,
-    `📅 تاريخ الانتهاء: ${dateStr}`,
-    statusLine,
-    "",
-    "يرجى المبادرة بالتجديد في أقرب وقت ممكن.",
-    "— نظام SanaD لإدارة الوثائق والتراخيص",
+    "— المنظومة الرقمية لإدارة الموارد البشرية | SanaD HR",
   ].join("\n");
 }
 
