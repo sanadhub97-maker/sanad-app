@@ -525,6 +525,9 @@ html.compact {
 .laser-sweep-line {
   animation: laser-sweep 2.4s ease-in-out infinite;
 }
+@media (prefers-reduced-motion: reduce) {
+  .laser-sweep-line { animation: none; opacity: 0; }
+}
 
 /* 📱 WhatsApp Phone Mockup Chat Wallpaper Pattern */
 .wa-chat-pattern {

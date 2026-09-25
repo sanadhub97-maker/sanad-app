@@ -1,7 +1,6 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  CheckCheck,
   Radio,
   XCircle,
   Sparkles,
@@ -26,30 +25,9 @@ import { settingsApi } from "@/api/settings";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { WhatsappPhoneMockup } from "./whatsapp-phone-mockup";
+import { WhatsappText } from "./whatsapp-text";
 
 const POLL_MS = 8000;
-
-/** Format "*bold*" and "_italic_" as WhatsApp renders them with modern styling. */
-function WhatsappText({ text }: { text: string }) {
-  const parts = text.split(/(\*[^*\n]+\*|_[^_\n]+_)/g);
-  return (
-    <>
-      {parts.map((p, i) =>
-        p.startsWith("*") && p.endsWith("*") && p.length > 2 ? (
-          <b key={i} className="font-bold text-foreground drop-shadow-2xs">
-            {p.slice(1, -1)}
-          </b>
-        ) : p.startsWith("_") && p.endsWith("_") && p.length > 2 ? (
-          <i key={i} className="italic text-muted-foreground">
-            {p.slice(1, -1)}
-          </i>
-        ) : (
-          <Fragment key={i}>{p}</Fragment>
-        )
-      )}
-    </>
-  );
-}
 
 function useRelativeTime(isRtl: boolean) {
   const [, setTick] = useState(0);
@@ -141,11 +119,18 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
   const duration = Math.max(30, tickerItems.length * 8);
 
   const stats = data?.stats ?? { sentToday: 0, failedToday: 0, total: 0 };
-  const successRate = stats.total > 0 ? Math.round((stats.sentToday / Math.max(1, stats.sentToday + stats.failedToday)) * 100) : 100;
+  const attemptedToday = stats.sentToday + stats.failedToday;
+  // Share of today's sends that went through; null on a day with no sends.
+  const successRate = attemptedToday > 0 ? Math.round((stats.sentToday / attemptedToday) * 100) : null;
 
-  function handleCopyPhone(phone: string | null) {
+  async function handleCopyPhone(phone: string | null) {
     if (!phone) return;
-    navigator.clipboard.writeText(phone);
+    try {
+      await navigator.clipboard.writeText(phone);
+    } catch {
+      toast.error(isRtl ? "تعذر النسخ — انسخ الرقم يدوياً" : "Couldn't copy — copy the number manually");
+      return;
+    }
     setCopiedId(phone);
     toast.success(isRtl ? "تم نسخ الرقم إلى الحافظة بنجاح" : "Phone number copied to clipboard");
     setTimeout(() => setCopiedId(null), 2000);
@@ -170,7 +155,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 <MessageSquare className="h-6 w-6 drop-shadow-sm" />
               </div>
               <span className="absolute -top-1 -end-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-card" />
               </span>
             </div>
@@ -180,14 +165,14 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 <CardTitle className="text-base sm:text-lg font-black tracking-tight text-foreground">
                   {isRtl ? "مركز البث المباشر لإشعارات واتساب" : "WhatsApp Live Stream Broadcast Center"}
                 </CardTitle>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider shadow-xs">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-0.5 text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
                   {isRtl ? "بث نشط" : "Active Feed"}
                 </span>
               </div>
               <CardDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                 {isRtl
-                  ? "مراقبة لحظية ومباشرة لتدفق تنبيهات وإشعارات النظام الصادرة عبر WhatsApp Business API مع محاكاة الأجهزة"
+                  ? "مراقبة لحظية لتنبيهات النظام المرسلة عبر واتساب، مع معاينة على شكل هاتف"
                   : "Live monitoring and real-time device simulation of all automated enterprise notifications"}
               </CardDescription>
             </div>
@@ -196,7 +181,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
           {/* 💎 4-Card Luxury KPI Stats Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {/* Sent Today */}
-            <div className="group rounded-2xl p-2.5 border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent backdrop-blur-md shadow-xs transition-all hover:scale-[1.02]">
+            <div className="group rounded-2xl p-2.5 border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent backdrop-blur-md shadow-sm transition-all hover:scale-[1.02]">
               <div className="flex items-center justify-between text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1">
                 <span>{isRtl ? "المرسلة اليوم" : "Sent Today"}</span>
                 <Check className="h-3.5 w-3.5 opacity-80" />
@@ -210,7 +195,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
             </div>
 
             {/* Failed Today */}
-            <div className="group rounded-2xl p-2.5 border border-rose-500/25 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent backdrop-blur-md shadow-xs transition-all hover:scale-[1.02]">
+            <div className="group rounded-2xl p-2.5 border border-rose-500/25 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent backdrop-blur-md shadow-sm transition-all hover:scale-[1.02]">
               <div className="flex items-center justify-between text-[11px] font-bold text-rose-600 dark:text-rose-400 mb-1">
                 <span>{isRtl ? "المتعثرة اليوم" : "Failed Today"}</span>
                 <AlertTriangle className="h-3.5 w-3.5 opacity-80" />
@@ -224,7 +209,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
             </div>
 
             {/* Total Logged */}
-            <div className="group rounded-2xl p-2.5 border border-indigo-500/25 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent backdrop-blur-md shadow-xs transition-all hover:scale-[1.02]">
+            <div className="group rounded-2xl p-2.5 border border-indigo-500/25 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent backdrop-blur-md shadow-sm transition-all hover:scale-[1.02]">
               <div className="flex items-center justify-between text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                 <span>{isRtl ? "إجمالي السجلات" : "Total Logs"}</span>
                 <Layers className="h-3.5 w-3.5 opacity-80" />
@@ -238,16 +223,18 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
             </div>
 
             {/* Delivery Rate */}
-            <div className="group rounded-2xl p-2.5 border border-teal-500/25 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-transparent backdrop-blur-md shadow-xs transition-all hover:scale-[1.02]">
+            <div className="group rounded-2xl p-2.5 border border-teal-500/25 bg-gradient-to-br from-teal-500/10 via-teal-500/5 to-transparent backdrop-blur-md shadow-sm transition-all hover:scale-[1.02]">
               <div className="flex items-center justify-between text-[11px] font-bold text-teal-600 dark:text-teal-400 mb-1">
-                <span>{isRtl ? "معدل الوصول" : "Delivery Rate"}</span>
+                <span>{isRtl ? "نجاح الإرسال اليوم" : "Sent OK Today"}</span>
                 <TrendingUp className="h-3.5 w-3.5 opacity-80" />
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-xl font-black tracking-tight text-foreground font-mono">
-                  {successRate}%
+                  {successRate === null ? "—" : `${successRate}%`}
                 </span>
-                <span className="text-[10px] text-emerald-500 font-bold">{isRtl ? "ناجح" : "pass"}</span>
+                {successRate !== null && (
+                  <span className="text-[10px] text-emerald-500 font-bold">{isRtl ? "ناجح" : "pass"}</span>
+                )}
               </div>
             </div>
           </div>
@@ -257,14 +244,17 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
       {/* 📡 High-Tech Bloomberg Broadcast Ticker */}
       <div className="relative border-b border-border/40 bg-slate-950 text-slate-100 overflow-hidden select-none py-1.5 flex items-center">
         <div className="z-10 bg-emerald-600 px-3 py-1 flex items-center gap-1.5 font-black text-xs text-white uppercase tracking-wider shrink-0 shadow-md">
-          <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-white animate-pulse motion-reduce:animate-none" />
           <span>{isRtl ? "شريط البث" : "Live Ticker"}</span>
         </div>
 
-        <div className="ticker flex-1 overflow-hidden relative">
+        {/* The track slides left-to-right in both languages; each item keeps its own direction. */}
+        <div className="ticker flex-1 overflow-hidden relative" dir="ltr">
           {tickerItems.length === 0 ? (
-            <div className="px-4 text-xs text-slate-400 italic">
-              {isRtl ? "جاري تهيئة البث المباشر..." : "Initializing live stream feed..."}
+            <div className="px-4 text-xs text-slate-400 italic" dir={isRtl ? "rtl" : "ltr"}>
+              {!data
+                ? isRtl ? "جاري تهيئة البث المباشر..." : "Initializing live stream feed..."
+                : isRtl ? "لا توجد رسائل بعد" : "No messages yet"}
             </div>
           ) : (
             <div
@@ -272,13 +262,15 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
               style={{ ["--ticker-duration" as any]: `${duration}s` }}
             >
               {[0, 1].map((copyIndex) => (
-                <div key={copyIndex} className="inline-flex items-center gap-3 pe-6">
+                <div key={copyIndex} className="inline-flex items-center gap-3 pe-6" aria-hidden={copyIndex === 1}>
                   {tickerRow.map((m) => {
                     const isSent = m.status === "SENT";
                     return (
                       <button
                         type="button"
                         key={`${copyIndex}-${m.id}`}
+                        dir={isRtl ? "rtl" : "ltr"}
+                        tabIndex={copyIndex === 1 ? -1 : undefined}
                         onClick={() => setSelectedMessageId(m.id)}
                         className="inline-flex items-center gap-2 rounded-lg bg-slate-900/90 border border-slate-800 px-2.5 py-1 text-xs hover:border-emerald-500/50 hover:bg-slate-800 transition-all cursor-pointer"
                       >
@@ -288,7 +280,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                             isSent ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
                           )}
                         />
-                        <span className="font-mono font-bold text-slate-200">
+                        <span dir="ltr" className="font-mono font-bold text-slate-200">
                           {formatPhoneDisplay(m.to) || (isRtl ? "رقم غير محدد" : "Unknown")}
                         </span>
                         <span className="text-[11px] text-slate-400">
@@ -321,8 +313,8 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
             {(
               [
                 ["ALL", isRtl ? "كافة الرسائل" : "All Messages", stats.total],
-                ["SENT", isRtl ? "المسلّمة (ناجحة)" : "Delivered", stats.sentToday],
-                ["FAILED", isRtl ? "المتعثرة (فشل)" : "Failed", stats.failedToday],
+                ["SENT", isRtl ? "المرسلة (ناجحة)" : "Sent", null],
+                ["FAILED", isRtl ? "المتعثرة (فشل)" : "Failed", null],
               ] as const
             ).map(([val, label, count]) => {
               const active = filter === val;
@@ -345,14 +337,16 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                     )}
                   />
                   <span>{label}</span>
-                  <span
-                    className={cn(
-                      "ms-1 rounded-full px-1.5 py-0.2 text-[10px] font-mono",
-                      active ? "bg-primary/10 text-primary font-black" : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {count}
-                  </span>
+                  {count !== null && (
+                    <span
+                      className={cn(
+                        "ms-1 rounded-full px-1.5 py-px text-[10px] font-mono",
+                        active ? "bg-primary/10 text-primary font-black" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -369,7 +363,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 className={cn(
                   "p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                   viewMode === "dual"
-                    ? "bg-background text-foreground shadow-xs ring-1 ring-border"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -382,7 +376,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 className={cn(
                   "p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                   viewMode === "stream"
-                    ? "bg-background text-foreground shadow-xs ring-1 ring-border"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -395,7 +389,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 className={cn(
                   "p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                   viewMode === "phone"
-                    ? "bg-background text-foreground shadow-xs ring-1 ring-border"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-border"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -411,7 +405,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={isRtl ? "بحث برقم الجوال أو المحتوى..." : "Search phone or text..."}
-                className="h-8.5 rounded-xl ps-9 pe-3 text-xs bg-background/60 border-border/70 focus-visible:ring-emerald-500/25 focus-visible:border-emerald-500"
+                className="h-9 rounded-xl ps-9 pe-3 text-xs bg-background/60 border-border/70 focus-visible:ring-emerald-500/25 focus-visible:border-emerald-500"
               />
             </div>
 
@@ -429,7 +423,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
               onClick={() => refetch()}
               disabled={isFetching}
               title={isRtl ? "تحديث البث فورياً" : "Refresh stream"}
-              className="h-8.5 w-8.5 p-0 rounded-xl border-border/70 bg-card hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+              className="h-9 w-9 p-0 rounded-xl border-border/70 bg-card hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
             >
               <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin text-emerald-500")} />
             </Button>
@@ -510,9 +504,9 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                             )}
                           >
                             {isSent ? (
-                              <CheckCheck className="h-4 w-4 drop-shadow-xs" />
+                              <Check className="h-4 w-4 drop-shadow-sm" />
                             ) : (
-                              <XCircle className="h-4 w-4 drop-shadow-xs" />
+                              <XCircle className="h-4 w-4 drop-shadow-sm" />
                             )}
                           </div>
 
@@ -533,7 +527,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                                 {m.to && (
                                   <div className="inline-flex items-center gap-1 rounded-md bg-muted/60 border border-border/40 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground group-hover:text-foreground">
                                     <Phone className="h-2.5 w-2.5 opacity-70" />
-                                    <span>{formatPhoneDisplay(m.to)}</span>
+                                    <span dir="ltr">{formatPhoneDisplay(m.to)}</span>
                                     <button
                                       type="button"
                                       onClick={(e) => {
@@ -552,14 +546,14 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                               <div className="flex items-center gap-2">
                                 <span
                                   className={cn(
-                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-2xs",
+                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm",
                                     isTest
                                       ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20"
                                       : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                                   )}
                                 >
                                   {isTest ? <Sparkles className="h-3 w-3" /> : <Check className="h-3 w-3" />}
-                                  <span>{isTest ? (isRtl ? "رسالة تجريبية" : "Test Alert") : isRtl ? "إشعار نظام رسمي" : "Official Alert"}</span>
+                                  <span>{isTest ? (isRtl ? "رسالة تجريبية" : "Test Alert") : isRtl ? "تنبيه تلقائي" : "Auto Alert"}</span>
                                 </span>
 
                                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -590,8 +584,8 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                                   <span className={isSent ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}>
                                     {isSent
                                       ? isRtl
-                                        ? "تم التسليم بنجاح عبر بوابة الأعمال"
-                                        : "Successfully Dispatched via Gateway"
+                                        ? "تم الإرسال بنجاح"
+                                        : "Sent successfully"
                                       : isRtl
                                       ? "تعذر تسليم الإشعار للمستلم"
                                       : "Delivery Failed"}
@@ -602,14 +596,12 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                                   <span className="hidden sm:inline-block text-[10px] text-emerald-600 dark:text-emerald-400/80 font-semibold">
                                     {isRtl ? "عرض في الهاتف ←" : "View in phone →"}
                                   </span>
-                                  <span className="text-[10px] font-mono font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
-                                    WhatsApp Business API
-                                  </span>
+                                  
                                 </div>
                               </div>
 
                               {/* Bubble Content Body */}
-                              <div className="text-foreground/90 font-medium text-xs sm:text-sm">
+                              <div className="text-foreground/90 font-medium text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {m.message ? (
                                   <WhatsappText text={m.message} />
                                 ) : (
@@ -661,7 +653,7 @@ export function WhatsappLiveFeed({ isRtl }: { isRtl: boolean }) {
                                   </span>
 
                                   {isSent ? (
-                                    <CheckCheck className="h-4 w-4 text-sky-400 drop-shadow-[0_0_5px_rgba(56,189,248,0.6)]" />
+                                    <Check className="h-4 w-4 text-muted-foreground" />
                                   ) : (
                                     <XCircle className="h-3.5 w-3.5 text-rose-500" />
                                   )}

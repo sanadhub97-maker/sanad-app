@@ -5,7 +5,7 @@ import {
   Phone,
   Video,
   MoreVertical,
-  CheckCheck,
+  Check,
   Paperclip,
   Smile,
   Mic,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { WhatsappMessageItem } from "@/api/settings";
 import { cn } from "@/lib/utils";
+import { WhatsappText } from "./whatsapp-text";
 
 interface WhatsappPhoneMockupProps {
   messages: WhatsappMessageItem[];
@@ -62,7 +63,7 @@ export function WhatsappPhoneMockup({
 
             {/* Dynamic Island Pill */}
             <div className="absolute left-1/2 -translate-x-1/2 top-2 h-5 w-24 bg-black rounded-full flex items-center justify-between px-2.5 shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-emerald-500/80 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500/80 animate-pulse motion-reduce:animate-none" />
               <div className="h-2.5 w-2.5 rounded-full bg-slate-900 border border-slate-700" />
             </div>
 
@@ -77,7 +78,7 @@ export function WhatsappPhoneMockup({
           {/* 🟢 WhatsApp Executive App Header */}
           <div className="relative z-20 px-3 py-2.5 bg-[#1f2c34] border-b border-white/5 flex items-center justify-between shadow-md">
             <div className="flex items-center gap-2">
-              <ArrowRight className={cn("h-4 w-4 text-emerald-400 cursor-pointer", !isRtl && "rotate-180")} />
+              <ArrowRight className={cn("h-4 w-4 text-emerald-400", !isRtl && "rotate-180")} />
               
               {/* SanaD Avatar */}
               <div className="relative h-9 w-9 rounded-full bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-500 flex items-center justify-center text-white font-black text-sm shadow-md ring-2 ring-emerald-500/30">
@@ -96,24 +97,24 @@ export function WhatsappPhoneMockup({
                   <ShieldCheck className="h-3 w-3 text-emerald-400 shrink-0" />
                 </div>
                 <div className="text-[9px] text-emerald-400/90 font-medium truncate flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isRtl ? "حساب أعمال رسمي • متصل" : "Official Business • Online"}</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none" />
+                  <span>{isRtl ? "رسائل النظام التلقائية" : "Automated system messages"}</span>
                 </div>
               </div>
             </div>
 
             {/* Call / Action Icons */}
             <div className="flex items-center gap-3 text-emerald-400">
-              <Video className="h-4 w-4 opacity-80 cursor-pointer hover:opacity-100" />
-              <Phone className="h-4 w-4 opacity-80 cursor-pointer hover:opacity-100" />
-              <MoreVertical className="h-4 w-4 opacity-80 cursor-pointer hover:opacity-100" />
+              <Video className="h-4 w-4 opacity-80" />
+              <Phone className="h-4 w-4 opacity-80" />
+              <MoreVertical className="h-4 w-4 opacity-80" />
             </div>
           </div>
 
           {/* 💬 WhatsApp Chat Area with Pattern */}
           <div className="relative flex-1 overflow-y-auto p-3 space-y-3 wa-chat-pattern">
             {/* E2EE Security Card */}
-            <div className="mx-auto max-w-[260px] rounded-lg bg-[#182229]/90 border border-amber-500/20 p-2 text-center shadow-xs">
+            <div className="mx-auto max-w-[260px] rounded-lg bg-[#182229]/90 border border-amber-500/20 p-2 text-center shadow-sm">
               <div className="flex items-center justify-center gap-1 text-[10px] font-bold text-amber-400/90 mb-0.5">
                 <Lock className="h-2.5 w-2.5" />
                 <span>{isRtl ? "تشفير تام بين الطرفين" : "End-to-End Encrypted"}</span>
@@ -127,7 +128,7 @@ export function WhatsappPhoneMockup({
 
             {/* Date Pill */}
             <div className="flex justify-center">
-              <span className="rounded-md bg-[#182229] px-2.5 py-0.5 text-[9px] font-semibold text-slate-400 shadow-2xs">
+              <span className="rounded-md bg-[#182229] px-2.5 py-0.5 text-[9px] font-semibold text-slate-400 shadow-sm">
                 {isRtl ? "اليوم" : "Today"}
               </span>
             </div>
@@ -169,7 +170,7 @@ export function WhatsappPhoneMockup({
 
                   {/* Message Body */}
                   <div className="text-[11px] whitespace-pre-wrap leading-relaxed font-sans">
-                    {activeMessage.message || (
+                    {activeMessage.message ? <WhatsappText text={activeMessage.message} /> : (
                       <span className="italic opacity-80 text-[10px]">
                         {isRtl
                           ? "سجل إشعار رسمي سابق تم تسليمه بنجاح للمستلم."
@@ -200,7 +201,7 @@ export function WhatsappPhoneMockup({
                       })}
                     </span>
                     {activeMessage.status === "SENT" ? (
-                      <CheckCheck className="h-3.5 w-3.5 text-[#53bdeb]" />
+                      <Check className="h-3.5 w-3.5 text-slate-300/80" />
                     ) : (
                       <span className="text-rose-400 font-bold">!</span>
                     )}
@@ -225,15 +226,15 @@ export function WhatsappPhoneMockup({
           {/* ⌨️ WhatsApp Input Bar */}
           <div className="relative z-20 px-2 py-2 bg-[#1f2c34] border-t border-white/5 flex items-center gap-1.5 shadow-md">
             <div className="flex items-center gap-1 text-slate-400">
-              <Smile className="h-4 w-4 cursor-pointer hover:text-slate-200" />
-              <Paperclip className="h-4 w-4 cursor-pointer hover:text-slate-200" />
+              <Smile className="h-4 w-4" />
+              <Paperclip className="h-4 w-4" />
             </div>
 
             <div className="flex-1 rounded-full bg-[#2a3942] px-3 py-1.5 text-[11px] text-slate-400 flex items-center">
               <span>{isRtl ? "رسالة رسمية مشفرة..." : "Encrypted alert..."}</span>
             </div>
 
-            <div className="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm cursor-pointer hover:bg-emerald-500">
+            <div className="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-sm">
               <Mic className="h-3.5 w-3.5" />
             </div>
           </div>
@@ -258,7 +259,7 @@ export function WhatsappPhoneMockup({
               className={cn(
                 "rounded-lg px-2 py-0.5 text-[10px] font-mono transition-all shrink-0 border",
                 (selectedId === m.id || (!selectedId && idx === 0))
-                  ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-bold shadow-xs"
+                  ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400 font-bold shadow-sm"
                   : "bg-muted/40 border-border/50 text-muted-foreground hover:bg-muted/70"
               )}
             >

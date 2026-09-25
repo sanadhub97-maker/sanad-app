@@ -77,9 +77,9 @@ export default function SettingsPage() {
         title={t("settings.title")}
         description={t("settings.subtitle")}
         actions={
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card/80 dark:bg-card/40 border border-border/80 shadow-xs backdrop-blur-md">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card/80 dark:bg-card/40 border border-border/80 shadow-sm backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="text-xs font-semibold text-muted-foreground">
@@ -589,7 +589,7 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
                     </p>
                   </div>
                   {field.value === "light" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -616,7 +616,7 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
                     </p>
                   </div>
                   {field.value === "dark" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -643,7 +643,7 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
                     </p>
                   </div>
                   {field.value === "system" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                       <Check className="h-3 w-3" />
                     </div>
                   )}
@@ -1336,7 +1336,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                           {
                             value: "WHATSAPP_WEB",
                             label: isRtl ? "ربط مباشر عبر رمز QR" : "Direct QR Web Gateway",
-                            sub: isRtl ? "تشفير سحابي E2EE بدون رسوم" : "E2EE multi-device linking",
+                            sub: isRtl ? "ربط رقم احتياطي كجهاز مرتبط — مجاني" : "Link a spare number as a linked device — free",
                             badge: isRtl ? "الأكثر استخداماً" : "Popular",
                             icon: QrCode,
                             color: "emerald",
@@ -1382,7 +1382,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                                   className={cn(
                                     "h-8 w-8 rounded-xl flex items-center justify-center transition-colors",
                                     isSelected
-                                      ? "bg-emerald-500 text-white shadow-xs"
+                                      ? "bg-emerald-500 text-white shadow-sm"
                                       : "bg-muted text-muted-foreground group-hover:text-foreground"
                                   )}
                                 >
@@ -1415,24 +1415,24 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
               </div>
 
               {isWhatsappWeb ? (
-                <div className="sm:col-span-2 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-4 text-xs leading-relaxed space-y-1.5 shadow-xs">
+                <div className="sm:col-span-2 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent p-4 text-xs leading-relaxed space-y-1.5 shadow-sm">
                   <div className="flex items-center gap-2 font-bold text-foreground">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
                     <span>
                       {isRtl
-                        ? "إرشادات الربط المباشر لجلسة واتساب السحابية:"
-                        : "Direct WhatsApp Session Linking Guidelines:"}
+                        ? "قبل الربط:"
+                        : "Before you link:"}
                     </span>
                   </div>
                   <p className="text-muted-foreground leading-relaxed">
                     {isRtl
-                      ? "يقوم نظام SanaD بإرسال إشعارات وتنبيهات المنشأة تلقائياً عبر جلسة ربط سحابية مخصصة. للحفاظ على استمرارية الخدمة وتفادي قيود الإرسال الآلي، يُوصى باستخدام شريحة رقم أعمال مخصصة للتنبيهات."
-                      : "SanaD dispatches scheduled alerts automatically via a dedicated cloud session. To preserve business continuity and avoid automation limits, using a dedicated business line is strongly recommended."}
+                      ? "يرسل النظام التنبيهات من رقم واتساب تربطه مرة واحدة: فعّل الخاصية واحفظ، ثم اربط الرقم من صندوق الربط بالأسفل. هذا ربط غير رسمي مثل واتساب ويب، وقد يحظر واتساب الرقم إذا اعتبره إرسالاً آلياً، لذلك استخدم رقماً احتياطياً وليس رقمك الأساسي."
+                      : "Alerts are sent from a WhatsApp number you link once: enable and save, then link it in the box below. This is an unofficial link like WhatsApp Web, and WhatsApp may ban a number it flags as automated — use a spare number, not your main one."}
                   </p>
                 </div>
               ) : isCallMeBot ? (
                 <>
-                  <div className="sm:col-span-2 rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 text-xs leading-relaxed space-y-2.5 shadow-xs">
+                  <div className="sm:col-span-2 rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 text-xs leading-relaxed space-y-2.5 shadow-sm">
                     <div className="flex items-center gap-2 font-bold text-foreground">
                       <Zap className="h-4 w-4 text-emerald-500" />
                       <span>
@@ -1456,15 +1456,15 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
                     </ol>
                     <p className="text-muted-foreground text-[11px] pt-1 border-t border-border/40">
                       {isRtl
-                        ? "الخدمة المباشرة تتيح الإرسال الفوري للرقم المرخص له. للتحقق من مزيد من التفاصيل "
-                        : "Direct gateway delivers to the authorized number. For more details "}
+                        ? "الخدمة المجانية ترسل التنبيهات فقط للرقم الذي فعّل المفتاح. إذا لم يعمل رقم التفعيل، "
+                        : "The free API only delivers to the number that activated the key. If the activation number doesn't work, "}
                       <a
                         href="https://www.callmebot.com/blog/free-api-whatsapp-messages/"
                         target="_blank"
                         rel="noreferrer"
                         className="font-semibold text-emerald-600 dark:text-emerald-400 underline underline-offset-2"
                       >
-                        {isRtl ? "تفضل بزيارة البوابة الرسمية" : "visit their official portal"}
+                        {isRtl ? "راجع الرقم الحالي على موقعهم" : "check their site for the current one"}
                       </a>
                       .
                     </p>
@@ -1630,11 +1630,11 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider shadow-xs",
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider shadow-sm",
                 s === "connected"
                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                   : s === "qr" || s === "pairing"
-                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse"
+                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 animate-pulse motion-reduce:animate-none"
                   : "bg-muted text-muted-foreground border border-border/50"
               )}
             >
@@ -1656,7 +1656,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
 
       <CardContent className="pt-6 space-y-5">
         {s === "connected" ? (
-          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/[0.03] to-transparent p-5 backdrop-blur-md shadow-xs">
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/[0.03] to-transparent p-5 backdrop-blur-md shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3.5">
                 <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-inner ring-2 ring-emerald-500/20">
@@ -1668,7 +1668,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                       {isRtl ? "جلسة الإرسال النشطة:" : "Active Gateway Line:"}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                      ✓ {isRtl ? "معتمد وموثق" : "Verified"}
+                      ✓ {isRtl ? "مربوط" : "Linked"}
                     </span>
                   </div>
                   <bdi dir="ltr" className="font-mono text-xl font-black text-foreground tracking-wider mt-0.5 block">
@@ -1690,7 +1690,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
             </div>
           </div>
         ) : s === "finishing" ? (
-          <div className="flex items-start gap-3.5 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-5 shadow-xs">
+          <div className="flex items-start gap-3.5 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-5 shadow-sm">
             <Loader2 className="h-6 w-6 animate-spin text-emerald-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-black text-foreground text-sm">
@@ -1723,7 +1723,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
 
               {/* Scanner Badge */}
               <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-mono font-bold text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping motion-reduce:animate-none" />
                 <span>{isRtl ? "امسح الرمز ضوئياً بالكاميرا" : "Scan via Camera"}</span>
               </div>
             </div>
@@ -1765,6 +1765,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   type="button"
                   variant="ghost"
                   size="sm"
+                  disabled={!canEdit || logout.isPending}
                   onClick={() => logout.mutate()}
                   className="text-xs text-destructive hover:bg-destructive/10"
                 >
@@ -1790,9 +1791,13 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(status.pairingCode || "");
-                  toast.success(isRtl ? "تم نسخ الرمز" : "Code copied");
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(status.pairingCode || "");
+                    toast.success(isRtl ? "تم نسخ الرمز" : "Code copied");
+                  } catch {
+                    toast.error(isRtl ? "تعذر النسخ — انسخ الرمز يدوياً" : "Couldn't copy — copy the code manually");
+                  }
                 }}
                 className="mt-2 rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
               >
@@ -1835,6 +1840,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   type="button"
                   variant="ghost"
                   size="sm"
+                  disabled={!canEdit || logout.isPending}
                   onClick={() => logout.mutate()}
                   className="text-xs text-destructive hover:bg-destructive/10"
                 >
@@ -1896,7 +1902,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   <div
                     className={cn(
                       "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                      method === id ? "bg-emerald-500 text-white shadow-xs" : "bg-muted text-muted-foreground group-hover:text-foreground"
+                      method === id ? "bg-emerald-500 text-white shadow-sm" : "bg-muted text-muted-foreground group-hover:text-foreground"
                     )}
                   >
                     <IconComp className="h-5 w-5" />
@@ -2026,7 +2032,7 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
 
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-3 py-1 text-xs font-black text-emerald-600 dark:text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" />
               <span>{isRtl ? `${activeCount} خط إشعار نشط` : `${activeCount} Active Lines`}</span>
             </span>
           </div>
@@ -2058,7 +2064,7 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
                   className={cn(
                     "group relative flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all",
                     row.enabled
-                      ? "border-border/80 bg-gradient-to-br from-background via-background/90 to-muted/20 shadow-xs hover:border-emerald-500/40"
+                      ? "border-border/80 bg-gradient-to-br from-background via-background/90 to-muted/20 shadow-sm hover:border-emerald-500/40"
                       : "border-dashed border-border/60 bg-muted/20 opacity-60"
                   )}
                 >
@@ -2066,7 +2072,7 @@ function WhatsappRecipientsCard({ canEdit, isRtl, isCallMeBot }: { canEdit: bool
                     {/* Avatar Initials Chip */}
                     <div
                       className={cn(
-                        "h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-2xs",
+                        "h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xs font-mono shrink-0 shadow-sm",
                         row.enabled
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                           : "bg-muted text-muted-foreground border border-border/40"
@@ -2338,7 +2344,7 @@ export function AssetUploadCard({
               <span className="text-[11px] text-muted-foreground font-medium">
                 {isRtl ? "معاينة علامة التبويب في المتصفح:" : "Browser tab mockup preview:"}
               </span>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-xs max-w-xs">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card border border-border/60 shadow-sm max-w-xs">
                 <AuthedFileImage
                   fileId={fileId}
                   previewUrl={localPreview}
