@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import { ALL_PERMISSION_KEYS, DEFAULT_ROLE_PERMISSIONS, PERMISSIONS } from "../src/constants/permissions";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 
 async function main() {
   console.log("Seeding permissions...");

@@ -5,10 +5,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Connection URLs live in prisma.config.ts (migrations) and src/lib/prisma.ts
+// (the app, through the pg driver adapter).
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // ---------------------------------------------------------------------------

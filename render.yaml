@@ -4,8 +4,8 @@ services:
     runtime: node
     plan: free
     region: ohio
-    buildCommand: npm install --include=dev && npm exec -w server -- puppeteer browsers install chrome && npx prisma generate --schema=server/prisma/schema.prisma && npm run build:client && npm run build:server
-    startCommand: npx prisma migrate deploy --schema=server/prisma/schema.prisma && node server/dist/index.js
+    buildCommand: npm install --include=dev && npm exec -w server -- puppeteer browsers install chrome && npx prisma generate --config=server/prisma.config.ts && npm run build:client && npm run build:server
+    startCommand: npx prisma migrate deploy --config=server/prisma.config.ts && node server/dist/index.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
