@@ -22,6 +22,8 @@ const hasClientBuild = fs.existsSync(path.join(clientDistPath, "index.html"));
 
 export function createApp() {
   const app = express();
+  // Express 5 defaults to the "simple" query parser; keep the qs-based one the API was built on.
+  app.set("query parser", "extended");
 
   app.set("trust proxy", 1);
   app.use(

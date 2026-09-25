@@ -110,7 +110,7 @@ export async function createDoc(req: Request, res: Response, next: NextFunction)
 
 export async function updateDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await service.updateDocument(req.params.id, req.body);
+    const doc = await service.updateDocument(String(req.params.id), req.body);
     res.json({ data: doc, message: "تم تحديث بيانات الوثيقة بنجاح" });
   } catch (err) {
     next(err);
@@ -119,7 +119,7 @@ export async function updateDoc(req: Request, res: Response, next: NextFunction)
 
 export async function removeDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    await service.removeDocument(req.params.id, req.query.type as string | undefined);
+    await service.removeDocument(String(req.params.id), req.query.type as string | undefined);
     res.json({ message: "تم حذف الوثيقة بنجاح" });
   } catch (err) {
     next(err);

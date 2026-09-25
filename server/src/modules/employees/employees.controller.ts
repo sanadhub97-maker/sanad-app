@@ -15,7 +15,7 @@ export const getNextNumber = asyncHandler(async (_req: Request, res: Response) =
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(req.params.id) });
+  res.json({ data: await service.getById(String(req.params.id)) });
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -24,17 +24,17 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const employee = await service.update(req.params.id, req.body);
+  const employee = await service.update(String(req.params.id), req.body);
   res.json({ data: employee, message: "Employee updated successfully." });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
-  await service.softDelete(req.params.id);
+  await service.softDelete(String(req.params.id));
   res.json({ message: "Employee deleted successfully." });
 });
 
 export const exportPdf = asyncHandler(async (req: Request, res: Response) => {
-  const employee = await service.getById(req.params.id);
+  const employee = await service.getById(String(req.params.id));
   const branding = await getBrandingContext();
   const html = employeeProfilePdf(employee as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: "Employee Profile" });

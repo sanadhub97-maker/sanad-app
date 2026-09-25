@@ -33,11 +33,11 @@ export const listJobs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getJob = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getJob(req.params.id) });
+  res.json({ data: await service.getJob(String(req.params.id)) });
 });
 
 export const downloadJobErrors = asyncHandler(async (req: Request, res: Response) => {
-  const job = await service.getJob(req.params.id);
+  const job = await service.getJob(String(req.params.id));
   const buffer = await buildWorkbook(
     "Import Errors",
     [

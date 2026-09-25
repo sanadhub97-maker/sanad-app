@@ -32,18 +32,18 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getMetadata = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getMetadata(req.params.id) });
+  res.json({ data: await service.getMetadata(String(req.params.id)) });
 });
 
 export const download = asyncHandler(async (req: Request, res: Response) => {
-  const { file, buffer } = await service.getContent(req.params.id);
+  const { file, buffer } = await service.getContent(String(req.params.id));
   res.setHeader("Content-Type", file.mimeType);
   res.setHeader("Content-Disposition", `inline; filename="${encodeURIComponent(file.originalName)}"`);
   res.send(buffer);
 });
 
 export const downloadPublic = asyncHandler(async (req: Request, res: Response) => {
-  const { file, buffer } = await service.getContent(req.params.id);
+  const { file, buffer } = await service.getContent(String(req.params.id));
   const publicModules = ["company-logo", "company-favicon", "company-document"];
   if (!file.module || !publicModules.includes(file.module)) {
     throw ApiError.forbidden("This file is not publicly accessible.");
@@ -55,6 +55,6 @@ export const downloadPublic = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
-  await service.remove(req.params.id);
+  await service.remove(String(req.params.id));
   res.json({ message: "File deleted successfully." });
 });

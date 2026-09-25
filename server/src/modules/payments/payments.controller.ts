@@ -11,7 +11,7 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(req.params.id) });
+  res.json({ data: await service.getById(String(req.params.id)) });
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -21,17 +21,17 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const payment = await service.update(req.params.id, req.body);
+  const payment = await service.update(String(req.params.id), req.body);
   res.json({ data: payment, message: "Payment updated successfully." });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
-  await service.softDelete(req.params.id);
+  await service.softDelete(String(req.params.id));
   res.json({ message: "Payment deleted successfully." });
 });
 
 export const receiptPdf = asyncHandler(async (req: Request, res: Response) => {
-  const payment = await service.getById(req.params.id);
+  const payment = await service.getById(String(req.params.id));
   const branding = await getBrandingContext();
   const html = paymentReceiptPdf(payment as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: "Payment Receipt" });

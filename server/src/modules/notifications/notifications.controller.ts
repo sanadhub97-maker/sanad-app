@@ -10,7 +10,7 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 
 export const markRead = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  res.json({ data: await service.markRead(req.auth.userId, req.params.id) });
+  res.json({ data: await service.markRead(req.auth.userId, String(req.params.id)) });
 });
 
 export const markAllRead = asyncHandler(async (req: Request, res: Response) => {
@@ -21,6 +21,6 @@ export const markAllRead = asyncHandler(async (req: Request, res: Response) => {
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  await service.remove(req.auth.userId, req.params.id);
+  await service.remove(req.auth.userId, String(req.params.id));
   res.json({ message: "Notification deleted." });
 });

@@ -19,7 +19,7 @@ export function auditLog(action: AuditAction, module: string, opts: AuditOptions
     res.json = ((body: unknown) => {
       if (res.statusCode < 400) {
         const record = body as { id?: string; data?: { id?: string } };
-        const recordId = opts.recordId?.(req) ?? record?.id ?? record?.data?.id ?? req.params?.id;
+        const recordId = opts.recordId?.(req) ?? record?.id ?? record?.data?.id ?? (req.params?.id as string | undefined);
         prisma.auditLog
           .create({
             data: {

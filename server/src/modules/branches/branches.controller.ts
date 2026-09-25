@@ -17,7 +17,7 @@ export const getNextCode = asyncHandler(async (_req: Request, res: Response) => 
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(req.params.id) });
+  res.json({ data: await service.getById(String(req.params.id)) });
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -26,11 +26,11 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const branch = await service.update(req.params.id, req.body);
+  const branch = await service.update(String(req.params.id), req.body);
   res.json({ data: branch });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
-  await service.softDelete(req.params.id);
+  await service.softDelete(String(req.params.id));
   res.json({});
 });

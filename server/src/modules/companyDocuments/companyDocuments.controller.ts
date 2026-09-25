@@ -13,7 +13,7 @@ export function makeController() {
     }),
 
     getById: asyncHandler(async (req: Request, res: Response) => {
-      res.json({ data: await service.getById(req.params.id) });
+      res.json({ data: await service.getById(String(req.params.id)) });
     }),
 
     create: asyncHandler(async (req: Request, res: Response) => {
@@ -22,12 +22,12 @@ export function makeController() {
     }),
 
     update: asyncHandler(async (req: Request, res: Response) => {
-      const doc = await service.update(req.params.id, req.body);
+      const doc = await service.update(String(req.params.id), req.body);
       res.json({ data: doc, message: "Document updated successfully." });
     }),
 
     remove: asyncHandler(async (req: Request, res: Response) => {
-      await service.softDelete(req.params.id);
+      await service.softDelete(String(req.params.id));
       res.json({ message: "Document deleted successfully." });
     }),
   };

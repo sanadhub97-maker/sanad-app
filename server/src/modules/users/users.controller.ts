@@ -8,7 +8,7 @@ export const list = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(req.params.id) });
+  res.json({ data: await service.getById(String(req.params.id)) });
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -17,12 +17,12 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const user = await service.update(req.params.id, req.body);
+  const user = await service.update(String(req.params.id), req.body);
   res.json({ data: user, message: "User updated successfully." });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  await service.softDelete(req.params.id, req.auth.userId);
+  await service.softDelete(String(req.params.id), req.auth.userId);
   res.json({ message: "User deleted successfully." });
 });
