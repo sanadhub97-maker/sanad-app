@@ -46,9 +46,19 @@ function formatDateAr(d: Date): string {
 /** A WhatsApp-specific message: branded, Arabic-first, and formatted for a
  * chat bubble (WhatsApp's `*bold*` markup) — kept separate from messageFor()
  * above, which still backs the in-app/email channels. */
+/** "يوم واحد", "يومان", "7 أيام", "30 يومًا" — Arabic counts agree with the number. */
+function daysAr(n: number): string {
+  if (n === 1) return "يوم واحد";
+  if (n === 2) return "يومان";
+  return n <= 10 ? `${n} أيام` : `${n} يومًا`;
+}
+
 function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?: string | null): string {
   const typeLabel = SOURCE_TYPE_LABELS_AR[item.sourceType] || "وثيقة رسمية";
-  const subject = item.employeeNameAr || item.labelAr || "الموظف المكرم";
+  // Company documents (licences, registers) have no employee: name the document instead.
+  const subjectLine = item.employeeNameAr
+    ? `👤 *اسم الموظف:* ${item.employeeNameAr}`
+    : `📌 *الوثيقة:* ${item.labelAr || typeLabel}`;
   const dateStr = formatDateAr(new Date(item.expiryDate));
   const isExpired = threshold === "expired";
   const comp = companyName || "المنشأة";
@@ -58,10 +68,10 @@ function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?
       "🚨 *إنذار عاجل — وثيقة منتهية الصلاحية*",
       "━━━━━━━━━━━━━━━━━━━━━",
       `🏢 *المنشأة:* ${comp}`,
-      `👤 *اسم الموظف:* ${subject}`,
+      subjectLine,
       `📄 *نوع الوثيقة:* ${typeLabel}`,
       `📅 *تاريخ الانتهاء المسجل:* ${dateStr}`,
-      "⛔ *الحالة الحالية:* *منتهية الصلاحية (مخالفة نظامية)*",
+      "⛔ *الحالة الحالية:* *منتهية الصلاحية*",
       "━━━━━━━━━━━━━━━━━━━━━",
       "‼️ *تنبيه إداري فوري:*",
       "تعتبر هذه الوثيقة متجاوزة للمهلة النظامية؛ يرجى المبادرة برفع إيصال السداد أو مستند التجديد عبر المنظومة لتفادي أي غرامات.",
@@ -74,10 +84,10 @@ function whatsappMessageFor(item: TrackableItem, threshold: string, companyName?
     "🔔 *تنبيه اقتراب انتهاء صلاحية وثيقة*",
     "━━━━━━━━━━━━━━━━━━━━━",
     `🏢 *المنشأة:* ${comp}`,
-    `👤 *المستفيد:* ${subject}`,
+    subjectLine,
     `📄 *نوع الوثيقة:* ${typeLabel}`,
     `📅 *تاريخ الانتهاء:* ${dateStr}`,
-    `⏳ *المتبقي على الانتهاء:* *${threshold} أيام فقط*`,
+    `⏳ *المتبقي على الانتهاء:* *${daysAr(Number(threshold))}*`,
     "━━━━━━━━━━━━━━━━━━━━━",
     "⚠️ *إجراء مطلوب:*",
     "يرجى المبادرة بمتابعة إجراءات التجديد فوراً لضمان استمرارية الخدمات النظامية دون انقطاع.",

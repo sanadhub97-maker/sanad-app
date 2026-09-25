@@ -3,7 +3,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
-import { sendWhatsapp } from "@/services/whatsapp";
+import { sendWhatsapp, getWhatsappConfig, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
+import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
 import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
@@ -156,15 +157,16 @@ export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Respons
 });
 
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const { company } = await getBrandingContext();
+  const [{ company }, { provider }] = await Promise.all([getBrandingContext(), getWhatsappConfig()]);
   const companyName = company?.nameAr || company?.nameEn;
+  const providerLabel =
+    provider === WHATSAPP_WEB_PROVIDER ? "رقم مربوط بكود QR" : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : "واتساب الرسمي (Meta)";
   const message = [
     "✅ *اختبار الربط والتكامل المباشر — بنجاح*",
     "━━━━━━━━━━━━━━━━━━━━━",
-    `🏢 *المنشأة:* ${companyName || "شركة سمو للخدمات الإدارية والمالية"}`,
-    "🤖 *مزود البث:* WhatsApp Business Multi-Device API",
-    "⏱️ *زمن الاستجابة:* `24ms` (اتصال مشفر فائق السرعة)",
-    `📅 *تاريخ الفحص:* ${new Date().toLocaleDateString("ar-SA")}`,
+    `🏢 *المنشأة:* ${companyName || "المنشأة"}`,
+    `🤖 *طريقة الإرسال:* ${providerLabel}`,
+    `📅 *تاريخ الفحص:* ${new Date().toLocaleDateString("ar-EG-u-nu-latn", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric" })}`,
     "━━━━━━━━━━━━━━━━━━━━━",
     "تم التحقق من جاهزية قناة الإرسال بنجاح. ستصلكم كافة التنبيهات المجدولة وتقارير المتابعة عبر هذه القناة المعتمدة.",
     "",
