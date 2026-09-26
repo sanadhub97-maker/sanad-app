@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getExpirationRules } from "@/services/settingsStore";
-import { getTrackableItems, bucketByStatus, bucketByWindow } from "@/services/expiringItems";
+import { getTrackableItems, bucketByStatus, bucketByWindow, type TrackableItem } from "@/services/expiringItems";
+import { daysUntil } from "@/services/expiration";
 
 export async function getSummary() {
   const rules = await getExpirationRules();
@@ -88,4 +89,74 @@ export async function getRecentActivity(userId: string) {
   ]);
 
   return { recentEmployees, recentPayments, recentNotifications, recentActivities };
+}
+
+/** Groups for the dashboard's "by type" card. */
+function typeGroup(item: TrackableItem): string {
+  if (item.sourceType === "EMPLOYEE_IQAMA") return "IQAMA";
+  if (item.sourceType === "EMPLOYEE_PASSPORT") return "PASSPORT";
+  if (item.sourceType === "COMPANY_DOCUMENT") return "COMPANY";
+  if (item.docType === "HEALTH_CERTIFICATE") return "HEALTH_CERTIFICATE";
+  if (item.docType === "MEDICAL_INSURANCE") return "MEDICAL_INSURANCE";
+  return "OTHER";
+}
+
+/** The dashboard's overview cards: what needs attention (expired or ending
+ * within 30 days, soonest first), expiries in each of the next six months,
+ * documents by type, and the branches summary. */
+export async function getOverview() {
+  const items = await getTrackableItems();
+  const withDays = items.map((item) => ({ item, days: daysUntil(item.expiryDate) }));
+
+  const due = withDays.filter((x) => x.days <= 30).sort((a, b) => a.days - b.days);
+  const top = due.slice(0, 5);
+  const taken = new Set(
+    (
+      await prisma.dailyTask.findMany({
+        where: { sourceKey: { in: top.map((x) => x.item.key) }, deletedAt: null },
+        select: { sourceKey: true },
+      })
+    ).map((t) => t.sourceKey)
+  );
+
+  const now = new Date();
+  const upcoming = Array.from({ length: 6 }, (_, i) => {
+    const start = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
+    return {
+      month: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}`,
+      count: items.filter((x) => x.expiryDate >= start && x.expiryDate < end).length,
+    };
+  });
+
+  const byType: Record<string, number> = {};
+  for (const item of items) byType[typeGroup(item)] = (byType[typeGroup(item)] ?? 0) + 1;
+
+  const branches = await prisma.branch.findMany({ where: { deletedAt: null }, select: { status: true, city: true } });
+
+  return {
+    expired: withDays.filter((x) => x.days < 0).length,
+    endingIn30: withDays.filter((x) => x.days >= 0 && x.days <= 30).length,
+    attention: top.map(({ item, days }) => ({
+      key: item.key,
+      sourceType: item.sourceType,
+      recordId: item.recordId,
+      employeeId: item.employeeId ?? null,
+      nameAr: item.employeeNameAr ?? item.labelAr,
+      nameEn: item.employeeName ?? item.label,
+      documentAr: item.documentAr ?? item.labelAr,
+      documentEn: item.documentEn ?? item.label,
+      documentNumber: item.documentNumber ?? null,
+      days,
+      taskAdded: taken.has(item.key),
+    })),
+    attentionTotal: due.length,
+    upcoming,
+    byType,
+    branches: {
+      total: branches.length,
+      active: branches.filter((b) => b.status === "ACTIVE").length,
+      cities: new Set(branches.map((b) => b.city?.trim()).filter(Boolean)).size,
+    },
+  };
 }

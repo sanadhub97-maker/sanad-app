@@ -25,6 +25,8 @@ export interface TrackableItem {
   documentEn?: string;
   documentNumber?: string | null;
   branchName?: string | null;
+  /** EmployeeDocument.type, for employee documents. */
+  docType?: string;
 }
 
 const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
@@ -123,6 +125,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       documentEn: doc.name || EMPLOYEE_DOCUMENT_NAMES[doc.type]?.[1],
       documentNumber: doc.documentNumber,
       branchName: doc.employee.branch?.name,
+      docType: doc.type,
     });
   }
 

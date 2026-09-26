@@ -30,7 +30,36 @@ export interface DashboardCharts {
   monthlyPayments: { month: string; total: number }[];
 }
 
+export interface DashboardAttentionItem {
+  key: string;
+  sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT";
+  recordId: string;
+  employeeId: string | null;
+  nameAr: string;
+  nameEn: string;
+  documentAr: string;
+  documentEn: string;
+  documentNumber: string | null;
+  /** Days until expiry; negative once expired. */
+  days: number;
+  /** A daily task was already made from this item. */
+  taskAdded: boolean;
+}
+
+export interface DashboardOverview {
+  expired: number;
+  endingIn30: number;
+  attention: DashboardAttentionItem[];
+  attentionTotal: number;
+  /** Expiries in this month and the five after it; month is YYYY-MM. */
+  upcoming: { month: string; count: number }[];
+  /** IQAMA, PASSPORT, HEALTH_CERTIFICATE, MEDICAL_INSURANCE, COMPANY, OTHER */
+  byType: Record<string, number>;
+  branches: { total: number; active: number; cities: number };
+}
+
 export const dashboardApi = {
+  overview: async () => (await api.get<{ data: DashboardOverview }>("/dashboard/overview")).data.data,
   summary: async () => (await api.get<{ data: DashboardSummary }>("/dashboard/summary")).data.data,
   expirationWidget: async () => (await api.get<{ data: ExpirationWidget }>("/dashboard/expiration-widget")).data.data,
   charts: async () => (await api.get<{ data: DashboardCharts }>("/dashboard/charts")).data.data,

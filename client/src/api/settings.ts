@@ -160,6 +160,7 @@ export const settingsApi = {
   updatePrintTheme: async (theme: PrintThemeId) =>
     (await api.put<{ data: { theme: PrintThemeId }; message: string }>("/settings/print-theme", { theme })).data,
   getBranding: async () => (await api.get<{ data: CompanyBranding }>("/settings/branding")).data.data,
+  getBrandingMark: async () => (await api.get<{ data: { mark: string | null } }>("/settings/branding/mark")).data.data.mark,
   getCompany: async () => (await api.get<{ data: CompanySettings }>("/settings/company")).data.data,
   updateCompany: async (input: CompanySettings) => (await api.put<{ data: CompanySettings; message: string }>("/settings/company", input)).data,
 

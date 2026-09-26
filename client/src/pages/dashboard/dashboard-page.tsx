@@ -1,9 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { localized } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import {
   BarChart,
   Bar,
@@ -24,111 +23,31 @@ import {
   Users,
   FileText,
   Wallet,
-  TrendingUp,
-  Plus,
-  FileBarChart,
   AlertTriangle,
   Clock,
   CheckCircle2,
   AlertOctagon,
   ArrowUpRight,
   ShieldCheck,
-  Calendar,
-  Sparkles,
   Activity,
   CreditCard,
-  Building2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardApi } from "@/api/dashboard";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
-import { useAuthStore } from "@/stores/authStore";
-import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
+import { AppleIcon } from "@/components/common/apple-icon";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
 import { PaymentDialog } from "@/pages/payments/payment-dialog";
 import { EmptyState } from "@/components/common/empty-state";
+import { DashboardOverview } from "@/pages/dashboard/dashboard-overview";
 
 const STATUS_COLORS: Record<string, string> = {
   VALID: "#10B981",
   EXPIRING_SOON: "#F59E0B",
   EXPIRED: "#F43F5E",
 };
-
-interface KpiCardProps {
-  icon: typeof Users;
-  label: string;
-  value: string | number;
-  subtext?: string;
-  tone: AppleTone;
-  onClick?: () => void;
-}
-
-// Royal KPI card: the same surface for every tone; the tone only colours the
-// thin rule on top and the dot next to the label.
-const TONE_RULE: Record<string, string> = {
-  blue: "#00b1ef",
-  emerald: "#34d399",
-  purple: "#a78bfa",
-  teal: "#2dd4bf",
-  amber: "#e9c46a",
-  rose: "#f87171",
-  indigo: "#818cf8",
-  cyan: "#22d3ee",
-};
-
-function KpiCard({ icon: Icon, label, value, subtext, tone, onClick }: KpiCardProps) {
-  const rule = TONE_RULE[tone] ?? TONE_RULE.blue;
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      whileHover={{ y: -4, scale: 1.015 }}
-      whileTap={{ scale: 0.985 }}
-      onClick={onClick}
-      style={{ borderTopColor: rule }}
-      className={cn(
-        "group relative overflow-hidden rounded-2xl border border-t-2 border-[var(--glass-edge)] bg-card bg-gradient-to-b from-white/[0.05] to-transparent p-5 shadow-[var(--glass-shadow)] transition-all duration-300 backdrop-blur-md hover:border-[rgba(212,178,106,0.45)]",
-        onClick ? "cursor-pointer" : ""
-      )}
-    >
-
-      {/* Top Row: Label & Apple Icon */}
-      <div className="relative z-10 flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="h-2 w-2 rounded-full shrink-0" style={{ background: rule }} />
-          <p className="text-xs font-bold text-muted-foreground/90 truncate tracking-tight">{label}</p>
-        </div>
-        <AppleIcon
-          icon={Icon}
-          tone={tone}
-          size="md"
-          className="shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-sm"
-        />
-      </div>
-
-      {/* Middle: Prominent Metric Value */}
-      <div className="relative z-10 space-y-2">
-        <p className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans group-hover:translate-x-0.5 transition-transform duration-200">
-          {value}
-        </p>
-
-        {/* Footer Row: Subtext & Action affordance */}
-        {subtext && (
-          <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground/80 pt-2 border-t border-black/[0.05] dark:border-white/[0.06]">
-            <span className="truncate">{subtext}</span>
-            {onClick && (
-              <ArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all text-foreground" />
-            )}
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-}
 
 // Custom Glassmorphic Chart Tooltip
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -156,7 +75,6 @@ function CustomChartTooltip({ active, payload, label, formatter }: any) {
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
-  const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -164,7 +82,7 @@ export default function DashboardPage() {
   const [branchDialogOpen, setBranchDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
-  const { data: summary, isLoading: loadingSummary } = useQuery({
+  const { data: summary } = useQuery({
     queryKey: ["dashboard", "summary"],
     queryFn: dashboardApi.summary,
   });
@@ -180,33 +98,6 @@ export default function DashboardPage() {
     queryKey: ["dashboard", "recent"],
     queryFn: dashboardApi.recentActivity,
   });
-
-  // Time-aware greeting
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (isAr) {
-      if (hour < 12) return "صباح الخير والبركة";
-      if (hour < 17) return "طاب نهارك";
-      return "مساء الخير والازدهار";
-    }
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  }, [isAr]);
-
-  // Formatted date string
-  const todayDateString = useMemo(() => {
-    try {
-      return new Intl.DateTimeFormat(isAr ? "ar-SA" : "en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }).format(new Date());
-    } catch {
-      return new Date().toLocaleDateString();
-    }
-  }, [isAr]);
 
   const widgetEntries = widget
     ? [
@@ -280,188 +171,14 @@ export default function DashboardPage() {
     : [];
 
   return (
-    <div className="space-y-8 pb-10">
-      {/* 🌟 Hero Executive Command Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl border border-[rgba(212,178,106,0.3)] [background:var(--hero-bg)] p-6 sm:p-8 text-white shadow-[0_18px_44px_-24px_rgba(0,0,0,0.8)]"
-      >
-        {/* Top Glass Specular Rim Line */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e9c46a]/70 to-transparent" />
-
-        {/* Subtle background ambient mesh glow */}
-        <div className="pointer-events-none absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-[#d4b26a]/10 blur-3xl" />
-
-        <div className="relative z-10 space-y-6">
-          <div className="space-y-2.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 border border-white/15">
-                <Calendar className="h-3.5 w-3.5" /> {todayDateString}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {isAr ? "نظام SanaD متصل ومحدث" : "SanaD Enterprise Connected"}
-              </span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight bg-gradient-to-b from-white from-30% to-[#e9d7a5] bg-clip-text text-transparent">
-              {greeting}{isAr ? "،" : ","} {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
-            </h1>
-            <p className="text-xs sm:text-sm text-[#c9d6ea] max-w-3xl leading-relaxed font-normal">
-              {isAr
-                ? "مرحباً بك في مركز القيادة والعمليات التنفيذي لنظام SanaD. يمكنك متابعة وثائق الموظفين، التراخيص الحكومية، والمصروفات بدقة استباقية ولحظياً."
-                : "Welcome to your executive operations command center. Monitor workforce compliance, official company licenses, and payments in real time."}
-            </p>
-          </div>
-
-          {/* Quick Action Dock */}
-          <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-[#d4b26a]/20">
-            {/* 1. إضافة موظف */}
-            <Button
-              onClick={() => setEmployeeDialogOpen(true)}
-              variant="gradient"
-              className="h-11 rounded-xl font-bold text-xs sm:text-sm px-4 sm:px-5"
-            >
-              <Plus className="h-4 w-4 me-1.5 stroke-[2.5]" /> {t("dashboard.addEmployee")}
-            </Button>
-
-            {/* 2. إضافة شركة أو مؤسسة */}
-            <Button
-              onClick={() => setBranchDialogOpen(true)}
-              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
-            >
-              <Building2 className="h-4 w-4 me-1.5 text-[#e9c46a]" />
-              {isAr ? "+ إضافة شركة أو مؤسسة" : "+ Add Company / Branch"}
-            </Button>
-
-            {/* 3. إضافة دفعة */}
-            <Button
-              onClick={() => setPaymentDialogOpen(true)}
-              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
-            >
-              <CreditCard className="h-4 w-4 me-1.5 text-[#e9c46a]" />
-              {isAr ? "+ إضافة دفعة" : "+ Add Payment"}
-            </Button>
-
-            {/* 4. مستندات الموظفون */}
-            <Button
-              variant="outline"
-              onClick={() => navigate("/employee-documents")}
-              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
-            >
-              <Users className="h-4 w-4 me-1.5 text-[#e9c46a]" />
-              {isAr ? "مستندات الموظفون" : "Employee Documents"}
-            </Button>
-
-            {/* 5. مستندات الشركة */}
-            <Button
-              variant="outline"
-              onClick={() => navigate("/company-documents")}
-              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
-            >
-              <FileText className="h-4 w-4 me-1.5 text-[#e9c46a]" /> {t("nav.companyDocuments")}
-            </Button>
-
-            {/* 6. التقارير */}
-            <Button
-              variant="outline"
-              onClick={() => navigate("/reports")}
-              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
-            >
-              <FileBarChart className="h-4 w-4 me-1.5 text-[#e9c46a]" /> {t("dashboard.reports")}
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* 📊 8 Executive KPI Metric Cards */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="text-base font-bold text-foreground">
-              {isAr ? "المؤشرات الإحصائية الحيوية" : "Key Performance Metrics"}
-            </h2>
-          </div>
-        </div>
-
-        {loadingSummary ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-2xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            <KpiCard
-              icon={Users}
-              label={t("dashboard.kpi.totalEmployees")}
-              value={summary?.totalEmployees ?? 0}
-              subtext={isAr ? "إجمالي القوى العاملة" : "Total workforce"}
-              tone="blue"
-              onClick={() => navigate("/employees")}
-            />
-            <KpiCard
-              icon={Users}
-              label={t("dashboard.kpi.activeEmployees")}
-              value={summary?.activeEmployees ?? 0}
-              subtext={isAr ? "على رأس العمل" : "Active on duty"}
-              tone="emerald"
-              onClick={() => navigate("/employees")}
-            />
-            <KpiCard
-              icon={FileText}
-              label={t("dashboard.kpi.companyDocuments")}
-              value={summary?.totalCompanyDocuments ?? 0}
-              subtext={isAr ? "وثائق رسمية مسجلة" : "Official registered docs"}
-              tone="purple"
-              onClick={() => navigate("/company-documents")}
-            />
-            <KpiCard
-              icon={ShieldCheck}
-              label={t("dashboard.kpi.validDocuments")}
-              value={summary?.validDocuments ?? 0}
-              subtext={isAr ? "سارية ومكتملة" : "Valid & compliant"}
-              tone="teal"
-              onClick={() => navigate("/reports?tab=documents&status=VALID")}
-            />
-            <KpiCard
-              icon={AlertTriangle}
-              label={t("dashboard.kpi.expiringSoon")}
-              value={summary?.expiringDocuments ?? 0}
-              subtext={isAr ? "تتطلب التجديد قريباً" : "Needs renewal soon"}
-              tone="amber"
-              onClick={() => navigate("/reports?tab=documents&status=EXPIRING_SOON")}
-            />
-            <KpiCard
-              icon={AlertOctagon}
-              label={t("dashboard.kpi.expired")}
-              value={summary?.expiredDocuments ?? 0}
-              subtext={isAr ? "منتهية - إجراء فوري" : "Expired - action required"}
-              tone="rose"
-              onClick={() => navigate("/reports?tab=documents&status=EXPIRED")}
-            />
-            <KpiCard
-              icon={Wallet}
-              label={t("dashboard.kpi.totalPayments")}
-              value={formatCurrency(summary?.totalPaymentsAmount)}
-              subtext={isAr ? "إجمالي المصروفات المسجلة" : "All-time expenses"}
-              tone="indigo"
-              onClick={() => navigate("/payments")}
-            />
-            <KpiCard
-              icon={TrendingUp}
-              label={t("dashboard.kpi.thisMonth")}
-              value={formatCurrency(summary?.monthlyPaymentsAmount)}
-              subtext={isAr ? "مدفوعات الشهر الحالي" : "Current month expenses"}
-              tone="cyan"
-              onClick={() => navigate("/payments")}
-            />
-          </div>
-        )}
-      </div>
+    <div className="space-y-6 pb-10">
+      <DashboardOverview
+        summary={summary}
+        charts={charts}
+        onAddEmployee={() => setEmployeeDialogOpen(true)}
+        onAddBranch={() => setBranchDialogOpen(true)}
+        onAddPayment={() => setPaymentDialogOpen(true)}
+      />
 
       {/* ⚠️ Expiration Radar Widget */}
       <Card className="rounded-3xl border-border/70 overflow-hidden shadow-luxury bg-card/85 backdrop-blur-md specular-border">

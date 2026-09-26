@@ -178,6 +178,13 @@ export const getBranding = asyncHandler(async (_req: Request, res: Response) => 
   });
 });
 
+/** The symbol part of the company logo (without the name under it), for the
+ * dashboard banner's watermark. */
+export const getBrandingMark = asyncHandler(async (_req: Request, res: Response) => {
+  const { mark } = await getCardAssets();
+  res.json({ data: { mark } });
+});
+
 export const updateCompany =asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.updateCompanySettings(req.body), message: "Company settings saved." });
 });

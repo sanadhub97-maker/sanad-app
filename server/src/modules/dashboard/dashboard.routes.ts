@@ -20,6 +20,10 @@ router.get(
   asyncHandler(async (_req, res) => res.json({ data: await service.getCharts() }))
 );
 router.get(
+  "/overview",
+  asyncHandler(async (_req, res) => res.json({ data: await service.getOverview() }))
+);
+router.get(
   "/recent-activity",
   asyncHandler(async (req, res) => {
     if (!req.auth) throw ApiError.unauthorized();
