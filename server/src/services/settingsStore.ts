@@ -22,13 +22,14 @@ export interface AppearanceSettings {
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
   themeMode: "system",
-  primaryColor: "#0B1F3A", // dark navy
-  secondaryColor: "#1E3A8A", // royal blue
-  accentColor: "#2563EB", // blue
-  successColor: "#16A34A",
-  warningColor: "#F59E0B",
-  dangerColor: "#DC2626",
-  infoColor: "#0EA5E9",
+  // The glass design (visionOS-style) palette.
+  primaryColor: "#0A7FF5", // blue
+  secondaryColor: "#5E5CE6", // indigo
+  accentColor: "#52BCFF", // sky
+  successColor: "#34C759",
+  warningColor: "#FF9F0A",
+  dangerColor: "#FF3B30",
+  infoColor: "#32ADE6",
   sidebarStyle: "expanded",
   animationsEnabled: true,
   compactMode: false,

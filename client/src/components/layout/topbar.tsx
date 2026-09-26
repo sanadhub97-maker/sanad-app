@@ -84,7 +84,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const primaryRole = primaryRoleRaw ? translateRoleName(primaryRoleRaw, t) : t("common.staff");
 
   return (
-    <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 lg:gap-6 border-b border-border/80 bg-card/90 dark:bg-[#060913]/90 px-3 sm:px-6 backdrop-blur-2xl transition-colors">
+    <header className="sticky top-0 z-30 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 lg:gap-6 border-b border-[var(--glass-edge)] bg-card/40 px-3 sm:px-6 backdrop-blur-2xl backdrop-saturate-150 transition-colors">
       {/* Start: menu (mobile) + company identity */}
       <div className="flex items-center gap-2 min-w-0">
         <Button

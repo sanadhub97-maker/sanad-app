@@ -3,90 +3,115 @@
 @tailwind utilities;
 
 @layer base {
+  /* Glass design (visionOS style): translucent surfaces over a colour aurora.
+     Each surface colour has an --<name>-alpha that tailwind.config multiplies
+     into every bg-/border- use, so pages turn to glass without edits. */
   :root {
-    --font-sans: "Plus Jakarta Sans", "Cairo", "Tajawal", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", -apple-system, BlinkMacSystemFont, sans-serif;
 
-    /* Light Theme: Pristine Pearl Porcelain Slate with Deep Royal Navy & Indigo */
-    --background: 216 35% 97.8%; /* #F7F9FD */
-    --foreground: 224 58% 11%;
+    --background: 222 45% 97%;
+    --background-alpha: 0.7;
+    --foreground: 226 45% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 58% 11%;
+    --card-alpha: 0.6;
+    --card-foreground: 226 45% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 58% 11%;
+    --popover-alpha: 0.9;
+    --popover-foreground: 226 45% 12%;
 
-    --primary: 224 68% 18%; /* Deep Royal Executive Navy */
-    --primary-foreground: 210 40% 98%;
+    --primary: 211 100% 48%; /* #0a7ff5 */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 28% 95%;
-    --secondary-foreground: 224 58% 14%;
+    --secondary: 222 32% 94%;
+    --secondary-alpha: 0.6;
+    --secondary-foreground: 226 45% 14%;
 
-    --accent: 221 84% 54%; /* Vibrant Royal Sapphire */
-    --accent-foreground: 210 40% 98%;
+    --accent: 199 92% 46%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 218 26% 94.5%;
-    --muted-foreground: 218 16% 44%;
+    --muted: 222 30% 92%;
+    --muted-alpha: 0.55;
+    --muted-foreground: 222 16% 38%;
 
-    --border: 216 22% 89%;
-    --input: 216 22% 89%;
-    --ring: 221 84% 54%;
+    --border: 222 25% 68%;
+    --border-alpha: 0.35;
+    --input: 222 25% 68%;
+    --ring: 211 100% 48%;
 
-    --destructive: 0 75% 54%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 52%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 152 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --success: 152 76% 34%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 48%;
+    --warning: 38 92% 46%;
     --warning-foreground: 26 40% 15%;
 
-    --info: 199 89% 46%;
-    --info-foreground: 210 40% 98%;
+    --info: 199 89% 44%;
+    --info-foreground: 0 0% 100%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
+
+    --aurora: radial-gradient(60% 50% at 85% 0%, #bcd9ff 0%, transparent 60%),
+      radial-gradient(55% 55% at 0% 45%, #e2d3ff 0%, transparent 62%),
+      radial-gradient(70% 55% at 75% 100%, #c4f1ec 0%, transparent 60%), #f3f5fb;
+    --glass-edge: rgba(255, 255, 255, 0.7);
+    --glass-shadow: 0 10px 40px -18px rgba(30, 40, 90, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   .dark,
   :root.dark,
   html.dark {
-    /* Dark Theme: Ultra-Deep Obsidian Midnight with Electric Sapphire & Emerald */
-    --background: 228 48% 4.2%; /* #050814 */
-    --foreground: 214 34% 96%;
+    --background: 228 55% 9%;
+    --background-alpha: 0.55;
+    --foreground: 0 0% 100%;
 
-    --card: 228 42% 6.8%; /* #070B18 */
-    --card-foreground: 214 34% 96%;
+    --card: 0 0% 100%;
+    --card-alpha: 0.075;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 228 42% 6.8%;
-    --popover-foreground: 214 34% 96%;
+    --popover: 228 45% 13%;
+    --popover-alpha: 0.9;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 217 92% 61%; /* Glowing Electric Sapphire */
-    --primary-foreground: 224 48% 5%;
+    --primary: 204 100% 66%; /* #52bcff */
+    --primary-foreground: 225 60% 10%;
 
-    --secondary: 224 30% 13%;
-    --secondary-foreground: 214 34% 96%;
+    --secondary: 0 0% 100%;
+    --secondary-alpha: 0.1;
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 217 92% 61%;
-    --accent-foreground: 224 48% 5%;
+    --accent: 204 100% 66%;
+    --accent-foreground: 225 60% 10%;
 
-    --muted: 224 28% 12%;
-    --muted-foreground: 218 20% 68%;
+    --muted: 0 0% 100%;
+    --muted-alpha: 0.08;
+    --muted-foreground: 226 30% 80%;
 
-    --border: 224 24% 14%;
-    --input: 224 24% 14%;
-    --ring: 217 92% 61%;
+    --border: 0 0% 100%;
+    --border-alpha: 0.14;
+    --input: 0 0% 100%;
+    --ring: 204 100% 66%;
 
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 351 90% 66%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 152 68% 46%;
-    --success-foreground: 210 40% 98%;
+    --success: 142 69% 58%;
+    --success-foreground: 225 60% 8%;
 
-    --warning: 38 90% 54%;
+    --warning: 43 96% 56%;
     --warning-foreground: 26 40% 10%;
 
-    --info: 199 85% 55%;
-    --info-foreground: 210 40% 98%;
+    --info: 199 90% 64%;
+    --info-foreground: 225 60% 8%;
+
+    --aurora: radial-gradient(60% 50% at 85% 5%, #2a6fdb 0%, transparent 60%),
+      radial-gradient(55% 55% at 5% 40%, #7b3fe4 0%, transparent 62%),
+      radial-gradient(70% 55% at 70% 100%, #0fa3b1 0%, transparent 60%), #0d1530;
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --glass-shadow: 0 10px 40px -16px rgba(0, 0, 20, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
   }
 
   * {
@@ -94,19 +119,19 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased selection:bg-blue-500/20 selection:text-blue-600 dark:selection:text-blue-300;
+    @apply text-foreground antialiased selection:bg-sky-500/25;
+    /* The aurora stays put while pages scroll under the glass. */
+    background: var(--aurora);
+    background-attachment: fixed;
+    min-height: 100vh;
     font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1, "cv11" 1;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  html[dir="rtl"] body {
-    font-family: "Cairo", "Tajawal", "Plus Jakarta Sans", sans-serif;
-  }
-
-  html[dir="ltr"] body {
-    font-family: "Plus Jakarta Sans", "Inter", -apple-system, sans-serif;
+  body {
+    font-family: var(--font-sans);
   }
 }
 
@@ -137,14 +162,14 @@
 
   /* Executive Liquid Glass Panels */
   .glass-panel {
-    background: hsl(var(--card) / 0.85);
+    background: hsl(var(--card) / calc(0.85 * var(--card-alpha, 1)));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid hsl(var(--border) / 0.75);
   }
 
   .glass-header {
-    background: hsl(var(--card) / 0.82);
+    background: hsl(var(--card) / calc(0.82 * var(--card-alpha, 1)));
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     border-bottom: 1px solid hsl(var(--border) / 0.7);

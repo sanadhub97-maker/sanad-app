@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "Plus Jakarta Sans", "Cairo", "Tajawal", "Inter", "sans-serif"],
+        sans: ["var(--font-sans)", "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", "sans-serif"],
       },
       boxShadow: {
         luxury: "0 10px 30px -10px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
@@ -21,17 +21,19 @@ export default {
         specular: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.45)",
       },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
+        // Surfaces carry their own transparency for the glass look: --<name>-alpha (1 when unset)
+        // multiplies any opacity modifier, so bg-card and bg-card/90 both come out as glass.
+        border: "hsl(var(--border) / calc(<alpha-value> * var(--border-alpha, 1)))",
+        input: "hsl(var(--input) / calc(<alpha-value> * var(--border-alpha, 1)))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
+        background: "hsl(var(--background) / calc(<alpha-value> * var(--background-alpha, 1)))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "hsl(var(--secondary) / calc(<alpha-value> * var(--secondary-alpha, 1)))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {
@@ -39,15 +41,15 @@ export default {
           foreground: "hsl(var(--accent-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
+          DEFAULT: "hsl(var(--muted) / calc(<alpha-value> * var(--muted-alpha, 1)))",
           foreground: "hsl(var(--muted-foreground))",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
+          DEFAULT: "hsl(var(--card) / calc(<alpha-value> * var(--card-alpha, 1)))",
           foreground: "hsl(var(--card-foreground))",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
+          DEFAULT: "hsl(var(--popover) / calc(<alpha-value> * var(--popover-alpha, 1)))",
           foreground: "hsl(var(--popover-foreground))",
         },
         destructive: {

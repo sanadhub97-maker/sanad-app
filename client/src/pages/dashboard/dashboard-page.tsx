@@ -362,7 +362,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl border border-white/[0.12] bg-gradient-to-r from-[#070D1F] via-[#0E1B3D] to-[#070D1F] p-6 sm:p-8 text-white shadow-2xl shadow-blue-950/40 specular-border backdrop-blur-2xl"
+        className="relative overflow-hidden rounded-3xl border border-[var(--glass-edge)] bg-gradient-to-l from-[#1b3a8a]/85 via-[#2350c8]/75 to-[#0a7ff5]/70 dark:from-white/[0.1] dark:via-white/[0.07] dark:to-white/[0.1] p-6 sm:p-8 text-white shadow-[var(--glass-shadow)] backdrop-blur-2xl backdrop-saturate-150"
       >
         {/* Top Glass Specular Rim Line */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />

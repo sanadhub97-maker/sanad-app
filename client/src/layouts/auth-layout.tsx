@@ -26,7 +26,7 @@ export function AuthLayout() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#050814] text-white font-sans overflow-hidden flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="relative min-h-screen [background:radial-gradient(60%_50%_at_85%_5%,#2a6fdb_0%,transparent_60%),radial-gradient(55%_55%_at_5%_40%,#7b3fe4_0%,transparent_62%),radial-gradient(70%_55%_at_70%_100%,#0fa3b1_0%,transparent_60%),#0d1530] text-white font-sans overflow-hidden flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200">
       <RouteProgressBar />
 
       {/* 🌌 Deep Cosmos Ambient Glow Orbs */}
