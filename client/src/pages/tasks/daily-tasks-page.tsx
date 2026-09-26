@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
+import { DateInput } from "@/components/common/date-input";
 import { tasksApi, type DailyTask, type TaskCategory, type TaskPriority } from "@/api/tasks";
 import { useAuthStore } from "@/stores/authStore";
 import { downloadFile, openPdfInNewTab } from "@/lib/download";
@@ -352,7 +353,7 @@ export default function DailyTasksPage() {
             <Button variant="outline" size="icon" className="rounded-xl" onClick={() => setDay(addDays(day, 1))} aria-label={tr("اليوم التالي", "Next day")}>
               <Next />
             </Button>
-            <input type="date" value={day} onChange={(e) => e.target.value && setDay(e.target.value)} className={fieldCls} aria-label={tr("اختر تاريخًا", "Pick a date")} />
+            <DateInput id="tasks-day" value={day} onChange={(v) => v && setDay(v)} className="h-9 w-40 rounded-xl" />
           </div>
         </div>
         <div className="grid grid-cols-7 gap-2">
