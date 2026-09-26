@@ -20,7 +20,8 @@ interface UiState {
 // Per-viewer UI convenience state (§34). Authoritative appearance defaults
 // (colors, sidebar style, animations) come from Settings → Appearance on
 // the server — this store just remembers the current user's local toggles
-// across reloads.
+// across reloads. The theme is the exception: the system always opens in
+// dark mode, and a switch to light lasts until the page is reloaded.
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
@@ -34,7 +35,12 @@ export const useUiStore = create<UiState>()(
       appliedAppearance: {},
       markAppearanceApplied: (patch) => set((s) => ({ appliedAppearance: { ...s.appliedAppearance, ...patch } })),
     }),
-    { name: "sanad-ui-preferences" }
+    {
+      name: "sanad-ui-preferences",
+      partialize: ({ themeMode: _theme, ...rest }) => rest,
+      // Ignore a theme saved by older versions, so every visit starts dark.
+      merge: (persisted, current) => ({ ...current, ...(persisted as Partial<UiState>), themeMode: current.themeMode }),
+    }
   )
 );
 

@@ -21,7 +21,7 @@ export interface AppearanceSettings {
 }
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
-  themeMode: "system",
+  themeMode: "dark",
   // The glass design (visionOS-style) palette.
   primaryColor: "#0A7FF5", // blue
   secondaryColor: "#5E5CE6", // indigo
