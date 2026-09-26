@@ -40,6 +40,27 @@ let authCache: AuthData | null = null;
 // Saves run one at a time, in order, so an older snapshot never lands last.
 let saveChain: Promise<void> = Promise.resolve();
 
+// When a phone can't decrypt a message (it shows "waiting for this message"),
+// it asks the sender to send it again; WhatsApp can only do that with the
+// message's content, so recent ones are kept here for it (getMessage below).
+const RECENT_LIMIT = 300;
+const recentMessages = new Map<string, unknown>();
+function rememberSent(sent: { key?: { id?: string | null }; message?: unknown } | undefined) {
+  const id = sent?.key?.id;
+  if (!id || !sent?.message) return;
+  recentMessages.set(id, sent.message);
+  if (recentMessages.size > RECENT_LIMIT) recentMessages.delete(recentMessages.keys().next().value as string);
+}
+
+// How many times each message has been re-sent on request (Baileys caps retries with it).
+const retryCounts = new Map<string, unknown>();
+const retryCounterCache = {
+  get: <T>(key: string) => retryCounts.get(key) as T | undefined,
+  set: <T>(key: string, value: T) => void retryCounts.set(key, value),
+  del: (key: string) => void retryCounts.delete(key),
+  flushAll: () => retryCounts.clear(),
+};
+
 // Baileys is ESM-only; this CommonJS server has to load it with a real dynamic
 // import (TypeScript would otherwise compile `import()` into `require()`).
 const importEsm = new Function("s", "return import(s)") as (s: string) => Promise<typeof import("@whiskeysockets/baileys")>;
@@ -83,7 +104,12 @@ async function openSocket(pairPhone?: string) {
     authCache = stored ?? { creds: baileys.initAuthCreds(), keys: {} };
   }
   const { creds, keys } = authCache;
+  // Set once another server instance takes over this session (a deploy starts
+  // the new copy before stopping the old one): from then on this copy must not
+  // write its now-stale encryption keys over the new copy's.
+  let superseded = false;
   const save = () => {
+    if (superseded) return saveChain;
     saveChain = saveChain
       .then(() => persistSession(baileys, creds, keys))
       .catch((err) => logger.error({ err }, "Could not save the WhatsApp session"));
@@ -128,6 +154,8 @@ async function openSocket(pairPhone?: string) {
     logger: logger.child({ module: "baileys" }, { level: "warn" }) as never,
     markOnlineOnConnect: false,
     syncFullHistory: false,
+    getMessage: async (key) => recentMessages.get(key.id ?? "") as never,
+    msgRetryCounterCache: retryCounterCache as never,
   });
   sock = socket;
 
@@ -185,6 +213,7 @@ async function openSocket(pairPhone?: string) {
         await clearSession();
       } else if (code === baileys.DisconnectReason.connectionReplaced) {
         // Another server instance (e.g. a fresh deploy) took over the session — let it.
+        superseded = true;
         state.status = "disconnected";
       } else if (code === baileys.DisconnectReason.restartRequired || creds.me) {
         // 515 right after a scan is WhatsApp's normal "reconnect to finish
@@ -269,7 +298,7 @@ export async function sendViaWhatsappWeb(
     const [check] = (await socket.onWhatsApp(jid)) ?? [];
     if (check && !check.exists) return { sent: false, reason: `الرقم ${toPhone} مش عليه واتساب` };
     // With a picture the message travels as its caption.
-    await socket.sendMessage(jid, image ? { image, caption: message, mimetype: "image/png" } : { text: message });
+    rememberSent(await socket.sendMessage(jid, image ? { image, caption: message, mimetype: "image/png" } : { text: message }));
     return { sent: true };
   } catch (err) {
     logger.error({ err, toPhone }, "WhatsApp Web send failed");
