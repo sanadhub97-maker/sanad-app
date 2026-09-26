@@ -5,6 +5,7 @@ import {
   Files,
   FolderOpen,
   LayoutDashboard,
+  ListChecks,
   BarChart3,
   ScrollText,
   Settings,
@@ -28,6 +29,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   // Overview
   { label: "nav.dashboard", href: "/", icon: LayoutDashboard, tone: "blue", section: "nav.overviewSection" },
+  { label: "nav.dailyTasks", href: "/daily-tasks", icon: ListChecks, tone: "emerald", permission: "tasks.view", section: "nav.overviewSection" },
 
   // Workforce
   {

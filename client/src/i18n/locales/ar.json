@@ -5,6 +5,7 @@
   },
   "nav": {
     "dashboard": "لوحة التحكم",
+    "dailyTasks": "المهام اليومية",
     "overviewSection": "نظرة عامة",
     "workforceSection": "القوى العاملة",
     "complianceSection": "الوثائق والامتثال",
@@ -823,6 +824,7 @@
     "COMPANY_DOCUMENT": "مستند شركة"
   },
   "moduleNames": {
+    "tasks": "المهام اليومية",
     "employees": "الموظفون",
     "employeeDocuments": "مستندات الموظفين",
     "companyDocuments": "مستندات الشركة",

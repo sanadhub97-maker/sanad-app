@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   roles: ["view", "create", "edit", "delete"],
   settings: ["view", "edit"],
   auditLogs: ["view"],
+  tasks: ["view", "create", "edit", "delete", "export"],
 } as const;
 
 export type PermissionModule = keyof typeof PERMISSIONS;
@@ -53,8 +54,16 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, string[]> = {
     "reports.view",
     "reports.export",
     "files.view",
+    "tasks.view",
+    "tasks.create",
+    "tasks.edit",
+    "tasks.export",
   ],
   HR: [
+    "tasks.view",
+    "tasks.create",
+    "tasks.edit",
+    "tasks.export",
     "employees.view",
     "employees.create",
     "employees.edit",

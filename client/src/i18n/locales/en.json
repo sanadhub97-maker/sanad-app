@@ -5,6 +5,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "dailyTasks": "Daily Tasks",
     "overviewSection": "Overview",
     "workforceSection": "Workforce",
     "complianceSection": "Compliance & Assets",
@@ -823,6 +824,7 @@
     "COMPANY_DOCUMENT": "Company Document"
   },
   "moduleNames": {
+    "tasks": "Daily Tasks",
     "employees": "Employees",
     "employeeDocuments": "Employee Documents",
     "companyDocuments": "Company Documents",

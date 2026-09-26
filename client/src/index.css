@@ -566,3 +566,35 @@ html.compact {
   background-size: 16px 16px;
 }
 
+
+/* Daily tasks: completing a task. The check pops and draws itself, a wave
+   and sparks leave the circle, a strike line runs across the title and the
+   row glows; then the row glides to its new place (FLIP, in the page). */
+.task-chk { position: relative; width: 24px; height: 24px; border-radius: 9999px; border: 2px solid hsl(var(--border)); display: grid; place-items: center; color: #fff; overflow: visible; transition: background-color .2s, border-color .2s; }
+.task-chk:disabled { cursor: default; }
+.task-chk svg { width: 14px; height: 14px; }
+.task-chk svg path { stroke-dasharray: 26; stroke-dashoffset: 0; }
+.task-row.is-done .task-chk { background: hsl(var(--success)); border-color: hsl(var(--success)); }
+.task-row.just-done .task-chk { animation: task-pop 420ms cubic-bezier(.3, 1.7, .5, 1); }
+.task-row.just-done .task-chk svg path { animation: task-draw 300ms cubic-bezier(.6, 0, .2, 1) 90ms both; }
+.task-row.just-undone .task-chk { animation: task-unpop 260ms ease; }
+.task-wave { position: absolute; inset: -2px; border-radius: 9999px; border: 2px solid hsl(var(--success)); pointer-events: none; animation: task-wave 560ms cubic-bezier(.2, .7, .3, 1) forwards; }
+.task-spark { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 9999px; background: var(--c); pointer-events: none; opacity: 0; animation: task-burst 620ms cubic-bezier(.15, .8, .3, 1) 60ms forwards; }
+.task-title { background: linear-gradient(currentColor, currentColor) right 58% / 0% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size 360ms cubic-bezier(.4, 0, .2, 1) 120ms, color 300ms ease; }
+html[dir="ltr"] .task-title { background-position: left 58%; }
+.task-row.is-done .task-title { background-size: 100% 1.5px; color: hsl(var(--muted-foreground)); }
+.task-row.just-done { animation: task-flash 950ms ease-out; }
+.task-bump { animation: task-bump 480ms cubic-bezier(.3, 1.6, .5, 1); }
+.task-ring { transition: stroke-dasharray 700ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes task-pop { 0% { transform: scale(.72); } 55% { transform: scale(1.2); } 100% { transform: scale(1); } }
+@keyframes task-unpop { 0% { transform: scale(1); } 45% { transform: scale(.82); } 100% { transform: scale(1); } }
+@keyframes task-draw { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+@keyframes task-wave { from { transform: scale(1); opacity: .7; } to { transform: scale(2.7); opacity: 0; } }
+@keyframes task-burst { 0% { transform: translate(0, 0) scale(.6); opacity: 1; } 70% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+@keyframes task-flash { 0% { background: hsl(var(--success) / .22); } 100% { background: transparent; } }
+@keyframes task-bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); color: hsl(var(--success)); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .task-row.just-done, .task-row.just-done .task-chk, .task-row.just-done .task-chk svg path, .task-row.just-undone .task-chk, .task-bump { animation: none; }
+  .task-wave, .task-spark { display: none; }
+  .task-title, .task-ring { transition: none; }
+}
