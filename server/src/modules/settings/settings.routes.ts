@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { WHATSAPP_TEMPLATE_IDS } from "@/services/whatsappTemplates";
+import { WHATSAPP_CARD_IDS } from "@/services/whatsappCards";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -119,6 +120,14 @@ router.put(
 router.get("/whatsapp/web/status", requirePermission("settings.view"), controller.getWhatsappWebStatus);
 router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
 router.get("/whatsapp/template", requirePermission("settings.view"), controller.getWhatsappTemplate);
+router.get("/whatsapp/cards", requirePermission("settings.view"), controller.getWhatsappCards);
+router.put(
+  "/whatsapp/card",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ card: z.enum(["none", ...WHATSAPP_CARD_IDS]) }) }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappCard
+);
 router.put(
   "/whatsapp/template",
   requirePermission("settings.edit"),

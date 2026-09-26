@@ -101,6 +101,30 @@ export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = 
   }
 }
 
+async function screenshotOnce(browser: Browser, html: string, width: number, height: number): Promise<Buffer> {
+  const page = await browser.newPage();
+  try {
+    await page.setViewport({ width, height, deviceScaleFactor: 1 });
+    await page.setContent(html, { waitUntil: "networkidle0", timeout: 20_000 });
+    // Web fonts decide the Arabic shaping; don't shoot before they're in (5s cap).
+    await Promise.race([page.evaluate("document.fonts.ready.then(() => true)"), new Promise((r) => setTimeout(r, 5000))]);
+    return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height } }));
+  } finally {
+    await page.close().catch(() => undefined);
+  }
+}
+
+/** An HTML page as a PNG — the WhatsApp alert cards. Shares the PDF browser. */
+export async function renderHtmlToPng(html: string, width: number, height: number): Promise<Buffer> {
+  try {
+    return await screenshotOnce(await getBrowser(), html, width, height);
+  } catch (err) {
+    logger.warn({ err }, "Image render failed, relaunching browser and retrying once");
+    browserPromise = null;
+    return screenshotOnce(await getBrowser(), html, width, height);
+  }
+}
+
 export function pdfDocumentShell(opts: {
   title: string;
   titleEn?: string;

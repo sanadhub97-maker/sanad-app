@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration";
 import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { DEFAULT_WHATSAPP_TEMPLATE, isWhatsappTemplateId, type WhatsappTemplateId } from "@/services/whatsappTemplates";
+import { isWhatsappCardSetting, type WhatsappCardSetting } from "@/services/whatsappCards";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
 
@@ -105,6 +106,19 @@ export async function getWhatsappTemplateSetting(): Promise<WhatsappTemplateId> 
 export async function setWhatsappTemplateSetting(template: WhatsappTemplateId) {
   await setSetting(WHATSAPP_TEMPLATE_KEY, { template });
   return template;
+}
+
+const WHATSAPP_CARD_KEY = "whatsapp.card";
+
+/** The picture sent with WhatsApp alerts (see services/whatsappCards); "none" sends text only. */
+export async function getWhatsappCardSetting(): Promise<WhatsappCardSetting> {
+  const { card } = await getSetting<{ card: string }>(WHATSAPP_CARD_KEY, { card: "none" });
+  return isWhatsappCardSetting(card) ? card : "none";
+}
+
+export async function setWhatsappCardSetting(card: WhatsappCardSetting) {
+  await setSetting(WHATSAPP_CARD_KEY, { card });
+  return card;
 }
 
 // Signature boxes and the seal at the end of every printed document

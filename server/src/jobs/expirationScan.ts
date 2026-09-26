@@ -2,12 +2,13 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, getWhatsappTemplateSetting, markExpirationScanRun } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
-import { alertContext, renderWhatsappAlert } from "@/services/whatsappTemplates";
+import { alertContext } from "@/services/whatsappTemplates";
+import { getAlertStyle, prepareAlert, type PreparedAlert } from "@/services/whatsappAlert";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -74,16 +75,16 @@ function assertSent(result: { sent: boolean; reason?: string }) {
 
 export async function runExpirationScan() {
   logger.info("Starting daily expiration scan");
-  const [items, rules, emailSettings, whatsappSettings, recipients, branding, whatsappTemplate] = await Promise.all([
+  const [items, rules, emailSettings, whatsappSettings, recipients, branding] = await Promise.all([
     getTrackableItems(),
     getExpirationRules(),
     prisma.emailSettings.findUnique({ where: { id: 1 } }),
     prisma.whatsappSettings.findUnique({ where: { id: 1 } }),
     getRecipients(),
     getBrandingContext(),
-    getWhatsappTemplateSetting(),
   ]);
   const companyName = branding.company?.nameAr || branding.company?.nameEn;
+  const alertStyle = await getAlertStyle(branding.company?.nameEn);
   const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
 
   let dueCount = 0;
@@ -120,9 +121,11 @@ export async function runExpirationScan() {
     }
 
     if (whatsappSettings?.enabled) {
-      // Formatted for a chat bubble in the design chosen in Settings → WhatsApp;
-      // message above still backs the in-app and email channels.
-      const whatsappMessage = renderWhatsappAlert(whatsappTemplate, alertContext(item, companyName));
+      // In the designs chosen in Settings → WhatsApp (message above still backs
+      // the in-app and email channels). Prepared on first use, so a card is
+      // only drawn when some number still has this alert to receive.
+      let prepared: Promise<PreparedAlert> | null = null;
+      const whatsappAlert = () => (prepared ??= prepareAlert(alertContext(item, companyName), alertStyle));
       // The numbers configured in Settings → WhatsApp decide who gets alerts.
       // With Meta and no list configured, fall back to notify-role users' phones.
       const phones =
@@ -130,13 +133,16 @@ export async function runExpirationScan() {
           ? whatsappPhones
           : recipients.flatMap((r) => (r.phone ? [r.phone] : []));
       for (const phone of phones) {
+        const meta: LogMeta = { recipient: phone, relatedType: item.sourceType, relatedId: item.recordId };
         await logOnce(
           `${dedupeBase}:WHATSAPP:${phone}`,
           "WHATSAPP",
           async () => {
-            assertSent(await sendWhatsapp(phone, whatsappMessage));
+            const alert = await whatsappAlert();
+            meta.message = alert.logText;
+            assertSent(await sendWhatsapp(phone, alert.text, alert.image));
           },
-          { recipient: phone, message: whatsappMessage, relatedType: item.sourceType, relatedId: item.recordId }
+          meta
         );
       }
     }

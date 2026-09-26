@@ -3,7 +3,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
-import { sendWhatsapp, getWhatsappConfig, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
+import { sendWhatsapp, getWhatsappProvider, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
 import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
 import { getBrandingContext } from "@/services/branding";
 import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
@@ -12,7 +12,10 @@ import { prisma } from "@/lib/prisma";
 import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsappLog";
 import { getTrackableItems } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getWhatsappTemplateSetting, setWhatsappTemplateSetting } from "@/services/settingsStore";
+import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting } from "@/services/settingsStore";
+import { getCardAssets } from "@/services/branding";
+import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
+import { CARD_PREVIEW_CSS, WHATSAPP_CARD_IDS, cardMarkup, type WhatsappCardSetting } from "@/services/whatsappCards";
 import {
   WHATSAPP_TEMPLATE_IDS,
   alertContext,
@@ -65,6 +68,23 @@ export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Respo
     ])
   );
   res.json({ data: { template, sampleIsReal: real, previews } });
+});
+
+/** The picture designs, as live markup on the sample document in one state
+ * — Settings shows them without drawing a single image on the server. */
+export const getWhatsappCards = asyncHandler(async (req: Request, res: Response) => {
+  const state = String(req.query.state ?? "week") as keyof typeof PREVIEW_STATES;
+  const days = PREVIEW_STATES[state] ?? PREVIEW_STATES.week;
+  const [{ company }, card, provider, assets] = await Promise.all([getBrandingContext(), getWhatsappCardSetting(), getWhatsappProvider(), getCardAssets()]);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn);
+  const shown = { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) };
+  const cards = Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)]));
+  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards } });
+});
+
+export const updateWhatsappCard = asyncHandler(async (req: Request, res: Response) => {
+  const card = await setWhatsappCardSetting((req.body as { card: WhatsappCardSetting }).card);
+  res.json({ data: { card }, message: "WhatsApp card design saved." });
 });
 
 export const updateWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
@@ -218,20 +238,23 @@ export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Respons
 });
 
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const [{ company }, { provider }, template] = await Promise.all([getBrandingContext(), getWhatsappConfig(), getWhatsappTemplateSetting()]);
+  const [{ company }, provider] = await Promise.all([getBrandingContext(), getWhatsappProvider()]);
   const providerLabel =
     provider === WHATSAPP_WEB_PROVIDER ? "رقم مربوط بكود QR" : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : "واتساب الرسمي (Meta)";
-  // The test shows the chosen design on a real document, so it looks exactly
-  // like the alerts this number will get.
+  // The test is the chosen design (card and text) on a real document, so it
+  // looks exactly like the alerts this number will get.
   const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn);
-  const message = [
-    "🧪 *رسالة تجريبية من نظام SanaD*",
-    `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`,
-    "",
-    renderWhatsappAlert(template, context),
-  ].join("\n");
-  const result = await sendWhatsapp(req.body.to, message);
-  await recordWhatsappMessage({ to: req.body.to, message, sent: result.sent, error: result.reason, kind: "TEST" }).catch(() => undefined);
+  const alert = await prepareAlert(context, await getAlertStyle(company?.nameEn));
+  const header = ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`, ""].join("\n");
+  const message = `${header}\n${alert.text}`;
+  const result = await sendWhatsapp(req.body.to, message, alert.image);
+  await recordWhatsappMessage({
+    to: req.body.to,
+    message: `${header}\n${alert.logText}`,
+    sent: result.sent,
+    error: result.reason,
+    kind: "TEST",
+  }).catch(() => undefined);
   if (!result.sent) {
     throw ApiError.badRequest(
       result.reason === "WHATSAPP_NOT_CONFIGURED"

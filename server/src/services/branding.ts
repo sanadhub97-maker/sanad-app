@@ -62,6 +62,50 @@ export async function getBrandingContext() {
   return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages };
 }
 
+// The WhatsApp alert cards use the logo twice: whole, and — for small round
+// spots such as an app icon — just its symbol. Worked out once per logo file.
+const cardAssetCache = new Map<string, { logo: string | null; mark: string | null }>();
+
+/** Logo trimmed of empty margins, and its symbol: the part above the first
+ * clear horizontal gap in the middle of the logo (a symbol over a name).
+ * With no such gap the symbol is null and the whole logo is used everywhere. */
+export async function getCardAssets(): Promise<{ logo: string | null; mark: string | null }> {
+  const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
+  const fileId = company?.printLogoFileId || company?.logoFileId;
+  if (!fileId) return { logo: null, mark: null };
+  const cached = cardAssetCache.get(fileId);
+  if (cached) return cached;
+  const empty = { logo: null, mark: null };
+  try {
+    const logo = await readPrintLogo(company);
+    if (!logo) return empty;
+    const trimmed = await sharp(logo.buffer, { density: 300 }).resize({ height: 720, fit: "inside" }).trim().png().toBuffer();
+    const { data, info } = await sharp(trimmed).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const rowHasInk = (y: number) => {
+      for (let x = 0; x < info.width; x++) if (data[(y * info.width + x) * 4 + 3] > 24) return true;
+      return false;
+    };
+    let best: { start: number; length: number } | null = null;
+    for (let y = Math.floor(info.height * 0.25), run = 0; y < info.height * 0.8; y++) {
+      run = rowHasInk(y) ? 0 : run + 1;
+      if (run > 0 && (!best || run > best.length)) best = { start: y - run + 1, length: run };
+    }
+    let mark: string | null = null;
+    if (best && best.length >= Math.max(3, info.height * 0.008)) {
+      const top = await sharp(trimmed).extract({ left: 0, top: 0, width: info.width, height: best.start }).png().toBuffer();
+      const png = await sharp(top).trim().resize({ width: 320, fit: "inside" }).png().toBuffer();
+      mark = `data:image/png;base64,${png.toString("base64")}`;
+    }
+    const logoPng = await sharp(trimmed).resize({ height: 440, fit: "inside" }).png().toBuffer();
+    const assets = { logo: `data:image/png;base64,${logoPng.toString("base64")}`, mark };
+    cardAssetCache.set(fileId, assets);
+    return assets;
+  } catch (err) {
+    logger.warn({ err }, "Could not prepare the company logo for WhatsApp cards");
+    return empty;
+  }
+}
+
 /** The print logo as a PNG for Excel, which only embeds PNG/JPEG/GIF (the
  * upload may be SVG or WebP). Returns null if there's no logo or it can't be read. */
 export async function getPrintLogoPng(): Promise<{ buffer: Buffer; width: number; height: number } | null> {

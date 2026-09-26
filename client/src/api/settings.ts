@@ -122,6 +122,20 @@ export interface WhatsappTemplateSettings {
   previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState, string>>;
 }
 
+export type WhatsappCardId =
+  | "pass" | "ios" | "bento" | "health" | "lock" | "letter"
+  | "titanium" | "whitecard" | "ultra" | "vision" | "pearl";
+export type WhatsappCardSetting = WhatsappCardId | "none";
+export interface WhatsappCardsPreview {
+  card: WhatsappCardSetting;
+  /** Pictures go out only from a QR-linked number; other providers send the text design. */
+  canSendCards: boolean;
+  sampleIsReal: boolean;
+  /** Stylesheet and markup of every card, rendered live in the preview. */
+  css: string;
+  cards: Record<WhatsappCardId, string>;
+}
+
 export interface WhatsappMessagesFeed {
   items: WhatsappMessageItem[];
   stats: { sentToday: number; failedToday: number; total: number };
@@ -134,6 +148,10 @@ export const settingsApi = {
     (await api.get<{ data: PrintSignaturesSettings }>("/settings/print-signatures")).data.data,
   updatePrintSignatures: async (input: PrintSignaturesSettings) =>
     (await api.put<{ data: PrintSignaturesSettings; message: string }>("/settings/print-signatures", input)).data,
+  getWhatsappCards: async (state: WhatsappPreviewState) =>
+    (await api.get<{ data: WhatsappCardsPreview }>("/settings/whatsapp/cards", { params: { state } })).data.data,
+  updateWhatsappCard: async (card: WhatsappCardSetting) =>
+    (await api.put<{ data: { card: WhatsappCardSetting }; message: string }>("/settings/whatsapp/card", { card })).data,
   getWhatsappTemplate: async () =>
     (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
   updateWhatsappTemplate: async (template: WhatsappTemplateId) =>

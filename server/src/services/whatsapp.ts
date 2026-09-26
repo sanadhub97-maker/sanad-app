@@ -39,18 +39,25 @@ export async function getWhatsappConfig(): Promise<WhatsappConfig> {
   };
 }
 
+/** Just the sending method — no secrets decrypted, so it's safe for previews. */
+export async function getWhatsappProvider(): Promise<string | undefined> {
+  const row = await prisma.whatsappSettings.findUnique({ where: { id: 1 }, select: { enabled: true, provider: true } });
+  return row?.enabled ? row.provider ?? undefined : undefined;
+}
+
 /**
  * Sends a WhatsApp message through the configured provider: the official
  * WhatsApp Business (Cloud) API, or CallMeBot's free personal-use API. Neither
  * path automates WhatsApp Web (§23). No-ops safely until an administrator
  * configures credentials in Settings → WhatsApp.
  */
-export async function sendWhatsapp(toPhoneE164: string, message: string): Promise<SendResult> {
+export async function sendWhatsapp(toPhoneE164: string, message: string, image?: Buffer): Promise<SendResult> {
   const config = await getWhatsappConfig();
   if (config.provider === WHATSAPP_WEB_PROVIDER) {
     if (!config.enabled) return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
-    return sendViaWhatsappWeb(normalizePhone(toPhoneE164), message);
+    return sendViaWhatsappWeb(normalizePhone(toPhoneE164), message, image);
   }
+  // Only the linked number sends pictures; the other providers get the text (callers pass the full text then).
   if (config.provider === CALLMEBOT_PROVIDER) return sendViaCallMeBot(config, toPhoneE164, message);
   return sendViaMetaCloud(config, toPhoneE164, message);
 }

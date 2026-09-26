@@ -255,7 +255,11 @@ async function waitForConnection(timeoutMs: number) {
   return state.status === "connected" ? sock : null;
 }
 
-export async function sendViaWhatsappWeb(toPhone: string, message: string): Promise<{ sent: boolean; reason?: string }> {
+export async function sendViaWhatsappWeb(
+  toPhone: string,
+  message: string,
+  image?: Buffer
+): Promise<{ sent: boolean; reason?: string }> {
   if (!sock && (await hasStoredSession())) await startWhatsappWeb().catch(() => undefined);
   const socket = await waitForConnection(45_000);
   if (!socket) return { sent: false, reason: "رقم الواتساب مش مربوط — اربطه من الإعدادات بمسح كود QR" };
@@ -264,7 +268,8 @@ export async function sendViaWhatsappWeb(toPhone: string, message: string): Prom
   try {
     const [check] = (await socket.onWhatsApp(jid)) ?? [];
     if (check && !check.exists) return { sent: false, reason: `الرقم ${toPhone} مش عليه واتساب` };
-    await socket.sendMessage(jid, { text: message });
+    // With a picture the message travels as its caption.
+    await socket.sendMessage(jid, image ? { image, caption: message, mimetype: "image/png" } : { text: message });
     return { sent: true };
   } catch (err) {
     logger.error({ err, toPhone }, "WhatsApp Web send failed");
