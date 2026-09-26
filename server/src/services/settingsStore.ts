@@ -22,14 +22,14 @@ export interface AppearanceSettings {
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
   themeMode: "dark",
-  // The glass design (visionOS-style) palette.
-  primaryColor: "#0A7FF5", // blue
-  secondaryColor: "#5E5CE6", // indigo
-  accentColor: "#52BCFF", // sky
-  successColor: "#34C759",
-  warningColor: "#FF9F0A",
-  dangerColor: "#FF3B30",
-  infoColor: "#32ADE6",
+  // The "Royal" design palette: navy, the logo blue and gold.
+  primaryColor: "#00B1EF", // logo blue
+  secondaryColor: "#0B2545", // navy
+  accentColor: "#D4B26A", // gold
+  successColor: "#34D399",
+  warningColor: "#E9C46A",
+  dangerColor: "#F87171",
+  infoColor: "#38BDF8",
   sidebarStyle: "expanded",
   animationsEnabled: true,
   compactMode: false,

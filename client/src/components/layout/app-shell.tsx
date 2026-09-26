@@ -29,13 +29,12 @@ export function AppShell() {
 
   return (
     <div className="flex h-screen overflow-hidden text-foreground font-sans relative">
-      {/* The aurora is the body background (index.css); everything here is glass over it. */}
-      {/* Desktop sidebar: a floating glass panel */}
+      {/* Desktop sidebar: a full-height navy panel with a gold edge (it stays navy in light mode). */}
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 76 : 260 }}
         transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="hidden lg:flex flex-col m-3 me-0 rounded-[28px] bg-card text-foreground shrink-0 border border-[var(--glass-edge)] relative z-20 shadow-[var(--glass-shadow)] backdrop-blur-2xl backdrop-saturate-150 overflow-hidden transition-colors"
+        className="dark hidden lg:flex flex-col [background:var(--sidebar-bg)] text-foreground shrink-0 border-e border-[var(--sidebar-edge)] relative z-20 overflow-hidden"
       >
         {/* Top Brand Header */}
         <div className="flex h-16 items-center justify-between px-3.5">

@@ -26,12 +26,12 @@ export function AuthLayout() {
   }
 
   return (
-    <div className="relative min-h-screen [background:radial-gradient(60%_50%_at_85%_5%,#2a6fdb_0%,transparent_60%),radial-gradient(55%_55%_at_5%_40%,#7b3fe4_0%,transparent_62%),radial-gradient(70%_55%_at_70%_100%,#0fa3b1_0%,transparent_60%),#0d1530] text-white font-sans overflow-hidden flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="relative min-h-screen [background:radial-gradient(60%_45%_at_90%_0%,rgba(0,177,239,0.25)_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,rgba(212,178,106,0.12)_0%,transparent_70%),linear-gradient(180deg,#081a33,#061426)] text-white font-sans overflow-hidden flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200">
       <RouteProgressBar />
 
       {/* 🌌 Deep Cosmos Ambient Glow Orbs */}
       <div className="pointer-events-none absolute -top-40 -left-40 h-[650px] w-[650px] rounded-full bg-blue-600/20 blur-[140px] animate-ambient-pulse" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[650px] w-[650px] rounded-full bg-indigo-600/20 blur-[150px] animate-ambient-pulse-slow" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[650px] w-[650px] rounded-full bg-[#d4b26a]/10 blur-[150px] animate-ambient-pulse-slow" />
       <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/15 blur-[120px] animate-ambient-pulse" />
       <div className="pointer-events-none absolute bottom-10 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[110px]" />
 
@@ -79,7 +79,7 @@ export function AuthLayout() {
             />
 
             {/* Top Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-cyan-400/30 bg-gradient-to-r from-blue-500/10 via-cyan-500/15 to-indigo-500/10 px-4 py-1.5 text-xs font-bold text-cyan-300 backdrop-blur-xl w-fit shadow-[0_0_20px_-3px_rgba(6,182,212,0.3)] specular-border">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-[#d4b26a]/35 bg-[#00b1ef]/10 px-4 py-1.5 text-xs font-bold text-cyan-300 backdrop-blur-xl w-fit shadow-[0_0_20px_-3px_rgba(6,182,212,0.3)] specular-border">
               <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
               <span>{isAr ? "المنظومة التنفيذية الموحدة لإدارة الموارد والامتثال" : "Next-Gen Enterprise Workforce & Compliance Suite"}</span>
             </div>
@@ -90,14 +90,14 @@ export function AuthLayout() {
                 {isAr ? (
                   <>
                     إدارة شاملة وذكية{" "}
-                    <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                    <span className="bg-gradient-to-r from-[#5ccdf5] via-[#00b1ef] to-[#e9d7a5] bg-clip-text text-transparent">
                       للوثائق، التراخيص، والموظفين.
                     </span>
                   </>
                 ) : (
                   <>
                     Intelligent Command Over{" "}
-                    <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+                    <span className="bg-gradient-to-r from-[#5ccdf5] via-[#00b1ef] to-[#e9d7a5] bg-clip-text text-transparent">
                       Workforce, Licenses & Compliance.
                     </span>
                   </>
@@ -183,7 +183,7 @@ export function AuthLayout() {
             <div className="relative w-full max-w-md">
               
               {/* Decorative Subtle Glowing Rim Behind Card */}
-              <div className="pointer-events-none absolute -inset-1 rounded-[32px] bg-gradient-to-b from-cyan-500/20 via-blue-600/10 to-indigo-600/20 blur-xl opacity-70" />
+              <div className="pointer-events-none absolute -inset-1 rounded-[32px] bg-gradient-to-b from-[#00b1ef]/15 via-transparent to-[#d4b26a]/15 blur-xl opacity-70" />
 
               {/* The Masterpiece Glass Container Card */}
               <div className="relative rounded-[28px] border border-white/[0.14] bg-[#090F1E]/85 p-7 sm:p-9 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl specular-border overflow-hidden">

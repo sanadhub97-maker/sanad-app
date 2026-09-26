@@ -45,8 +45,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     const dark = effective === "dark";
     // Brand colours are picked for a light background; on dark, lift their
-    // lightness so a deep navy primary doesn't disappear into the page.
-    const brand = (hex: string) => hexToHsl(hex, dark ? { min: 60, max: 72 } : undefined);
+    // lightness so a deep navy primary doesn't disappear into the page (the
+    // logo blue, at 47%, already reads on navy and is kept as is).
+    const brand = (hex: string) => hexToHsl(hex, dark ? { min: 45, max: 72 } : undefined);
     const status = (hex: string) => hexToHsl(hex, dark ? { min: 48, max: 64 } : undefined);
     {
       const mapping: Record<string, string | null> = {

@@ -150,7 +150,7 @@ export default function LoginPage() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-extrabold shadow-[0_4px_25px_-4px_rgba(56,189,248,0.45)] hover:shadow-[0_8px_35px_-4px_rgba(56,189,248,0.65)] hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 text-sm tracking-wide specular-border mt-2"
+          className="w-full h-12 rounded-xl bg-[linear-gradient(180deg,#2cc3f7,#0090cc)] hover:brightness-110 text-white font-extrabold shadow-[0_10px_24px_-10px_rgba(0,144,204,0.9)] hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 text-sm tracking-wide specular-border mt-2"
         >
           {isSubmitting ? (
             <div className="flex items-center gap-2">

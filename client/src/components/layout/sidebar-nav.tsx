@@ -35,7 +35,7 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
       {sections.map((sec, idx) => (
         <div key={sec.sectionKey ?? idx} className="space-y-1">
           {sec.sectionKey && !collapsed && (
-            <div className="px-3 pt-2 pb-1 text-[11px] font-semibold text-muted-foreground/80">
+            <div className="px-3 pt-2 pb-1 text-[11px] font-semibold text-gold/80">
               {t(sec.sectionKey)}
             </div>
           )}
@@ -52,10 +52,10 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
                     type="button"
                     onClick={() => setOpenGroup(isOpen ? null : item.href)}
                     className={cn(
-                      "group flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition-all duration-200",
+                      "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200",
                       isOpen
-                        ? "bg-white/70 text-foreground dark:bg-white/[0.16] shadow-sm"
-                        : "text-foreground/80 hover:bg-white/50 hover:text-foreground dark:hover:bg-white/[0.08]"
+                        ? "bg-white/[0.07] text-foreground"
+                        : "text-foreground/80 hover:bg-white/[0.06] hover:text-foreground"
                     )}
                   >
                     <AppleIcon
@@ -82,10 +82,10 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
                           onClick={onNavigate}
                           className={({ isActive }) =>
                             cn(
-                              "relative rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all duration-150",
+                              "relative rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-150",
                               isActive
-                                ? "bg-white/70 text-foreground font-bold dark:bg-white/[0.16] shadow-sm"
-                                : "text-foreground/75 hover:bg-white/50 hover:text-foreground dark:hover:bg-white/[0.08]"
+                                ? "nav-active text-foreground font-bold"
+                                : "text-foreground/75 hover:bg-white/[0.06] hover:text-foreground"
                             )
                           }
                         >
@@ -106,10 +106,10 @@ export function SidebarNav({ collapsed, onNavigate }: SidebarNavProps) {
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   cn(
-                    "group relative flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition-all duration-200",
+                    "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200",
                     isActive
-                      ? "bg-white/75 text-foreground font-bold shadow-sm dark:bg-white/[0.17] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
-                      : "text-foreground/80 hover:bg-white/50 hover:text-foreground dark:hover:bg-white/[0.08]",
+                      ? "nav-active text-foreground font-bold"
+                      : "text-foreground/80 hover:bg-white/[0.06] hover:text-foreground",
                     collapsed && "justify-center px-0 py-2.5"
                   )
                 }

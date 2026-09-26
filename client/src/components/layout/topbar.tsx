@@ -140,7 +140,7 @@ export function Topbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             <button className="flex items-center gap-2.5 rounded-xl py-1 ps-1 pe-2 transition-colors hover:bg-muted/70 dark:hover:bg-white/[0.06] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
               <div className="relative shrink-0">
                 <Avatar className="h-9 w-9 rounded-xl">
-                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-xs font-black text-white">
+                  <AvatarFallback className="rounded-xl bg-gradient-to-br from-[#00b1ef] to-[#0b2545] text-xs font-black text-white ring-1 ring-[#d4b26a]/40">
                     {initials}
                   </AvatarFallback>
                 </Avatar>

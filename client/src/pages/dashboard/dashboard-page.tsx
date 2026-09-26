@@ -66,85 +66,21 @@ interface KpiCardProps {
   onClick?: () => void;
 }
 
-const TONE_STYLES: Record<
-  string,
-  {
-    cardBg: string;
-    border: string;
-    glow: string;
-    orb: string;
-    dot: string;
-    badge: string;
-  }
-> = {
-  blue: {
-    cardBg: "bg-gradient-to-br from-blue-50/90 via-sky-50/40 to-card dark:from-[#0B1736]/90 dark:via-[#091228]/85 dark:to-[#060B1A]/95",
-    border: "border-blue-200/90 dark:border-blue-500/30 hover:border-blue-400 dark:hover:border-blue-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(59,130,246,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(59,130,246,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(59,130,246,0.45)]",
-    orb: "bg-blue-500/25 to-sky-500/15",
-    dot: "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.9)]",
-    badge: "text-blue-700 dark:text-blue-300 bg-blue-500/10 border-blue-500/20",
-  },
-  emerald: {
-    cardBg: "bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-card dark:from-[#08221D]/90 dark:via-[#071916]/85 dark:to-[#050E0C]/95",
-    border: "border-emerald-200/90 dark:border-emerald-500/30 hover:border-emerald-400 dark:hover:border-emerald-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(16,185,129,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(16,185,129,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(16,185,129,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(16,185,129,0.45)]",
-    orb: "bg-emerald-500/25 to-teal-500/15",
-    dot: "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]",
-    badge: "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/20",
-  },
-  purple: {
-    cardBg: "bg-gradient-to-br from-purple-50/90 via-fuchsia-50/40 to-card dark:from-[#1E0D36]/90 dark:via-[#160A28]/85 dark:to-[#0A0515]/95",
-    border: "border-purple-200/90 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(168,85,247,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(168,85,247,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(168,85,247,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(168,85,247,0.45)]",
-    orb: "bg-purple-500/25 to-fuchsia-500/15",
-    dot: "bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.9)]",
-    badge: "text-purple-700 dark:text-purple-300 bg-purple-500/10 border-purple-500/20",
-  },
-  teal: {
-    cardBg: "bg-gradient-to-br from-teal-50/90 via-emerald-50/40 to-card dark:from-[#062224]/90 dark:via-[#05191B]/85 dark:to-[#030E0F]/95",
-    border: "border-teal-200/90 dark:border-teal-500/30 hover:border-teal-400 dark:hover:border-teal-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(20,184,166,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(20,184,166,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(20,184,166,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(20,184,166,0.45)]",
-    orb: "bg-teal-500/25 to-cyan-500/15",
-    dot: "bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.9)]",
-    badge: "text-teal-700 dark:text-teal-300 bg-teal-500/10 border-teal-500/20",
-  },
-  amber: {
-    cardBg: "bg-gradient-to-br from-amber-50/90 via-yellow-50/40 to-card dark:from-[#2B1805]/90 dark:via-[#201204]/85 dark:to-[#120902]/95",
-    border: "border-amber-200/90 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(245,158,11,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(245,158,11,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(245,158,11,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(245,158,11,0.45)]",
-    orb: "bg-amber-500/25 to-orange-500/15",
-    dot: "bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.9)]",
-    badge: "text-amber-700 dark:text-amber-300 bg-amber-500/10 border-amber-500/20",
-  },
-  rose: {
-    cardBg: "bg-gradient-to-br from-rose-50/90 via-red-50/40 to-card dark:from-[#2E0B15]/90 dark:via-[#22080F]/85 dark:to-[#140408]/95",
-    border: "border-rose-200/90 dark:border-rose-500/30 hover:border-rose-400 dark:hover:border-rose-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(244,63,94,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(244,63,94,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(244,63,94,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(244,63,94,0.45)]",
-    orb: "bg-rose-500/25 to-red-500/15",
-    dot: "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)]",
-    badge: "text-rose-700 dark:text-rose-300 bg-rose-500/10 border-rose-500/20",
-  },
-  indigo: {
-    cardBg: "bg-gradient-to-br from-indigo-50/90 via-blue-50/40 to-card dark:from-[#131138]/90 dark:via-[#0F0D2B]/85 dark:to-[#080718]/95",
-    border: "border-indigo-200/90 dark:border-indigo-500/30 hover:border-indigo-400 dark:hover:border-indigo-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(99,102,241,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(99,102,241,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(99,102,241,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(99,102,241,0.45)]",
-    orb: "bg-indigo-500/25 to-purple-500/15",
-    dot: "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.9)]",
-    badge: "text-indigo-700 dark:text-indigo-300 bg-indigo-500/10 border-indigo-500/20",
-  },
-  cyan: {
-    cardBg: "bg-gradient-to-br from-cyan-50/90 via-sky-50/40 to-card dark:from-[#06202E]/90 dark:via-[#051722]/85 dark:to-[#030D14]/95",
-    border: "border-cyan-200/90 dark:border-cyan-500/30 hover:border-cyan-400 dark:hover:border-cyan-400/80",
-    glow: "shadow-[0_4px_20px_-4px_rgba(6,182,212,0.14)] hover:shadow-[0_14px_35px_-6px_rgba(6,182,212,0.35)] dark:shadow-[0_4px_24px_-4px_rgba(6,182,212,0.2)] dark:hover:shadow-[0_16px_40px_-6px_rgba(6,182,212,0.45)]",
-    orb: "bg-cyan-500/25 to-blue-500/15",
-    dot: "bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.9)]",
-    badge: "text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 border-cyan-500/20",
-  },
+// Royal KPI card: the same surface for every tone; the tone only colours the
+// thin rule on top and the dot next to the label.
+const TONE_RULE: Record<string, string> = {
+  blue: "#00b1ef",
+  emerald: "#34d399",
+  purple: "#a78bfa",
+  teal: "#2dd4bf",
+  amber: "#e9c46a",
+  rose: "#f87171",
+  indigo: "#818cf8",
+  cyan: "#22d3ee",
 };
 
 function KpiCard({ icon: Icon, label, value, subtext, tone, onClick }: KpiCardProps) {
-  const styles = TONE_STYLES[tone] ?? TONE_STYLES.blue;
+  const rule = TONE_RULE[tone] ?? TONE_RULE.blue;
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -153,29 +89,17 @@ function KpiCard({ icon: Icon, label, value, subtext, tone, onClick }: KpiCardPr
       whileHover={{ y: -4, scale: 1.015 }}
       whileTap={{ scale: 0.985 }}
       onClick={onClick}
+      style={{ borderTopColor: rule }}
       className={cn(
-        "group relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 backdrop-blur-md specular-border",
-        styles.cardBg,
-        styles.border,
-        styles.glow,
+        "group relative overflow-hidden rounded-2xl border border-t-2 border-[var(--glass-edge)] bg-card bg-gradient-to-b from-white/[0.05] to-transparent p-5 shadow-[var(--glass-shadow)] transition-all duration-300 backdrop-blur-md hover:border-[rgba(212,178,106,0.45)]",
         onClick ? "cursor-pointer" : ""
       )}
     >
-      {/* Top Glass Specular Rim Line */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/80 dark:via-white/20 to-transparent" />
-
-      {/* Decorative Ambient Glowing Orb */}
-      <div
-        className={cn(
-          "pointer-events-none absolute -bottom-10 -start-10 h-32 w-32 rounded-full blur-2xl transition-all duration-500 opacity-40 group-hover:opacity-80 group-hover:scale-125",
-          styles.orb
-        )}
-      />
 
       {/* Top Row: Label & Apple Icon */}
       <div className="relative z-10 flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0 ring-2 ring-white/80 dark:ring-black/40", styles.dot)} />
+          <span className="h-2 w-2 rounded-full shrink-0" style={{ background: rule }} />
           <p className="text-xs font-bold text-muted-foreground/90 truncate tracking-tight">{label}</p>
         </div>
         <AppleIcon
@@ -261,13 +185,13 @@ export default function DashboardPage() {
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (isAr) {
-      if (hour < 12) return "صباح الخير والبركة ☀️";
-      if (hour < 17) return "طاب نهارك 🌤️";
-      return "مساء الخير والازدهار 🌙";
+      if (hour < 12) return "صباح الخير والبركة";
+      if (hour < 17) return "طاب نهارك";
+      return "مساء الخير والازدهار";
     }
-    if (hour < 12) return "Good morning ☀️";
-    if (hour < 17) return "Good afternoon 🌤️";
-    return "Good evening 🌙";
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
   }, [isAr]);
 
   // Formatted date string
@@ -362,19 +286,18 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="relative overflow-hidden rounded-3xl border border-[var(--glass-edge)] bg-gradient-to-l from-[#1b3a8a]/85 via-[#2350c8]/75 to-[#0a7ff5]/70 dark:from-white/[0.1] dark:via-white/[0.07] dark:to-white/[0.1] p-6 sm:p-8 text-white shadow-[var(--glass-shadow)] backdrop-blur-2xl backdrop-saturate-150"
+        className="relative overflow-hidden rounded-3xl border border-[rgba(212,178,106,0.3)] [background:var(--hero-bg)] p-6 sm:p-8 text-white shadow-[0_18px_44px_-24px_rgba(0,0,0,0.8)]"
       >
         {/* Top Glass Specular Rim Line */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e9c46a]/70 to-transparent" />
 
         {/* Subtle background ambient mesh glow */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-blue-500/25 blur-3xl" />
-        <div className="pointer-events-none absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-indigo-500/25 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-[#d4b26a]/10 blur-3xl" />
 
         <div className="relative z-10 space-y-6">
           <div className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-cyan-300 backdrop-blur-md border border-white/10">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 border border-white/15">
                 <Calendar className="h-3.5 w-3.5" /> {todayDateString}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30 backdrop-blur-md">
@@ -383,10 +306,10 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white font-sans leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight bg-gradient-to-b from-white from-30% to-[#e9d7a5] bg-clip-text text-transparent">
               {greeting}{isAr ? "،" : ","} {user?.fullName?.split(" ")[0] ?? (isAr ? "مدير النظام" : "Administrator")}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-[#c9d6ea] max-w-3xl leading-relaxed font-normal">
               {isAr
                 ? "مرحباً بك في مركز القيادة والعمليات التنفيذي لنظام SanaD. يمكنك متابعة وثائق الموظفين، التراخيص الحكومية، والمصروفات بدقة استباقية ولحظياً."
                 : "Welcome to your executive operations command center. Monitor workforce compliance, official company licenses, and payments in real time."}
@@ -394,11 +317,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Action Dock */}
-          <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-white/[0.08]">
+          <div className="flex flex-wrap items-center gap-2.5 pt-4 border-t border-[#d4b26a]/20">
             {/* 1. إضافة موظف */}
             <Button
               onClick={() => setEmployeeDialogOpen(true)}
-              className="h-11 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 sm:px-5 specular-border"
+              variant="gradient"
+              className="h-11 rounded-xl font-bold text-xs sm:text-sm px-4 sm:px-5"
             >
               <Plus className="h-4 w-4 me-1.5 stroke-[2.5]" /> {t("dashboard.addEmployee")}
             </Button>
@@ -406,18 +330,18 @@ export default function DashboardPage() {
             {/* 2. إضافة شركة أو مؤسسة */}
             <Button
               onClick={() => setBranchDialogOpen(true)}
-              className="h-11 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:bg-emerald-500/40 text-emerald-300 hover:text-white shadow-lg shadow-emerald-500/15 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 backdrop-blur-md"
+              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <Building2 className="h-4 w-4 me-1.5 text-emerald-400 stroke-[2.5]" />
+              <Building2 className="h-4 w-4 me-1.5 text-[#e9c46a]" />
               {isAr ? "+ إضافة شركة أو مؤسسة" : "+ Add Company / Branch"}
             </Button>
 
             {/* 3. إضافة دفعة */}
             <Button
               onClick={() => setPaymentDialogOpen(true)}
-              className="h-11 rounded-xl border border-rose-500/40 bg-gradient-to-r from-rose-600/30 via-pink-500/20 to-rose-600/30 hover:bg-rose-500/40 text-rose-300 hover:text-white shadow-lg shadow-rose-500/15 hover:shadow-rose-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all font-bold text-xs sm:text-sm px-4 backdrop-blur-md"
+              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <CreditCard className="h-4 w-4 me-1.5 text-rose-400 stroke-[2.5]" />
+              <CreditCard className="h-4 w-4 me-1.5 text-[#e9c46a]" />
               {isAr ? "+ إضافة دفعة" : "+ Add Payment"}
             </Button>
 
@@ -425,9 +349,9 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               onClick={() => navigate("/employee-documents")}
-              className="h-11 rounded-xl border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
+              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <Users className="h-4 w-4 me-1.5 text-cyan-400" />
+              <Users className="h-4 w-4 me-1.5 text-[#e9c46a]" />
               {isAr ? "مستندات الموظفون" : "Employee Documents"}
             </Button>
 
@@ -435,18 +359,18 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               onClick={() => navigate("/company-documents")}
-              className="h-11 rounded-xl border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
+              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <FileText className="h-4 w-4 me-1.5 text-amber-400" /> {t("nav.companyDocuments")}
+              <FileText className="h-4 w-4 me-1.5 text-[#e9c46a]" /> {t("nav.companyDocuments")}
             </Button>
 
             {/* 6. التقارير */}
             <Button
               variant="outline"
               onClick={() => navigate("/reports")}
-              className="h-11 rounded-xl border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:text-white backdrop-blur-md font-bold text-xs sm:text-sm px-4 transition-all"
+              className="h-11 rounded-xl border border-white/15 bg-white/[0.08] text-white hover:bg-white/[0.16] hover:text-white font-bold text-xs sm:text-sm px-4 transition-all"
             >
-              <FileBarChart className="h-4 w-4 me-1.5 text-purple-400" /> {t("dashboard.reports")}
+              <FileBarChart className="h-4 w-4 me-1.5 text-[#e9c46a]" /> {t("dashboard.reports")}
             </Button>
           </div>
         </div>

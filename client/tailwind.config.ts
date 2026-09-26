@@ -68,6 +68,7 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        gold: "hsl(var(--gold) / <alpha-value>)",
       },
       borderRadius: {
         lg: "var(--radius)",

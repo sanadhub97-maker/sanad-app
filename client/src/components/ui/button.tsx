@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "relative overflow-hidden bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/95 hover:shadow-lg hover:shadow-primary/30 active:shadow-sm",
+          "relative overflow-hidden bg-primary bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(0,0,0,0.14))] text-primary-foreground shadow-[0_10px_24px_-12px_hsl(var(--primary))] hover:brightness-110 active:shadow-sm",
         destructive:
           "relative overflow-hidden bg-destructive text-destructive-foreground shadow-md shadow-destructive/20 hover:bg-destructive/90 hover:shadow-lg hover:shadow-destructive/30 active:shadow-sm",
         outline:
@@ -21,7 +21,7 @@ const buttonVariants = cva(
         link:
           "text-primary underline-offset-4 hover:underline",
         gradient:
-          "relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-md shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:brightness-105 active:scale-[0.97]",
+          "relative overflow-hidden bg-[linear-gradient(180deg,#2cc3f7,#0090cc)] text-white shadow-[0_10px_24px_-10px_rgba(0,144,204,0.9)] hover:brightness-110 active:scale-[0.97]",
       },
       size: {
         default: "h-9 px-4 py-2",

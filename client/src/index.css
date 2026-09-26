@@ -3,115 +3,154 @@
 @tailwind utilities;
 
 @layer base {
-  /* Glass design (visionOS style): translucent surfaces over a colour aurora.
-     Each surface colour has an --<name>-alpha that tailwind.config multiplies
-     into every bg-/border- use, so pages turn to glass without edits. */
+  /* "Royal" design: navy surfaces, the logo blue as the one accent and a
+     thin gold line for edges and the active item. Each surface colour has an
+     --<name>-alpha that tailwind.config multiplies into every bg-/border- use,
+     so cards stay slightly translucent over the navy background. */
   :root {
     --font-sans: "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-head: "Noto Kufi Arabic", var(--font-sans);
 
-    --background: 222 45% 97%;
-    --background-alpha: 0.7;
-    --foreground: 226 45% 12%;
+    --background: 214 40% 97%;
+    --background-alpha: 0.75;
+    --foreground: 214 60% 12%;
 
     --card: 0 0% 100%;
-    --card-alpha: 0.6;
-    --card-foreground: 226 45% 12%;
+    --card-alpha: 0.78;
+    --card-foreground: 214 60% 12%;
 
     --popover: 0 0% 100%;
-    --popover-alpha: 0.9;
-    --popover-foreground: 226 45% 12%;
+    --popover-alpha: 0.96;
+    --popover-foreground: 214 60% 12%;
 
-    --primary: 211 100% 48%; /* #0a7ff5 */
+    --primary: 198 100% 40%; /* logo blue, deepened for white */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 32% 94%;
-    --secondary-alpha: 0.6;
-    --secondary-foreground: 226 45% 14%;
+    --secondary: 214 40% 94%;
+    --secondary-alpha: 0.7;
+    --secondary-foreground: 214 60% 14%;
 
-    --accent: 199 92% 46%;
+    --accent: 198 100% 40%;
     --accent-foreground: 0 0% 100%;
 
-    --muted: 222 30% 92%;
-    --muted-alpha: 0.55;
-    --muted-foreground: 222 16% 38%;
+    --muted: 214 35% 93%;
+    --muted-alpha: 0.6;
+    --muted-foreground: 216 18% 38%;
 
-    --border: 222 25% 68%;
-    --border-alpha: 0.35;
-    --input: 222 25% 68%;
-    --ring: 211 100% 48%;
+    --border: 40 38% 58%; /* gold */
+    --border-alpha: 0.3;
+    --input: 40 38% 58%;
+    --ring: 198 100% 40%;
 
-    --destructive: 0 75% 52%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 76% 34%;
+    --success: 158 70% 32%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 46%;
-    --warning-foreground: 26 40% 15%;
+    --warning: 38 80% 40%;
+    --warning-foreground: 0 0% 100%;
 
-    --info: 199 89% 44%;
+    --info: 199 89% 42%;
     --info-foreground: 0 0% 100%;
+
+    --gold: 40 52% 50%;
 
     --radius: 1.25rem;
 
-    --aurora: radial-gradient(60% 50% at 85% 0%, #bcd9ff 0%, transparent 60%),
-      radial-gradient(55% 55% at 0% 45%, #e2d3ff 0%, transparent 62%),
-      radial-gradient(70% 55% at 75% 100%, #c4f1ec 0%, transparent 60%), #f3f5fb;
-    --glass-edge: rgba(255, 255, 255, 0.7);
-    --glass-shadow: 0 10px 40px -18px rgba(30, 40, 90, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --aurora: radial-gradient(60% 45% at 90% 0%, rgba(0, 177, 239, 0.16) 0%, transparent 60%),
+      radial-gradient(50% 40% at 0% 100%, rgba(212, 178, 106, 0.16) 0%, transparent 70%), #f3f6fa;
+    --glass-edge: rgba(184, 145, 63, 0.26);
+    --glass-shadow: 0 10px 30px -18px rgba(11, 37, 69, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+    --sidebar-bg: linear-gradient(180deg, #0b2545, #081a33);
+    --sidebar-fg: 216 50% 97%;
+    --sidebar-muted: 218 28% 73%;
+    --sidebar-edge: rgba(212, 178, 106, 0.25);
+    --nav-active-bg: linear-gradient(270deg, rgba(0, 177, 239, 0.24), rgba(0, 177, 239, 0.06));
+    --nav-active-ring: inset 0 0 0 1px rgba(0, 177, 239, 0.38);
+    --hero-bg: linear-gradient(245deg, #0b2545, #0a4f86 60%, #0090cc);
   }
 
   .dark,
   :root.dark,
   html.dark {
-    --background: 228 55% 9%;
-    --background-alpha: 0.55;
-    --foreground: 0 0% 100%;
+    --background: 212 73% 9%; /* #061426 */
+    --background-alpha: 0.6;
+    --foreground: 216 50% 97%; /* #f3f6fb */
 
     --card: 0 0% 100%;
-    --card-alpha: 0.075;
-    --card-foreground: 0 0% 100%;
+    --card-alpha: 0.055;
+    --card-foreground: 216 50% 97%;
 
-    --popover: 228 45% 13%;
-    --popover-alpha: 0.9;
-    --popover-foreground: 0 0% 100%;
+    --popover: 213 72% 16%; /* #0b2545 */
+    --popover-alpha: 0.97;
+    --popover-foreground: 216 50% 97%;
 
-    --primary: 204 100% 66%; /* #52bcff */
-    --primary-foreground: 225 60% 10%;
+    --primary: 196 100% 47%; /* #00b1ef, the logo blue */
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 100%;
-    --secondary-alpha: 0.1;
-    --secondary-foreground: 0 0% 100%;
+    --secondary-alpha: 0.07;
+    --secondary-foreground: 216 50% 97%;
 
-    --accent: 204 100% 66%;
-    --accent-foreground: 225 60% 10%;
+    --accent: 196 100% 47%;
+    --accent-foreground: 0 0% 100%;
 
     --muted: 0 0% 100%;
-    --muted-alpha: 0.08;
-    --muted-foreground: 226 30% 80%;
+    --muted-alpha: 0.06;
+    --muted-foreground: 218 28% 73%; /* #a9b6cc */
 
-    --border: 0 0% 100%;
-    --border-alpha: 0.14;
-    --input: 0 0% 100%;
-    --ring: 204 100% 66%;
+    --border: 41 55% 62%; /* #d4b26a gold */
+    --border-alpha: 0.2;
+    --input: 41 55% 62%;
+    --ring: 196 100% 47%;
 
-    --destructive: 351 90% 66%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 91% 71%; /* #f87171 */
+    --destructive-foreground: 213 72% 10%;
 
-    --success: 142 69% 58%;
-    --success-foreground: 225 60% 8%;
+    --success: 158 64% 52%; /* #34d399 */
+    --success-foreground: 213 72% 8%;
 
-    --warning: 43 96% 56%;
-    --warning-foreground: 26 40% 10%;
+    --warning: 43 74% 66%; /* #e9c46a */
+    --warning-foreground: 213 72% 10%;
 
-    --info: 199 90% 64%;
-    --info-foreground: 225 60% 8%;
+    --info: 199 93% 60%;
+    --info-foreground: 213 72% 8%;
 
-    --aurora: radial-gradient(60% 50% at 85% 5%, #2a6fdb 0%, transparent 60%),
-      radial-gradient(55% 55% at 5% 40%, #7b3fe4 0%, transparent 62%),
-      radial-gradient(70% 55% at 70% 100%, #0fa3b1 0%, transparent 60%), #0d1530;
-    --glass-edge: rgba(255, 255, 255, 0.14);
-    --glass-shadow: 0 10px 40px -16px rgba(0, 0, 20, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    --gold: 43 74% 66%;
+
+    --aurora: radial-gradient(60% 45% at 90% 0%, rgba(0, 177, 239, 0.25) 0%, transparent 60%),
+      radial-gradient(50% 40% at 0% 100%, rgba(212, 178, 106, 0.12) 0%, transparent 70%),
+      linear-gradient(180deg, #081a33, #061426);
+    --glass-edge: rgba(212, 178, 106, 0.22);
+    --glass-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    --sidebar-edge: rgba(212, 178, 106, 0.25);
+  }
+
+  h1,
+  h2 {
+    font-family: var(--font-head);
+  }
+
+  /* Sidebar item that is on: blue wash with a gold bar at its start. */
+  .nav-active {
+    background: var(--nav-active-bg);
+    box-shadow: var(--nav-active-ring);
+  }
+  [dir="ltr"] .nav-active {
+    background: linear-gradient(90deg, rgba(0, 177, 239, 0.24), rgba(0, 177, 239, 0.06));
+  }
+  .nav-active::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -12px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #e9c46a, #b8913f);
   }
 
   * {
@@ -120,7 +159,7 @@
 
   body {
     @apply text-foreground antialiased selection:bg-sky-500/25;
-    /* The aurora stays put while pages scroll under the glass. */
+    /* The background stays put while pages scroll. */
     background: var(--aurora);
     background-attachment: fixed;
     min-height: 100vh;
@@ -234,7 +273,7 @@
     z-index: 1;
   }
   .dark .specular-border::before {
-    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4) 30%, rgba(255, 255, 255, 0.3) 50%, rgba(99, 102, 241, 0.4) 70%, transparent);
+    background: linear-gradient(90deg, transparent, rgba(212, 178, 106, 0.45), transparent);
   }
 
   /* Chromatic Glow Accents */
