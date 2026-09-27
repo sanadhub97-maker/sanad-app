@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", "sans-serif"],
+        head: ["var(--font-head)", "Alexandria", "sans-serif"],
       },
       boxShadow: {
         luxury: "0 10px 30px -10px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
@@ -68,7 +69,15 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
-        gold: "hsl(var(--gold) / <alpha-value>)",
+        ink: {
+          DEFAULT: "hsl(var(--ink) / <alpha-value>)",
+          foreground: "hsl(var(--ink-foreground))",
+        },
+        sand: {
+          DEFAULT: "hsl(var(--sand) / <alpha-value>)",
+          foreground: "hsl(var(--sand-foreground))",
+        },
+        "dock-muted": "hsl(var(--dock-muted) / <alpha-value>)",
       },
       borderRadius: {
         lg: "var(--radius)",

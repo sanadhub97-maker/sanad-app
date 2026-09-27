@@ -40,6 +40,7 @@ export interface DashboardAttentionItem {
   documentAr: string;
   documentEn: string;
   documentNumber: string | null;
+  branchName: string | null;
   /** Days until expiry; negative once expired. */
   days: number;
   /** A daily task was already made from this item. */
@@ -47,6 +48,8 @@ export interface DashboardAttentionItem {
 }
 
 export interface DashboardOverview {
+  /** Expiries per day (YYYY-MM-DD) from a week back to two weeks ahead. */
+  expiriesByDate: Record<string, number>;
   expired: number;
   endingIn30: number;
   attention: DashboardAttentionItem[];

@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { localized } from "@/lib/names";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -37,9 +36,6 @@ import { Button } from "@/components/ui/button";
 import { dashboardApi } from "@/api/dashboard";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { AppleIcon } from "@/components/common/apple-icon";
-import { EmployeeDialog } from "@/pages/employees/employee-dialog";
-import { BranchDialog } from "@/pages/branches/branch-dialog";
-import { PaymentDialog } from "@/pages/payments/payment-dialog";
 import { EmptyState } from "@/components/common/empty-state";
 import { DashboardOverview } from "@/pages/dashboard/dashboard-overview";
 
@@ -76,11 +72,7 @@ export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  const [employeeDialogOpen, setEmployeeDialogOpen] = useState(false);
-  const [branchDialogOpen, setBranchDialogOpen] = useState(false);
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const { data: summary } = useQuery({
     queryKey: ["dashboard", "summary"],
@@ -172,13 +164,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-10">
-      <DashboardOverview
-        summary={summary}
-        charts={charts}
-        onAddEmployee={() => setEmployeeDialogOpen(true)}
-        onAddBranch={() => setBranchDialogOpen(true)}
-        onAddPayment={() => setPaymentDialogOpen(true)}
-      />
+      <DashboardOverview summary={summary} />
 
       {/* ⚠️ Expiration Radar Widget */}
       <Card className="rounded-3xl border-border/70 overflow-hidden shadow-luxury bg-card/85 backdrop-blur-md specular-border">
@@ -598,26 +584,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 🚀 Seamless Quick-Add Employee Dialog right from Dashboard */}
-      <EmployeeDialog
-        open={employeeDialogOpen}
-        onOpenChange={setEmployeeDialogOpen}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-        }}
-      />
-
-      {/* 🏢 Quick-Add Branch / Company Dialog */}
-      <BranchDialog
-        open={branchDialogOpen}
-        onOpenChange={setBranchDialogOpen}
-      />
-
-      {/* 💳 Quick-Add Payment Dialog */}
-      <PaymentDialog
-        open={paymentDialogOpen}
-        onOpenChange={setPaymentDialogOpen}
-      />
     </div>
   );
 }

@@ -42,17 +42,17 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <div className="space-y-5 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success border border-success/30">
           <CheckCircle2 className="h-7 w-7" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black text-white font-sans">{t("auth.checkEmailTitle")}</h2>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm mx-auto">{t("auth.checkEmailBody")}</p>
+          <h2 className="text-2xl font-semibold font-head text-foreground font-sans">{t("auth.checkEmailTitle")}</h2>
+          <p className="text-xs sm:text-sm text-foreground/80 leading-relaxed max-w-sm mx-auto">{t("auth.checkEmailBody")}</p>
         </div>
         <div className="pt-2">
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-all"
+            className="inline-flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all"
           >
             <ArrowIcon className="h-4 w-4" />
             <span>{t("auth.backToSignIn")}</span>
@@ -66,15 +66,15 @@ export default function ForgotPasswordPage() {
     <div className="space-y-6 text-start">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-          <p className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+          <span className="h-2 w-2 rounded-full bg-primary" />
+          <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
             {isAr ? "استعادة الحساب" : "Account Recovery"}
           </p>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-sans">
+        <h2 className="text-2xl sm:text-3xl font-semibold font-head tracking-tight text-foreground font-sans">
           {t("auth.forgotTitle")}
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
           {isAr
             ? "أدخل بريدك الإلكتروني المسجل لإرسال رابط إعادة تعيين كلمة المرور"
             : "Enter your registered email to receive a password reset link"}
@@ -83,27 +83,27 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
         <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-bold text-slate-300">
+          <Label htmlFor="email" className="text-xs font-bold text-foreground/80">
             {t("auth.email")}
           </Label>
           <div className="relative group">
-            <Mail className="absolute start-3.5 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-cyan-400 transition-colors pointer-events-none" />
+            <Mail className="absolute start-3.5 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
             <Input
               id="email"
               type="email"
               autoComplete="email"
               placeholder="admin@sanad.sa"
-              className="ps-10 h-12 rounded-xl border border-white/10 bg-black/40 hover:border-white/20 focus:border-cyan-400 focus:bg-black/50 text-white placeholder:text-slate-500 text-sm font-medium transition-all shadow-inner"
+              className="ps-10 h-12 rounded-2xl border border-input bg-card focus:border-primary text-foreground placeholder:text-muted-foreground/70 text-sm font-medium transition-all"
               {...register("email")}
             />
           </div>
-          {errors.email && <p className="text-xs font-medium text-rose-400">{errors.email.message}</p>}
+          {errors.email && <p className="text-xs font-medium text-destructive">{errors.email.message}</p>}
         </div>
 
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 rounded-xl bg-[linear-gradient(180deg,#2cc3f7,#0090cc)] hover:brightness-110 text-white font-extrabold shadow-[0_10px_24px_-10px_rgba(0,144,204,0.9)] hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 text-sm tracking-wide specular-border mt-2"
+          className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 text-sm tracking-wide mt-2"
         >
           {isSubmitting ? (
             <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export default function ForgotPasswordPage() {
       <div className="text-center pt-2">
         <Link
           to="/login"
-          className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+          className="text-xs font-semibold text-primary hover:text-primary/80 hover:underline transition-colors"
         >
           {t("auth.backToSignIn")}
         </Link>

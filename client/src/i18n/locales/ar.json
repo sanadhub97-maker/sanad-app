@@ -31,7 +31,17 @@
     "users": "المستخدمون",
     "rolesPermissions": "الأدوار والصلاحيات",
     "auditLogs": "سجل التدقيق",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "dock": {
+      "home": "الرئيسية",
+      "tasks": "المهام",
+      "employees": "الموظفون",
+      "documents": "المستندات",
+      "branches": "المؤسسات",
+      "payments": "المدفوعات",
+      "reports": "التقارير",
+      "more": "المزيد"
+    }
   },
   "common": {
     "staff": "موظف",

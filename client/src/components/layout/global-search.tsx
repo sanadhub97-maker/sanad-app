@@ -5,7 +5,6 @@ import { localized } from "@/lib/names";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, FileText, Search, User, Wallet } from "lucide-react";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
 import { globalSearch } from "@/api/search";
 import type { SearchResultItem } from "@/api/search";
 
@@ -23,7 +22,9 @@ const TYPE_LABEL: Record<SearchResultItem["type"], { en: string; ar: string }> =
   branch: { en: "Establishment", ar: "مؤسسة" },
 };
 
-export function GlobalSearch() {
+/** Opens the search (also Ctrl K). "pill" shows the wide search field of the
+ * dashboard header, "icon" a round button. */
+export function GlobalSearch({ variant = "icon" }: { variant?: "pill" | "icon" }) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const [open, setOpen] = useState(false);
@@ -55,22 +56,30 @@ export function GlobalSearch() {
 
   return (
     <>
-      <Button
-        variant="outline"
-        className="group relative h-10 w-full justify-start gap-2.5 rounded-xl border-border/60 bg-muted/40 dark:bg-white/[0.04] px-3.5 text-[13px] font-medium text-muted-foreground shadow-none hover:border-primary/40 hover:bg-background hover:text-foreground transition-all duration-200"
-        onClick={() => setOpen(true)}
-      >
-        <Search className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-        <span className="truncate">
-          {isAr ? "ابحث عن موظف، إقامة، مستند..." : "Search employees, iqamas, documents..."}
-        </span>
-        <kbd
-          dir="ltr"
-          className="ms-auto hidden rounded-md border border-border/80 bg-background px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground sm:inline-block"
+      {variant === "pill" ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="hidden h-12 w-[320px] items-center gap-2.5 rounded-full bg-card px-[18px] text-sm text-muted-foreground shadow-[var(--glass-shadow)] transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
         >
-          Ctrl K
-        </kbd>
-      </Button>
+          <Search className="h-[18px] w-[18px] shrink-0" />
+          <span className="truncate">{isAr ? "ابحث عن أي شيء" : "Search anything"}</span>
+          <kbd dir="ltr" className="ms-auto rounded-md border border-border px-1.5 py-0.5 text-[10px] font-semibold">
+            Ctrl K
+          </kbd>
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={isAr ? "بحث" : "Search"}
+        className={
+          (variant === "pill" ? "md:hidden " : "") +
+          "grid h-11 w-11 shrink-0 place-items-center rounded-full bg-card text-foreground shadow-[var(--glass-shadow)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-12 sm:w-12"
+        }
+      >
+        <Search className="h-5 w-5" />
+      </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <div className="flex items-center border-b border-border/80 px-3">

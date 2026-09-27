@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="dark" lang="ar" dir="rtl">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <title>SanaD | نظام SanaD لإدارة الوثائق والموظفين</title>
@@ -21,38 +21,9 @@
           document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
           document.documentElement.lang = isRtl ? 'ar' : 'en';
 
-          // 2. Theme Mode - Default to Dark Luxury Obsidian Glass
-          var themeMigrated = localStorage.getItem('sanad-theme-luxury-v2');
-          if (!themeMigrated) {
-            localStorage.setItem('sanad-theme-luxury-v2', 'true');
-            try {
-              var raw = localStorage.getItem('sanad-ui-preferences');
-              if (raw) {
-                var parsed = JSON.parse(raw);
-                if (parsed && parsed.state) {
-                  parsed.state.themeMode = 'dark';
-                  localStorage.setItem('sanad-ui-preferences', JSON.stringify(parsed));
-                }
-              }
-            } catch (e) {}
-            document.documentElement.classList.add('dark');
-          } else {
-            var raw = localStorage.getItem('sanad-ui-preferences');
-            var mode = 'dark';
-            if (raw) {
-              try {
-                var parsed = JSON.parse(raw);
-                if (parsed && parsed.state && parsed.state.themeMode) {
-                  mode = parsed.state.themeMode;
-                }
-              } catch (err) {}
-            }
-            if (mode !== 'light') {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
-          }
+          // 2. Theme: the Oasis design opens light; the app then applies the
+          // admin's Settings → Appearance choice once it loads.
+          document.documentElement.classList.remove('dark');
         } catch (e) {}
       })();
     </script>

@@ -31,7 +31,17 @@
     "users": "Users",
     "rolesPermissions": "Roles & Permissions",
     "auditLogs": "Audit Logs",
-    "settings": "Settings"
+    "settings": "Settings",
+    "dock": {
+      "home": "Home",
+      "tasks": "Tasks",
+      "employees": "Employees",
+      "documents": "Documents",
+      "branches": "Branches",
+      "payments": "Payments",
+      "reports": "Reports",
+      "more": "More"
+    }
   },
   "common": {
     "staff": "Staff",

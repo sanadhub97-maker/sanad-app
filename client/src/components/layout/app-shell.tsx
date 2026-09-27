@@ -1,112 +1,47 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { SidebarNav } from "@/components/layout/sidebar-nav";
-import { Topbar } from "@/components/layout/topbar";
-import { BrandLogo } from "@/components/layout/brand-logo";
+import { AppHeader } from "@/components/layout/app-header";
+import { DockNav } from "@/components/layout/dock-nav";
+import { PageHeaderSlotProvider } from "@/components/layout/page-header-slot";
 import { RouteProgressBar } from "@/components/layout/route-progress-bar";
 import { useUiStore } from "@/stores/uiStore";
 
+/** The Oasis layout: no sidebar; the header row (logo, page title, actions,
+ * search, notifications, account) scrolls with the page, and the navigation
+ * is a dark pill floating at the bottom. */
 export function AppShell() {
   const location = useLocation();
-  const { i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
   const mainRef = useRef<HTMLDivElement>(null);
-  const collapsed = useUiStore((s) => s.sidebarCollapsed);
-  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const animationsEnabled = useUiStore((s) => s.animationsEnabled);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: "instant" });
-    }
+    mainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
 
   return (
-    <div className="flex h-screen overflow-hidden text-foreground font-sans relative">
-      {/* Desktop sidebar: a full-height navy panel with a gold edge (it stays navy in light mode). */}
-      <motion.aside
-        initial={false}
-        animate={{ width: collapsed ? 76 : 260 }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="dark hidden lg:flex flex-col [background:var(--sidebar-bg)] text-foreground shrink-0 border-e border-[var(--sidebar-edge)] relative z-20 overflow-hidden"
-      >
-        {/* Top Brand Header */}
-        <div className="flex h-16 items-center justify-between px-3.5">
-          <BrandLogo collapsed={collapsed} />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground hover:bg-muted ms-auto h-8 w-8 rounded-xl"
-            onClick={toggleSidebar}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </Button>
-        </div>
-
-        {/* Navigation Items */}
-        <div className="flex-1 overflow-y-auto no-scrollbar">
-          <SidebarNav collapsed={collapsed} />
-        </div>
-      </motion.aside>
-
-      {/* Mobile Sidebar Sheet */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side={isAr ? "right" : "left"} className="w-72 text-foreground p-0 flex flex-col transition-colors">
-          <div className="flex h-16 items-center px-4">
-            <BrandLogo />
-          </div>
-          <div className="flex-1 overflow-y-auto no-scrollbar">
-            <SidebarNav onNavigate={() => setMobileOpen(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Main App Container */}
-      <div className="flex flex-1 flex-col overflow-hidden relative">
+    <PageHeaderSlotProvider>
+      <div className="relative flex h-screen flex-col overflow-hidden bg-background font-sans text-foreground">
         <RouteProgressBar />
-        <Topbar onOpenMobileNav={() => setMobileOpen(true)} />
-        <main
-          ref={mainRef}
-          className="relative flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-transparent z-10"
-        >
-
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={
-                animationsEnabled
-                  ? { opacity: 0, y: 12, filter: "blur(4px)" }
-                  : undefined
-              }
-              animate={
-                animationsEnabled
-                  ? { opacity: 1, y: 0, filter: "blur(0px)" }
-                  : undefined
-              }
-              exit={
-                animationsEnabled
-                  ? { opacity: 0, y: -10, filter: "blur(3px)" }
-                  : undefined
-              }
-              transition={{
-                duration: animationsEnabled ? 0.22 : 0,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="relative z-10 mx-auto max-w-7xl space-y-6"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+        <main ref={mainRef} className="relative flex-1 overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-[22px] px-4 pb-32 pt-5 sm:px-6 sm:pt-[30px] lg:px-11">
+            <AppHeader />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={location.pathname}
+                initial={animationsEnabled ? { opacity: 0, y: 10 } : undefined}
+                animate={animationsEnabled ? { opacity: 1, y: 0 } : undefined}
+                exit={animationsEnabled ? { opacity: 0, y: -6 } : undefined}
+                transition={{ duration: animationsEnabled ? 0.2 : 0, ease: [0.16, 1, 0.3, 1] }}
+                className="relative space-y-[22px]"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
+        <DockNav />
       </div>
-    </div>
+    </PageHeaderSlotProvider>
   );
 }
-

@@ -134,7 +134,16 @@ export async function getOverview() {
 
   const branches = await prisma.branch.findMany({ where: { deletedAt: null }, select: { status: true, city: true } });
 
+  // Expiries per day around today, for the dashboard's week strip.
+  const expiriesByDate: Record<string, number> = {};
+  for (const { item, days } of withDays) {
+    if (days < -7 || days > 14) continue;
+    const key = item.expiryDate.toISOString().slice(0, 10);
+    expiriesByDate[key] = (expiriesByDate[key] ?? 0) + 1;
+  }
+
   return {
+    expiriesByDate,
     expired: withDays.filter((x) => x.days < 0).length,
     endingIn30: withDays.filter((x) => x.days >= 0 && x.days <= 30).length,
     attention: top.map(({ item, days }) => ({
@@ -147,6 +156,7 @@ export async function getOverview() {
       documentAr: item.documentAr ?? item.labelAr,
       documentEn: item.documentEn ?? item.label,
       documentNumber: item.documentNumber ?? null,
+      branchName: item.branchName ?? null,
       days,
       taskAdded: taken.has(item.key),
     })),

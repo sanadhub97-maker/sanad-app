@@ -3,156 +3,119 @@
 @tailwind utilities;
 
 @layer base {
-  /* "Royal" design: navy surfaces, the logo blue as the one accent and a
-     thin gold line for edges and the active item. Each surface colour has an
-     --<name>-alpha that tailwind.config multiplies into every bg-/border- use,
-     so cards stay slightly translucent over the navy background. */
+  /* "Oasis" design: a calm sage-grey ground, white rounded cards without
+     borders, sand for today's priorities, one blue accent from the logo and
+     soft tinted status colours. Light by default, with a deep-teal dark mode.
+     --<name>-alpha stays at 1 (tailwind.config multiplies it in). */
   :root {
     --font-sans: "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-head: "Noto Kufi Arabic", var(--font-sans);
+    --font-head: "Alexandria", var(--font-sans);
 
-    --background: 214 40% 97%;
-    --background-alpha: 0.75;
-    --foreground: 214 60% 12%;
+    --background: 150 14% 94%; /* #EFF3F1 */
+    --foreground: 191 47% 12%; /* #10272C */
 
     --card: 0 0% 100%;
-    --card-alpha: 0.78;
-    --card-foreground: 214 60% 12%;
+    --card-foreground: 191 47% 12%;
 
     --popover: 0 0% 100%;
-    --popover-alpha: 0.96;
-    --popover-foreground: 214 60% 12%;
+    --popover-foreground: 191 47% 12%;
 
-    --primary: 198 100% 40%; /* logo blue, deepened for white */
+    --primary: 199 90% 37%; /* #0A7FB5 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 40% 94%;
-    --secondary-alpha: 0.7;
-    --secondary-foreground: 214 60% 14%;
+    --secondary: 160 17% 97%; /* #F5F8F7 */
+    --secondary-foreground: 191 47% 12%;
 
-    --accent: 198 100% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 200 64% 92%; /* #E0F0F8, hover wash */
+    --accent-foreground: 199 90% 28%;
 
-    --muted: 214 35% 93%;
-    --muted-alpha: 0.6;
-    --muted-foreground: 216 18% 38%;
+    --muted: 154 15% 92%; /* #E7EEEB */
+    --muted-foreground: 193 11% 39%; /* #58696D */
 
-    --border: 40 38% 58%; /* gold */
-    --border-alpha: 0.3;
-    --input: 40 38% 58%;
-    --ring: 198 100% 40%;
+    --border: 153 13% 89%; /* #E1E8E5 */
+    --input: 153 13% 86%;
+    --ring: 199 90% 37%;
 
-    --destructive: 0 72% 50%;
+    --destructive: 0 53% 49%; /* #BF3A3A */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 158 70% 32%;
+    --success: 151 46% 34%; /* #2E7D57 */
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 80% 40%;
+    --warning: 35 89% 38%; /* #B86E0B */
     --warning-foreground: 0 0% 100%;
 
-    --info: 199 89% 42%;
+    --info: 199 90% 37%;
     --info-foreground: 0 0% 100%;
 
-    --gold: 40 52% 50%;
+    --ink: 191 47% 12%; /* the dark dock and ink buttons */
+    --ink-foreground: 0 0% 100%;
+    --sand: 38 50% 91%; /* #F3EBDD */
+    --sand-foreground: 36 28% 33%;
+    --dock-muted: 169 11% 75%; /* #B7C6C3 */
 
     --radius: 1.25rem;
 
-    --aurora: radial-gradient(60% 45% at 90% 0%, rgba(0, 177, 239, 0.16) 0%, transparent 60%),
-      radial-gradient(50% 40% at 0% 100%, rgba(212, 178, 106, 0.16) 0%, transparent 70%), #f3f6fa;
-    --glass-edge: rgba(184, 145, 63, 0.26);
-    --glass-shadow: 0 10px 30px -18px rgba(11, 37, 69, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-
-    --sidebar-bg: linear-gradient(180deg, #0b2545, #081a33);
-    --sidebar-fg: 216 50% 97%;
-    --sidebar-muted: 218 28% 73%;
-    --sidebar-edge: rgba(212, 178, 106, 0.25);
-    --nav-active-bg: linear-gradient(270deg, rgba(0, 177, 239, 0.24), rgba(0, 177, 239, 0.06));
-    --nav-active-ring: inset 0 0 0 1px rgba(0, 177, 239, 0.38);
-    --hero-bg: linear-gradient(245deg, #0b2545, #0a4f86 60%, #0090cc);
+    --aurora: #eff3f1;
+    --glass-edge: transparent;
+    --glass-shadow: 0 1px 2px rgba(16, 39, 44, 0.05), 0 1px 1px rgba(16, 39, 44, 0.03);
   }
 
   .dark,
   :root.dark,
   html.dark {
-    --background: 212 73% 9%; /* #061426 */
-    --background-alpha: 0.6;
-    --foreground: 216 50% 97%; /* #f3f6fb */
+    --background: 190 38% 8%; /* #0C1A1D */
+    --foreground: 170 20% 92%;
 
-    --card: 0 0% 100%;
-    --card-alpha: 0.055;
-    --card-foreground: 216 50% 97%;
+    --card: 190 33% 12%; /* #14282C */
+    --card-foreground: 170 20% 92%;
 
-    --popover: 213 72% 16%; /* #0b2545 */
-    --popover-alpha: 0.97;
-    --popover-foreground: 216 50% 97%;
+    --popover: 190 33% 13%;
+    --popover-foreground: 170 20% 92%;
 
-    --primary: 196 100% 47%; /* #00b1ef, the logo blue */
-    --primary-foreground: 0 0% 100%;
+    --primary: 199 75% 55%;
+    --primary-foreground: 191 60% 8%;
 
-    --secondary: 0 0% 100%;
-    --secondary-alpha: 0.07;
-    --secondary-foreground: 216 50% 97%;
+    --secondary: 190 28% 16%;
+    --secondary-foreground: 170 20% 92%;
 
-    --accent: 196 100% 47%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 199 50% 20%;
+    --accent-foreground: 199 80% 80%;
 
-    --muted: 0 0% 100%;
-    --muted-alpha: 0.06;
-    --muted-foreground: 218 28% 73%; /* #a9b6cc */
+    --muted: 190 26% 17%;
+    --muted-foreground: 185 10% 64%;
 
-    --border: 41 55% 62%; /* #d4b26a gold */
-    --border-alpha: 0.2;
-    --input: 41 55% 62%;
-    --ring: 196 100% 47%;
+    --border: 190 24% 20%;
+    --input: 190 24% 24%;
+    --ring: 199 75% 55%;
 
-    --destructive: 0 91% 71%; /* #f87171 */
-    --destructive-foreground: 213 72% 10%;
+    --destructive: 0 70% 64%;
+    --destructive-foreground: 191 60% 8%;
 
-    --success: 158 64% 52%; /* #34d399 */
-    --success-foreground: 213 72% 8%;
+    --success: 151 45% 52%;
+    --success-foreground: 191 60% 8%;
 
-    --warning: 43 74% 66%; /* #e9c46a */
-    --warning-foreground: 213 72% 10%;
+    --warning: 36 80% 58%;
+    --warning-foreground: 191 60% 8%;
 
-    --info: 199 93% 60%;
-    --info-foreground: 213 72% 8%;
+    --info: 199 75% 55%;
+    --info-foreground: 191 60% 8%;
 
-    --gold: 43 74% 66%;
+    --ink: 190 40% 5%;
+    --ink-foreground: 170 20% 92%;
+    --sand: 36 22% 17%;
+    --sand-foreground: 38 40% 78%;
+    --dock-muted: 180 8% 62%;
 
-    --aurora: radial-gradient(60% 45% at 90% 0%, rgba(0, 177, 239, 0.25) 0%, transparent 60%),
-      radial-gradient(50% 40% at 0% 100%, rgba(212, 178, 106, 0.12) 0%, transparent 70%),
-      linear-gradient(180deg, #081a33, #061426);
-    --glass-edge: rgba(212, 178, 106, 0.22);
-    --glass-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-    --sidebar-edge: rgba(212, 178, 106, 0.25);
-    --hero-bg: linear-gradient(115deg, rgba(11, 37, 69, 0.9), rgba(10, 79, 134, 0.75) 60%, rgba(0, 165, 227, 0.55));
+    --aurora: #0c1a1d;
+    --glass-edge: transparent;
+    --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   }
 
   h1,
   h2,
   .font-head {
     font-family: var(--font-head);
-  }
-
-  /* Sidebar item that is on: blue wash with a gold bar at its start. */
-  .nav-active {
-    background: var(--nav-active-bg);
-    box-shadow: var(--nav-active-ring);
-  }
-  [dir="ltr"] .nav-active {
-    background: linear-gradient(90deg, rgba(0, 177, 239, 0.24), rgba(0, 177, 239, 0.06));
-  }
-  .nav-active::before {
-    content: "";
-    position: absolute;
-    inset-inline-start: -12px;
-    top: 8px;
-    bottom: 8px;
-    width: 3px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, #e9c46a, #b8913f);
   }
 
   * {
@@ -270,12 +233,12 @@
     inset-inline: 0;
     top: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    background: transparent;
     pointer-events: none;
     z-index: 1;
   }
   .dark .specular-border::before {
-    background: linear-gradient(90deg, transparent, rgba(212, 178, 106, 0.45), transparent);
+    background: transparent;
   }
 
   /* Chromatic Glow Accents */
@@ -370,10 +333,10 @@
   }
 
   /* Browser Autofill Fix: Prevent jarring white backgrounds */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover, 
-  input:-webkit-autofill:focus, 
-  input:-webkit-autofill:active {
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 1000px #0c1220 inset !important;
     -webkit-text-fill-color: #f8fafc !important;
     caret-color: #38bdf8 !important;

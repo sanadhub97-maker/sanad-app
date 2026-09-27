@@ -21,15 +21,15 @@ export interface AppearanceSettings {
 }
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
-  themeMode: "dark",
-  // The "Royal" design palette: navy, the logo blue and gold.
-  primaryColor: "#00B1EF", // logo blue
-  secondaryColor: "#0B2545", // navy
-  accentColor: "#D4B26A", // gold
-  successColor: "#34D399",
-  warningColor: "#E9C46A",
-  dangerColor: "#F87171",
-  infoColor: "#38BDF8",
+  themeMode: "light",
+  // The "Oasis" design palette: the logo blue, soft surfaces, calm status colours.
+  primaryColor: "#0A7FB5", // logo blue, deepened for white
+  secondaryColor: "#F5F8F7", // soft surface
+  accentColor: "#E0F0F8", // hover wash
+  successColor: "#2E7D57",
+  warningColor: "#B86E0B",
+  dangerColor: "#BF3A3A",
+  infoColor: "#0A7FB5",
   sidebarStyle: "expanded",
   animationsEnabled: true,
   compactMode: false,

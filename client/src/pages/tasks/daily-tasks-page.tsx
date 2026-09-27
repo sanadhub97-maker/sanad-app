@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -24,6 +25,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
@@ -130,7 +132,10 @@ export default function DailyTasksPage() {
   const queryClient = useQueryClient();
 
   const today = keyOf(new Date());
-  const [day, setDay] = useState(today);
+  // The dashboard's week strip opens a day with ?date=YYYY-MM-DD.
+  const [searchParams] = useSearchParams();
+  const asked = searchParams.get("date");
+  const [day, setDay] = useState(asked && /^d{4}-d{2}-d{2}$/.test(asked) ? asked : today);
   const [filter, setFilter] = useState<"all" | "open" | "done">("all");
   const [range, setRange] = useState<"day" | "week">("day");
   // Tasks mid-animation keep their old place in the list until it finishes.
@@ -302,39 +307,35 @@ export default function DailyTasksPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <Card className="p-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <AppleIcon icon={ListChecks} tone="emerald" size="lg" />
-          <div>
-            <h1 className="text-2xl font-bold leading-tight">{tr("المهام اليومية", "Daily Tasks")}</h1>
-            <p className="text-sm text-muted-foreground">{tr("سجل مهام كل يوم بتاريخه، مع الطباعة والتصدير", "A to-do list for every day, printable and exportable")}</p>
-          </div>
-        </div>
-        {can.exp && (
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-xl bg-muted p-0.5" role="group" aria-label={tr("نطاق التصدير", "Export range")}>
-              {(["day", "week"] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  aria-pressed={range === r}
-                  onClick={() => setRange(r)}
-                  className={cn("rounded-lg px-3 py-1 text-xs font-semibold", range === r ? "bg-background shadow-sm" : "text-muted-foreground")}
-                >
-                  {r === "day" ? tr("اليوم", "Day") : tr("الأسبوع", "Week")}
-                </button>
-              ))}
-            </div>
-            <Button variant="outline" className="rounded-full" onClick={printPdf}>
-              <Printer /> {tr("طباعة / PDF", "Print / PDF")}
-            </Button>
-            <Button variant="outline" className="rounded-full" onClick={excel}>
-              <FileSpreadsheet /> Excel
-            </Button>
-          </div>
-        )}
-      </Card>
+      <PageHeader
+        title={tr("المهام اليومية", "Daily Tasks")}
+        description={tr("سجل مهام كل يوم بتاريخه، مع الطباعة والتصدير", "A to-do list for every day, printable and exportable")}
+        actions={
+          can.exp && (
+            <>
+              <div className="inline-flex h-11 rounded-full bg-card p-1 shadow-[var(--glass-shadow)]" role="group" aria-label={tr("نطاق التصدير", "Export range")}>
+                {(["day", "week"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    aria-pressed={range === r}
+                    onClick={() => setRange(r)}
+                    className={cn("rounded-full px-4 text-[13px] font-semibold", range === r ? "bg-ink text-ink-foreground" : "text-muted-foreground")}
+                  >
+                    {r === "day" ? tr("اليوم", "Day") : tr("الأسبوع", "Week")}
+                  </button>
+                ))}
+              </div>
+              <Button variant="outline" onClick={printPdf}>
+                <Printer /> {tr("طباعة / PDF", "Print / PDF")}
+              </Button>
+              <Button variant="outline" onClick={excel}>
+                <FileSpreadsheet /> Excel
+              </Button>
+            </>
+          )
+        }
+      />
 
       {/* Day picker */}
       <Card className="p-4 space-y-3">

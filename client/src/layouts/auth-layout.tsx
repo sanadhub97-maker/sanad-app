@@ -1,233 +1,153 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ShieldCheck,
-  Lock,
-  Globe,
-  Clock,
-  CheckCircle2,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, Lock, Globe, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { Button } from "@/components/ui/button";
 import { RouteProgressBar } from "@/components/layout/route-progress-bar";
-import { AppleIcon } from "@/components/common/apple-icon";
+import { cn } from "@/lib/utils";
 
+/** Sign-in pages in the Oasis design: the calm sage ground, the product
+ * story on one side and the form on a white rounded card. */
 export function AuthLayout() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const isAr = (i18n.language || "ar").startsWith("ar");
 
   function toggleLanguage() {
-    const currentLang = i18n.language || "ar";
-    const nextLang = currentLang.startsWith("ar") ? "en" : "ar";
-    i18n.changeLanguage(nextLang);
+    i18n.changeLanguage(isAr ? "en" : "ar");
   }
 
+  const features = [
+    {
+      icon: Clock,
+      tint: "text-warning bg-warning/10",
+      title: isAr ? "رادار الصلاحيات" : "Expiration radar",
+      text: isAr ? "تنبيهات استباقية مجدولة" : "Proactive auto-alerts",
+    },
+    {
+      icon: CheckCircle2,
+      tint: "text-success bg-success/10",
+      title: isAr ? "جاهزية الامتثال" : "Regulatory ready",
+      text: isAr ? "قوالب معتمدة رسمياً" : "Official certified PDF",
+    },
+    {
+      icon: ShieldCheck,
+      tint: "text-primary bg-accent",
+      title: isAr ? "حماية بنكية" : "Bank-grade security",
+      text: isAr ? "تشفير 256-Bit TLS" : "256-bit TLS",
+    },
+  ];
+
   return (
-    <div className="relative min-h-screen [background:radial-gradient(60%_45%_at_90%_0%,rgba(0,177,239,0.25)_0%,transparent_60%),radial-gradient(50%_40%_at_0%_100%,rgba(212,178,106,0.12)_0%,transparent_70%),linear-gradient(180deg,#081a33,#061426)] text-white font-sans overflow-hidden flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="relative flex min-h-screen flex-col justify-between bg-background font-sans text-foreground">
       <RouteProgressBar />
 
-      {/* 🌌 Deep Cosmos Ambient Glow Orbs */}
-      <div className="pointer-events-none absolute -top-40 -left-40 h-[650px] w-[650px] rounded-full bg-blue-600/20 blur-[140px] animate-ambient-pulse" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[650px] w-[650px] rounded-full bg-[#d4b26a]/10 blur-[150px] animate-ambient-pulse-slow" />
-      <div className="pointer-events-none absolute top-1/3 right-1/4 h-[500px] w-[500px] rounded-full bg-cyan-500/15 blur-[120px] animate-ambient-pulse" />
-      <div className="pointer-events-none absolute bottom-10 left-1/3 h-[400px] w-[400px] rounded-full bg-emerald-500/10 blur-[110px]" />
-
-      {/* 🕸️ Subtle Isometric Grid Overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-grid-pattern bg-grid-glow opacity-30" />
-
-      {/* 🌟 Top Navigation Bar */}
-      <header className="relative z-20 w-full px-6 py-5 sm:px-10 lg:px-14 flex items-center justify-between border-b border-white/[0.06] backdrop-blur-md bg-black/10">
+      <header className="flex w-full items-center justify-between px-5 py-5 sm:px-10 lg:px-14">
         <BrandLogo />
-
-        <div className="flex items-center gap-3">
-          {/* Live system health beacon */}
-          <div className="hidden sm:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300 backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span>{isAr ? "نظام SanaD متصل ومحدث" : "SanaD Enterprise Connected"}</span>
-          </div>
-
-          {/* Language Switcher Pill */}
-          <Button
-            variant="outline"
-            size="sm"
+        <div className="flex items-center gap-2.5">
+          <span className="hidden items-center gap-2 rounded-full bg-success/10 px-3.5 py-1.5 text-xs font-semibold text-success sm:flex">
+            <span className="h-2 w-2 rounded-full bg-success" />
+            {isAr ? "نظام SanaD متصل ومحدث" : "SanaD is online"}
+          </span>
+          <button
+            type="button"
             onClick={toggleLanguage}
-            className="h-9 gap-2 rounded-xl border-white/15 bg-white/[0.06] hover:bg-white/[0.12] text-white hover:text-white backdrop-blur-xl px-3.5 text-xs font-bold transition-all shadow-sm specular-border"
+            className="flex h-10 items-center gap-2 rounded-full bg-card px-4 text-[13px] font-semibold shadow-[var(--glass-shadow)] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Globe className="h-3.5 w-3.5 text-cyan-400" />
-            <span>{isAr ? "English" : "العربية"}</span>
-          </Button>
+            <Globe className="h-4 w-4 text-primary" />
+            {isAr ? "English" : "العربية"}
+          </button>
         </div>
       </header>
 
-      {/* 🏛️ Main Content Cockpit */}
-      <main className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12">
-        <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-14 items-center">
-          
-          {/* 🚀 Left Showcase Column (Brand Authority & Feature Showcase) */}
-          <div className="hidden lg:flex lg:col-span-7 flex-col justify-center space-y-8 pe-4">
+      <main className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 lg:px-12">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-12 lg:gap-14">
+          <div className="hidden flex-col justify-center gap-7 pe-4 lg:col-span-7 lg:flex">
+            <img src="/brand/sanad-logo.png" alt="SanaD HR" className="h-36 w-auto self-start xl:h-44" />
 
-            <img
-              src="/brand/sanad-logo.png"
-              alt="SanaD HR"
-              className="h-40 xl:h-48 w-auto self-start drop-shadow-[0_10px_30px_rgba(180,130,40,0.25)]"
-            />
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
+              <Sparkles className="h-4 w-4" />
+              {isAr ? "المنظومة التنفيذية الموحدة لإدارة الموارد والامتثال" : "Workforce & compliance, in one place"}
+            </span>
 
-            {/* Top Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-[#d4b26a]/35 bg-[#00b1ef]/10 px-4 py-1.5 text-xs font-bold text-cyan-300 backdrop-blur-xl w-fit shadow-[0_0_20px_-3px_rgba(6,182,212,0.3)] specular-border">
-              <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
-              <span>{isAr ? "المنظومة التنفيذية الموحدة لإدارة الموارد والامتثال" : "Next-Gen Enterprise Workforce & Compliance Suite"}</span>
-            </div>
-
-            {/* Grand Hero Headline */}
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight leading-[1.15] text-white font-sans">
+              <h1 className="font-head text-4xl font-semibold leading-[1.25] sm:text-5xl">
                 {isAr ? (
                   <>
-                    إدارة شاملة وذكية{" "}
-                    <span className="bg-gradient-to-r from-[#5ccdf5] via-[#00b1ef] to-[#e9d7a5] bg-clip-text text-transparent">
-                      للوثائق، التراخيص، والموظفين.
-                    </span>
+                    إدارة شاملة وذكية <span className="text-primary">للوثائق، التراخيص، والموظفين.</span>
                   </>
                 ) : (
                   <>
-                    Intelligent Command Over{" "}
-                    <span className="bg-gradient-to-r from-[#5ccdf5] via-[#00b1ef] to-[#e9d7a5] bg-clip-text text-transparent">
-                      Workforce, Licenses & Compliance.
-                    </span>
+                    Calm control over <span className="text-primary">documents, licenses and people.</span>
                   </>
                 )}
               </h1>
-              <p className="text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed font-normal">
+              <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
                 {isAr
                   ? "منصة رقمية موحدة تضمن الامتثال القانوني التام، تنبيهات استباقية لتواريخ الانتهاء، إدارة مدفوعات دقيقة، وتقارير احترافية بضغطة زر واحدة."
-                  : "A unified platform ensuring total regulatory compliance, automated expiration tracking, expense auditing, and executive reporting in seconds."}
+                  : "One platform for regulatory compliance, expiry alerts, payments and professional reports in a click."}
               </p>
             </div>
 
-            {/* 💎 3 Executive Mini Feature Cards */}
-            <div className="grid grid-cols-3 gap-3.5 pt-2">
-              
-              {/* Card 1: Expiration Radar */}
-              <div className="group relative overflow-hidden rounded-2xl border border-white/[0.12] bg-[#0A1224]/70 p-4 backdrop-blur-xl shadow-luxury transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/50 hover:bg-[#0E1A34]/80 specular-border">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
-                <AppleIcon icon={Clock} tone="amber" size="xs" className="mb-3 group-hover:scale-110 transition-transform" />
-                <p className="font-extrabold text-xs text-white tracking-tight">
-                  {isAr ? "رادار الصلاحيات" : "Expiration Radar"}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                  {isAr ? "تنبيهات استباقية مجدولة" : "Proactive auto-alerts"}
-                </p>
-                <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-amber-400 font-mono">
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                  <span>{isAr ? "0 مخالفات متأخرة" : "Zero Penalties"}</span>
-                </div>
-              </div>
-
-              {/* Card 2: Certified Printing */}
-              <div className="group relative overflow-hidden rounded-2xl border border-white/[0.12] bg-[#0A1224]/70 p-4 backdrop-blur-xl shadow-luxury transition-all duration-300 hover:-translate-y-1 hover:border-emerald-400/50 hover:bg-[#0E1A34]/80 specular-border">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
-                <AppleIcon icon={CheckCircle2} tone="emerald" size="xs" className="mb-3 group-hover:scale-110 transition-transform" />
-                <p className="font-extrabold text-xs text-white tracking-tight">
-                  {isAr ? "جاهزية الامتثال" : "Regulatory Ready"}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                  {isAr ? "قوالب معتمدة رسمياً" : "Official certified PDF"}
-                </p>
-                <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 font-mono">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isAr ? "100% تطابق نظامي" : "100% Compliant"}</span>
-                </div>
-              </div>
-
-              {/* Card 3: Security & Encryption */}
-              <div className="group relative overflow-hidden rounded-2xl border border-white/[0.12] bg-[#0A1224]/70 p-4 backdrop-blur-xl shadow-luxury transition-all duration-300 hover:-translate-y-1 hover:border-cyan-400/50 hover:bg-[#0E1A34]/80 specular-border">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
-                <AppleIcon icon={ShieldCheck} tone="cyan" size="xs" className="mb-3 group-hover:scale-110 transition-transform" />
-                <p className="font-extrabold text-xs text-white tracking-tight">
-                  {isAr ? "حماية بنكية" : "Bank Security"}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                  {isAr ? "تشفير 256-Bit TLS" : "256-bit TLS Vault"}
-                </p>
-                <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold text-cyan-400 font-mono">
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  <span>{isAr ? "رقابة مستمرة" : "Zero-Trust Log"}</span>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-3 gap-3.5">
+              {features.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <div key={f.title} className="flex flex-col gap-3 rounded-3xl bg-card p-4 shadow-[var(--glass-shadow)]">
+                    <span className={cn("grid h-11 w-11 place-items-center rounded-2xl", f.tint)}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <b className="block text-sm font-semibold">{f.title}</b>
+                      <span className="text-xs text-muted-foreground">{f.text}</span>
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Verified Enterprise Government Platforms Trust Bar */}
-            <div className="pt-3 border-t border-white/[0.08] flex items-center gap-4 text-xs text-slate-400">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                {isAr ? "متوافق مع المنصات الرسمية:" : "Integrated With:"}
-              </span>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-300">
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "منصة قوى" : "Qiwa"}</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "مقيم" : "Muqeem"}</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "مدد" : "Mudad"}</span>
-                <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08]">{isAr ? "التأمينات" : "GOSI"}</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* 🔐 Right Auth Form Column (Floating Obsidian Glass Capsule) */}
-          <div className="lg:col-span-5 flex justify-center w-full">
-            <div className="relative w-full max-w-md">
-              
-              {/* Decorative Subtle Glowing Rim Behind Card */}
-              <div className="pointer-events-none absolute -inset-1 rounded-[32px] bg-gradient-to-b from-[#00b1ef]/15 via-transparent to-[#d4b26a]/15 blur-xl opacity-70" />
-
-              {/* The Masterpiece Glass Container Card */}
-              <div className="relative rounded-[28px] border border-white/[0.14] bg-[#090F1E]/85 p-7 sm:p-9 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85)] backdrop-blur-2xl specular-border overflow-hidden">
-                
-                {/* Top Specular Hairline Gradient */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
-
-                {/* Mobile Brand Header */}
-                <div className="lg:hidden mb-6 flex justify-center">
-                  <img src="/brand/sanad-logo.png" alt="SanaD HR" className="h-32 w-auto" />
-                </div>
-
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={location.pathname}
-                    initial={{ opacity: 0, y: 14, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -10, filter: "blur(3px)" }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <Outlet />
-                  </motion.div>
-                </AnimatePresence>
-
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span>{isAr ? "متوافق مع المنصات الرسمية:" : "Works with:"}</span>
+              <div className="flex flex-wrap gap-2">
+                {(isAr ? ["منصة قوى", "مقيم", "مدد", "التأمينات"] : ["Qiwa", "Muqeem", "Mudad", "GOSI"]).map((p) => (
+                  <span key={p} className="rounded-full bg-card px-3 py-1 font-medium text-foreground shadow-[var(--glass-shadow)]">
+                    {p}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
 
+          <div className="flex w-full justify-center lg:col-span-5">
+            <div className="w-full max-w-md rounded-[28px] bg-card p-7 shadow-[0_24px_60px_-28px_rgba(16,39,44,0.35)] sm:p-9">
+              <div className="mb-6 flex justify-center lg:hidden">
+                <img src="/brand/sanad-logo.png" alt="SanaD HR" className="h-28 w-auto" />
+              </div>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Outlet />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </main>
 
-      {/* 🛡️ Footer Bar */}
-      <footer className="relative z-20 w-full px-6 py-4 sm:px-10 lg:px-14 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 border-t border-white/[0.06] backdrop-blur-md bg-black/10">
-        <p>© {new Date().getFullYear()} {t("app.name")}. All rights reserved.</p>
-        <div className="flex items-center gap-4 text-slate-400">
-          <span className="flex items-center gap-1.5 text-emerald-400">
-            <Lock className="h-3.5 w-3.5" />
-            <span className="font-mono font-medium">{isAr ? "تشفير بيانات آمن 256-bit TLS" : "256-bit High Security TLS"}</span>
-          </span>
-          <span className="hidden sm:inline text-white/20">•</span>
-          <span className="hidden sm:inline font-mono text-[11px] text-slate-400">v2.4 Enterprise Edition</span>
-        </div>
+      <footer className="flex w-full flex-col items-center justify-between gap-3 px-6 py-5 text-xs text-muted-foreground sm:flex-row sm:px-10 lg:px-14">
+        <p>
+          © {new Date().getFullYear()} {t("app.name")}
+        </p>
+        <span className="flex items-center gap-1.5 text-success">
+          <Lock className="h-3.5 w-3.5" />
+          {isAr ? "تشفير بيانات آمن 256-bit TLS" : "256-bit TLS encryption"}
+        </span>
       </footer>
-
     </div>
   );
 }

@@ -38,23 +38,23 @@ export default function VerifyEmailPage() {
   return (
     <div className="space-y-5 text-center">
       {status === "loading" && (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary border border-primary/30">
           <Loader2 className="h-7 w-7 animate-spin" />
         </div>
       )}
       {status === "success" && (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success border border-success/30">
           <CheckCircle2 className="h-7 w-7" />
         </div>
       )}
       {status === "error" && (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive border border-destructive/30">
           <XCircle className="h-7 w-7" />
         </div>
       )}
 
       <div className="space-y-2">
-        <h2 className="text-xl sm:text-2xl font-black text-white font-sans">
+        <h2 className="text-xl sm:text-2xl font-semibold font-head text-foreground font-sans">
           {status === "loading" ? t("auth.verifyTitle") : message}
         </h2>
       </div>
@@ -63,7 +63,7 @@ export default function VerifyEmailPage() {
         <div className="pt-2">
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition-all"
+            className="inline-flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2.5 text-xs font-bold text-foreground hover:bg-accent transition-all"
           >
             <ArrowIcon className="h-4 w-4" />
             <span>{t("auth.backToSignIn")}</span>

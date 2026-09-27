@@ -13,7 +13,7 @@ const SEVERITY_DOT: Record<string, string> = {
   INFO: "bg-blue-500 ring-blue-400/30",
 };
 
-export function NotificationBell() {
+export function NotificationBell({ className }: { className?: string } = {}) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const queryClient = useQueryClient();
@@ -38,12 +38,12 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-8 w-8 rounded-lg text-muted-foreground hover:bg-background hover:text-foreground dark:hover:bg-white/[0.08] transition-colors"
+          className={cn("relative h-8 w-8 rounded-lg text-muted-foreground hover:bg-background hover:text-foreground dark:hover:bg-white/[0.08] transition-colors", className)}
           title={isAr ? "الإشعارات" : "Notifications"}
         >
-          <Bell className="h-4 w-4" />
+          <Bell className={className ? "h-5 w-5" : "h-4 w-4"} />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white ring-2 ring-card animate-in zoom-in-50">
+            <span className="absolute top-0 end-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white ring-2 ring-card animate-in zoom-in-50">
               {unread > 9 ? "9+" : unread}
             </span>
           )}

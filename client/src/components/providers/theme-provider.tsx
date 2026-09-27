@@ -21,8 +21,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   });
 
   // Active theme: user's explicit local choice takes priority if not "system".
-  // If "system", check server appearance default, else fallback to "dark".
-  const activeMode = themeMode !== "system" ? themeMode : (appearance?.themeMode ?? "dark");
+  // If "system", use the admin's appearance default, else the Oasis light theme.
+  const activeMode = themeMode !== "system" ? themeMode : (appearance?.themeMode ?? "light");
   const effective = resolveEffectiveTheme(activeMode);
 
   useEffect(() => {

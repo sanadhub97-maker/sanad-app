@@ -446,7 +446,7 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
       </Card>
 
       {/* Executive Floating/Sticky Action Bar */}
-      <div className="sticky bottom-4 z-20 flex items-center justify-between gap-4 p-4 rounded-2xl bg-card/85 dark:bg-card/75 backdrop-blur-xl border border-border/80 shadow-luxury">
+      <div className="sticky bottom-[104px] z-20 flex items-center justify-between gap-4 rounded-full bg-card p-3 ps-5 shadow-[0_10px_30px_-12px_rgba(16,39,44,0.35)] lg:bottom-[100px]">
         <div className="flex items-center gap-2">
           {isDirty && (
             <Badge variant="outline" className="text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10 gap-1 text-xs">
