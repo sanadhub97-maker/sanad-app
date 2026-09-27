@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استوديو قوالب رسائل واتساب التنفيذية الملكية | SanaD Royal WhatsApp Studio</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+    body {
+      font-family: 'Tajawal', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .wa-chat-bg-dark {
+      background-color: #0b141a;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .wa-chat-bg-light {
+      background-color: #efeae2;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(217, 119, 6, 0.3);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(217, 119, 6, 0.6);
+    }
+    .gold-shimmer {
+      background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .emerald-shimmer {
+      background: linear-gradient(90deg, #10b981 0%, #6ee7b7 50%, #047857 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen p-3 sm:p-8 antialiased selection:bg-amber-500 selection:text-black">
+
+  <!-- 👑 Executive Royal Header Banner -->
+  <header class="max-w-7xl mx-auto mb-8">
+    <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-[#0a0f1d] to-[#0c1427] p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_80px_rgba(217,119,6,0.12)]">
+      <!-- Top Radiant Beam -->
+      <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-yellow-400 via-emerald-400 to-amber-600"></div>
+      <div class="absolute -end-24 -top-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -start-24 -bottom-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div class="flex items-center gap-4">
+          <div class="h-16 w-16 rounded-2xl bg-gradient-to-tr from-amber-600 via-yellow-500 to-amber-700 flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-amber-500/20 ring-4 ring-amber-500/20 shrink-0">
+            ⚜️
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                إصدار النخبة الملكي VIP Edition v3.0
+              </span>
+              <span class="text-xs text-slate-400 font-mono">Ultra-Luxury Standard</span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">
+              استوديو قوالب رسائل واتساب التنفيذية الفاخرة
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              تصاميم مؤسسية رفيعة المستوى متوافقة مع أرقى المعايير الدبلوماسية والحكومية — إطارات مونوغرافية مذهبة، بطاقات إنفوجرافيك مصورة، وأزرار إجراء تفاعلية معتمدة.
+            </p>
+          </div>
+        </div>
+
+        <!-- Controls: WhatsApp Theme & Quick Stats -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- WhatsApp App Theme Toggle -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 flex items-center gap-1 shadow-inner">
+            <button onclick="setTheme('dark')" id="themeDarkBtn" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              🌙 ليلي
+            </button>
+            <button onclick="setTheme('light')" id="themeLightBtn" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">
+              ☀️ نهاري
+            </button>
+          </div>
+
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center min-w-[100px]">
+            <div class="text-[11px] text-slate-400 font-medium">الأنماط الفاخرة</div>
+            <div class="text-xl font-black text-amber-400 font-mono mt-0.5">4 أنماط</div>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 text-center min-w-[100px]">
+            <div class="text-[11px] text-slate-400 font-medium">القوالب الجاهزة</div>
+            <div class="text-xl font-black text-emerald-400 font-mono mt-0.5">6 نماذج</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🎛️ Main Interactive Layout -->
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <!-- 📋 Left Column: Luxury Style Selector & Customizer (7 cols) -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- 👑 Luxury Archetype Selector (أنماط التصميم الفاخرة) -->
+      <div class="rounded-3xl border border-amber-500/20 bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-xl p-5 shadow-2xl">
+        <div class="flex items-center justify-between mb-3 pb-2.5 border-b border-white/5">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🎨</span>
+            <h3 class="text-sm font-black text-white">اختر النمط الجمالي الفاخر (Design Archetype)</h3>
+          </div>
+          <span class="text-[11px] text-amber-400 font-mono font-bold">4 مستويات فخامة</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5" id="styleSelector">
+          <!-- 1. Royal Gold -->
+          <button onclick="setArchetype('ROYAL_GOLD')" id="arch_ROYAL_GOLD" class="arch-btn p-3 rounded-2xl border text-start transition-all cursor-pointer bg-amber-500/15 border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+            <div class="text-xl mb-1">⚜️</div>
+            <div class="text-xs font-black text-amber-300">الملكي الدبلوماسي</div>
+            <div class="text-[10px] text-slate-400">إطار مذهب وزخارف رسمية</div>
+          </button>
+
+          <!-- 2. Emerald Enterprise -->
+          <button onclick="setArchetype('EMERALD_ELITE')" id="arch_EMERALD_ELITE" class="arch-btn p-3 rounded-2xl border text-start transition-all cursor-pointer bg-slate-950/60 border-slate-800 text-slate-300 hover:border-emerald-500/40">
+            <div class="text-xl mb-1">💎</div>
+            <div class="text-xs font-black text-emerald-400">الزمردي المعتمد</div>
+            <div class="text-[10px] text-slate-400">كبسولة رسمية معتمدة</div>
+          </button>
+
+          <!-- 3. Cyber Sapphire -->
+          <button onclick="setArchetype('CYBER_SAPPHIRE')" id="arch_CYBER_SAPPHIRE" class="arch-btn p-3 rounded-2xl border text-start transition-all cursor-pointer bg-slate-950/60 border-slate-800 text-slate-300 hover:border-cyan-500/40">
+            <div class="text-xl mb-1">🔷</div>
+            <div class="text-xs font-black text-cyan-400">السيبراني التنفيذي</div>
+            <div class="text-[10px] text-slate-400">رموز أحادية وتقنية ذكية</div>
+          </button>
+
+          <!-- 4. Ruby Critical -->
+          <button onclick="setArchetype('RUBY_CRITICAL')" id="arch_RUBY_CRITICAL" class="arch-btn p-3 rounded-2xl border text-start transition-all cursor-pointer bg-slate-950/60 border-slate-800 text-slate-300 hover:border-rose-500/40">
+            <div class="text-xl mb-1">🚨</div>
+            <div class="text-xs font-black text-rose-400">الإنذار الروبي الحرج</div>
+            <div class="text-[10px] text-slate-400">تنبيه مشدد عاجل وغرامات</div>
+          </button>
+        </div>
+
+        <!-- Rich Graphic Banner Toggle -->
+        <div class="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 bg-slate-950/50 p-3 rounded-2xl border border-slate-800/80">
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white text-base shadow-md">
+              🖼️
+            </div>
+            <div>
+              <div class="text-xs font-black text-white flex items-center gap-1.5">
+                <span>إرفاق بطاقة رقمية مصورة (Digital Visual Card Pass)</span>
+                <span class="px-2 py-0.2 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold">فخامة قصوى</span>
+              </div>
+              <p class="text-[11px] text-slate-400">إرسال بطاقة ملونة بهوية المنشأة وشعارها ورقم الباركود أعلى الرسالة.</p>
+            </div>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleGraphicBanner" class="sr-only peer" checked onchange="toggleBanner()">
+            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-emerald-500 shadow-inner"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1" id="categoryTabs">
+        <button onclick="filterCategory('ALL')" class="cat-btn active px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm" data-cat="ALL">
+          كافة النماذج (6)
+        </button>
+        <button onclick="filterCategory('EXPIRY')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-slate-900 border-slate-800 text-slate-400 hover:text-white" data-cat="EXPIRY">
+          ⏳ الصلاحيات والإقامات (3)
+        </button>
+        <button onclick="filterCategory('FINANCE')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-slate-900 border-slate-800 text-slate-400 hover:text-white" data-cat="FINANCE">
+          💳 الرواتب والعمليات (1)
+        </button>
+        <button onclick="filterCategory('HR')" class="cat-btn px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-slate-900 border-slate-800 text-slate-400 hover:text-white" data-cat="HR">
+          👥 شؤون الموظفين (2)
+        </button>
+      </div>
+
+      <!-- Template Selection Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="templateList">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- 🛠️ Dynamic Variables Customizer Studio -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <h3 class="text-sm font-black text-white">محرر المتغيرات التفاعلي والبيانات الحية</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="fillPreset('ahmed')" class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+              موظف 1 (أحمد)
+            </button>
+            <button onclick="fillPreset('khaled')" class="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+              موظف 2 (خالد)
+            </button>
+            <button onclick="resetVariables()" class="text-[10px] text-amber-400 hover:underline">
+              استعادة الافتراضي
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">اسم الموظف المستفيد</label>
+            <input type="text" id="var_employee" value="مصطفى عبدالقصود رجب" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:border-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">نوع الوثيقة الرسمية</label>
+            <input type="text" id="var_doc_type" value="هوية مقيم (إقامة نظامية)" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:border-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">رقم الوثيقة / السجل المدني</label>
+            <input type="text" id="var_doc_num" value="2498234104" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:border-amber-500 focus:outline-none" dir="ltr">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">تاريخ الانتهاء (هجري وميلادي)</label>
+            <input type="text" id="var_expiry_date" value="2026/10/10م (1448/04/28هـ)" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:border-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">المهلة المتبقية (بالأيام)</label>
+            <input type="text" id="var_days_left" value="15" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:border-amber-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-slate-400 font-bold mb-1">اسم المنشأة أو الشركة</label>
+            <input type="text" id="var_company" value="مجموعة سند للخدمات اللوجستية والتقنية" oninput="updatePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-medium focus:border-amber-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Copy and Actions -->
+        <div class="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <button onclick="copyCurrentMessage()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 cursor-pointer transition-all active:scale-95">
+            📋 نسخ نص الرسالة الفاخرة للواتساب
+          </button>
+          <span id="copyToast" class="text-xs text-amber-400 font-bold opacity-0 transition-opacity">
+            ✓ تم نسخ نص القالب بنجاح إلى الحافظة!
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 📱 Right Column: Ultra-Realistic iPhone 16 Pro Titanium Simulator (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col items-center">
+      <div class="sticky top-6 w-full flex flex-col items-center">
+
+        <!-- Simulator Indicator Header -->
+        <div class="mb-3 flex items-center justify-between w-full max-w-[360px] px-2">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-black text-amber-300">
+            <span class="h-2 w-2 rounded-full bg-amber-400 animate-ping"></span>
+            معاينة الشاشة الحية (Live Recipient View)
+          </span>
+          <span class="text-xs text-slate-400 font-mono" id="currentArchetypeLabel">⚜️ النمط الملكي المذهب</span>
+        </div>
+
+        <!-- iPhone 16 Pro Titanium Frame -->
+        <div class="relative w-[360px] h-[720px] rounded-[52px] p-[11px] bg-gradient-to-b from-[#403f44] via-[#2a292d] to-[#18171a] shadow-[0_30px_90px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.18)] ring-1 ring-black">
+          <!-- Metallic Reflection Edge -->
+          <div class="absolute inset-x-12 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full pointer-events-none"></div>
+
+          <!-- Glass Screen -->
+          <div id="phoneScreen" class="relative w-full h-full rounded-[42px] overflow-hidden flex flex-col wa-chat-bg-dark text-slate-100 shadow-inner transition-colors duration-300">
+
+            <!-- iOS Dynamic Island Bar -->
+            <div id="iosStatusBar" class="relative z-30 pt-2.5 px-6 pb-1 bg-[#1f2c34] flex items-center justify-between text-[11px] font-semibold text-slate-200 transition-colors">
+              <span class="font-mono text-xs font-bold" id="iosClock">13:10</span>
+              <div class="absolute left-1/2 -translate-x-1/2 top-2 h-5 w-24 bg-black rounded-full flex items-center justify-between px-2.5 shadow-sm">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div class="h-2.5 w-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+              </div>
+              <div class="flex items-center gap-1.5 text-slate-300 font-mono text-[10px]">
+                <span class="text-[9px] font-bold">5G</span>
+                <span>📶</span>
+                <span>🔋</span>
+              </div>
+            </div>
+
+            <!-- WhatsApp Executive Header -->
+            <div id="waHeader" class="relative z-20 px-3 py-2.5 bg-[#1f2c34] border-b border-white/5 flex items-center justify-between shadow-md transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="text-emerald-400 text-sm font-bold">←</span>
+                <!-- Verified Official Business Avatar -->
+                <div class="relative h-9 w-9 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-600 to-amber-700 flex items-center justify-center text-white font-black text-sm shadow-md ring-2 ring-amber-500/30 shrink-0">
+                  🏛️
+                  <span class="absolute -bottom-0.5 -end-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-[#1f2c34] flex items-center justify-center text-[8px] text-white">✓</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1">
+                    <span id="waHeaderTitle" class="text-xs font-black text-white">منظومة سند المعتمدة</span>
+                    <span class="text-emerald-400 text-[10px]">✓</span>
+                  </div>
+                  <div id="waHeaderSubtitle" class="text-[9px] text-emerald-400 font-medium">حساب أعمال رسمي موثّق • متصل</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 text-emerald-400 text-xs">
+                <span>📹</span>
+                <span>📞</span>
+                <span>⋮</span>
+              </div>
+            </div>
+
+            <!-- WhatsApp Chat Scroll Container -->
+            <div id="chatScrollArea" class="relative flex-1 overflow-y-auto p-3 space-y-3">
+              
+              <!-- E2EE Encryption Notice -->
+              <div id="e2eeCard" class="mx-auto max-w-[270px] rounded-xl bg-[#182229]/95 border border-amber-500/20 p-2 text-center shadow-sm">
+                <div class="text-[10px] font-bold text-amber-400 flex items-center justify-center gap-1 mb-0.5">
+                  <span>🔒</span>
+                  <span>تشفير تام بين الطرفين (End-to-End)</span>
+                </div>
+                <p class="text-[8.5px] leading-relaxed text-slate-400">الرسائل في هذه المحادثة مشفرة ومحمية ببروتوكولات الأمان المؤسسي الصارم.</p>
+              </div>
+
+              <!-- Date Badge -->
+              <div class="flex justify-center">
+                <span id="datePill" class="rounded-md bg-[#182229] px-2.5 py-0.5 text-[9px] font-semibold text-slate-400 shadow-2xs">اليوم</span>
+              </div>
+
+              <!-- 💬 Executive Chat Bubble -->
+              <div class="flex flex-col items-start space-y-1">
+                <div id="waBubble" class="relative max-w-[96%] rounded-2xl overflow-hidden shadow-lg text-xs leading-relaxed bg-[#005c4b] text-slate-100 rounded-tr-none transition-all">
+                  
+                  <!-- Bubble Tail -->
+                  <div id="bubbleTail" class="absolute top-0 -end-2 w-0 h-0 border-t-[8px] border-t-[#005c4b] border-e-[8px] border-e-transparent"></div>
+
+                  <!-- 🖼️ RICH GRAPHIC BANNER CARD (البطاقة الرقمية المصورة) -->
+                  <div id="bannerCard" class="relative overflow-hidden p-3.5 border-b border-black/20 bg-gradient-to-br from-slate-950 via-[#131b27] to-[#1e1c2b]">
+                    <!-- Ambient Glow -->
+                    <div id="bannerGlow" class="absolute -end-10 -top-10 w-28 h-28 bg-amber-500/20 rounded-full blur-xl pointer-events-none"></div>
+
+                    <!-- Top Card Header -->
+                    <div class="flex items-center justify-between relative z-10 mb-2">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-base" id="bannerBadgeIcon">⚜️</span>
+                        <div>
+                          <div class="text-[10px] font-black text-amber-300 uppercase tracking-wider" id="bannerCompany">SanaD HR System</div>
+                          <div class="text-[8px] text-slate-400 font-mono" id="bannerRef">#SANAD-PASS-9901</div>
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <span id="bannerStatusBadge" class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          ⏳ تنبيه سريان
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Center Digital Pass Information -->
+                    <div class="relative z-10 bg-black/40 rounded-xl p-2.5 border border-white/10 flex items-center justify-between gap-2">
+                      <div>
+                        <div class="text-[9px] text-slate-400">صاحب السجل / المستفيد:</div>
+                        <div class="text-xs font-black text-white" id="bannerEmpName">مصطفى عبدالقصود رجب</div>
+                        <div class="text-[9px] text-emerald-400 mt-0.5" id="bannerDocLabel">هوية مقيم: <span class="font-mono text-white">2498234104</span></div>
+                      </div>
+                      <!-- Barcode / QR Simulation -->
+                      <div class="h-10 w-10 bg-white rounded-lg p-1 flex items-center justify-center shrink-0 shadow-md">
+                        <div class="grid grid-cols-3 gap-0.5 w-full h-full">
+                          <div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+                          <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                          <div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Bottom Expiry / KPI Strip -->
+                    <div class="relative z-10 mt-2 flex items-center justify-between text-[9px] font-mono text-slate-300 pt-1.5 border-t border-white/10">
+                      <div>المتبقي: <span class="text-amber-400 font-bold" id="bannerDays">15 يوماً</span></div>
+                      <div class="text-[8px] text-slate-400" id="bannerExpiry">الانتهاء: 2026/10/10م</div>
+                    </div>
+                  </div>
+
+                  <!-- 📝 Bubble Formatted Text Content -->
+                  <div class="p-3.5 space-y-2">
+                    <div id="bubbleContent" class="text-[11px] whitespace-pre-wrap leading-relaxed font-sans select-text">
+                      <!-- Rendered text dynamically -->
+                    </div>
+
+                    <!-- Message Timestamp and Double Check -->
+                    <div class="mt-2 pt-1 border-t border-white/10 flex items-center justify-between text-[9px] text-slate-300 font-mono">
+                      <span id="bubbleTime">13:10 م</span>
+                      <div class="flex items-center gap-1">
+                        <span class="text-[8px] text-emerald-300/80">مسلّمة</span>
+                        <span class="text-[#53bdeb] font-bold">✓✓</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- 🔘 WHATSAPP INTERACTIVE QUICK-ACTION BUTTONS (أزرار واتساب التفاعلية) -->
+                <div class="w-full max-w-[96%] space-y-1 mt-1" id="interactiveButtons">
+                  <div class="bg-[#1f2c34] hover:bg-[#273742] text-emerald-400 text-center py-2 px-3 rounded-xl border border-white/5 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-98">
+                    <span>📄</span>
+                    <span id="btnAction1">استعراض وتنزيل الوثيقة (PDF)</span>
+                  </div>
+                  <div class="bg-[#1f2c34] hover:bg-[#273742] text-cyan-400 text-center py-2 px-3 rounded-xl border border-white/5 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-98">
+                    <span>💳</span>
+                    <span id="btnAction2">سداد وتجديد عبر منصة قوى</span>
+                  </div>
+                  <div class="bg-[#1f2c34] hover:bg-[#273742] text-slate-300 text-center py-1.5 px-3 rounded-xl border border-white/5 text-[10px] font-medium flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-98">
+                    <span>📞</span>
+                    <span>التواصل مع مسؤول الموارد البشرية</span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- WhatsApp Input Bar -->
+            <div id="waInputBar" class="relative z-20 px-2.5 py-2 bg-[#1f2c34] border-t border-white/5 flex items-center gap-2 shadow-md text-slate-400 transition-colors">
+              <span class="text-sm">😊</span>
+              <span class="text-sm">📎</span>
+              <div class="flex-1 rounded-full bg-[#2a3942] px-3 py-1.5 text-[11px] text-slate-400">
+                إرسال استفسار أو رد...
+              </div>
+              <div class="h-7 w-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs shadow-sm">
+                🎤
+              </div>
+            </div>
+
+            <!-- iOS Home Bar Indicator -->
+            <div id="iosHomeBar" class="h-4 bg-[#1f2c34] flex items-center justify-center transition-colors">
+              <div class="h-1 w-28 bg-slate-600 rounded-full"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 💡 JavaScript Interactive Logic & Template Engines -->
+  <script>
+    // State
+    let currentCategory = 'ALL';
+    let currentTemplateId = 'EXPIRY_WARNING';
+    let currentArchetype = 'ROYAL_GOLD'; // ROYAL_GOLD | EMERALD_ELITE | CYBER_SAPPHIRE | RUBY_CRITICAL
+    let hasGraphicBanner = true;
+    let currentTheme = 'dark';
+
+    // Master Templates Collection
+    const TEMPLATES = [
+      {
+        id: "EXPIRY_WARNING",
+        category: "EXPIRY",
+        title: "تنبيه قرب انتهاء الصلاحية",
+        subtitle: "إشعار استباقي قبل موعد الانتهاء بـ 30 / 15 / 7 أيام",
+        tag: "استباقي • تحذيري",
+        badgeIcon: "⏳",
+        statusText: "⏳ تنبيه سريان",
+        statusColor: "amber",
+        btn1: "استعراض الوثيقة وتفاصيل التجديد",
+        btn2: "سداد الرسوم عبر سداد / قوى",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ⚜️  *الـمـمـلـكـة الـعـربـيـة الـسـعـوديـة*  ⚜️  ┃
+┃  🏛️  *إدارة الـمـوارد الـبـشـريـة والامـتـثـال*  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+          ✨ *إشـعـار اسـتـبـاقـي مـعـتـمـد* ✨
+
+عناية المكرم: *${v.employee}*
+المنشأة: *${v.company}*
+────────────────────────────
+نفيدكم بقرب انتهاء صلاحية الوثيقة المعتمدة لدى سجلات المنشأة، ونأمل المبادرة ببدء إجراءات التجديد تفادياً لتوقف الخدمات النظامية:
+
+📋 *بـيـانـات الـوثـيـقـة:*
+▫️ *نوع الوثيقة:* ${v.docType}
+▫️ *رقم الوثيقة:* \`${v.docNum}\`
+▫️ *تاريخ الانتهاء:* ${v.expiryDate}
+▫️ *المؤشر الزمني:* ⏳ *متبقي ${v.daysLeft} يوماً فقط*
+────────────────────────────
+⚖️ *الإجراء المعتمد المطلوب:*
+يرجى مراجعة إدارة شؤون الموظفين أو سداد الرسوم عبر منصة قوى / أبشر أعمال لإتمام التجديد دون تأخير.
+
+💎 *الرقم المرجعي:* \`REF-SND-99201\`
+🔒 *توثيق إلكتروني مشفر ومؤتمت | ${v.company}*`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  💎 *SanaD HR | بطاقة إشعار استباقي* 💎 ║
+╚═══════════════════════════════╝
+
+الأخ الزميل: *${v.employee}* المحترم
+المنشأة: *${v.company}*
+━━━━━━━━━━━━━━━━━━━━━━━━━
+تود إدارة الموارد البشرية إحاطتكم بجدول صلاحية وثائقكم النظامية:
+
+📄 *نوع المستند:* ${v.docType}
+🔢 *الرقم المعتمد:* \`${v.docNum}\`
+📅 *موعد الانتهاء:* ${v.expiryDate}
+⏳ *المهلة المتبقية:* *${v.daysLeft} يوم*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ *خطوات العمل:*
+تم إدراج الوثيقة ضمن قائمة التجديد التلقائي؛ يرجى التأكد من تسليم أي مستندات لازمة للمسؤول المختص.
+
+🌐 *بوابة الخدمة الذاتية:* https://hr.sanad.sa
+🛡️ _قسم العمليات والمتابعة الحكومية_`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔷 ━━━ *SanaD HR | بطاقة التنبيه الذكية* ━━━ 🔷
+
+⚡ *نوع الإشعار:* تنبيه صلاحية نظامية
+🆔 *معرف السجل:* \`#EMP-DOC-8492\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *المستفيد:* ${v.employee}
+🏛️ *المنشأة:* ${v.company}
+
+📊 *المصفوفة الرقابية للوثيقة:*
+▫️ *المستند:* ${v.docType}
+▫️ *الرقم:* \`${v.docNum}\`
+▫️ *الانتهاء:* ${v.expiryDate}
+▫️ *المتبقي:* *${v.daysLeft} أيام*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 *التوصية التقنية:*
+يرجى المبادرة برفع الإيصال البنكي قبل حلول موعد الانتهاء لضمان استمرارية الصلاحية.
+
+🔐 *تشفير التحقق:* \`SHA256:7a9f8e...\`
+🌐 https://hr.sanad.sa/verify`,
+
+          RUBY_CRITICAL: (v) => 
+`🛑 ━━━ *إنـذار اسـتـبـاقـي مـشـدد* ━━━ 🛑
+⚠️ *تنبيه: اقتراب انقضاء المهلة النظامية الأخيرة*
+
+الموظف: *${v.employee}*
+جهة العمل: *${v.company}*
+━━━━━━━━━━━━━━━━━━━━━━━━━
+نحيطكم علماً بأن الوثيقة: *${v.docType}*
+رقم: \`${v.docNum}\`
+توشك على الانتهاء بتاريخ: ${v.expiryDate}
+⏳ *باقي على المهلة القانونية:* *${v.daysLeft} أيام فقط*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 *تحذير إداري:*
+التأخر عن التجديد قبل تاريخ الانتهاء يعرض المنشأة والعامل لغرامات التأخير وإيقاف الخدمات الآلية.
+
+_إدارة الشؤون القانونية والمتابعة_`
+        }
+      },
+      {
+        id: "EXPIRY_CRITICAL",
+        category: "EXPIRY",
+        title: "إنذار وثيقة منتهية الصلاحية",
+        subtitle: "إنذار عاجل وحرج عند انقضاء التاريخ ودخول مرحلة الغرامات",
+        tag: "حرج جداً • غرامات",
+        badgeIcon: "🚨",
+        statusText: "⛔ منتهية الصلاحية",
+        statusColor: "rose",
+        btn1: "رفع إيصال السداد العاجل",
+        btn2: "الاتصال بالمعقب الحكومي فوراً",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  🚨  *إنـذار حـرج: انـتـهـاء وثـيـقـة رسـمـيـاً*  🚨  ┃
+┃  🏛️  *لـجـنـة الامـتـثـال والـرقـابـة الـنـظـامـيـة*  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+عناية المكرم: *${v.employee}*
+المنشأة: *${v.company}*
+────────────────────────────
+⚠️ *إحاطة نظامية ذات أولوية قصوى:*
+نحيطكم علماً بأن الوثيقة الموضحة بياناتها أدناه قد *انتهت صلاحيتها رسمياً*، ويترتب على ذلك تطبيق غرامات تأخير وإيقاف الخدمات النظامية:
+
+📑 *بـيـانـات الـوثـيـقـة الـمـنـتـهـيـة:*
+▫️ *نوع الوثيقة:* ${v.docType}
+▫️ *رقم الوثيقة:* \`${v.docNum}\`
+▫️ *تاريخ الانتهاء المسجل:* ${v.expiryDate}
+▫️ *الوضع الحالي:* ⛔ *منتهية الصلاحية رسمياً*
+────────────────────────────
+‼️ *الإجراء الفوري الصارم:*
+يتعين عليكم فوراً مراجعة مسؤول العلاقات الحكومية بالشركة وتقديم إيصال السداد اليوم لتجنب الغرامات المضاعفة.
+
+💎 *كود الطوارئ:* \`ALERT-CRIT-0091\`
+🔒 *صادر آلياً عن منظومة سند الرقابية | 24/7*`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  🚨 *إشعار امتثال حرج — وثيقة منتهية* 🚨  ║
+╚═══════════════════════════════╝
+
+عناية الزميل: *${v.employee}*
+الجهة التابع لها: *${v.company}*
+━━━━━━━━━━━━━━━━━━━━━━━━━
+نلفت انتباهكم إلى أن الوثيقة المسجلة لدينا:
+📄 *النوع:* ${v.docType}
+🔢 *الرقم المرجعي:* \`${v.docNum}\`
+📅 *تاريخ الانتهاء:* ${v.expiryDate}
+⛔ *الحالة:* *متأخرة عن موعد التجديد*
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ *المطلوب فوراً:*
+سداد رسوم التجديد عبر منصة سداد وموافاة إدارة الموارد البشرية برقم العملية خلال 24 ساعة.`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔴 ━━━ *SanaD HR | حالة مخالفة نظامية* ━━━ 🔴
+
+🚨 *مستوى التنبيه:* CRITICAL_EXPIRED
+🆔 *رقم المخالفة:* \`#VIO-2026-981\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *الموظف:* ${v.employee}
+🏛️ *المنشأة:* ${v.company}
+
+📊 *بيانات السجل المتأثر:*
+▫️ *الوثيقة:* ${v.docType}
+▫️ *الرقم:* \`${v.docNum}\`
+▫️ *تاريخ النفاذ:* ${v.expiryDate}
+▫️ *مؤشر الغرامة:* خطر تطبيق رسوم تأخير حكومية
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ *أمر التدخل السريع:*
+يجب إتمام المعاملة في منصة قوى وأبشر أعمال فوراً.`,
+
+          RUBY_CRITICAL: (v) => 
+`🛑 ━━━ *إنـذار أحـمـر — غـرامـة مـالـيـة* ━━━ 🛑
+⚠️ *تحذير عاجل من قسم المتابعة والتدقيق*
+
+الموظف: *${v.employee}*
+الشركة: *${v.company}*
+━━━━━━━━━━━━━━━━━━━━━━━━━
+الوثيقة: *${v.docType}*
+رقم: \`${v.docNum}\`
+📅 انتهت صلاحيتها بتاريخ: ${v.expiryDate}
+
+⛔ *الوضع:* *مخالفة نظامية قائمة*
+يرجى المراجعة والسداد الفوري اليوم بدون أدنى تأخير تجنباً للمساءلة القانونية وإيقاف رخص العمل.
+
+_إدارة المراقبة والامتثال الصارم_`
+        }
+      },
+      {
+        id: "IQAMA_RENEWAL",
+        category: "EXPIRY",
+        title: "إشعار إتمام تجديد الإقامة",
+        subtitle: "إشعار رسمي بنجاح تجديد هوية مقيم لدى الجوازات",
+        tag: "الجوازات • نجاح",
+        badgeIcon: "✅",
+        statusText: "✅ تم التجديد بنجاح",
+        statusColor: "emerald",
+        btn1: "تحميل الهوية الرقمية المعتمدة",
+        btn2: "طلب تسليم البطاقة المطبوعة",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ⚜️  *إشـعـار اعـتـمـاد تـجـديـد وثـيـقـة*  ⚜️  ┃
+┃  🏛️  *الـمـديـريـة الـعـامـة لـلـجـوازات وقـوى*  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+الأخ المكرم: *${v.employee}* المحترم
+المنشأة: *${v.company}*
+────────────────────────────
+يسر إدارة الموارد البشرية إحاطتكم بصدور الموافقة الرسمية وإتمام تجديد وثيقتكم بنجاح تام:
+
+📋 *بـيـانـات الـوثـيـقـة الـمـعـتـمـدة:*
+▫️ *نوع الوثيقة:* ${v.docType}
+▫️ *رقم الهوية:* \`${v.docNum}\`
+▫️ *سريان الصلاحية الجديد:* ${v.expiryDate}
+▫️ *حالة السجل:* ✨ *نشط ونظامي 100%*
+────────────────────────────
+💡 *ملاحظة هامة:*
+يمكنكم استعراض الهوية الرقمية المحدثة عبر تطبيق (أبشر أفراد / توكلنا)، وسيتم تسليمكم البطاقة البلاستيكية المطبوعة فور استلامها من البريد السعودي.
+
+💎 *رمز العملية المعتمد:* \`JAWAZAT-984210\`
+🔒 *إدارة شؤون الموظفين والعمليات | ${v.company}*`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  ✅ *إشعار نجاح تجديد هوية مقيم* ✅  ║
+╚═══════════════════════════════╝
+
+عزيزنا الزميل: *${v.employee}*
+يسعدنا إعلامك بأنه تم بنجاح تمديد صلاحية إقامتك لدى:
+🏢 *${v.company}*
+
+🔢 *رقم الإقامة:* \`${v.docNum}\`
+📅 *تاريخ الانتهاء الجديد:* ${v.expiryDate}
+🏥 *التأمين الطبي:* سارٍ ومعتمد نظامياً ✓
+
+_مع تحيات إدارة الموارد البشرية_`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔷 ━━━ *SanaD HR | تأكيد اعتماد تجديد* ━━━ 🔷
+
+✅ *حالة المعاملة:* COMPLETED_VERIFIED
+🆔 *الرمز الحكومي:* \`#GOV-PASS-3921\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *المستفيد:* ${v.employee}
+📄 *المستند المجدد:* ${v.docType}
+🔢 *الرقم الموحد:* \`${v.docNum}\`
+📅 *الصلاحية الممتدة:* ${v.expiryDate}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 تم مزامنة البيانات عبر منصة قوى وأبشر.`,
+
+          RUBY_CRITICAL: (v) => 
+`✅ ━━━ *إشعار رسمي: إغلاق طلب التجديد* ━━━ ✅
+الموظف: *${v.employee}*
+المنشأة: *${v.company}*
+
+تم بنجاح سداد الرسوم وتمديد وثيقة: *${v.docType}*
+رقم: \`${v.docNum}\`
+تاريخ النفاذ الجديد: ${v.expiryDate}
+
+_إدارة الموارد البشرية والجوازات_`
+        }
+      },
+      {
+        id: "PAYMENT_PAYROLL",
+        category: "FINANCE",
+        title: "إشعار إيداع مسير الرواتب",
+        subtitle: "إشعار مالي للموظف بتحويل الراتب عبر نظام حماية الأجور (WPS)",
+        tag: "مالية • حماية الأجور",
+        badgeIcon: "💰",
+        statusText: "💰 تم التحويل البنكي",
+        statusColor: "emerald",
+        btn1: "استعراض قسيمة الراتب (Payslip)",
+        btn2: "تأكيد استلام المستحقات",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  💰  *إشـعـار تـحـويـل الـراتـب الـشـهـري*  💰  ┃
+┃  🏛️  *نـظـام حـمـايـة الأجـور (WPS) الـمـعـتـمـد*  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+السيد/ة المكرم/ة: *${v.employee}*
+المنشأة: *${v.company}*
+────────────────────────────
+نحيطكم علماً بأنه تم بحمد الله إيداع وصرف مستحقاتكم المالية ومسير الراتب الشهري بحسابكم البنكي المعتمد:
+
+💵 *بـيـانـات الـتـحـويـل الـمـالـي:*
+▫️ *البنك المستلم:* مصرف الراجحي / البنك الأهلي
+▫️ *رقم المستفيد:* \`EMP-0418\`
+▫️ *تاريخ الإيداع:* 2026/09/25م
+▫️ *حالة المسير:* ✨ *معتمد وموثق بنكياً*
+────────────────────────────
+📊 *قسيمة الراتب المفصلة:*
+يمكنكم استعراض وتحميل تفاصيل البدلات والاستقطاعات عبر بوابة الخدمة الذاتية.
+
+💎 *الرقم المرجعي للتحويل:* \`WPS-TXN-98214\`
+🔒 *الإدارة المالية وإدارة الرواتب | ${v.company}*`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  💰 *إشعار إيداع مسير الرواتب الرسمي* 💰 ║
+╚═══════════════════════════════╝
+
+الزميل المكرم: *${v.employee}*
+تم بنجاح تحويل راتب الشهر الحالي لحسابكم البنكي المعتمد لدى *${v.company}*.
+
+💳 *طريقة الصرف:* تحويل بنكي سريع موثق
+📅 *تاريخ التحويل:* 2026/09/25م
+📑 للاطلاع على قسيمة الراتب يرجى مراجعة بوابة الموظف.`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔷 ━━━ *SanaD HR | إشعار مالي مؤتمت* ━━━ 🔷
+
+💰 *نوع العملية:* PAYROLL_DISBURSEMENT
+🆔 *معرف الحوالة:* \`#WPS-77401-SA\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *الموظف:* ${v.employee}
+🏛️ *الجهة:* ${v.company}
+📅 *تاريخ التنفيذ:* 2026-09-25
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 تم توثيق المسير في منصة حماية الأجور (مدد / قوى).`,
+
+          RUBY_CRITICAL: (v) => 
+`💰 ━━━ *إشعار إيداع مالي معتمد* ━━━ 💰
+الموظف: *${v.employee}*
+المنشأة: *${v.company}*
+تم قيد وتحويل الراتب الشهري بنجاح بحسابكم البنكي.
+_الإدارة المالية الموحدة_`
+        }
+      },
+      {
+        id: "ONBOARDING",
+        category: "HR",
+        title: "ترحيب وتهيئة موظف جديد",
+        subtitle: "رسالة ترحيبية فاخرة تتضمن بيانات المباشرة ومقر العمل",
+        tag: "استقطاب • ترحيب",
+        badgeIcon: "🎉",
+        statusText: "🎉 ترحيب رسمي",
+        statusColor: "indigo",
+        btn1: "دخول بوابة الموظف الرقمية",
+        btn2: "دليل العمل والسياسات الداخلية",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  🎉  *أهـلاً بـك فـي فـريـق الـعـمـل*  🎉  ┃
+┃  🏛️  *إدارة رأس الـمـال الـبـشـري والـتـمـيـز*  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+أهلاً وسهلاً بك الزميل: *${v.employee}*
+يسعدنا ويشرفنا انضمامك رسمياً إلى أسرة:
+🏢 *${v.company}*
+────────────────────────────
+نتمنى لك مسيرة مهنية ملهمة وحافلة بالإنجازات والنجاح المشترك:
+
+💼 *بـيـانـات الـمـبـاشـرة والـعـمـل:*
+▫️ *المسمى الوظيفي:* مهندس نظم سحابية أول
+▫️ *الرقم الوظيفي:* \`EMP-1092\`
+▫️ *مقر العمل:* الرياض — المقر الرئيسي
+▫️ *تاريخ المباشرة:* 2026/10/01م
+────────────────────────────
+📲 *دليل التهيئة والبدء:*
+يرجى الدخول لبوابة الموظف للاطلاع على وثائق التهيئة وسياسات المنشأة والتواصل مع مشرف فريقك.
+
+💎 *كود الموظف المعتمد:* \`EMP-1092-VIP\`
+🔒 *إدارة رأس المال البشري | ${v.company}*`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  🎉 *ترحيب رسمي بانضمام زميل جديد* 🎉  ║
+╚═══════════════════════════════╝
+
+مرحباً بك: *${v.employee}*
+نرحب بك في *${v.company}*.
+
+نتطلع لمشاركتك النجاح ومسيرة التميز المشترك.
+الرقم الوظيفي: \`EMP-1092\`
+مقر العمل: المقر الرئيسي.`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔷 ━━━ *SanaD HR | بطاقة تهيئة موظف* ━━━ 🔷
+
+🎉 *الحالة:* ONBOARDING_ACTIVE
+🆔 *كود الموظف:* \`#EMP-1092\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 *الاسم:* ${v.employee}
+🏛️ *المنشأة:* ${v.company}
+📅 *تاريخ المباشرة:* 2026-10-01
+
+🌐 تم تفعيل حسابك على المنظومة الرقمية.`,
+
+          RUBY_CRITICAL: (v) => 
+`🎉 ━━━ *ترحيب رسمي بانضمام الموظف* ━━━ 🎉
+الأخ: *${v.employee}*
+أهلاً بك في *${v.company}*.
+_إدارة الموارد البشرية_`
+        }
+      },
+      {
+        id: "PING_TEST",
+        category: "HR",
+        title: "فحص اتصال نبض الخادم السحابي",
+        subtitle: "اختبار استقرار بوابة الإشعارات والتحقق من التشفير والزمن",
+        tag: "تقنية • فحص نبض",
+        badgeIcon: "⚡",
+        statusText: "🟢 النظام متصل 100%",
+        statusColor: "emerald",
+        btn1: "استعراض لوحة القياس السحابية",
+        btn2: "سجل الرسائل اللحظي",
+        builder: {
+          ROYAL_GOLD: (v) => 
+`┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ⚡  *فـحـص اتـصـال الـنـظـام الـسـحـابـي*  ⚡  ┃
+┃  🏛️  *مـنـظـومـة سـنـد لإدارة الـمـوارد الـبـشـريـة* ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+تم بنجاح التحقق من استقرار وجاهزية بوابة إشعارات الواتساب الفورية لـ:
+🏢 *${v.company}*
+────────────────────────────
+📊 *مـؤشـرات الأداء والاسـتـجـابـة:*
+▫️ *حالة الاتصال:* 🟢 متصل ونشط (Online)
+▫️ *المزود السحابي:* UltraMsg Enterprise Cloud
+▫️ *زمن الاستجابة:* \`24ms\` (فائق السرعة)
+▫️ *توقيت الفحص:* 2026/09/25 13:10
+▫️ *بروتوكول التشفير:* End-to-End TLS 1.3
+────────────────────────────
+🔒 هذه الرسالة آلية لتأكيد جهوزية منظومة الإنذار والتنبيه في الوقت الفعلي.
+
+💎 *جلسة الفحص:* \`SESSION-PING-OK-2498\`
+🛡️ _فريق البنية التحتية والعمليات السحابية_`,
+
+          EMERALD_ELITE: (v) => 
+`╔═══════════════════════════════╗
+║  ⚡ *تقرير اختبار اتصال الواتساب* ⚡  ║
+╚═══════════════════════════════╝
+
+تم بنجاح فحص اتصال بوابة الواتساب لمنشأة: *${v.company}*.
+
+🟢 *الحالة:* نشط وجاهز
+⏱️ *زمن الاستجابة:* \`24ms\`
+🔐 *التشفير:* TLS 1.3 معتمد
+
+_منظومة سند المؤتمتة_`,
+
+          CYBER_SAPPHIRE: (v) => 
+`🔷 ━━━ *SanaD HR | تقرير نبض الخادم* ━━━ 🔷
+
+⚡ *العملية:* CLOUD_PING_TEST
+🆔 *رمز الجلسة:* \`#PING-24ms-OK\`
+━━━━━━━━━━━━━━━━━━━━━━━━━
+🟢 *حالة البوابة:* ONLINE
+📡 *المزود:* UltraMsg Cloud VIP
+🔒 *التشفير:* E2EE TLS 1.3
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+نظام التنبيهات يعمل بأعلى كفاءة واستقرار.`,
+
+          RUBY_CRITICAL: (v) => 
+`⚡ ━━━ *اختبار نبض خادم الواتساب* ━━━ ⚡
+المنشأة: *${v.company}*
+الحالة: متصل 100% بنجاح.
+_فريق الدعم الفني_`
+        }
+      }
+    ];
+
+    // Variables Presets
+    const PRESETS = {
+      ahmed: {
+        employee: "أحمد عبدالله الدوسري",
+        docType: "إقامة / هوية مقيم",
+        docNum: "2489103948",
+        expiryDate: "2026/10/10م (1448/04/28هـ)",
+        daysLeft: "15",
+        company: "مؤسسة سند للخدمات اللوجستية"
+      },
+      khaled: {
+        employee: "خالد فهد الشمري",
+        docType: "رخصة عمل وقوى",
+        docNum: "7001928394",
+        expiryDate: "2026/09/20م (1448/04/08هـ)",
+        daysLeft: "0",
+        company: "شركة المسار الحديث للمقاولات"
+      }
+    };
+
+    function getVariables() {
+      return {
+        employee: document.getElementById('var_employee').value || "مصطفى عبدالقصود رجب",
+        docType: document.getElementById('var_doc_type').value || "هوية مقيم (إقامة نظامية)",
+        docNum: document.getElementById('var_doc_num').value || "2498234104",
+        expiryDate: document.getElementById('var_expiry_date').value || "2026/10/10م",
+        daysLeft: document.getElementById('var_days_left').value || "15",
+        company: document.getElementById('var_company').value || "مجموعة سند للخدمات اللوجستية والتقنية"
+      };
+    }
+
+    function setArchetype(arch) {
+      currentArchetype = arch;
+      document.querySelectorAll('.arch-btn').forEach(b => {
+        b.classList.remove('bg-amber-500/15', 'border-amber-500/60', 'shadow-[0_0_15px_rgba(245,158,11,0.2)]', 'bg-emerald-500/15', 'border-emerald-500/60', 'bg-cyan-500/15', 'border-cyan-500/60', 'bg-rose-500/15', 'border-rose-500/60');
+        b.classList.add('bg-slate-950/60', 'border-slate-800');
+      });
+
+      const activeBtn = document.getElementById('arch_' + arch);
+      const label = document.getElementById('currentArchetypeLabel');
+      const glow = document.getElementById('bannerGlow');
+
+      if (arch === 'ROYAL_GOLD') {
+        activeBtn.classList.add('bg-amber-500/15', 'border-amber-500/60', 'shadow-[0_0_15px_rgba(245,158,11,0.2)]');
+        label.innerText = '⚜️ النمط الملكي المذهب';
+        glow.className = "absolute -end-10 -top-10 w-28 h-28 bg-amber-500/20 rounded-full blur-xl pointer-events-none";
+      } else if (arch === 'EMERALD_ELITE') {
+        activeBtn.classList.add('bg-emerald-500/15', 'border-emerald-500/60', 'shadow-[0_0_15px_rgba(16,185,129,0.2)]');
+        label.innerText = '💎 النمط الزمردي المعتمد';
+        glow.className = "absolute -end-10 -top-10 w-28 h-28 bg-emerald-500/20 rounded-full blur-xl pointer-events-none";
+      } else if (arch === 'CYBER_SAPPHIRE') {
+        activeBtn.classList.add('bg-cyan-500/15', 'border-cyan-500/60', 'shadow-[0_0_15px_rgba(6,182,212,0.2)]');
+        label.innerText = '🔷 النمط السيبراني التنفيذي';
+        glow.className = "absolute -end-10 -top-10 w-28 h-28 bg-cyan-500/20 rounded-full blur-xl pointer-events-none";
+      } else if (arch === 'RUBY_CRITICAL') {
+        activeBtn.classList.add('bg-rose-500/15', 'border-rose-500/60', 'shadow-[0_0_15px_rgba(244,63,94,0.2)]');
+        label.innerText = '🚨 نمط الإنذار الروبي الحرج';
+        glow.className = "absolute -end-10 -top-10 w-28 h-28 bg-rose-500/20 rounded-full blur-xl pointer-events-none";
+      }
+
+      updatePreview();
+    }
+
+    function toggleBanner() {
+      hasGraphicBanner = document.getElementById('toggleGraphicBanner').checked;
+      document.getElementById('bannerCard').style.display = hasGraphicBanner ? 'block' : 'none';
+    }
+
+    function setTheme(t) {
+      currentTheme = t;
+      const phoneScreen = document.getElementById('phoneScreen');
+      const iosStatusBar = document.getElementById('iosStatusBar');
+      const waHeader = document.getElementById('waHeader');
+      const waInputBar = document.getElementById('waInputBar');
+      const iosHomeBar = document.getElementById('iosHomeBar');
+      const waBubble = document.getElementById('waBubble');
+      const bubbleTail = document.getElementById('bubbleTail');
+      const darkBtn = document.getElementById('themeDarkBtn');
+      const lightBtn = document.getElementById('themeLightBtn');
+
+      if (t === 'light') {
+        phoneScreen.classList.remove('wa-chat-bg-dark');
+        phoneScreen.classList.add('wa-chat-bg-light');
+        iosStatusBar.className = 'relative z-30 pt-2.5 px-6 pb-1 bg-[#f0f2f5] flex items-center justify-between text-[11px] font-semibold text-slate-700 transition-colors';
+        waHeader.className = 'relative z-20 px-3 py-2.5 bg-[#f0f2f5] border-b border-black/10 flex items-center justify-between shadow-xs transition-colors';
+        document.getElementById('waHeaderTitle').className = 'text-xs font-black text-slate-800';
+        document.getElementById('waHeaderSubtitle').className = 'text-[9px] text-emerald-600 font-medium';
+        waInputBar.className = 'relative z-20 px-2.5 py-2 bg-[#f0f2f5] border-t border-black/10 flex items-center gap-2 shadow-xs text-slate-600 transition-colors';
+        iosHomeBar.className = 'h-4 bg-[#f0f2f5] flex items-center justify-center transition-colors';
+        waBubble.className = 'relative max-w-[96%] rounded-2xl overflow-hidden shadow-md text-xs leading-relaxed bg-[#d9fdd3] text-slate-900 rounded-tr-none transition-all';
+        bubbleTail.className = 'absolute top-0 -end-2 w-0 h-0 border-t-[8px] border-t-[#d9fdd3] border-e-[8px] border-e-transparent';
+        
+        darkBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white';
+        lightBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40';
+      } else {
+        phoneScreen.classList.add('wa-chat-bg-dark');
+        phoneScreen.classList.remove('wa-chat-bg-light');
+        iosStatusBar.className = 'relative z-30 pt-2.5 px-6 pb-1 bg-[#1f2c34] flex items-center justify-between text-[11px] font-semibold text-slate-200 transition-colors';
+        waHeader.className = 'relative z-20 px-3 py-2.5 bg-[#1f2c34] border-b border-white/5 flex items-center justify-between shadow-md transition-colors';
+        document.getElementById('waHeaderTitle').className = 'text-xs font-black text-white';
+        document.getElementById('waHeaderSubtitle').className = 'text-[9px] text-emerald-400 font-medium';
+        waInputBar.className = 'relative z-20 px-2.5 py-2 bg-[#1f2c34] border-t border-white/5 flex items-center gap-2 shadow-md text-slate-400 transition-colors';
+        iosHomeBar.className = 'h-4 bg-[#1f2c34] flex items-center justify-center transition-colors';
+        waBubble.className = 'relative max-w-[96%] rounded-2xl overflow-hidden shadow-lg text-xs leading-relaxed bg-[#005c4b] text-slate-100 rounded-tr-none transition-all';
+        bubbleTail.className = 'absolute top-0 -end-2 w-0 h-0 border-t-[8px] border-t-[#005c4b] border-e-[8px] border-e-transparent';
+
+        darkBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        lightBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white';
+      }
+    }
+
+    function renderTemplateList() {
+      const listEl = document.getElementById('templateList');
+      listEl.innerHTML = '';
+
+      const filtered = TEMPLATES.filter(t => currentCategory === 'ALL' || t.category === currentCategory);
+
+      filtered.forEach(tmpl => {
+        const isActive = tmpl.id === currentTemplateId;
+        const card = document.createElement('div');
+        card.className = `p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+          isActive 
+            ? 'bg-gradient-to-r from-amber-500/15 to-yellow-500/10 border-amber-500/50 shadow-md shadow-amber-500/10 ring-1 ring-amber-500/30' 
+            : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/60 hover:border-slate-700'
+        }`;
+        card.onclick = () => selectTemplate(tmpl.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-base">${tmpl.badgeIcon}</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                isActive ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-300'
+              }">${tmpl.tag}</span>
+            </div>
+            <div class="text-xs font-black ${isActive ? 'text-amber-300' : 'text-white'}">${tmpl.title}</div>
+            <p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">${tmpl.subtitle}</p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+            <span class="${isActive ? 'text-amber-400 font-bold' : 'text-slate-500'}">
+              ${isActive ? '● القالب المعروض حالياً' : 'انقر للمعاينة'}
+            </span>
+            <span class="text-slate-500">#${tmpl.id}</span>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function selectTemplate(id) {
+      currentTemplateId = id;
+      renderTemplateList();
+      updatePreview();
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = "cat-btn active px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm";
+        } else {
+          btn.className = "cat-btn px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer bg-slate-900 border-slate-800 text-slate-400 hover:text-white";
+        }
+      });
+      renderTemplateList();
+    }
+
+    function updatePreview() {
+      const v = getVariables();
+      const tmpl = TEMPLATES.find(t => t.id === currentTemplateId) || TEMPLATES[0];
+
+      // Update Banner Card details
+      document.getElementById('bannerBadgeIcon').innerText = tmpl.badgeIcon;
+      document.getElementById('bannerCompany').innerText = v.company;
+      document.getElementById('bannerEmpName').innerText = v.employee;
+      document.getElementById('bannerDocLabel').innerHTML = `${v.docType}: <span class="font-mono text-white">${v.docNum}</span>`;
+      document.getElementById('bannerDays').innerText = `${v.daysLeft} يوماً`;
+      document.getElementById('bannerExpiry').innerText = `الانتهاء: ${v.expiryDate.split(' ')[0]}`;
+      document.getElementById('bannerStatusBadge').innerText = tmpl.statusText;
+      
+      // Update Action Buttons
+      document.getElementById('btnAction1').innerText = tmpl.btn1;
+      document.getElementById('btnAction2').innerText = tmpl.btn2;
+
+      // Generate formatted message text
+      const generator = tmpl.builder[currentArchetype] || tmpl.builder.ROYAL_GOLD;
+      const rawText = generator(v);
+
+      // Parse WhatsApp Markdown into HTML
+      const htmlText = formatWhatsAppText(rawText);
+      document.getElementById('bubbleContent').innerHTML = htmlText;
+
+      // Update Clock
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const timeStr = `${hours % 12 || 12}:${minutes} ${hours >= 12 ? 'م' : 'ص'}`;
+      document.getElementById('iosClock').innerText = `${hours % 12 || 12}:${minutes}`;
+      document.getElementById('bubbleTime').innerText = timeStr;
+    }
+
+    // Convert *bold*, `code`, and newlines to HTML
+    function formatWhatsAppText(text) {
+      let t = text;
+      // Monospace blocks ```code```
+      t = t.replace(/```([\s\S]*?)```/g, '<span class="font-mono text-amber-200 bg-black/30 px-1 py-0.5 rounded text-[10px] inline-block my-0.5">$1</span>');
+      // Inline code `code`
+      t = t.replace(/`([^`]+)`/g, '<span class="font-mono text-amber-200 bg-black/30 px-1 py-0.2 rounded text-[10.5px]">$1</span>');
+      // Bold *text*
+      t = t.replace(/\*([^\*]+)\*/g, '<strong class="font-black text-white">$1</strong>');
+      // Italic _text_
+      t = t.replace(/_([^_]+)_/g, '<em class="italic text-slate-300">$1</em>');
+      // Links
+      t = t.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-sky-300 underline font-mono text-[10px]">$1</a>');
+      return t;
+    }
+
+    function fillPreset(key) {
+      const p = PRESETS[key];
+      if (!p) return;
+      document.getElementById('var_employee').value = p.employee;
+      document.getElementById('var_doc_type').value = p.docType;
+      document.getElementById('var_doc_num').value = p.docNum;
+      document.getElementById('var_expiry_date').value = p.expiryDate;
+      document.getElementById('var_days_left').value = p.daysLeft;
+      document.getElementById('var_company').value = p.company;
+      updatePreview();
+    }
+
+    function resetVariables() {
+      fillPreset('ahmed');
+    }
+
+    function copyCurrentMessage() {
+      const v = getVariables();
+      const tmpl = TEMPLATES.find(t => t.id === currentTemplateId) || TEMPLATES[0];
+      const generator = tmpl.builder[currentArchetype] || tmpl.builder.ROYAL_GOLD;
+      const rawText = generator(v);
+
+      navigator.clipboard.writeText(rawText).then(() => {
+        const toast = document.getElementById('copyToast');
+        toast.style.opacity = '1';
+        setTimeout(() => {
+          toast.style.opacity = '0';
+        }, 3000);
+      });
+    }
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTemplateList();
+      updatePreview();
+    });
+  </script>
+</body>
+</html>
