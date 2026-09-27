@@ -16,7 +16,7 @@ export function PageHeader({ title, description, actions, className }: PageHeade
 
   const heading = (
     <div className="flex min-w-0 flex-col gap-0.5">
-      <h1 className="truncate font-head text-2xl font-semibold leading-tight text-foreground sm:text-[30px]">{title}</h1>
+      <h1 className="lux-title truncate font-head text-2xl font-semibold leading-tight text-foreground sm:text-[30px]">{title}</h1>
       {description && <p className="line-clamp-2 text-[13px] text-muted-foreground sm:text-sm">{description}</p>}
     </div>
   );

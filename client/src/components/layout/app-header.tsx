@@ -71,7 +71,7 @@ export function AppHeader() {
 
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-x-[18px]">
-      <button type="button" onClick={() => navigate("/")} className="shrink-0 rounded-[14px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={companyName ?? "SanaD"}>
+      <button type="button" onClick={() => navigate("/")} className="shrink-0 rounded-[14px] desk:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={companyName ?? "SanaD"}>
         <img
           src={mark || "/brand/sanad-mark.png"}
           alt=""

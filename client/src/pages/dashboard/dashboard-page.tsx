@@ -38,6 +38,8 @@ import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { EmptyState } from "@/components/common/empty-state";
 import { DashboardOverview } from "@/pages/dashboard/dashboard-overview";
+import { DashboardLuxe } from "@/pages/dashboard/dashboard-luxe";
+import { useIsDesk } from "@/lib/use-desk";
 
 const STATUS_COLORS: Record<string, string> = {
   VALID: "#10B981",
@@ -69,6 +71,7 @@ function CustomChartTooltip({ active, payload, label, formatter }: any) {
 }
 
 export default function DashboardPage() {
+  const desk = useIsDesk();
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
   const navigate = useNavigate();
@@ -161,6 +164,15 @@ export default function DashboardPage() {
         },
       ]
     : [];
+
+  // Computers get the Luxe dashboard; phones and tablets keep Oasis.
+  if (desk) {
+    return (
+      <div className="pb-6">
+        <DashboardLuxe summary={summary} charts={charts} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10">

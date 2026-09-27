@@ -25,6 +25,7 @@ import { getErrorMessage } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
 import type { Employee } from "@/types/models";
 import { useAuthStore } from "@/stores/authStore";
+import { DESK_QUERY } from "@/lib/use-desk";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
 
 const columnHelper = createColumnHelper<Employee>();
@@ -121,7 +122,10 @@ export default function EmployeesListPage() {
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const [view, setView] = useState<"cards" | "table">(() => {
     try {
-      return localStorage.getItem("employees.view") === "table" ? "table" : "cards";
+      const saved = localStorage.getItem("employees.view");
+      if (saved === "table" || saved === "cards") return saved;
+      // Computers open on the table, phones and tablets on the cards.
+      return window.matchMedia?.(DESK_QUERY).matches ? "table" : "cards";
     } catch {
       return "cards";
     }

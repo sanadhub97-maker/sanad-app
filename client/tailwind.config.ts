@@ -6,6 +6,10 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        // A computer with a mouse (phones and tablets keep the Oasis layout).
+        desk: { raw: "(min-width: 1024px) and (hover: hover) and (pointer: fine)" },
+      },
       fontFamily: {
         sans: ["var(--font-sans)", "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", "sans-serif"],
         head: ["var(--font-head)", "Alexandria", "sans-serif"],

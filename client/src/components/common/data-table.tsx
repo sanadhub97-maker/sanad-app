@@ -135,7 +135,7 @@ export function DataTable<T extends object>({
       </div>
 
       {/* Main Table Container with Specular Top Edge */}
-      <div className="relative overflow-hidden rounded-[26px] bg-card shadow-[var(--glass-shadow)]">
+      <div className="lux-rows relative overflow-hidden rounded-[26px] bg-card shadow-[var(--glass-shadow)] desk:overflow-visible desk:rounded-none desk:bg-transparent desk:shadow-none">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

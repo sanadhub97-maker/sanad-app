@@ -602,3 +602,105 @@ html[dir="ltr"] .task-title { background-position: left 58%; }
   .task-wave, .task-spark { display: none; }
   .task-title, .task-ring { transition: none; }
 }
+
+/* =========================================================================
+   "Luxe" on computers (a wide screen with a mouse): glass surfaces over a
+   slowly moving light, a spotlight that follows the pointer, tilting stat
+   cards and a glowing call-to-action. Phones and tablets keep Oasis as is.
+   ========================================================================= */
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  :root {
+    --background: 157 17% 93%;
+    --card: 0 0% 100%;
+    --card-alpha: 0.62;
+    --popover-alpha: 0.9;
+    --secondary: 0 0% 100%;
+    --secondary-alpha: 0.72;
+    --muted: 0 0% 100%;
+    --muted-alpha: 0.6;
+    --input: 190 20% 80%;
+    --glass-shadow: 0 1px 1px rgba(15, 42, 47, 0.04), 0 18px 40px -26px rgba(15, 42, 47, 0.35);
+    --lux-hair: rgba(15, 42, 47, 0.08);
+    --lux-hair-2: rgba(255, 255, 255, 0.95);
+    --lux-glass-hi: rgba(255, 255, 255, 0.95);
+    --lux-spot: rgba(10, 127, 181, 0.1);
+    --lux-spot-edge: rgba(10, 127, 181, 0.55);
+    --lux-a1: rgba(56, 189, 248, 0.55);
+    --lux-a2: rgba(45, 212, 176, 0.45);
+    --lux-a3: rgba(246, 196, 120, 0.45);
+  }
+  .dark {
+    --background: 189 53% 4%;
+    --card: 0 0% 100%;
+    --card-alpha: 0.045;
+    --popover: 190 40% 8%;
+    --popover-alpha: 0.92;
+    --secondary: 0 0% 100%;
+    --secondary-alpha: 0.07;
+    --muted: 0 0% 100%;
+    --muted-alpha: 0.06;
+    --input: 0 0% 100%;
+    --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 50px -30px rgba(0, 0, 0, 0.9);
+    --lux-hair: rgba(255, 255, 255, 0.08);
+    --lux-hair-2: rgba(255, 255, 255, 0.16);
+    --lux-glass-hi: rgba(255, 255, 255, 0.12);
+    --lux-spot: rgba(56, 189, 248, 0.1);
+    --lux-spot-edge: rgba(125, 211, 252, 0.7);
+    --lux-a1: rgba(56, 189, 248, 0.3);
+    --lux-a2: rgba(45, 212, 176, 0.22);
+    --lux-a3: rgba(232, 197, 138, 0.16);
+  }
+
+  /* Living light behind the glass */
+  .lux-aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .lux-aurora i { position: absolute; border-radius: 50%; filter: blur(70px); }
+  .lux-aurora .b1 { width: 620px; height: 620px; top: -220px; right: 12%; background: var(--lux-a1); animation: lux-f1 26s ease-in-out infinite alternate; }
+  .lux-aurora .b2 { width: 560px; height: 560px; bottom: -240px; right: 40%; background: var(--lux-a2); animation: lux-f2 32s ease-in-out infinite alternate; }
+  .lux-aurora .b3 { width: 460px; height: 460px; top: 30%; left: -160px; background: var(--lux-a3); animation: lux-f3 28s ease-in-out infinite alternate; }
+
+  /* Glass: blur, a hairline gradient edge */
+  .lux-glass { backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%); }
+  .lux-glass::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; background: linear-gradient(160deg, var(--lux-hair-2), var(--lux-hair) 40%, var(--lux-hair) 70%, var(--lux-hair-2)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+
+  /* Spotlight following the pointer (the shell sets --mx / --my) */
+  .lux-spot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.35s ease; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), var(--lux-spot), transparent 45%); }
+  .lux-spot:hover::after { opacity: 1; }
+
+  .lux-tilt { transition: transform 0.25s ease-out; will-change: transform; }
+
+  /* Call-to-action: gradient with a passing sheen */
+  .lux-cta { position: relative; overflow: hidden; background-image: linear-gradient(135deg, #38bdf8, hsl(var(--primary)) 55%, #0f9d86); box-shadow: 0 14px 30px -14px hsl(var(--primary)), inset 0 1px 0 rgba(255, 255, 255, 0.35); color: #fff; }
+  .lux-cta::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%); transform: translateX(-130%); animation: lux-sweep 4.5s ease-in-out infinite 1.5s; pointer-events: none; }
+
+  /* Page title with a slow shine */
+  .lux-title { background: linear-gradient(90deg, hsl(var(--foreground)) 0%, hsl(var(--foreground)) 40%, #38bdf8 50%, hsl(var(--foreground)) 60%, hsl(var(--foreground)) 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: lux-shine 6s ease-in-out infinite; }
+
+  /* Tables: each row a rounded glass strip */
+  .lux-rows table { border-collapse: separate; border-spacing: 0 6px; }
+  .lux-rows thead tr { border: 0; }
+  .lux-rows tbody tr { border: 0; }
+  .lux-rows tbody td { background: hsl(var(--card) / var(--card-alpha)); transition: background 0.25s; }
+  .lux-rows tbody tr:hover td { background: var(--lux-glass-hi); }
+  .lux-rows tbody td:first-child { border-start-start-radius: 18px; border-end-start-radius: 18px; }
+  .lux-rows tbody td:last-child { border-start-end-radius: 18px; border-end-end-radius: 18px; }
+
+  /* Priorities: a gradient light running around the border */
+  .lux-flow { position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; background: conic-gradient(from var(--lux-ang), transparent 0 60%, #e8c58a 75%, hsl(var(--destructive)) 85%, transparent 95%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: lux-spin 6s linear infinite; }
+}
+@property --lux-ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes lux-spin { to { --lux-ang: 360deg; } }
+@keyframes lux-f1 { to { transform: translate(-160px, 120px) scale(1.15); } }
+@keyframes lux-f2 { to { transform: translate(200px, -90px) scale(1.1); } }
+@keyframes lux-f3 { to { transform: translate(140px, -120px) scale(1.2); } }
+@keyframes lux-sweep { 0%, 70% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+@keyframes lux-shine { 0%, 60% { background-position: 100% 0; } 100% { background-position: -50% 0; } }
+@keyframes lux-rise { from { opacity: 0.001; transform: translateY(18px) scale(0.985); } }
+@keyframes lux-draw { to { stroke-dashoffset: 0; } }
+@keyframes lux-fade { to { opacity: 1; } }
+@keyframes lux-halo { 0% { opacity: 0.8; transform: scale(0.9); } 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes lux-burst { to { transform: translate(var(--dx), var(--dy)) rotate(260deg) scale(0.3); opacity: 0; } }
+.lux-rise { animation: lux-rise 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+.lux-burst { position: fixed; width: 7px; height: 7px; border-radius: 2px; pointer-events: none; z-index: 80; animation: lux-burst 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .lux-aurora i, .lux-cta::after, .lux-title, .lux-flow, .lux-rise { animation: none !important; }
+}

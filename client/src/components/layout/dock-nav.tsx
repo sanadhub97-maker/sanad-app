@@ -78,7 +78,7 @@ export function DockNav() {
     <>
       <nav
         aria-label={t("nav.dock.home")}
-        className="no-print fixed bottom-[26px] left-1/2 z-40 hidden -translate-x-1/2 gap-1 rounded-full bg-ink p-2 shadow-[0_18px_40px_-16px_rgba(16,39,44,0.55)] lg:flex"
+        className="no-print fixed bottom-[26px] left-1/2 z-40 hidden desk:!hidden -translate-x-1/2 gap-1 rounded-full bg-ink p-2 shadow-[0_18px_40px_-16px_rgba(16,39,44,0.55)] lg:flex"
       >
         {docked.map((item) => {
           const Icon = item.icon;
