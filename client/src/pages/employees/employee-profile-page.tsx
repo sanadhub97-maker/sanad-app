@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { localized } from "@/lib/names";
-import { namePair, nameInitials } from "@/lib/names";
+import { namePair } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -21,11 +21,13 @@ import {
   CreditCard,
   Globe,
   Clock,
+  Sparkles,
 } from "lucide-react";
+import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
+import { AvatarPickerDialog } from "@/components/avatars/avatar-picker-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/common/page-header";
 import { StatusBadge, EmploymentStatusBadge } from "@/components/common/status-badge";
@@ -61,6 +63,8 @@ export default function EmployeeProfilePage() {
   const [deleteDoc, setDeleteDoc] = useState<EmployeeDocument | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [docTypeFilter, setDocTypeFilter] = useState("");
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const [customAvatarId, setCustomAvatarId] = useState<string | null>(null);
 
   const deleteDocMutation = useMutation({
     mutationFn: () => employeeDocumentsApi.remove(id!, deleteDoc!.id),
@@ -75,7 +79,6 @@ export default function EmployeeProfilePage() {
   if (isLoading || !employee) return <div className="text-sm text-muted-foreground p-6">{t("common.loading")}</div>;
 
   const names = namePair(employee.fullNameAr, employee.fullNameEn, i18n.language === "ar");
-  const initials = nameInitials(names.primary);
 
   const allDocuments = employee.documents ?? [];
   const docTypeCounts = allDocuments.reduce<Record<string, number>>((acc, d) => {
@@ -125,16 +128,26 @@ export default function EmployeeProfilePage() {
         <div className="pointer-events-none absolute -bottom-24 -start-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/10" />
 
         <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
-          {/* Avatar with status beacon */}
-          <div className="relative shrink-0">
-            <Avatar className="h-20 w-20 rounded-2xl border-2 border-primary/30 shadow-lg ring-4 ring-background">
-              <AvatarFallback className="bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-xl font-extrabold text-white">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+          {/* Saudi Avatar with status beacon and change button */}
+          <div className="relative shrink-0 group">
+            <SaudiAvatar
+              avatarId={customAvatarId}
+              gender={employee.gender}
+              size="xl"
+              className="h-20 w-20 rounded-2xl border-2 border-primary/40 shadow-lg ring-4 ring-background cursor-pointer transition-transform group-hover:scale-105"
+              onClick={() => setAvatarPickerOpen(true)}
+            />
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-background ring-2 ring-background">
               <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 animate-pulse" />
             </span>
+            <button
+              type="button"
+              onClick={() => setAvatarPickerOpen(true)}
+              title={i18n.language === "ar" ? "تغيير الأفاتار بالزي السعودي" : "Change Saudi Avatar"}
+              className="absolute -top-1 -start-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background hover:scale-110 transition-transform"
+            >
+              <Sparkles className="h-3 w-3" />
+            </button>
           </div>
 
           <div className="flex-1 min-w-0 space-y-1.5">
@@ -353,6 +366,22 @@ export default function EmployeeProfilePage() {
         open={editOpen}
         employee={employee}
         onOpenChange={setEditOpen}
+      />
+
+      <AvatarPickerDialog
+        open={avatarPickerOpen}
+        onOpenChange={setAvatarPickerOpen}
+        gender={employee.gender}
+        selectedAvatarId={customAvatarId}
+        onSelectAvatar={(id) => {
+          setCustomAvatarId(id);
+          toast.success(
+            i18n.language === "ar"
+              ? "تم تطبيق الأفاتار بالزي السعودي بنجاح"
+              : "Saudi avatar applied successfully"
+          );
+        }}
+        isRtl={i18n.language === "ar"}
       />
 
       {/* 🖨️ Official Print Signatures & Stamp Block */}
