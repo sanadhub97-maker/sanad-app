@@ -68,6 +68,8 @@ export interface Employee {
   branchId?: string | null;
   branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   joiningDate?: string | null;
+  sponsorName?: string | null;
+  onSponsorship?: boolean | null;
   employmentStatus: EmploymentStatus;
   notes?: string | null;
   iqamaNumber?: string | null;

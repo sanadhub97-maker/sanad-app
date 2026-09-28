@@ -29,6 +29,7 @@ import {
   CalendarCheck,
   Activity,
   FileEdit,
+  ShieldCheck,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,8 @@ const makeSchema = () => z.object({
   joiningDate: z.string().optional(),
   employmentStatus: z.enum(["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED"]),
   notes: z.string().optional(),
+  sponsorName: z.string().optional(),
+  onSponsorship: z.enum(["yes", "no", ""]).optional(),
   iqamaNumber: z.string().optional(),
   iqamaIssueDate: z.string().optional(),
   iqamaExpiryDate: z.string().optional(),
@@ -144,6 +147,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
             passportExpiryDate: toDateInputValue(employee.passportExpiryDate),
             branchId: employee.branchId ?? undefined,
             gender: employee.gender ?? undefined,
+            onSponsorship: employee.onSponsorship === true ? "yes" : employee.onSponsorship === false ? "no" : "",
           }) as FormValues
         );
         if (employee.fullNameEn) {
@@ -166,8 +170,10 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
   }, [open, isEdit, autoNumber, setValue, getValues]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      isEdit ? employeesApi.update(employee!.id, values) : employeesApi.create(values),
+    mutationFn: ({ onSponsorship, ...rest }: FormValues) => {
+      const values = { ...rest, onSponsorship: onSponsorship === "yes" ? true : onSponsorship === "no" ? false : null };
+      return isEdit ? employeesApi.update(employee!.id, values) : employeesApi.create(values);
+    },
     onSuccess: (res) => {
       toast.success(res.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["employees"] });
@@ -589,6 +595,39 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                       </SelectContent>
                     </Select>
                   )}
+                />
+              </FormField>
+
+              <FormField label={t("employees.fields.onSponsorship")} icon={ShieldCheck}>
+                <Controller
+                  control={control}
+                  name="onSponsorship"
+                  render={({ field }) => (
+                    <Select value={field.value || "unset"} onValueChange={(v) => field.onChange(v === "unset" ? "" : v)}>
+                      <SelectTrigger className="h-11 rounded-xl font-bold bg-background/90 border-border/80 shadow-xs focus:ring-purple-500/30 focus:border-purple-500/60">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border-border shadow-xl">
+                        <SelectItem value="yes" className="rounded-lg font-bold text-emerald-600 dark:text-emerald-400 cursor-pointer">
+                          {isAr ? "نعم، على كفالة المنشأة" : "Yes, on our sponsorship"}
+                        </SelectItem>
+                        <SelectItem value="no" className="rounded-lg font-medium text-amber-600 dark:text-amber-400 cursor-pointer">
+                          {isAr ? "لا، ليس على الكفالة" : "No, not on our sponsorship"}
+                        </SelectItem>
+                        <SelectItem value="unset" className="rounded-lg font-medium text-muted-foreground cursor-pointer">
+                          {isAr ? "غير محدد" : "Not specified"}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </FormField>
+
+              <FormField label={t("employees.fields.sponsorName")} icon={UserCheck}>
+                <Input
+                  {...register("sponsorName")}
+                  placeholder={isAr ? "اسم الكفيل كما في الإقامة" : "Sponsor name as on the iqama"}
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
 

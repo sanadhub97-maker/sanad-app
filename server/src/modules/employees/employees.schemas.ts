@@ -33,6 +33,9 @@ export const createEmployeeSchema = z.object({
   joiningDate: dateField,
   employmentStatus: employmentStatusEnum.default("ACTIVE"),
   notes: optStr(2000),
+  // "" clears it on edit (null), unlike the other optional text fields.
+  sponsorName: z.preprocess((v) => (v === "" ? null : v), z.string().max(150).nullable().optional()),
+  onSponsorship: z.boolean().nullable().optional(),
 
   iqamaNumber: optStr(50),
   iqamaIssueDate: dateField,

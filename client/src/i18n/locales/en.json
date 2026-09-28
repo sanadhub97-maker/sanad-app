@@ -234,6 +234,8 @@
       "selectBranch": "Select establishment",
       "joiningDate": "Joining Date",
       "employmentStatus": "Employment Status",
+      "sponsorName": "Sponsor name",
+      "onSponsorship": "On sponsorship",
       "notes": "Notes",
       "iqamaNumber": "Iqama Number",
       "issueDate": "Issue Date",

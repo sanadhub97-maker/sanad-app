@@ -22,6 +22,8 @@ import {
   Globe,
   Clock,
   Sparkles,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
 import { AvatarPickerDialog } from "@/components/avatars/avatar-picker-dialog";
@@ -219,6 +221,13 @@ export default function EmployeeProfilePage() {
                 <InfoRow icon={Mail} tone="blue" label={t("employees.fields.email")} value={employee.email} />
                 <InfoRow icon={Calendar} tone="amber" label={t("employees.fields.joiningDate")} value={formatDate(employee.joiningDate)} />
                 <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={localized(employee.city, employee.cityEn)} />
+                <InfoRow
+                  icon={ShieldCheck}
+                  tone="teal"
+                  label={t("employees.fields.onSponsorship")}
+                  value={employee.onSponsorship == null ? null : employee.onSponsorship ? tr("نعم، على كفالة المنشأة", "Yes, on our sponsorship") : tr("لا، ليس على الكفالة", "No, not on our sponsorship")}
+                />
+                <InfoRow icon={UserCheck} tone="purple" label={t("employees.fields.sponsorName")} value={employee.sponsorName} />
               </CardContent>
             </Card>
 
