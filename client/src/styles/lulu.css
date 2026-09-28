@@ -367,6 +367,8 @@ html:root body { background: hsl(var(--background)); }
 .lu-fchip .n { opacity: 0.7; }
 .lu-fchip.on { background: var(--c); color: #fff; }
 .lu-fchip.on > i { background: #fff; }
+.lu-fchip[data-state="active"] { background: var(--c) !important; color: #fff !important; box-shadow: 0 10px 22px -14px var(--c) !important; }
+.lu-fchip[data-state="active"] > i { background: #fff; }
 
 /* Person cards */
 .lu-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
@@ -465,10 +467,41 @@ html:root body { background: hsl(var(--background)); }
 .lu-rip { position: absolute; border-radius: 50%; background: currentColor; opacity: 0.2; transform: scale(0); animation: lu-rip 0.6s ease-out forwards; pointer-events: none; }
 @keyframes lu-rip { to { transform: scale(1); opacity: 0; } }
 
+/* List rows (documents, payments…) */
+.lu-list { display: grid; gap: 10px; }
+.lu-row { display: grid; grid-template-columns: 44px minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto auto; align-items: center; gap: 14px; width: 100%; padding: 12px 14px; border-radius: 18px; border: 1px solid var(--l-edge); background: var(--l-glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--l-shadow); text-align: start; cursor: pointer; animation: lu-slide 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; animation-delay: calc(var(--j, 0) * 45ms); transition: transform 0.25s, box-shadow 0.25s; }
+.lu-row:hover { transform: translateX(-4px); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 30px -22px var(--c); }
+[dir="ltr"] .lu-row:hover { transform: translateX(4px); }
+.lu-row:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.lu-row .lu-pi { width: 44px; height: 44px; }
+.lu-row .lu-left { height: 7px; background: var(--l-ground); }
+.lu-amt { font-family: var(--font-head); font-weight: 600; font-size: 15px; white-space: nowrap; }
+.lu-amt small { font-family: var(--font-sans); font-weight: 500; font-size: 11.5px; color: var(--l-muted); margin-inline-start: 4px; }
+.lu-kebab { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: var(--l-muted); transition: background 0.2s; }
+.lu-kebab:hover { background: var(--l-surface); color: var(--l-ink); }
+.lu-pager { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.lu-pager span { padding: 8px 16px; border-radius: 999px; background: var(--l-surface); box-shadow: var(--l-shadow); font-size: 12.5px; font-weight: 600; }
+.lu-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.lu-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.lu-stats > div { background: var(--l-surface); border-radius: 14px; padding: 9px 6px; text-align: center; }
+.lu-stats b { display: block; font-family: var(--font-head); font-size: 19px; font-weight: 600; }
+.lu-stats small { color: var(--l-muted); font-size: 11.5px; }
+.lu-split { display: flex; gap: 3px; height: 8px; border-radius: 999px; overflow: hidden; }
+.lu-split i { height: 100%; border-radius: 999px; transform-origin: right; animation: lu-growx 0.9s 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+@keyframes lu-growx { from { transform: scaleX(0); } }
+.lu-big { width: 56px; height: 56px; border-radius: 18px; transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.lu-big svg { width: 24px; height: 24px; }
+.lu-cc:hover .lu-big { transform: translateY(-4px) rotate(-8deg); }
+.lu-tile { display: flex; flex-direction: column; gap: 12px; min-height: 214px; }
+.lu-tile p { margin: 6px 0 0; color: var(--l-muted); line-height: 1.7; font-size: 13.5px; }
+.lu-tile .btns { margin-top: auto; display: flex; gap: 8px; }
+.lu-sbtn.pri { background: var(--c); color: #fff; }
+.lu-cc .lu-facts div { background: var(--l-surface); }
+
 /* ---------------- Shared components in the Pearl look ---------------- */
 .lu-app .lux-rows tbody tr { background: var(--l-glass); }
 .lu-app table thead th { color: var(--l-muted); }
-.lu-app [role="tablist"] { background: var(--l-glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.lu-app [role="tablist"]:not(.lu-tools) { background: var(--l-glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 
 /* ---------------- Breakpoints ---------------- */
 @media (max-width: 1179px) {
@@ -494,6 +527,8 @@ html:root body { background: hsl(var(--background)); }
   .lu-scene { grid-column: 1 / -1; order: -1; min-height: 0; height: 130px; }
   .lu-top { flex-wrap: wrap; }
   .lu-top .acts { order: 3; width: 100%; justify-content: flex-start; }
+  .lu-row { grid-template-columns: 44px minmax(0, 2fr) minmax(0, 1fr) auto auto; }
+  .lu-hide-m { display: none !important; }
 }
 @media (max-width: 599px) {
   .lu-side { display: none; }
@@ -520,6 +555,10 @@ html:root body { background: hsl(var(--background)); }
   .lu-prow .lu-chip { margin-inline-start: 54px; }
   .lu-prow .lu-do { margin-inline-start: auto; }
   .lu-cc { padding: 16px; }
+  .lu-row { grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 10px; padding: 11px 12px; }
+  .lu-hide-s { display: none !important; }
+  .lu-row .lu-chip { font-size: 11px; padding: 3px 8px; }
+  .lu-tile { min-height: 0; }
   /* Phones: no per-card blur, so scrolling stays smooth. */
   .lu-cc, .lux-glass { -webkit-backdrop-filter: none; backdrop-filter: none; }
   .lu-mesh i { filter: blur(50px); }

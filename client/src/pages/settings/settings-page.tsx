@@ -39,7 +39,6 @@ import {
   Sliders,
   AlertTriangle,
   Laptop,
-  Printer,
   QrCode,
   Zap,
   Copy,
@@ -94,86 +93,61 @@ export default function SettingsPage() {
 
       {/* Tabs Navigation & Panels */}
       <Tabs defaultValue="company" dir={isRtl ? "rtl" : "ltr"} className="space-y-6">
-        {/* Executive Glass Capsule Tabs List */}
-        <div className="overflow-x-auto pb-1 no-scrollbar flex items-center justify-start">
-          <TabsList className="inline-flex h-auto p-1.5 rounded-2xl bg-card/75 dark:bg-card/45 backdrop-blur-xl border border-border/80 shadow-sm gap-1.5 min-w-full sm:min-w-0">
-            <TabsTrigger
-              value="company"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={Building2} tone="blue" size="xs" />
-              <span>{t("settings.tabs.company")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="appearance"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={Palette} tone="purple" size="xs" />
-              <span>{t("settings.tabs.appearance")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="print"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={Printer} tone="indigo" size="xs" />
-              <span>{t("settings.tabs.print")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="expiration"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={Clock} tone="amber" size="xs" />
-              <span>{t("settings.tabs.expiration")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="email"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={Mail} tone="rose" size="xs" />
-              <span>{t("settings.tabs.email")}</span>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="whatsapp"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md data-[state=active]:shadow-primary/20 hover:bg-muted/50"
-            >
-              <AppleIcon icon={MessageSquare} tone="emerald" size="xs" />
-              <span>{t("settings.tabs.whatsapp")}</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        {/* The sections as colour chips (Pearl) */}
+        <TabsList className="lu-tools h-auto w-full justify-start rounded-none bg-transparent p-0 no-print" style={{ backdropFilter: "none", WebkitBackdropFilter: "none" }}>
+          <TabsTrigger value="company" className="lu-fchip lt-violet">
+            <i />
+            <span>{t("settings.tabs.company")}</span>
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="lu-fchip lt-indigo">
+            <i />
+            <span>{t("settings.tabs.appearance")}</span>
+          </TabsTrigger>
+          <TabsTrigger value="print" className="lu-fchip lt-sky">
+            <i />
+            <span>{t("settings.tabs.print")}</span>
+          </TabsTrigger>
+          <TabsTrigger value="expiration" className="lu-fchip lt-amber">
+            <i />
+            <span>{t("settings.tabs.expiration")}</span>
+          </TabsTrigger>
+          <TabsTrigger value="email" className="lu-fchip lt-rose">
+            <i />
+            <span>{t("settings.tabs.email")}</span>
+          </TabsTrigger>
+          <TabsTrigger value="whatsapp" className="lu-fchip lt-green">
+            <i />
+            <span>{t("settings.tabs.whatsapp")}</span>
+          </TabsTrigger>
+        </TabsList>
 
         {/* Tab 1: Company Profile */}
-        <TabsContent value="company" className="focus-visible:outline-none">
+        <TabsContent value="company" className="lt-violet focus-visible:outline-none">
           <CompanyTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 2: Appearance & Brand */}
-        <TabsContent value="appearance" className="focus-visible:outline-none">
+        <TabsContent value="appearance" className="lt-indigo focus-visible:outline-none">
           <AppearanceTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Print designs */}
-        <TabsContent value="print" className="focus-visible:outline-none">
+        <TabsContent value="print" className="lt-sky focus-visible:outline-none">
           <PrintDesignsTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 3: Expiration Rules */}
-        <TabsContent value="expiration" className="focus-visible:outline-none">
+        <TabsContent value="expiration" className="lt-amber focus-visible:outline-none">
           <ExpirationTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 4: Email SMTP */}
-        <TabsContent value="email" className="focus-visible:outline-none">
+        <TabsContent value="email" className="lt-rose focus-visible:outline-none">
           <EmailTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
 
         {/* Tab 5: WhatsApp API */}
-        <TabsContent value="whatsapp" className="focus-visible:outline-none">
+        <TabsContent value="whatsapp" className="lt-green focus-visible:outline-none">
           <WhatsappTab canEdit={canEdit} isRtl={isRtl} />
         </TabsContent>
       </Tabs>

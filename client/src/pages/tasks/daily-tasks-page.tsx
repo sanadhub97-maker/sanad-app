@@ -2,34 +2,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent }
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  FileSpreadsheet,
-  IdCard,
-  ListChecks,
-  Loader2,
-  Plus,
-  Printer,
-  Sparkles,
-  Trash2,
-  User,
-  Users,
-  Wallet,
-  CircleCheck,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, Clock, FileSpreadsheet, Loader2, Plus, Printer, Trash2, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
-import { DateInput } from "@/components/common/date-input";
+import { luluPop } from "@/components/lulu/lulu-effects";
 import { tasksApi, type DailyTask, type TaskCategory, type TaskPriority } from "@/api/tasks";
 import { useAuthStore } from "@/stores/authStore";
 import { downloadFile, openPdfInNewTab } from "@/lib/download";
@@ -37,17 +14,21 @@ import { getErrorMessage } from "@/lib/api";
 import { tr, isRtlLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES: Record<TaskCategory, { ar: string; en: string; tone: AppleTone; icon: LucideIcon }> = {
-  employees: { ar: "الموظفون", en: "Employees", tone: "indigo", icon: Users },
-  documents: { ar: "الوثائق والإقامات", en: "Documents & iqamas", tone: "sky", icon: IdCard },
-  branches: { ar: "المؤسسات", en: "Establishments", tone: "teal", icon: Building2 },
-  payments: { ar: "المدفوعات", en: "Payments", tone: "rose", icon: Wallet },
-  general: { ar: "عام", en: "General", tone: "zinc", icon: Check },
+/* Daily tasks in the Pearl design, as in the approved preview: the tasks of
+   the day in the green card, what is coming up in the amber one, and the week
+   to move between days. */
+
+const CATEGORIES: Record<TaskCategory, { ar: string; en: string; tone: string }> = {
+  employees: { ar: "الموظفون", en: "Employees", tone: "lt-indigo" },
+  documents: { ar: "الوثائق والإقامات", en: "Documents & iqamas", tone: "lt-sky" },
+  branches: { ar: "المؤسسات", en: "Establishments", tone: "lt-teal" },
+  payments: { ar: "المدفوعات", en: "Payments", tone: "lt-violet" },
+  general: { ar: "عام", en: "General", tone: "lt-green" },
 };
-const PRIORITIES: Record<TaskPriority, { ar: string; en: string; cls: string }> = {
-  URGENT: { ar: "عاجلة", en: "Urgent", cls: "text-destructive bg-destructive/15" },
-  HIGH: { ar: "مهمة", en: "High", cls: "text-warning bg-warning/15" },
-  NORMAL: { ar: "عادية", en: "Normal", cls: "text-primary bg-primary/10" },
+const PRIORITIES: Record<TaskPriority, { ar: string; en: string; tone: string }> = {
+  URGENT: { ar: "عاجلة", en: "Urgent", tone: "lt-rose" },
+  HIGH: { ar: "مهمة", en: "High", tone: "lt-amber" },
+  NORMAL: { ar: "عادية", en: "Normal", tone: "lt-sky" },
 };
 
 // ---------- Dates: tasks belong to calendar days in the viewer's time ----------
@@ -73,7 +54,6 @@ function fmt(k: string, o: Intl.DateTimeFormatOptions, locale: string) {
 
 const prefersReducedMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 const CELEBRATE_MS = 760;
-const SPARK_COLORS = ["hsl(var(--success))", "#52bcff", "#fbbf24", "#a78bfa", "#f472b6", "hsl(var(--success))", "#52bcff", "#fbbf24"];
 
 /** A short burst of confetti over the page, for finishing every task of the day. */
 function confetti() {
@@ -301,27 +281,25 @@ export default function DailyTasksPage() {
   const Prev = isRtl ? ChevronRight : ChevronLeft;
   const Next = isRtl ? ChevronLeft : ChevronRight;
   const Carry = isRtl ? ArrowLeft : ArrowRight;
-  const ringC = 2 * Math.PI * 19;
 
-  const fieldCls = "h-9 rounded-xl border border-input bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
+
+  const dayTitle = day === today ? tr("مهام اليوم", "Today's tasks") : tr(`مهام ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`, `Tasks for ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`);
+  const week = weekQuery.data ?? [];
+  const weekNote = week.length ? `${fmt(week[0].date, { day: "numeric", month: "long" }, locale)} – ${fmt(week[week.length - 1].date, { day: "numeric", month: "long" }, locale)}` : "";
+  const suggestions = suggestionsQuery.data ?? [];
+  const sel = "h-9 rounded-xl border-0 bg-[var(--l-surface)] px-2.5 text-[13px] text-foreground shadow-[var(--l-shadow)] focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
-    <div className="space-y-4">
+    <>
       <PageHeader
         title={tr("المهام اليومية", "Daily Tasks")}
-        description={tr("سجل مهام كل يوم بتاريخه، مع الطباعة والتصدير", "A to-do list for every day, printable and exportable")}
+        description={`${dayLabel} · ${hijri.replace(/\s*(هـ|AH)$/, "")} ${isRtl ? "هـ" : "AH"}`}
         actions={
           can.exp && (
             <>
-              <div className="inline-flex h-11 rounded-full bg-card p-1 shadow-[var(--glass-shadow)]" role="group" aria-label={tr("نطاق التصدير", "Export range")}>
+              <div className="inline-flex h-11 rounded-[14px] bg-[var(--l-surface)] p-1 shadow-[var(--l-shadow)]" role="group" aria-label={tr("نطاق التصدير", "Export range")}>
                 {(["day", "week"] as const).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    aria-pressed={range === r}
-                    onClick={() => setRange(r)}
-                    className={cn("rounded-full px-4 text-[13px] font-semibold", range === r ? "bg-ink text-ink-foreground" : "text-muted-foreground")}
-                  >
+                  <button key={r} type="button" aria-pressed={range === r} onClick={() => setRange(r)} className={cn("rounded-[11px] px-4 text-[13px] font-semibold", range === r ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>
                     {r === "day" ? tr("اليوم", "Day") : tr("الأسبوع", "Week")}
                   </button>
                 ))}
@@ -337,242 +315,220 @@ export default function DailyTasksPage() {
         }
       />
 
-      {/* Day picker */}
-      <Card className="p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-lg font-bold">{dayLabel}</div>
-            <div className="text-xs text-muted-foreground">{isRtl ? `${hijri} هـ` : `${hijri} AH`}</div>
+      <div className="lu-grid">
+        {/* The day's tasks */}
+        <section className="lu-cc lu-rise lt-green lu-s8" style={{ ["--i" as string]: 0 }}>
+          <div className="lu-hd">
+            <h2>{dayTitle}</h2>
+            <span key={bumps} className="lu-note">
+              {tr(`${done} من ${tasks.length}`, `${done} of ${tasks.length}`)}
+              {urgentOpen ? tr(` · ${urgentOpen} عاجلة`, ` · ${urgentOpen} urgent`) : ""}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="rounded-xl" onClick={() => setDay(addDays(day, -1))} aria-label={tr("اليوم السابق", "Previous day")}>
-              <Prev />
-            </Button>
-            <Button variant="outline" size="sm" className="rounded-full" onClick={() => setDay(today)}>
-              {tr("اليوم", "Today")}
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-xl" onClick={() => setDay(addDays(day, 1))} aria-label={tr("اليوم التالي", "Next day")}>
-              <Next />
-            </Button>
-            <DateInput id="tasks-day" value={day} onChange={(v) => v && setDay(v)} className="h-9 w-40 rounded-xl" />
-          </div>
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {(weekQuery.data ?? []).map((w) => (
-            <button
-              key={w.date}
-              type="button"
-              onClick={() => setDay(w.date)}
-              aria-pressed={w.date === day}
-              className={cn(
-                "grid justify-items-center gap-0.5 rounded-2xl border px-1 py-2 transition-colors",
-                w.date === day ? "bg-white/70 dark:bg-white/[0.17] border-[var(--glass-edge)] shadow-sm" : "border-transparent bg-muted hover:bg-white/50 dark:hover:bg-white/[0.1]"
-              )}
-            >
-              <span className="text-[11px] text-muted-foreground">{fmt(w.date, { weekday: "short" }, locale)}</span>
-              <span className={cn("text-lg font-bold leading-tight", w.date === today && "text-primary")}>{fromKey(w.date).getDate()}</span>
-              <span className="h-1 w-3/4 overflow-hidden rounded-full bg-border">
-                <span className="block h-full rounded-full bg-success transition-all duration-500" style={{ width: `${w.total ? (w.done / w.total) * 100 : 0}%` }} />
-              </span>
-              <span className="hidden sm:block text-[10.5px] text-muted-foreground">{w.total ? `${w.done}/${w.total}` : "—"}</span>
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      {/* Counters */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-4 flex items-center gap-3">
-          <AppleIcon icon={ListChecks} tone="blue" size="md" />
-          <div><div className="text-2xl font-bold leading-none">{tasks.length}</div><div className="text-xs text-muted-foreground mt-1">{tr("إجمالي المهام", "Total tasks")}</div></div>
-        </Card>
-        <Card className="p-4 flex items-center gap-3">
-          <AppleIcon icon={CircleCheck} tone="emerald" size="md" />
-          <div><div key={bumps} className={cn("text-2xl font-bold leading-none inline-block", bumps > 0 && "task-bump")}>{done}</div><div className="text-xs text-muted-foreground mt-1">{tr("منجزة", "Done")}</div></div>
-        </Card>
-        <Card className="p-4 flex items-center gap-3">
-          <AppleIcon icon={Clock} tone="orange" size="md" />
-          <div><div className="text-2xl font-bold leading-none">{tasks.length - done}</div><div className="text-xs text-muted-foreground mt-1">{tr("متبقية", "Remaining")}{urgentOpen ? tr(` · ${urgentOpen} عاجلة`, ` · ${urgentOpen} urgent`) : ""}</div></div>
-        </Card>
-        <Card className="p-4 flex items-center gap-3">
-          <svg viewBox="0 0 46 46" className="h-12 w-12 shrink-0" aria-hidden="true">
-            <circle cx="23" cy="23" r="19" fill="none" className="stroke-border" strokeWidth="5" />
-            <circle cx="23" cy="23" r="19" fill="none" className="stroke-success task-ring" strokeWidth="5" strokeLinecap="round" strokeDasharray={`${(ringC * pct).toFixed(1)} ${ringC.toFixed(1)}`} transform="rotate(-90 23 23)" />
-            <text x="23" y="27" textAnchor="middle" fontSize="11" fontWeight="700" fill="currentColor">{Math.round(pct * 100)}%</text>
-          </svg>
-          <div><div className="font-bold leading-none">{tr("نسبة الإنجاز", "Completion")}</div><div className="text-xs text-muted-foreground mt-1">{tr(`${done} من ${tasks.length}`, `${done} of ${tasks.length}`)}</div></div>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] items-start">
-        <div className="space-y-4 min-w-0">
           {can.create && (
-            <Card className="p-4">
-              <form onSubmit={submit} className="space-y-3">
-                <div className="flex gap-2">
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    maxLength={200}
-                    placeholder={tr("اكتب المهمة... مثال: مراجعة إقامات فرع بيشة", "Type a task… e.g. review the Bisha branch iqamas")}
-                    aria-label={tr("عنوان المهمة", "Task title")}
-                    className="h-11 min-w-0 flex-1 rounded-2xl border border-input bg-background px-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                  <Button type="submit" className="h-11 rounded-full px-5" disabled={create.isPending}>
-                    {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />} {tr("إضافة", "Add")}
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <label className="flex items-center gap-1.5">{tr("التصنيف", "Category")}
-                    <select className={fieldCls} value={category} onChange={(e) => setCategory(e.target.value as TaskCategory)}>
-                      {Object.entries(CATEGORIES).map(([k, c]) => <option key={k} value={k}>{isRtl ? c.ar : c.en}</option>)}
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-1.5">{tr("الأولوية", "Priority")}
-                    <select className={fieldCls} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
-                      {(["NORMAL", "HIGH", "URGENT"] as const).map((p) => <option key={p} value={p}>{isRtl ? PRIORITIES[p].ar : PRIORITIES[p].en}</option>)}
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-1.5">{tr("المسؤول", "Assignee")}
-                    <select className={fieldCls} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
-                      <option value="">{tr("غير محدد", "Unassigned")}</option>
-                      {(assigneesQuery.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.fullName}</option>)}
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-1.5">{tr("الوقت", "Time")}
-                    <input type="time" className={fieldCls} value={time} onChange={(e) => setTime(e.target.value)} />
-                  </label>
-                </div>
-              </form>
-            </Card>
-          )}
-
-          <Card className="py-1.5">
-            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
-              <h2 className="text-[15px] font-bold">{day === today ? tr("مهام اليوم", "Today's tasks") : tr(`مهام ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`, `Tasks for ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`)}</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                {carryable > 0 && can.edit && (
-                  <Button variant="outline" size="sm" className="rounded-full" onClick={() => carry.mutate()} disabled={carry.isPending}>
-                    <Carry /> {tr(`ترحيل ${carryable} مهام غير منجزة من أمس`, `Move ${carryable} unfinished from yesterday`)}
-                  </Button>
-                )}
-                <div className="inline-flex rounded-xl bg-muted p-0.5" role="group" aria-label={tr("تصفية", "Filter")}>
-                  {(["all", "open", "done"] as const).map((f) => (
-                    <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={cn("rounded-lg px-3 py-1 text-xs font-semibold", filter === f ? "bg-background shadow-sm" : "text-muted-foreground")}>
-                      {f === "all" ? tr("الكل", "All") : f === "open" ? tr("المتبقية", "Open") : tr("المنجزة", "Done")}
-                    </button>
+            <form onSubmit={submit}>
+              <div className="mt-3 flex gap-2">
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={200}
+                  placeholder={tr("اكتب مهمة جديدة…", "Write a new task…")}
+                  aria-label={tr("عنوان المهمة", "Task title")}
+                  className="h-11 min-w-0 flex-1 rounded-xl border-0 bg-[var(--l-surface)] px-3.5 text-[14.5px] text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30"
+                />
+                <button type="submit" className="lu-do" style={{ minHeight: 44 }} disabled={create.isPending}>
+                  {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />} {tr("إضافة", "Add")}
+                </button>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <select className={sel} value={category} onChange={(e) => setCategory(e.target.value as TaskCategory)} aria-label={tr("التصنيف", "Category")}>
+                  {Object.entries(CATEGORIES).map(([k, c]) => (
+                    <option key={k} value={k}>
+                      {isRtl ? c.ar : c.en}
+                    </option>
                   ))}
-                </div>
+                </select>
+                <select className={sel} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} aria-label={tr("الأولوية", "Priority")}>
+                  {(["NORMAL", "HIGH", "URGENT"] as const).map((p) => (
+                    <option key={p} value={p}>
+                      {isRtl ? PRIORITIES[p].ar : PRIORITIES[p].en}
+                    </option>
+                  ))}
+                </select>
+                <select className={sel} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} aria-label={tr("المسؤول", "Assignee")}>
+                  <option value="">{tr("بدون مسؤول", "Unassigned")}</option>
+                  {(assigneesQuery.data ?? []).map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.fullName}
+                    </option>
+                  ))}
+                </select>
+                <input type="time" className={sel} value={time} onChange={(e) => setTime(e.target.value)} aria-label={tr("الوقت", "Time")} />
               </div>
-            </div>
-
-            {dayQuery.isLoading ? (
-              <div className="flex items-center justify-center gap-2 border-t border-border py-10 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{tr("جاري التحميل...", "Loading...")}</div>
-            ) : shown.length === 0 ? (
-              <div className="grid justify-items-center gap-1.5 border-t border-border px-4 py-10 text-center">
-                <AppleIcon icon={ListChecks} tone="emerald" size="lg" />
-                <b>{tasks.length ? tr("لا توجد مهام بهذا التصنيف", "No tasks match this filter") : tr("لا توجد مهام لهذا اليوم", "No tasks for this day")}</b>
-                <span className="text-sm text-muted-foreground">{tasks.length ? tr("غيّر التصفية لعرض باقي المهام", "Change the filter to see the rest") : tr("اكتب مهمة في الخانة بالأعلى واضغط إضافة", "Type a task above and press Add")}</span>
-              </div>
-            ) : (
-              shown.map((t) => {
-                const cat = CATEGORIES[t.category] ?? CATEGORIES.general;
-                const pri = PRIORITIES[t.priority];
-                const anim = animating[t.id];
-                return (
-                  <div
-                    key={t.id}
-                    ref={(el) => {
-                      if (el) rowRefs.current.set(t.id, el);
-                      else rowRefs.current.delete(t.id);
-                    }}
-                    className={cn("task-row grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-3 border-t border-border px-4 py-3", t.done && "is-done", anim === "done" && "just-done", anim === "undone" && "just-undone")}
-                  >
-                    <button
-                      type="button"
-                      className="task-chk"
-                      aria-pressed={t.done}
-                      aria-label={t.done ? tr("إلغاء الإنجاز", "Mark as not done") : tr("تعليم كمنجزة", "Mark as done")}
-                      disabled={!can.edit}
-                      onClick={() => toggle.mutate({ task: t })}
-                    >
-                      {t.done && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                      )}
-                      {anim === "done" && (
-                        <>
-                          <span className="task-wave" />
-                          {SPARK_COLORS.map((c, i) => {
-                            const a = (i / SPARK_COLORS.length) * Math.PI * 2 + 0.3;
-                            const dist = 20 + (i % 3) * 7;
-                            return <span key={i} className="task-spark" style={{ ["--c" as string]: c, ["--dx" as string]: `${(Math.cos(a) * dist).toFixed(1)}px`, ["--dy" as string]: `${(Math.sin(a) * dist).toFixed(1)}px` }} />;
-                          })}
-                        </>
-                      )}
-                    </button>
-                    <AppleIcon icon={cat.icon} tone={cat.tone} size="sm" className="hidden sm:flex" />
-                    <div className="min-w-0">
-                      <b className="task-title font-semibold">{t.title}</b>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-px font-semibold before:h-1.5 before:w-1.5 before:rounded-full before:bg-current", pri.cls)}>{isRtl ? pri.ar : pri.en}</span>
-                        <span>{isRtl ? cat.ar : cat.en}</span>
-                        {t.time && <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{t.time}</span>}
-                        {t.assignee && <span className="inline-flex items-center gap-1"><User className="h-3.5 w-3.5" />{t.assignee.fullName}</span>}
-                        {t.carriedFrom && <span className="inline-flex items-center gap-1"><Carry className="h-3.5 w-3.5" />{tr(`مرحّلة من ${dmy(t.carriedFrom)}`, `Moved from ${dmy(t.carriedFrom)}`)}</span>}
-                      </div>
-                    </div>
-                    {can.del && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground" onClick={() => remove.mutate(t.id)} aria-label={tr("حذف المهمة", "Delete task")}>
-                        <Trash2 />
-                      </Button>
-                    )}
-                  </div>
-                );
-              })
+            </form>
+          )}
+          <div className="lu-bar">
+            <i style={{ width: `${pct * 100}%` }} />
+          </div>
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            {(["all", "open", "done"] as const).map((f) => (
+              <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={cn("lu-fchip lt-green", filter === f && "on")} style={{ height: 34, padding: "0 12px", fontSize: 12.5 }}>
+                {f === "all" ? tr("الكل", "All") : f === "open" ? tr("المتبقية", "Open") : tr("المنجزة", "Done")}
+              </button>
+            ))}
+            {carryable > 0 && can.edit && (
+              <button type="button" className="lu-fchip lt-amber ms-auto" style={{ height: 34, padding: "0 12px", fontSize: 12.5 }} onClick={() => carry.mutate()} disabled={carry.isPending}>
+                <Carry className="h-4 w-4" /> {tr(`ترحيل ${carryable} من أمس`, `Move ${carryable} from yesterday`)}
+              </button>
             )}
-          </Card>
-        </div>
+          </div>
 
-        <aside className="space-y-4">
-          <Card className="p-4 space-y-3">
-            <h3 className="flex items-center gap-2 font-bold"><Sparkles className="h-4 w-4 text-primary" />{tr("مقترحة من النظام", "Suggested by the system")}</h3>
-            <p className="text-xs text-muted-foreground">{tr("وثائق منتهية أو تنتهي خلال أسبوع، تضيفها كمهمة بضغطة.", "Documents expired or due within a week, one tap to add.")}</p>
-            {(suggestionsQuery.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">{tr("لا توجد اقتراحات الآن.", "Nothing to suggest right now.")}</p>
-            ) : (
-              (suggestionsQuery.data ?? []).map((s) => (
-                <div key={s.key} className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5 rounded-2xl border border-border bg-muted p-2.5">
-                  <AppleIcon icon={IdCard} tone={s.priority === "URGENT" ? "red" : "orange"} size="sm" />
-                  <div className="min-w-0">
-                    <b className="block text-[13px]">{s.title}</b>
-                    <span className="text-[11.5px] text-muted-foreground">{s.reason}</span>
-                  </div>
-                  {can.create && (
-                    <Button size="sm" variant={s.added ? "outline" : "default"} className="col-start-2 justify-self-start rounded-full" disabled={s.added || create.isPending} onClick={() => addSuggestion(s)}>
-                      {s.added ? <><Check /> {tr("أضيفت", "Added")}</> : <><Plus /> {tr("أضف كمهمة اليوم", "Add to today")}</>}
-                    </Button>
+          {dayQuery.isLoading ? (
+            <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {tr("جاري التحميل...", "Loading...")}
+            </div>
+          ) : shown.length === 0 ? (
+            <div className="lu-task" style={{ cursor: "default" }}>
+              <span className="box" />
+              <span className="tt">{tasks.length ? tr("لا توجد مهام بهذا التصنيف", "No tasks match this filter") : tr("لا توجد مهام لهذا اليوم — اكتب مهمة بالأعلى", "No tasks for this day — write one above")}</span>
+            </div>
+          ) : (
+            shown.map((t) => {
+              const cat = CATEGORIES[t.category] ?? CATEGORIES.general;
+              const pri = PRIORITIES[t.priority];
+              const on = animating[t.id] ? animating[t.id] === "done" : t.done;
+              return (
+                <div
+                  key={t.id}
+                  ref={(el) => {
+                    if (el) rowRefs.current.set(t.id, el);
+                    else rowRefs.current.delete(t.id);
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <button
+                    type="button"
+                    className={cn("lu-task", on && "on")}
+                    aria-pressed={t.done}
+                    disabled={!can.edit}
+                    onClick={(e) => {
+                      if (!t.done) luluPop(e.currentTarget.querySelector(".box"));
+                      toggle.mutate({ task: t });
+                    }}
+                  >
+                    <span className="box">
+                      <Check strokeWidth={3.2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="tt block">{t.title}</span>
+                      <span className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11.5px] text-muted-foreground">
+                        {t.priority !== "NORMAL" && <span className={cn("lu-chip", pri.tone)} style={{ padding: "1px 8px", fontSize: 11 }}>{isRtl ? pri.ar : pri.en}</span>}
+                        <span className={cat.tone} style={{ color: "var(--c)" }}>{isRtl ? cat.ar : cat.en}</span>
+                        {t.time && (
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {t.time}
+                          </span>
+                        )}
+                        {t.assignee && (
+                          <span className="inline-flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            {t.assignee.fullName}
+                          </span>
+                        )}
+                        {t.carriedFrom && <span>{tr(`مرحّلة من ${dmy(t.carriedFrom)}`, `Moved from ${dmy(t.carriedFrom)}`)}</span>}
+                      </span>
+                    </span>
+                  </button>
+                  {can.del && (
+                    <button type="button" className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-[var(--l-surface)] hover:text-destructive" onClick={() => remove.mutate(t.id)} aria-label={tr("حذف المهمة", "Delete task")}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   )}
                 </div>
-              ))
-            )}
-          </Card>
-          <Card className="p-4 space-y-2.5">
-            <h3 className="font-bold">{tr("حسب التصنيف", "By category")}</h3>
-            {Object.entries(CATEGORIES).map(([k, c]) => {
-              const list = tasks.filter((t) => t.category === k);
-              return (
-                <div key={k} className="flex items-center gap-2.5 text-sm">
-                  <AppleIcon icon={c.icon} tone={c.tone} size="xs" />
-                  <span>{isRtl ? c.ar : c.en}</span>
-                  <b className="ms-auto">{list.filter((t) => t.done).length}/{list.length}</b>
-                </div>
               );
-            })}
-          </Card>
-        </aside>
+            })
+          )}
+        </section>
+
+        {/* Coming up: what the system suggests */}
+        <section className="lu-cc lu-rise lt-amber lu-s4" style={{ ["--i" as string]: 1 }}>
+          <div className="lu-hd">
+            <h2>{tr("القادمة", "Coming up")}</h2>
+            <span className="lu-note">{suggestions.length ? tr(`${suggestions.length} مقترحة`, `${suggestions.length} suggested`) : tr("لا شيء", "Nothing")}</span>
+          </div>
+          {suggestions.length === 0 && (
+            <div className="lu-prow lt-green" style={{ ["--j" as string]: 0 }}>
+              <span className="lu-pi">
+                <Check />
+              </span>
+              <span className="lu-cell">
+                <b>{tr("لا توجد اقتراحات الآن", "Nothing to suggest right now")}</b>
+                <small>{tr("كل الوثائق بعيدة عن الانتهاء", "No document is close to ending")}</small>
+              </span>
+            </div>
+          )}
+          {suggestions.map((s, j) => (
+            <div key={s.key} className={cn("lu-prow", s.priority === "URGENT" ? "lt-rose" : "lt-amber")} style={{ ["--j" as string]: j }}>
+              <span className="lu-pi">
+                <Clock />
+              </span>
+              <span className="lu-cell">
+                <b>{s.title}</b>
+                <small>{s.reason}</small>
+              </span>
+              {can.create && (
+                <button type="button" className={cn("lu-do", s.added && "done")} disabled={s.added || create.isPending} onClick={(e) => { luluPop(e.currentTarget); addSuggestion(s); }}>
+                  {s.added ? <><Check /> {tr("أضيفت", "Added")}</> : tr("أضف", "Add")}
+                </button>
+              )}
+            </div>
+          ))}
+        </section>
+
+        {/* The week: pick a day */}
+        <section className="lu-cc lu-rise lt-sky lu-s12" style={{ ["--i" as string]: 2 }}>
+          <div className="lu-hd">
+            <h2>{tr("هذا الأسبوع", "This week")}</h2>
+            <div className="flex items-center gap-1.5">
+              <span className="lu-note">{weekNote}</span>
+              <button type="button" className="lu-btn" style={{ height: 36, minWidth: 36, padding: 0 }} onClick={() => setDay(addDays(day, -7))} aria-label={tr("الأسبوع السابق", "Previous week")}>
+                <Prev />
+              </button>
+              <button type="button" className="lu-btn" style={{ height: 36, padding: "0 12px", fontSize: 13 }} onClick={() => setDay(today)}>
+                {tr("اليوم", "Today")}
+              </button>
+              <button type="button" className="lu-btn" style={{ height: 36, minWidth: 36, padding: 0 }} onClick={() => setDay(addDays(day, 7))} aria-label={tr("الأسبوع التالي", "Next week")}>
+                <Next />
+              </button>
+            </div>
+          </div>
+          <div className="lu-week">
+            {week.map((w) => (
+              <button
+                key={w.date}
+                type="button"
+                onClick={() => setDay(w.date)}
+                aria-pressed={w.date === day}
+                className={cn("lu-day", w.date === today && "today")}
+                style={w.date === day && w.date !== today ? { boxShadow: "inset 0 0 0 2px var(--c)" } : undefined}
+              >
+                <small>{fmt(w.date, { weekday: "long" }, locale)}</small>
+                <b className="lu-num">{fromKey(w.date).getDate()}</b>
+                <span className="dots">
+                  {Array.from({ length: Math.min(3, w.done) }).map((_, j) => (
+                    <i key={`d${j}`} style={{ background: "var(--l-green)" }} />
+                  ))}
+                  {Array.from({ length: Math.min(3 - Math.min(3, w.done), w.total - w.done) }).map((_, j) => (
+                    <i key={`o${j}`} style={{ background: "var(--l-amber)" }} />
+                  ))}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
-    </div>
+    </>
   );
 }
