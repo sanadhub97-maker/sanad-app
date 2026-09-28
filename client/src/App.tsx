@@ -32,6 +32,7 @@ const RolesPage = lazy(() => import("@/pages/roles/roles-page"));
 const AuditLogsPage = lazy(() => import("@/pages/auditLogs/audit-logs-page"));
 const SettingsPage = lazy(() => import("@/pages/settings/settings-page"));
 const ProfilePage = lazy(() => import("@/pages/profile/profile-page"));
+const AppleDesignPreviewPage = lazy(() => import("@/pages/preview/apple-design-preview"));
 
 function PageFallback() {
   return (
@@ -116,6 +117,9 @@ export default function App() {
                 </Route>
               </Route>
             </Route>
+
+            <Route path="/preview" element={<AppleDesignPreviewPage />} />
+            <Route path="/apple-preview" element={<AppleDesignPreviewPage />} />
 
             <Route path="/403" element={<ForbiddenPage />} />
             <Route path="/500" element={<ServerErrorPage />} />
