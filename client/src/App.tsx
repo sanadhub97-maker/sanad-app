@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthInitializer } from "@/components/providers/auth-initializer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LuluShell } from "@/components/lulu/lulu-shell";
-import { AuthLayout } from "@/layouts/auth-layout";
+import { GateLayout } from "@/layouts/gate-layout";
 import { RequireAuth } from "@/routes/require-auth";
 import { RequirePermission } from "@/routes/require-permission";
 
@@ -48,7 +48,7 @@ export default function App() {
       <ThemeProvider>
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            <Route element={<AuthLayout />}>
+            <Route element={<GateLayout />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />

@@ -1,37 +1,60 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import { Loader2, Lock, Mail, ArrowRight, ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { login } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
+import { useGate } from "@/layouts/gate-layout";
+import { cn } from "@/lib/utils";
 
 const makeSchema = () =>
   z.object({
-    email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")),
-    password: z.string().min(1, tr("كلمة المرور مطلوبة", "Password is required")),
-    rememberMe: z.boolean().default(false),
+    email: z.string().min(1, tr("اكتب بريدك الإلكتروني", "Enter your email")).email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")),
+    password: z.string().min(1, tr("اكتب كلمة المرور", "Enter your password")),
+    rememberMe: z.boolean().default(true),
   });
 
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
+const Svg = ({ d, w = 2 }: { d: string; w?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={d} />
+  </svg>
+);
+const I = {
+  mail: "M4 4h16v16H4zM4 6l8 7 8-7",
+  lock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",
+  eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  eyeOff: "M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3 3.8M6.1 6.1A17 17 0 0 0 2 12s4 7 10 7a10 10 0 0 0 4-.8",
+  globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18",
+  warn: "M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z",
+  caps: "M12 4 4 12h4v6h8v-6h4z",
+  check: "M5 12l5 5L20 7",
+  arrow: "M19 12H5M11 6l-6 6 6 6",
+  shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+};
+
+/** Sign in, in the SanaD gate: floating labels, the first letter of the email
+ * in a bubble, a Caps Lock warning, the button filling while it checks, and
+ * the gate opening onto a welcome once it succeeds. */
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
+  const isAr = (i18n.language || "ar").startsWith("ar");
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const { night } = useGate();
+  const root = useRef<HTMLDivElement>(null);
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [show, setShow] = useState(false);
+  const [caps, setCaps] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [welcome, setWelcome] = useState(false);
 
   const {
     register,
@@ -41,138 +64,192 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
-    defaultValues: { rememberMe: false },
+    defaultValues: { rememberMe: true, email: "", password: "" },
   });
+  const email = watch("email") ?? "";
+  const remember = watch("rememberMe");
+  const hour = new Date().getHours();
+  const greeting = isAr ? (hour < 12 ? "صباح الخير" : "مساء الخير") : hour < 12 ? "Good morning" : "Good evening";
+
+  function shake() {
+    const p = root.current?.closest(".g-panel");
+    if (!p) return;
+    p.classList.remove("shake");
+    void (p as HTMLElement).offsetWidth;
+    p.classList.add("shake");
+  }
 
   async function onSubmit(values: FormValues) {
+    setFailure(null);
     try {
       const result = await login(values);
-      setAuth(result.accessToken, result.user);
+      setWelcome(true);
       const from = (location.state as { from?: Location })?.from?.pathname ?? "/";
-      navigate(from, { replace: true });
-      toast.success(isAr ? `أهلاً بك مجدداً، ${result.user.fullName}` : `Welcome back, ${result.user.fullName}`);
+      // Let the gate open before the app takes over.
+      setTimeout(() => {
+        setAuth(result.accessToken, result.user);
+        navigate(from, { replace: true });
+      }, 1500);
     } catch (err) {
-      toast.error(getErrorMessage(err, isAr ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."));
+      setFailure(getErrorMessage(err, isAr ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."));
+      shake();
     }
   }
 
-  const ArrowIcon = isAr ? ArrowLeft : ArrowRight;
+  const passField = register("password");
+  const emailField = register("email");
 
   return (
-    <div className="space-y-6 text-start">
-      {/* Header section */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-primary" />
-          <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
-            {isAr ? "بوابة الدخول الموحدة" : "Secure Single Sign-On"}
-          </p>
-        </div>
-        <h2 className="text-2xl sm:text-3xl font-semibold font-head tracking-tight text-foreground font-sans">
-          {t("auth.loginTitle")}
-        </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-normal">
-          {isAr
-            ? "أدخل بياناتك للمتابعة إلى مركز القيادة وإدارة العمليات"
-            : "Enter your enterprise credentials to access the command center"}
-        </p>
+    <div ref={root}>
+      <div className="g-row1">
+        <span className="g-pill">
+          <span className="live" />
+          {isAr ? "النظام متصل" : "System online"}
+        </span>
+        <button type="button" className="g-pill" onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}>
+          <Svg d={I.globe} />
+          <span>{isAr ? "English" : "العربية"}</span>
+        </button>
       </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-1">
-        {/* Email Field */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-bold text-foreground/80">
-            {t("auth.email")}
-          </Label>
-          <div className="relative group">
-            <Mail className="absolute start-3.5 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
-            <Input
+      <div className="g-mark">
+        <img src="/brand/sanad-mark.png" alt="" />
+        <div>
+          <b>SanaD HR</b>
+          <small>People · Process · Progress</small>
+        </div>
+      </div>
+      <div className="g-hello">
+        <span className={cn("g-who", email.indexOf("@") > 0 && "on")} aria-hidden="true">
+          {email.trim().charAt(0).toUpperCase()}
+        </span>
+        <h2>
+          {greeting}{" "}
+          <span className="wave" aria-hidden="true">
+            👋
+          </span>
+        </h2>
+      </div>
+      <p className="g-sub">
+        {isAr ? (
+          <>
+            سجّل دخولك إلى <b>SanaD</b> لمتابعة موظفيك ووثائقك.
+          </>
+        ) : (
+          <>
+            Sign in to <b>SanaD</b> to follow your people and documents.
+          </>
+        )}
+      </p>
+      {failure && (
+        <div className="g-alert" role="alert">
+          <Svg d={I.warn} />
+          {failure}
+        </div>
+      )}
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className={cn("g-f", errors.email && "bad")}>
+          <div className="g-box">
+            <span className="ic">
+              <Svg d={I.mail} />
+            </span>
+            <input
               id="email"
               type="email"
+              placeholder=" "
               autoComplete="email"
-              placeholder="admin@sanad.sa"
-              className="ps-10 h-12 rounded-2xl border border-input bg-card focus:border-primary text-foreground placeholder:text-muted-foreground/70 text-sm font-medium transition-all"
-              {...register("email")}
+              dir="ltr"
+              {...emailField}
+              onChange={(e) => {
+                setFailure(null);
+                emailField.onChange(e);
+              }}
             />
+            <label htmlFor="email">{t("auth.email")}</label>
           </div>
-          {errors.email && <p className="text-xs font-medium text-destructive">{errors.email.message}</p>}
+          {errors.email && <div className="g-err">{errors.email.message}</div>}
         </div>
-
-        {/* Password Field */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-xs font-bold text-foreground/80">
-              {t("auth.password")}
-            </Label>
-            <Link
-              to="/forgot-password"
-              className="text-xs font-semibold text-primary hover:text-primary/80 hover:underline transition-colors"
-            >
-              {t("auth.forgotPassword")}
-            </Link>
-          </div>
-          <div className="relative group">
-            <Lock className="absolute start-3.5 top-3.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
-            <Input
+        <div className={cn("g-f", errors.password && "bad")}>
+          <div className="g-box">
+            <span className="ic">
+              <Svg d={I.lock} />
+            </span>
+            <input
               id="password"
-              type={showPassword ? "text" : "password"}
+              type={show ? "text" : "password"}
+              placeholder=" "
               autoComplete="current-password"
-              placeholder="••••••••••••"
-              className="ps-10 pe-10 h-12 rounded-2xl border border-input bg-card focus:border-primary text-foreground placeholder:text-muted-foreground/70 text-sm font-medium transition-all font-mono"
-              {...register("password")}
+              dir="ltr"
+              {...passField}
+              onChange={(e) => {
+                setFailure(null);
+                passField.onChange(e);
+              }}
+              onKeyDown={(e) => setCaps(e.getModifierState?.("CapsLock") ?? false)}
+              onKeyUp={(e) => setCaps(e.getModifierState?.("CapsLock") ?? false)}
+              onBlur={(e) => {
+                setCaps(false);
+                passField.onBlur(e);
+              }}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute end-3.5 top-3.5 text-muted-foreground hover:text-foreground transition-colors"
-              title={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <label htmlFor="password">{t("auth.password")}</label>
+            <button type="button" className="g-eye" onClick={() => setShow((s) => !s)} aria-label={show ? (isAr ? "إخفاء كلمة المرور" : "Hide password") : isAr ? "إظهار كلمة المرور" : "Show password"}>
+              <Svg d={show ? I.eyeOff : I.eye} />
             </button>
           </div>
-          {errors.password && <p className="text-xs font-medium text-destructive">{errors.password.message}</p>}
-        </div>
-
-        {/* Remember Me */}
-        <div className="flex items-center gap-2.5 pt-1">
-          <Checkbox
-            id="rememberMe"
-            checked={watch("rememberMe")}
-            onCheckedChange={(v) => setValue("rememberMe", Boolean(v))}
-            className="rounded-md border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <Label htmlFor="rememberMe" className="text-xs font-medium text-foreground/80 cursor-pointer select-none">
-            {t("auth.rememberMe")}
-          </Label>
-        </div>
-
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 text-sm tracking-wide mt-2"
-        >
-          {isSubmitting ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>{isAr ? "جاري التحقق والاتصال..." : "Authenticating..."}</span>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2">
-              <span>{t("auth.signIn")}</span>
-              <ArrowIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          {errors.password && <div className="g-err">{errors.password.message}</div>}
+          {caps && (
+            <div className="g-caps">
+              <Svg d={I.caps} w={2.2} />
+              {isAr ? "زر الأحرف الكبيرة (Caps Lock) مفعّل" : "Caps Lock is on"}
             </div>
           )}
-        </Button>
+        </div>
+        <div className="g-opts">
+          <button type="button" className="g-rem" role="checkbox" aria-checked={remember} onClick={() => setValue("rememberMe", !remember)}>
+            <span className={cn("g-check", remember && "on")}>
+              <Svg d={I.check} w={3.4} />
+            </span>
+            {t("auth.rememberMe")}
+          </button>
+          <Link to="/forgot-password" className="g-forgot">
+            {t("auth.forgotPassword")}
+          </Link>
+        </div>
+        <button type="submit" className={cn("g-go", isSubmitting && "busy")} disabled={isSubmitting || welcome}>
+          <span className="fill" />
+          {isSubmitting ? (
+            <span className="spin" />
+          ) : (
+            <>
+              <span className="lbl">{t("auth.signIn")}</span>
+              <span className="arrow">
+                <Svg d={I.arrow} w={2.4} />
+              </span>
+            </>
+          )}
+        </button>
       </form>
-
-      {/* Security Note Footnote */}
-      <div className="pt-2 text-center">
-        <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-success" />
-          <span>{isAr ? "اتصال مشفر ومحمي بأحدث معايير الأمان المؤسسي" : "Protected by bank-grade TLS encryption"}</span>
-        </p>
+      <div className="g-safe">
+        <Svg d={I.shield} />
+        {isAr ? "اتصال مشفّر · بياناتك محمية" : "Encrypted connection · your data is protected"}
       </div>
+      <div className="g-foot">© {new Date().getFullYear()} SanaD HR</div>
+
+      {createPortal(
+        <div className={cn("g-app g-portal", night && "night", welcome && "on")} aria-live="polite">
+          <div className="in">
+            <img src="/brand/sanad-logo.png" alt="" />
+            <h2>{isAr ? "أهلًا بعودتك" : "Welcome back"}</h2>
+            <p>{isAr ? "نجهّز لك يومك في SanaD…" : "Getting your day ready in SanaD…"}</p>
+            <div className="g-dots">
+              <i />
+              <i />
+              <i />
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
