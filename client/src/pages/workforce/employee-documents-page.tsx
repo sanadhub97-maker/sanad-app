@@ -87,7 +87,10 @@ export default function EmployeeDocumentsPage() {
   const [category, setCategory] = useState<string>(initialCategory);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    const s = searchParams.get("status");
+    return s === "VALID" || s === "EXPIRING_SOON" || s === "EXPIRED" ? s : "ALL";
+  });
   const [branchFilter, setBranchFilter] = useState<string>("ALL");
 
   const [dialog, setDialog] = useState<{

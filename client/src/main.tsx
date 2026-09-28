@@ -7,6 +7,7 @@ import "@/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import App from "@/App";
 import "@/index.css";
+import "@/styles/lulu.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -2,7 +2,7 @@ import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthInitializer } from "@/components/providers/auth-initializer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { AppShell } from "@/components/layout/app-shell";
+import { LuluShell } from "@/components/lulu/lulu-shell";
 import { AuthLayout } from "@/layouts/auth-layout";
 import { RequireAuth } from "@/routes/require-auth";
 import { RequirePermission } from "@/routes/require-permission";
@@ -15,7 +15,7 @@ import NotFoundPage from "@/pages/errors/not-found";
 import ForbiddenPage from "@/pages/errors/forbidden";
 import ServerErrorPage from "@/pages/errors/server-error";
 
-const DashboardPage = lazy(() => import("@/pages/dashboard/dashboard-page"));
+const DashboardPage = lazy(() => import("@/pages/dashboard/dashboard-lulu"));
 const EmployeesListPage = lazy(() => import("@/pages/employees/employees-list-page"));
 const EmployeeProfilePage = lazy(() => import("@/pages/employees/employee-profile-page"));
 const EmployeeDocumentsPage = lazy(() => import("@/pages/workforce/employee-documents-page"));
@@ -56,7 +56,7 @@ export default function App() {
             </Route>
 
             <Route element={<RequireAuth />}>
-              <Route element={<AppShell />}>
+              <Route element={<LuluShell />}>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
 
