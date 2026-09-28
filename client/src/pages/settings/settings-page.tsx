@@ -65,6 +65,7 @@ import { PrintDesignsTab } from "./print-designs-tab";
 import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 import { WhatsappTemplateCard } from "./whatsapp-template-card";
 import { WhatsappCardPicker } from "./whatsapp-card-picker";
+import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -1552,6 +1553,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
       {isWhatsappWeb && (
         <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} saved={data.provider === "WHATSAPP_WEB" && data.enabled} />
       )}
+      <WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />
       <WhatsappTemplateCard canEdit={canEdit} isRtl={isRtl} />
       <WhatsappCardPicker canEdit={canEdit} isRtl={isRtl} />
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />

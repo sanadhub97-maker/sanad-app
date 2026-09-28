@@ -136,6 +136,15 @@ export interface WhatsappCardsPreview {
   cards: Record<WhatsappCardId, string>;
 }
 
+export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
+
+export interface WhatsappScheduleSettings {
+  dispatchMode: WhatsappDispatchMode;
+  sendTime: string; // "09:00"
+  timezone: string; // "Asia/Riyadh"
+  lastRunAt?: string | null;
+}
+
 export interface WhatsappMessagesFeed {
   items: WhatsappMessageItem[];
   stats: { sentToday: number; failedToday: number; total: number };
@@ -156,6 +165,12 @@ export const settingsApi = {
     (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
   updateWhatsappTemplate: async (template: WhatsappTemplateId) =>
     (await api.put<{ data: { template: WhatsappTemplateId }; message: string }>("/settings/whatsapp/template", { template })).data,
+  getWhatsappSchedule: async () =>
+    (await api.get<{ data: WhatsappScheduleSettings }>("/settings/whatsapp/schedule")).data.data,
+  updateWhatsappSchedule: async (input: Partial<WhatsappScheduleSettings>) =>
+    (await api.put<{ data: WhatsappScheduleSettings; message: string }>("/settings/whatsapp/schedule", input)).data,
+  runExpirationScanNow: async () =>
+    (await api.post<{ data: { dueCount: number }; message: string }>("/settings/whatsapp/run-scan")).data,
   getPrintTheme: async () => (await api.get<{ data: { theme: PrintThemeId } }>("/settings/print-theme")).data.data.theme,
   updatePrintTheme: async (theme: PrintThemeId) =>
     (await api.put<{ data: { theme: PrintThemeId }; message: string }>("/settings/print-theme", { theme })).data,

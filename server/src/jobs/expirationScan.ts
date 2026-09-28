@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
@@ -140,7 +140,17 @@ export async function runExpirationScan() {
           async () => {
             const alert = await whatsappAlert();
             meta.message = alert.logText;
-            assertSent(await sendWhatsapp(phone, alert.text, alert.image));
+            if (alert.mode === "card_only") {
+              assertSent(await sendWhatsapp(phone, alert.cardCaption || "", alert.image));
+            } else if (alert.mode === "both") {
+              assertSent(await sendWhatsapp(phone, alert.text));
+              if (alert.image) {
+                await new Promise((r) => setTimeout(r, 1200));
+                assertSent(await sendWhatsapp(phone, alert.cardCaption || "", alert.image));
+              }
+            } else {
+              assertSent(await sendWhatsapp(phone, alert.text));
+            }
           },
           meta
         );
@@ -149,5 +159,7 @@ export async function runExpirationScan() {
   }
 
   await markExpirationScanRun();
+  await setWhatsappScheduleSetting({ lastRunAt: new Date().toISOString() }).catch(() => undefined);
   logger.info(`Expiration scan complete — ${dueCount} item(s) matched a notification threshold today`);
+  return { dueCount };
 }

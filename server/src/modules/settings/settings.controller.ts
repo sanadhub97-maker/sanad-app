@@ -12,7 +12,9 @@ import { prisma } from "@/lib/prisma";
 import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsappLog";
 import { getTrackableItems } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting } from "@/services/settingsStore";
+import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting, getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
+import { rescheduleExpirationScan } from "@/jobs/scheduler";
+import { runExpirationScan } from "@/jobs/expirationScan";
 import { getCardAssets } from "@/services/branding";
 import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
 import { CARD_PREVIEW_CSS, WHATSAPP_CARD_IDS, cardMarkup, type WhatsappCardSetting } from "@/services/whatsappCards";
@@ -244,6 +246,24 @@ export const logoutWhatsappWeb = asyncHandler(async (_req: Request, res: Respons
   res.json({ data: whatsappWeb.getWhatsappWebStatus() });
 });
 
+export const getWhatsappSchedule = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({ data: await getWhatsappScheduleSetting() });
+});
+
+export const updateWhatsappSchedule = asyncHandler(async (req: Request, res: Response) => {
+  const updated = await setWhatsappScheduleSetting(req.body);
+  await rescheduleExpirationScan(updated.sendTime, updated.timezone);
+  res.json({ data: updated, message: "تم حفظ خيارات وطريقة إرسال التنبيهات والجدولة اليومية بنجاح." });
+});
+
+export const runWhatsappScanNow = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await runExpirationScan();
+  res.json({
+    data: { dueCount: result.dueCount },
+    message: `تم تشغيل فحص الوثائق بنجاح (${result.dueCount} وثيقة مستحقة للتنبيه).`,
+  });
+});
+
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
   const [{ company }, provider] = await Promise.all([getBrandingContext(), getWhatsappProvider()]);
   const providerLabel =
@@ -253,8 +273,25 @@ export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => 
   const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn);
   const alert = await prepareAlert(context, await getAlertStyle(company?.nameEn));
   const header = ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`, ""].join("\n");
-  const message = `${header}\n${alert.text}`;
-  const result = await sendWhatsapp(req.body.to, message, alert.image);
+
+  let result: { sent: boolean; reason?: string };
+
+  if (alert.mode === "card_only") {
+    // Send card only
+    const caption = `${header}\n${alert.cardCaption || ""}`;
+    result = await sendWhatsapp(req.body.to, caption, alert.image);
+  } else if (alert.mode === "both") {
+    // Send formatted text message
+    result = await sendWhatsapp(req.body.to, `${header}\n${alert.text}`);
+    if (result.sent && alert.image) {
+      await new Promise((r) => setTimeout(r, 1200));
+      await sendWhatsapp(req.body.to, alert.cardCaption || "", alert.image);
+    }
+  } else {
+    // text_only
+    result = await sendWhatsapp(req.body.to, `${header}\n${alert.text}`);
+  }
+
   await recordWhatsappMessage({
     to: req.body.to,
     message: `${header}\n${alert.logText}`,

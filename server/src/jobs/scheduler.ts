@@ -2,32 +2,62 @@ import cron from "node-cron";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import { runExpirationScan } from "@/jobs/expirationScan";
-import { hasExpirationScanRunToday } from "@/services/settingsStore";
+import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/services/settingsStore";
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 
-export function startScheduledJobs() {
-  // The local dev server shares the production database; if it ran the scan
-  // it would mark the day as done while being unable to send (its encryption
-  // key can't read production's credentials). Scheduled work is production-only.
-  if (env.NODE_ENV !== "production") {
-    logger.info("Scheduled jobs disabled outside production");
-    return;
+let scheduledScanTask: cron.ScheduledTask | null = null;
+
+/**
+ * Dynamically reschedules the daily expiration scan job based on user settings
+ * (Settings → WhatsApp: Daily scheduled send time).
+ */
+export async function rescheduleExpirationScan(timeStr?: string, timezone = "Asia/Riyadh") {
+  if (scheduledScanTask) {
+    scheduledScanTask.stop();
+    scheduledScanTask = null;
   }
 
-  cron.schedule(env.EXPIRATION_SCAN_CRON, () => {
-    runExpirationScan().catch((err) => logger.error({ err }, "Scheduled expiration scan failed"));
-  });
-  logger.info(`Expiration scan scheduled (cron: "${env.EXPIRATION_SCAN_CRON}")`);
+  let sendTime = timeStr;
+  let tz = timezone;
+  if (!sendTime) {
+    const setting = await getWhatsappScheduleSetting().catch(() => null);
+    sendTime = setting?.sendTime || "09:00";
+    tz = setting?.timezone || "Asia/Riyadh";
+  }
 
-  // On a host that sleeps when idle (Render's free tier), the in-process cron
-  // above never fires while the server is asleep. Catch up on boot instead, so
-  // any wake-up — a daily ping or a user visit — still gets today's scan run.
-  resumeWhatsappWebOnBoot()
-    .then(() => hasExpirationScanRunToday())
-    .then((ranToday) => {
-      if (ranToday) return;
-      logger.info("No expiration scan recorded today — running catch-up scan");
-      return runExpirationScan();
-    })
-    .catch((err) => logger.error({ err }, "Catch-up expiration scan failed"));
+  const [hourStr, minStr] = (sendTime || "09:00").split(":");
+  const hour = parseInt(hourStr, 10) || 9;
+  const min = parseInt(minStr, 10) || 0;
+  const cronExpr = `${min} ${hour} * * *`;
+
+  try {
+    scheduledScanTask = cron.schedule(
+      cronExpr,
+      () => {
+        logger.info({ cronExpr, sendTime, timezone: tz }, "Triggering scheduled daily expiration scan");
+        runExpirationScan().catch((err) => logger.error({ err }, "Scheduled expiration scan failed"));
+      },
+      { timezone: tz }
+    );
+    logger.info(`Expiration scan scheduled daily at ${sendTime} (${tz}, cron: "${cronExpr}")`);
+  } catch (err) {
+    logger.error({ err, cronExpr, timezone: tz }, "Failed to schedule daily expiration scan");
+  }
+}
+
+export async function startScheduledJobs() {
+  resumeWhatsappWebOnBoot().catch((err) => logger.error({ err }, "Resume WhatsApp Web on boot failed"));
+
+  await rescheduleExpirationScan().catch((err) => logger.error({ err }, "Failed to initialize scheduled scan"));
+
+  // In production on hosts that sleep when idle (e.g. Render), catch up on boot if not run today
+  if (env.NODE_ENV === "production") {
+    hasExpirationScanRunToday()
+      .then((ranToday) => {
+        if (ranToday) return;
+        logger.info("No expiration scan recorded today — running catch-up scan");
+        return runExpirationScan();
+      })
+      .catch((err) => logger.error({ err }, "Catch-up expiration scan failed"));
+  }
 }

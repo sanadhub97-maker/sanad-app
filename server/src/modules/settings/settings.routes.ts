@@ -18,6 +18,7 @@ import {
   testWhatsappSchema,
   whatsappSettingsSchema,
   whatsappRecipientsSchema,
+  whatsappScheduleSchema,
 } from "@/modules/settings/settings.schemas";
 
 const router = Router();
@@ -122,6 +123,20 @@ router.get("/whatsapp/web/status", requirePermission("settings.view"), controlle
 router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
 router.get("/whatsapp/template", requirePermission("settings.view"), controller.getWhatsappTemplate);
 router.get("/whatsapp/cards", requirePermission("settings.view"), controller.getWhatsappCards);
+router.get("/whatsapp/schedule", requirePermission("settings.view"), controller.getWhatsappSchedule);
+router.put(
+  "/whatsapp/schedule",
+  requirePermission("settings.edit"),
+  validate({ body: whatsappScheduleSchema }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappSchedule
+);
+router.post(
+  "/whatsapp/run-scan",
+  requirePermission("settings.edit"),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.runWhatsappScanNow
+);
 router.put(
   "/whatsapp/card",
   requirePermission("settings.edit"),

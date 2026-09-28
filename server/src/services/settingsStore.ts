@@ -122,6 +122,51 @@ export async function setWhatsappCardSetting(card: WhatsappCardSetting) {
   return card;
 }
 
+const WHATSAPP_SCHEDULE_KEY = "whatsapp.schedule";
+
+export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
+
+export interface WhatsappScheduleSetting {
+  dispatchMode: WhatsappDispatchMode;
+  sendTime: string; // e.g. "09:00"
+  timezone: string; // e.g. "Asia/Riyadh"
+  lastRunAt?: string | null;
+}
+
+export const DEFAULT_WHATSAPP_SCHEDULE: WhatsappScheduleSetting = {
+  dispatchMode: "both",
+  sendTime: "09:00",
+  timezone: "Asia/Riyadh",
+  lastRunAt: null,
+};
+
+export function isWhatsappDispatchMode(val: unknown): val is WhatsappDispatchMode {
+  return val === "text_only" || val === "card_only" || val === "both";
+}
+
+/** Configuration for alert delivery mode (text only, card only, or both) and daily scheduled send time. */
+export async function getWhatsappScheduleSetting(): Promise<WhatsappScheduleSetting> {
+  const data = await getSetting<WhatsappScheduleSetting>(WHATSAPP_SCHEDULE_KEY, DEFAULT_WHATSAPP_SCHEDULE);
+  return {
+    dispatchMode: isWhatsappDispatchMode(data.dispatchMode) ? data.dispatchMode : DEFAULT_WHATSAPP_SCHEDULE.dispatchMode,
+    sendTime: typeof data.sendTime === "string" && /^\d{2}:\d{2}$/.test(data.sendTime) ? data.sendTime : DEFAULT_WHATSAPP_SCHEDULE.sendTime,
+    timezone: typeof data.timezone === "string" && data.timezone ? data.timezone : DEFAULT_WHATSAPP_SCHEDULE.timezone,
+    lastRunAt: data.lastRunAt ?? null,
+  };
+}
+
+export async function setWhatsappScheduleSetting(input: Partial<WhatsappScheduleSetting>): Promise<WhatsappScheduleSetting> {
+  const current = await getWhatsappScheduleSetting();
+  const updated: WhatsappScheduleSetting = {
+    dispatchMode: input.dispatchMode && isWhatsappDispatchMode(input.dispatchMode) ? input.dispatchMode : current.dispatchMode,
+    sendTime: input.sendTime && /^\d{2}:\d{2}$/.test(input.sendTime) ? input.sendTime : current.sendTime,
+    timezone: input.timezone || current.timezone,
+    lastRunAt: input.lastRunAt !== undefined ? input.lastRunAt : current.lastRunAt,
+  };
+  await setSetting(WHATSAPP_SCHEDULE_KEY, updated);
+  return updated;
+}
+
 // Signature boxes and the seal at the end of every printed document
 // (Settings → Print). Defaults are the texts the templates always had.
 export interface SignatureBox {
