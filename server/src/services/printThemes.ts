@@ -11,6 +11,7 @@
 
 export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze", "turquoise", "slate", "amethyst", "olive", "crimson",
   "ledger", "blueprint", "mono", "ribbon", "mosaic", "ocean", "sadu", "glass", "gazette", "prism",
+  "pearl", "passport", "airmail", "bauhaus", "palm", "circuit", "topo", "marble", "ticket", "calligraphy",
 ] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
 export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
@@ -1421,7 +1422,678 @@ const prism: PrintTheme = {
     tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:5mm;display:flex;justify-content:space-between;align-items:center;gap:4mm;font-size:7pt;color:#6b7280;"><span>${label}</span><span style="flex:1;height:.4mm;background:${FOIL.silver};"></span><span>${PAGE_NO}</span></div>`),
 };
 
-const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson, ledger, blueprint, mono, ribbon, mosaic, ocean, sadu, glass, gazette, prism };
+
+// ===========================================================================
+// Ten more designs (23–32), each built on an idea none of the others use.
+// ===========================================================================
+
+/** A small seeded random, so every PDF of a design draws the same art. */
+function seeded(seed: number) {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+const titleEn = (ctx: ShellContext, c: string) => (ctx.titleEn ? `<div class="${c}">${esc(ctx.titleEn)}</div>` : "");
+const hl = (ctx: ShellContext, c: string) => (ctx.highlight ? `<div class="${c}"><b>${esc(ctx.highlight.value)}</b><span>${esc(ctx.highlight.label)}</span></div>` : "");
+
+// 23. Pearl: the SanaD site itself — pearl paper, soft pastel light, rounded glass cards.
+const PL_SKY = "#0a84c6";
+const PL_VIO = "#8b5cf6";
+const pearl: PrintTheme = {
+  id: "pearl",
+  margin: { top: "10mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#f2f4f9", accent: "#172033", "accent-ink": "#ffffff", metal: PL_SKY, "metal-deep": "#0a6fa8",
+      "metal-soft": "#e7f4fc", row: "#f8fafc", line: "#e6e9f1", "line-strong": "#c7cedb",
+      radius: "3.5mm", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(120deg, ${PL_SKY}, ${PL_VIO})`, "pad-r": "13mm", "pad-l": "13mm",
+      seal: `url("${dataUri(rosetteSvg(PL_SKY))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux .section-card { border: none; box-shadow: 0 .5mm 2mm rgba(23,32,51,.07); overflow: hidden; }
+  .lux .section-header { background: #fff; border-bottom: 1px solid #e6e9f1; }
+  .lux table { border-radius: 3mm; overflow: hidden; }
+  .lux thead th { background: linear-gradient(120deg, ${PL_SKY}, ${PL_VIO}); color: #fff; border: none; }
+  .lux thead th .th-sub { color: #fff; opacity: .75; }
+  .lux tbody td { background: #fff; }
+  .lux tbody tr:nth-child(even) td { background: #f6f8fc; }
+  .lux .kpi-total-card { background: linear-gradient(120deg, ${PL_SKY}, ${PL_VIO}); border: none; }
+  .lux .amount-val { background: none; color: #fff; }
+  .pl-card { position: relative; overflow: hidden; margin: 0 0 5mm; border-radius: 6mm; background: #fff; padding: 6mm 7mm 5.5mm; box-shadow: 0 .8mm 3mm rgba(23,32,51,.08); }
+  .pl-card .blob { position: absolute; border-radius: 50%; }
+  .pl-card .b1 { width: 70mm; height: 70mm; left: -18mm; top: -30mm; background: radial-gradient(circle, rgba(205,233,249,1), rgba(205,233,249,0) 68%); }
+  .pl-card .b2 { width: 60mm; height: 60mm; left: 34mm; top: -26mm; background: radial-gradient(circle, rgba(227,214,255,1), rgba(227,214,255,0) 68%); }
+  .pl-card .b3 { width: 50mm; height: 50mm; left: 4mm; bottom: -30mm; background: radial-gradient(circle, rgba(250,214,219,.9), rgba(250,214,219,0) 68%); }
+  .pl-in { position: relative; display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+  .pl-brand { display: flex; align-items: center; gap: 3mm; margin-bottom: 5mm; }
+  .pl-brand .lg { width: 13mm; height: 13mm; border-radius: 4mm; object-fit: contain; background: #fff; box-shadow: 0 .6mm 2mm rgba(10,25,70,.18); padding: .8mm; }
+  .pl-brand .monogram { width: 13mm; height: 13mm; border-radius: 4mm; background: linear-gradient(135deg, ${PL_SKY}, ${PL_VIO}); color: #fff; font-size: 13pt; }
+  .pl-co-ar { font-size: 11.5pt; font-weight: 700; color: #172033; line-height: 1.3; }
+  .pl-co-en { font-size: 6.6pt; color: #5e6a7d; direction: ltr; text-align: right; }
+  .pl-card h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 22pt; line-height: 1.2; color: #172033; }
+  .pl-en { font-size: 7.2pt; letter-spacing: .16em; text-transform: uppercase; color: ${PL_VIO}; font-weight: 600; direction: ltr; text-align: right; margin-top: .6mm; }
+  .pl-chips { display: flex; flex-wrap: wrap; gap: 1.6mm; margin-top: 3.5mm; }
+  .pl-chips span { border-radius: 99px; padding: .7mm 3mm; font-size: 6.8pt; color: #0a6fa8; background: #e7f4fc; }
+  .pl-chips span:nth-child(2) { background: #f3edff; color: #6d3fd6; }
+  .pl-chips span:nth-child(3) { background: #e4f7f4; color: #0b7a6d; }
+  .pl-chips b { font-weight: 600; }
+  .pl-num { text-align: center; border-radius: 5mm; padding: 3.5mm 6mm; background: linear-gradient(135deg, #e7f4fc, #f3edff); }
+  .pl-num b { display: block; font-family: 'Reem Kufi', sans-serif; font-size: 25pt; line-height: 1; background: linear-gradient(120deg, ${PL_SKY}, ${PL_VIO}); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .pl-num span { font-size: 6.8pt; color: #5e6a7d; }
+`,
+  letterhead: (ctx) => `
+  <div class="pl-card"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+    <div class="pl-in">
+      <div>
+        <div class="pl-brand">${logo(ctx, "lg")}<div><div class="pl-co-ar">${esc(ctx.companyNameAr)}</div><div class="pl-co-en">${esc(ctx.companyNameEn)}</div></div></div>
+        <h1>${esc(ctx.title)}</h1>${titleEn(ctx, "pl-en")}
+        <div class="pl-chips">${refLines(ctx)}</div>
+      </div>
+      ${hl(ctx, "pl-num")}
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("10mm", `<div style="position:absolute;left:13mm;right:13mm;top:4mm;height:1.2mm;border-radius:1mm;background:linear-gradient(90deg,${PL_SKY},${PL_VIO});"></div>`, "#f2f4f9"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:13mm;right:13mm;top:4mm;display:flex;justify-content:space-between;align-items:center;font-size:7pt;color:#5e6a7d;"><span>${label}</span><span style="background:#fff;border-radius:99px;padding:.7mm 3.4mm;color:${PL_SKY};font-weight:700;box-shadow:0 .4mm 1.4mm rgba(23,32,51,.1);">${PAGE_NO}</span></div>`, "#f2f4f9"),
+};
+
+// 24. Passport: security-engraved green and gold, a holographic stripe and a machine-readable line.
+const PP = "#0d4f3a";
+const PP_GOLD = "#b8914a";
+function mrz(ctx: ShellContext) {
+  const clean = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]+/g, "<").replace(/^<+|<+$/g, "");
+  const name = clean(ctx.companyNameEn || "SANAD").slice(0, 30);
+  const ref = clean(ctx.referenceNumber ?? ctx.dateStr.replace(/\//g, "")).slice(0, 14);
+  const pad = (s: string) => (s + "<".repeat(44)).slice(0, 44);
+  return [pad(`P<SAU${name}`), pad(`${ref}<<SAU<${ctx.dateStr.replace(/\//g, "")}<SANAD<HR`)];
+}
+const passport: PrintTheme = {
+  id: "passport",
+  margin: { top: "12mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: "#fbfaf4", accent: PP, "accent-ink": "#f2e2b6", metal: PP_GOLD, "metal-deep": "#8a6b2f",
+      "metal-soft": "#eef3ec", row: "#f5f7f1", line: "#dfe6dc", "line-strong": "#aebcab",
+      radius: "1.5mm", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(PP))}")`,
+    }) +
+    LUX_BASE +
+    `
+  html { background: #fbfaf4 url("${dataUri(`<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><g fill="none" stroke="${PP}" stroke-width=".35" opacity=".07">${Array.from({ length: 9 }, (_, k) => `<circle cx="120" cy="120" r="${20 + k * 13}"/>`).join("")}</g></svg>`)}") center 60% / 150mm 150mm no-repeat; }
+  .pp-page { position: relative; margin: 0 -15mm 5mm; padding: 7mm 15mm 5mm; background: #eef3ec; overflow: hidden; border-bottom: 1.4mm solid ${PP}; }
+  .pp-page .g { position: absolute; inset: 0; opacity: .35; }
+  .pp-holo { position: absolute; top: 0; bottom: 0; left: 22mm; width: 9mm; background: linear-gradient(180deg, #f7e7b4, #bfe3d6, #d9c7f0, #f2d3a7, #bfe3d6); opacity: .75; }
+  .pp-in { position: relative; display: grid; grid-template-columns: 30mm 1fr; gap: 6mm; align-items: start; }
+  .pp-photo { width: 30mm; height: 36mm; border: .5mm solid ${PP_GOLD}; background: #fff; display: grid; place-items: center; border-radius: 1mm; }
+  .pp-photo .lg { width: 24mm; height: 24mm; object-fit: contain; }
+  .pp-photo .monogram { width: 24mm; height: 24mm; color: ${PP}; font-size: 26pt; font-family: 'Amiri', serif; }
+  .pp-kicker { font-size: 7pt; letter-spacing: .3em; color: ${PP_GOLD}; font-weight: 700; direction: ltr; text-align: right; text-transform: uppercase; }
+  .pp-co { font-family: 'Amiri', serif; font-size: 16pt; font-weight: 700; color: ${PP}; line-height: 1.25; margin-top: 1mm; }
+  .pp-coen { font-size: 7pt; color: #5d6b5a; direction: ltr; text-align: right; letter-spacing: .06em; }
+  .pp-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2mm 4mm; margin-top: 4mm; }
+  .pp-fields div { border-bottom: .3mm solid #b9c6b6; padding-bottom: .6mm; }
+  .pp-fields small { display: block; font-size: 5.8pt; color: #6b7a68; letter-spacing: .04em; }
+  .pp-fields b { font-size: 8pt; color: #1e2b1c; font-weight: 600; }
+  .pp-mrz { position: relative; margin-top: 5mm; padding: 2mm 3mm; background: #fff; border: .3mm solid #cfd8cc; font-family: 'IBM Plex Mono', monospace; font-size: 8.4pt; letter-spacing: .12em; color: #1e2b1c; direction: ltr; text-align: left; line-height: 1.5; white-space: pre; overflow: hidden; }
+  .pp-title { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; margin-bottom: 4mm; }
+  .pp-title h1 { margin: 0; font-family: 'Amiri', serif; font-size: 22pt; color: ${PP}; line-height: 1.2; }
+  .pp-title .en { font-size: 7.4pt; letter-spacing: .24em; color: ${PP_GOLD}; text-transform: uppercase; direction: ltr; text-align: right; font-weight: 700; }
+  .pp-num { border: .5mm solid ${PP_GOLD}; padding: 1.5mm 5mm; text-align: center; background: #fff; }
+  .pp-num b { display: block; font-family: 'Amiri', serif; font-size: 20pt; line-height: 1; color: ${PP}; }
+  .pp-num span { font-size: 6.6pt; color: #6b7a68; }
+`,
+  letterhead: (ctx) => {
+    const [l1, l2] = mrz(ctx);
+    return `
+  <div class="pp-page"><div class="g">${wavesSvg(PP)}</div><i class="pp-holo"></i>
+    <div class="pp-in">
+      <div class="pp-photo">${logo(ctx, "lg")}</div>
+      <div>
+        <div class="pp-kicker">Kingdom of Saudi Arabia · Official Document</div>
+        <div class="pp-co">${esc(ctx.companyNameAr)}</div>
+        <div class="pp-coen">${esc(ctx.companyNameEn)}</div>
+        <div class="pp-fields">
+          <div><small>${ctx.referenceNumber ? "رقم المرجع" : "التصنيف"}</small><b class="${ctx.referenceNumber ? "ltr" : ""}">${ctx.referenceNumber ? esc(ctx.referenceNumber) : cls(ctx)}</b></div>
+          <div><small>تاريخ الإصدار</small><b class="ltr">${ctx.dateStr}</b></div>
+          <div><small>وقت الطباعة</small><b class="ltr">${ctx.timeStr}</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="pp-mrz">${esc(l1)}\n${esc(l2)}</div>
+  </div>
+  <div class="pp-title"><div><h1>${esc(ctx.title)}</h1>${titleEn(ctx, "en")}</div>${hl(ctx, "pp-num")}</div>`;
+  },
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:0;right:0;top:0;height:3mm;background:${PP};"></div><div style="position:absolute;left:0;right:0;top:3mm;height:.8mm;background:${FOIL.gold};"></div>`, "#fbfaf4"),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div dir="rtl" style="position:absolute;left:15mm;right:15mm;top:4mm;display:flex;justify-content:space-between;font-size:7pt;color:#6b7a68;border-top:.3mm solid #b9c6b6;padding-top:1.5mm;"><span>${label}</span><span style="font-family:'Courier New',monospace;letter-spacing:.2em;color:${PP};">&lt;&lt;SANAD&lt;&lt;</span><span>${PAGE_NO}</span></div>`, "#fbfaf4"),
+};
+
+// 25. Airmail: red and blue airmail edges on every page, a postmark and a perforated stamp.
+const AM_R = "#c8102e";
+const AM_B = "#1d3f8f";
+function airmailTile() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#fdfbf6"/><g stroke-width="7"><path d="M-10 10L10-10M-10 50L50-10M30 50L50 30" stroke="${AM_R}"/><path d="M-10 30L30-10M10 50L50 10" stroke="${AM_B}"/></g></svg>`;
+}
+function postmarkSvg(date: string) {
+  const waves = Array.from({ length: 5 }, (_, k) => `<path d="M110 ${36 + k * 9} q 12 -6 24 0 t 24 0 t 24 0 t 24 0 t 24 0" />`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 100" width="100%" height="100%"><g fill="none" stroke="${AM_B}" stroke-width="2" opacity=".75"><circle cx="55" cy="50" r="42"/><circle cx="55" cy="50" r="33"/>${waves}</g><text x="55" y="46" text-anchor="middle" font-family="Courier New, monospace" font-size="11" fill="${AM_B}" opacity=".85">SANAD</text><text x="55" y="61" text-anchor="middle" font-family="Courier New, monospace" font-size="10" fill="${AM_B}" opacity=".85">${date}</text></svg>`;
+}
+const airmail: PrintTheme = {
+  id: "airmail",
+  margin: { top: "13mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#fdfbf6", accent: AM_B, "accent-ink": "#ffffff", metal: AM_R, "metal-deep": "#9c0c23",
+      "metal-soft": "#f4f1ea", row: "#faf7f0", line: "#e8e1d3", "line-strong": "#c7bca6",
+      radius: "0px", heading: "'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${AM_R}, ${AM_B})`, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(AM_B))}")`,
+    }) +
+    LUX_BASE +
+    `
+  html { background: url("${dataUri(airmailTile())}") left top / 6mm 6mm repeat-y, url("${dataUri(airmailTile())}") right top / 6mm 6mm repeat-y, #fdfbf6; }
+  .lux thead th { border-bottom: 1mm solid ${AM_R}; }
+  .am-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 6mm; margin-bottom: 5mm; }
+  .am-from small { display: block; font-size: 6.4pt; color: ${AM_R}; letter-spacing: .25em; font-weight: 700; direction: ltr; text-align: right; }
+  .am-co { font-size: 13pt; font-weight: 700; color: ${AM_B}; line-height: 1.3; margin-top: .8mm; }
+  .am-coen { font-size: 7pt; color: #7a705f; direction: ltr; text-align: right; }
+  .am-refs { display: flex; flex-wrap: wrap; gap: 1mm 4mm; margin-top: 2mm; font-size: 7pt; color: #7a705f; }
+  .am-refs b { color: #2c2a26; }
+  .am-post { display: flex; align-items: center; gap: 2mm; }
+  .am-mark { width: 50mm; height: 21mm; }
+  .am-stamp { position: relative; width: 24mm; height: 28mm; padding: 2mm; background: #fff; flex: none; transform: rotate(3deg);
+    -webkit-mask: radial-gradient(circle at 1.2mm 1.2mm, #0000 .9mm, #000 .95mm) -1.2mm -1.2mm / 2.4mm 2.4mm; mask: radial-gradient(circle at 1.2mm 1.2mm, #0000 .9mm, #000 .95mm) -1.2mm -1.2mm / 2.4mm 2.4mm; }
+  .am-stamp-in { height: 100%; border: .4mm solid ${AM_R}; background: #fdf1ef; display: grid; place-items: center; }
+  .am-stamp .lg { width: 15mm; height: 15mm; object-fit: contain; }
+  .am-stamp .monogram { width: 15mm; height: 15mm; color: ${AM_R}; font-size: 16pt; }
+  .am-title { border-top: .6mm dashed ${AM_B}; border-bottom: .6mm dashed ${AM_B}; padding: 3mm 0; margin-bottom: 5mm; display: flex; justify-content: space-between; align-items: center; gap: 5mm; }
+  .am-title h1 { margin: 0; font-size: 20pt; font-weight: 700; color: ${AM_B}; line-height: 1.2; }
+  .am-title .en { font-family: 'Courier New', monospace; font-size: 7.6pt; letter-spacing: .2em; color: ${AM_R}; text-transform: uppercase; direction: ltr; text-align: right; }
+  .am-num { font-family: 'Courier New', monospace; text-align: center; border: .5mm solid ${AM_R}; padding: 1.2mm 4mm; color: ${AM_R}; transform: rotate(-3deg); }
+  .am-num b { display: block; font-size: 18pt; line-height: 1; }
+  .am-num span { font-size: 6.5pt; }
+`,
+  letterhead: (ctx) => `
+  <div class="am-head">
+    <div class="am-from"><small>PAR AVION · BY AIR MAIL · بريد جوي</small><div class="am-co">${esc(ctx.companyNameAr)}</div><div class="am-coen">${esc(ctx.companyNameEn)}</div><div class="am-refs">${refLines(ctx)}</div></div>
+    <div class="am-post"><div class="am-mark">${postmarkSvg(ctx.dateStr)}</div><div class="am-stamp"><div class="am-stamp-in">${logo(ctx, "lg")}</div></div></div>
+  </div>
+  <div class="am-title"><div><h1>${esc(ctx.title)}</h1>${titleEn(ctx, "en")}</div>${hl(ctx, "am-num")}</div>`,
+  decor: "",
+  headerTemplate: tpl("13mm", `<div style="position:absolute;left:0;right:0;top:0;height:6mm;background:url('${dataUri(airmailTile())}') left top / 6mm 6mm repeat-x;"></div>`, "#fdfbf6"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div style="position:absolute;left:0;right:0;bottom:0;height:6mm;background:url('${dataUri(airmailTile())}') left top / 6mm 6mm repeat-x;"></div><div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#7a705f;font-family:'Courier New',monospace;"><span>${label}</span><span>${PAGE_NO}</span></div>`, "#fdfbf6"),
+};
+
+// 26. Bauhaus: primary red, yellow and blue shapes, heavy black rules, a strict grid.
+const BH_R = "#d62828";
+const BH_Y = "#f2b705";
+const BH_B = "#1d4e89";
+const BH_K = "#111111";
+const bauhaus: PrintTheme = {
+  id: "bauhaus",
+  margin: { top: "12mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#f7f3ea", accent: BH_K, "accent-ink": "#ffffff", metal: BH_R, "metal-deep": "#a61d1d",
+      "metal-soft": "#efe9dc", row: "#f1ece0", line: "#dcd4c3", "line-strong": BH_K,
+      radius: "0px", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${BH_R}, ${BH_Y})`, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(BH_K))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux thead th { border-bottom: 1.4mm solid ${BH_Y}; }
+  .lux .section-card { border: .6mm solid ${BH_K}; }
+  .bh-head { display: grid; grid-template-columns: 1fr 58mm; border: .9mm solid ${BH_K}; margin-bottom: 5mm; background: #fff; }
+  .bh-main { padding: 5mm 6mm; border-inline-start: .9mm solid ${BH_K}; }
+  .bh-art { position: relative; background: ${BH_Y}; overflow: hidden; }
+  .bh-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .bh-brand { display: flex; align-items: center; gap: 3mm; }
+  .bh-brand .lg { width: 12mm; height: 12mm; object-fit: contain; }
+  .bh-brand .monogram { width: 12mm; height: 12mm; background: ${BH_R}; color: #fff; font-size: 13pt; border-radius: 50%; }
+  .bh-co { font-size: 11pt; font-weight: 800; color: ${BH_K}; line-height: 1.3; }
+  .bh-coen { font-size: 6.6pt; color: #555; letter-spacing: .12em; text-transform: uppercase; direction: ltr; text-align: right; }
+  .bh-main h1 { margin: 5mm 0 0; font-family: 'Reem Kufi', sans-serif; font-size: 25pt; line-height: 1.1; color: ${BH_K}; }
+  .bh-en { display: inline-block; margin-top: 1.5mm; background: ${BH_K}; color: #fff; font-size: 7pt; letter-spacing: .22em; padding: .6mm 2.5mm; text-transform: uppercase; direction: ltr; font-weight: 700; }
+  .bh-strip { display: grid; grid-template-columns: repeat(3, 1fr) auto; border: .9mm solid ${BH_K}; border-top: none; margin: -5mm 0 5mm; background: #fff; }
+  .bh-strip > div { padding: 1.8mm 3mm; border-inline-start: .6mm solid ${BH_K}; font-size: 6.8pt; color: #555; }
+  .bh-strip > div:first-child { border-inline-start: none; }
+  .bh-strip b { display: block; font-size: 8.4pt; color: ${BH_K}; }
+  .bh-strip .num { background: ${BH_R}; color: #fff; text-align: center; min-width: 30mm; }
+  .bh-strip .num b { color: #fff; font-size: 16pt; line-height: 1; }
+`,
+  letterhead: (ctx) => `
+  <div class="bh-head">
+    <div class="bh-main">
+      <div class="bh-brand">${logo(ctx, "lg")}<div><div class="bh-co">${esc(ctx.companyNameAr)}</div><div class="bh-coen">${esc(ctx.companyNameEn)}</div></div></div>
+      <h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<span class="bh-en">${esc(ctx.titleEn)}</span>` : ""}
+    </div>
+    <div class="bh-art"><svg viewBox="0 0 160 120" preserveAspectRatio="xMidYMid slice"><rect x="0" y="0" width="160" height="120" fill="${BH_Y}"/><circle cx="54" cy="52" r="38" fill="${BH_R}"/><rect x="92" y="0" width="68" height="62" fill="${BH_B}"/><polygon points="92,120 160,120 126,62" fill="${BH_K}"/><rect x="0" y="100" width="92" height="20" fill="${BH_K}"/><circle cx="126" cy="31" r="12" fill="${BH_Y}"/></svg></div>
+  </div>
+  <div class="bh-strip">
+    <div><span>${ctx.referenceNumber ? "رقم المرجع" : "التصنيف"}</span><b class="${ctx.referenceNumber ? "ltr" : ""}">${ctx.referenceNumber ? esc(ctx.referenceNumber) : cls(ctx)}</b></div>
+    <div><span>تاريخ الإصدار</span><b class="ltr">${ctx.dateStr}</b></div>
+    <div><span>وقت الطباعة</span><b class="ltr">${ctx.timeStr}</b></div>
+    ${ctx.highlight ? `<div class="num"><b>${esc(ctx.highlight.value)}</b>${esc(ctx.highlight.label)}</div>` : "<div></div>"}
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:14mm;right:14mm;top:5mm;height:2.4mm;display:flex;"><span style="flex:3;background:${BH_K};"></span><span style="flex:1;background:${BH_R};"></span><span style="flex:1;background:${BH_Y};"></span><span style="flex:1;background:${BH_B};"></span></div>`, "#f7f3ea"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:3.5mm;border-top:.9mm solid ${BH_K};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#333;font-weight:600;"><span>${label}</span><span style="background:${BH_R};color:#fff;padding:0 2.5mm;">${PAGE_NO}</span></div>`, "#f7f3ea"),
+};
+
+// 27. Palm: sage green and sand, line-drawn palm fronds framing the heading.
+const PM = "#3f5b45";
+const PM_SAND = "#c9a66b";
+function frondSvg(color: string, flip = false) {
+  const leaves = Array.from({ length: 11 }, (_, i) => {
+    const t = i / 10;
+    const x = 20 + t * 150;
+    const y = 150 - t * 110 - Math.sin(t * Math.PI) * 18;
+    const len = 46 - t * 28;
+    return `<path d="M${x.toFixed(1)} ${y.toFixed(1)} q ${(-len * 0.3).toFixed(1)} ${(-len * 0.75).toFixed(1)} ${(-len * 0.1).toFixed(1)} ${(-len).toFixed(1)}"/><path d="M${x.toFixed(1)} ${y.toFixed(1)} q ${(len * 0.72).toFixed(1)} ${(-len * 0.2).toFixed(1)} ${len.toFixed(1)} ${(-len * 0.1).toFixed(1)}"/>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 170" width="100%" height="100%"${flip ? ' style="transform:scaleX(-1)"' : ""}><g fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round"><path d="M20 150 C 70 110 120 70 170 40" stroke-width="2.4"/>${leaves}</g></svg>`;
+}
+const palm: PrintTheme = {
+  id: "palm",
+  margin: { top: "11mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: "#fbf8f1", accent: PM, "accent-ink": "#f4ecd9", metal: PM_SAND, "metal-deep": "#9c7a43",
+      "metal-soft": "#f1ede1", row: "#f7f3e9", line: "#e5dfcf", "line-strong": "#c4b89c",
+      radius: "2.5mm", heading: "'Aref Ruqaa', 'Amiri', serif", foil: FOIL.gold, "pad-r": "15mm", "pad-l": "15mm",
+      seal: `url("${dataUri(rosetteSvg(PM))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  html { background: #fbf8f1 url("${dataUri(frondSvg("#3f5b45"))}") left 118mm / 70mm 60mm no-repeat; }
+  .pm-head { position: relative; text-align: center; padding: 3mm 34mm 4mm; margin-bottom: 4mm; }
+  .pm-fr { position: absolute; top: -2mm; width: 34mm; height: 30mm; opacity: .8; }
+  .pm-fr.r { right: 0; }
+  .pm-fr.l { left: 0; }
+  .pm-logo .lg { width: 15mm; height: 15mm; object-fit: contain; }
+  .pm-logo .monogram { width: 15mm; height: 15mm; margin: 0 auto; border-radius: 50%; border: .5mm solid ${PM_SAND}; color: ${PM}; font-size: 15pt; }
+  .pm-co { font-size: 12pt; font-weight: 700; color: ${PM}; margin-top: 1.5mm; line-height: 1.3; }
+  .pm-coen { font-size: 6.8pt; color: #8c8468; letter-spacing: .16em; text-transform: uppercase; direction: ltr; }
+  .pm-rule { display: flex; align-items: center; gap: 3mm; margin: 3mm auto 0; width: 70%; color: ${PM_SAND}; }
+  .pm-rule i { flex: 1; height: .3mm; background: ${PM_SAND}; }
+  .pm-title { text-align: center; margin-bottom: 4mm; }
+  .pm-title h1 { margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 25pt; color: ${PM}; line-height: 1.25; }
+  .pm-title .en { font-size: 7.4pt; letter-spacing: .28em; color: #9c7a43; text-transform: uppercase; font-weight: 700; direction: ltr; }
+  .pm-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 2mm; margin-bottom: 5mm; }
+  .pm-meta span { border-radius: 99px; border: .3mm solid #d9cfb6; padding: .8mm 3.5mm; font-size: 7pt; color: #6f6852; background: #fff; }
+  .pm-meta b { color: ${PM}; }
+  .pm-meta .hi { background: ${PM}; color: #f4ecd9; border-color: ${PM}; }
+  .pm-meta .hi b { color: #fff; }
+`,
+  letterhead: (ctx) => `
+  <div class="pm-head">
+    <div class="pm-fr r">${frondSvg(PM)}</div><div class="pm-fr l">${frondSvg(PM, true)}</div>
+    <div class="pm-logo">${logo(ctx, "lg")}</div>
+    <div class="pm-co">${esc(ctx.companyNameAr)}</div>
+    <div class="pm-coen">${esc(ctx.companyNameEn)}</div>
+    <div class="pm-rule"><i></i>✦<i></i></div>
+  </div>
+  <div class="pm-title"><h1>${esc(ctx.title)}</h1>${titleEn(ctx, "en")}</div>
+  <div class="pm-meta">${refLines(ctx)}${ctx.highlight ? `<span class="hi"><b>${esc(ctx.highlight.value)}</b> ${esc(ctx.highlight.label)}</span>` : ""}</div>`,
+  decor: "",
+  headerTemplate: tpl("11mm", `<div style="position:absolute;left:15mm;right:15mm;top:5mm;height:.4mm;background:${PM_SAND};"></div><div style="position:absolute;left:50%;top:3.6mm;width:3mm;height:3mm;margin-left:-1.5mm;transform:rotate(45deg);background:${PM};"></div>`, "#fbf8f1"),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div dir="rtl" style="position:absolute;left:15mm;right:15mm;top:4.5mm;display:flex;justify-content:space-between;align-items:center;gap:4mm;font-size:7pt;color:#8c8468;"><span>${label}</span><span style="flex:1;height:.3mm;background:#d9cfb6;"></span><span style="color:${PM};font-weight:700;">${PAGE_NO}</span></div>`, "#fbf8f1"),
+};
+
+// 28. Circuit: a dark teal board with traces and nodes, mint signal lines.
+const CT = "#0b2e33";
+const CT_MINT = "#2de2b4";
+function circuitSvg() {
+  const r = seeded(7);
+  const paths: string[] = [];
+  const dots: string[] = [];
+  for (let k = 0; k < 26; k++) {
+    let x = Math.round(r() * 60) * 10;
+    let y = Math.round(r() * 17) * 10;
+    let d = `M${x} ${y}`;
+    for (let s = 0; s < 4; s++) {
+      if (s % 2 === 0) x += (r() > 0.5 ? 1 : -1) * Math.round(20 + r() * 80);
+      else y += (r() > 0.5 ? 1 : -1) * Math.round(10 + r() * 40);
+      d += ` L${x} ${y}`;
+    }
+    paths.push(`<path d="${d}"/>`);
+    dots.push(`<circle cx="${x}" cy="${y}" r="3.2"/>`);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 170" preserveAspectRatio="xMidYMid slice" width="100%" height="100%"><rect width="600" height="170" fill="${CT}"/><g fill="none" stroke="${CT_MINT}" stroke-width="1.3" opacity=".42">${paths.join("")}</g><g fill="${CT}" stroke="${CT_MINT}" stroke-width="1.4" opacity=".75">${dots.join("")}</g></svg>`;
+}
+const circuit: PrintTheme = {
+  id: "circuit",
+  margin: { top: "10mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: CT, "accent-ink": "#c9fff0", metal: CT_MINT, "metal-deep": "#0f9e7c",
+      "metal-soft": "#ecfbf6", row: "#f5fbf9", line: "#e0ece8", "line-strong": "#a9c7bf",
+      radius: "1mm", heading: "'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${CT_MINT}, #7dd3fc)`, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(CT))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux thead th { border-bottom: .8mm solid ${CT_MINT}; }
+  .lux tbody td:first-child { font-family: 'IBM Plex Mono', monospace; }
+  .ct-hero { position: relative; margin: 0 -14mm 5mm; height: 44mm; color: #fff; overflow: hidden; }
+  .ct-hero .art { position: absolute; inset: 0; }
+  .ct-in { position: relative; height: 100%; padding: 6mm 14mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .ct-row { display: flex; justify-content: space-between; align-items: center; gap: 4mm; }
+  .ct-chip { display: flex; align-items: center; gap: 3mm; }
+  .ct-chip .pad { width: 14mm; height: 14mm; border-radius: 1.5mm; background: #0f3d43; border: .4mm solid ${CT_MINT}; display: grid; place-items: center; box-shadow: 0 0 0 1mm rgba(45,226,180,.12); }
+  .ct-chip .lg { width: 10mm; height: 10mm; object-fit: contain; }
+  .ct-chip .monogram { color: ${CT_MINT}; font-size: 13pt; }
+  .ct-co { font-size: 11.5pt; font-weight: 700; line-height: 1.3; }
+  .ct-coen { font-family: 'IBM Plex Mono', monospace; font-size: 6.4pt; color: #86d9c3; direction: ltr; text-align: right; }
+  .ct-log { font-family: 'IBM Plex Mono', monospace; font-size: 6.6pt; color: #86d9c3; text-align: left; line-height: 1.6; white-space: nowrap; direction: ltr; }
+  .ct-log b { color: #fff; font-weight: 600; }
+  .ct-in h1 { margin: 0; font-size: 21pt; line-height: 1.15; font-weight: 700; }
+  .ct-in .en { font-family: 'IBM Plex Mono', monospace; font-size: 7pt; color: ${CT_MINT}; direction: ltr; text-align: right; }
+  .ct-num { font-family: 'IBM Plex Mono', monospace; text-align: center; border: .4mm solid ${CT_MINT}; border-radius: 1.5mm; padding: 1.5mm 4mm; background: rgba(11,46,51,.85); }
+  .ct-num b { display: block; font-size: 20pt; line-height: 1; color: ${CT_MINT}; }
+  .ct-num span { font-size: 6.4pt; color: #86d9c3; }
+`,
+  letterhead: (ctx) => `
+  <div class="ct-hero"><div class="art">${circuitSvg()}</div>
+    <div class="ct-in">
+      <div class="ct-row">
+        <div class="ct-chip"><div class="pad">${logo(ctx, "lg")}</div><div><div class="ct-co">${esc(ctx.companyNameAr)}</div><div class="ct-coen">${esc(ctx.companyNameEn)}</div></div></div>
+        <div class="ct-log">${ctx.referenceNumber ? `REF &nbsp;<b>${esc(ctx.referenceNumber)}</b><br>` : ""}DATE <b>${ctx.dateStr}</b><br>TIME <b>${ctx.timeStr}</b></div>
+      </div>
+      <div class="ct-row" style="align-items:flex-end">
+        <div>${ctx.titleEn ? `<div class="en">&gt;_ ${esc(ctx.titleEn)}</div>` : ""}<h1>${esc(ctx.title)}</h1></div>
+        ${hl(ctx, "ct-num")}
+      </div>
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("10mm", `<div style="position:absolute;left:0;right:0;top:0;height:2.4mm;background:${CT};"></div><div style="position:absolute;left:14mm;width:30mm;top:2.4mm;height:.6mm;background:${CT_MINT};"></div>`),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:4.5mm;display:flex;justify-content:space-between;align-items:center;gap:3mm;font-size:7pt;color:#5d7a73;font-family:'Courier New',monospace;"><span>${label}</span><span style="flex:1;border-top:.3mm dashed #a9c7bf;"></span><span style="color:${CT};font-weight:700;">${PAGE_NO}</span></div>`),
+};
+
+// 29. Topographic: contour lines of a map, terracotta and charcoal, coordinates as meta.
+const TP = "#2b2b2b";
+const TP_T = "#c65d3b";
+function contoursSvg() {
+  const r = seeded(11);
+  const hills = [
+    [420, 70],
+    [120, 120],
+    [560, 150],
+  ];
+  const rings: string[] = [];
+  for (const [cx, cy] of hills) {
+    const phase = r() * 6;
+    for (let k = 1; k <= 9; k++) {
+      const pts: string[] = [];
+      for (let i = 0; i <= 72; i++) {
+        const t = (i / 72) * Math.PI * 2;
+        const rad = k * 13 * (1 + 0.18 * Math.sin(3 * t + phase + k * 0.3) + 0.1 * Math.cos(5 * t - phase));
+        pts.push(`${(cx + rad * 1.5 * Math.cos(t)).toFixed(1)} ${(cy + rad * Math.sin(t)).toFixed(1)}`);
+      }
+      rings.push(`<path d="M${pts.join("L")}Z" stroke-width="${k % 3 === 0 ? 1.4 : 0.7}"/>`);
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" preserveAspectRatio="xMidYMid slice" width="100%" height="100%"><rect width="600" height="180" fill="#f6efe6"/><g fill="none" stroke="${TP_T}" opacity=".55">${rings.join("")}</g></svg>`;
+}
+const topo: PrintTheme = {
+  id: "topo",
+  margin: { top: "11mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#fffdf9", accent: TP, "accent-ink": "#f6e2d6", metal: TP_T, "metal-deep": "#9e4527",
+      "metal-soft": "#f8ede4", row: "#fbf5ef", line: "#ece1d6", "line-strong": "#c9b5a3",
+      radius: "0px", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${TP_T}, #e8a33d)`, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(TP_T))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux thead th { border-bottom: .8mm solid ${TP_T}; }
+  .tp-map { position: relative; margin: 0 -14mm 5mm; height: 48mm; overflow: hidden; border-bottom: .5mm solid ${TP}; }
+  .tp-map .art { position: absolute; inset: 0; }
+  .tp-grid { position: absolute; inset: 0; background: url("${dataUri(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><path d="M0 .5H80M.5 0V80" stroke="${TP}" stroke-width=".6" opacity=".18"/></svg>`)}") 0 0 / 20mm 20mm; }
+  .tp-card { position: absolute; right: 14mm; top: 7mm; bottom: 7mm; width: 110mm; background: rgba(255,253,249,.94); border: .4mm solid ${TP}; padding: 4mm 5mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .tp-brand { display: flex; align-items: center; gap: 2.5mm; }
+  .tp-brand .lg { width: 10mm; height: 10mm; object-fit: contain; }
+  .tp-brand .monogram { width: 10mm; height: 10mm; background: ${TP}; color: #fff; font-size: 11pt; }
+  .tp-co { font-size: 10pt; font-weight: 700; color: ${TP}; line-height: 1.25; }
+  .tp-coen { font-size: 6.3pt; color: #8d7b6c; direction: ltr; text-align: right; }
+  .tp-card h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 20pt; line-height: 1.15; color: ${TP}; }
+  .tp-card .en { font-size: 6.8pt; letter-spacing: .2em; text-transform: uppercase; color: ${TP_T}; direction: ltr; text-align: right; font-weight: 700; }
+  .tp-coords { position: absolute; left: 14mm; bottom: 5mm; font-family: 'IBM Plex Mono', monospace; font-size: 6.6pt; color: ${TP}; direction: ltr; line-height: 1.6; background: rgba(255,253,249,.85); padding: 1mm 2mm; }
+  .tp-pin { position: absolute; left: 60mm; top: 12mm; width: 7mm; height: 7mm; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: ${TP_T}; box-shadow: 0 0 0 1.2mm rgba(198,93,59,.25); }
+  .tp-meta { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 3mm; margin-bottom: 5mm; }
+  .tp-meta > div { border-top: .8mm solid ${TP}; padding-top: 1.2mm; font-size: 6.8pt; color: #8d7b6c; }
+  .tp-meta b { display: block; font-size: 8.5pt; color: ${TP}; }
+  .tp-meta .num { border-top-color: ${TP_T}; text-align: center; }
+  .tp-meta .num b { font-size: 17pt; line-height: 1; color: ${TP_T}; }
+`,
+  letterhead: (ctx) => `
+  <div class="tp-map"><div class="art">${contoursSvg()}</div><div class="tp-grid"></div><i class="tp-pin"></i>
+    <div class="tp-coords">24.7136° N · 46.6753° E<br>ELEV 612 m · SANAD</div>
+    <div class="tp-card">
+      <div class="tp-brand">${logo(ctx, "lg")}<div><div class="tp-co">${esc(ctx.companyNameAr)}</div><div class="tp-coen">${esc(ctx.companyNameEn)}</div></div></div>
+      <div><h1>${esc(ctx.title)}</h1>${titleEn(ctx, "en")}</div>
+    </div>
+  </div>
+  <div class="tp-meta">
+    <div>${ctx.referenceNumber ? "رقم المرجع" : "التصنيف"}<b class="${ctx.referenceNumber ? "ltr" : ""}">${ctx.referenceNumber ? esc(ctx.referenceNumber) : cls(ctx)}</b></div>
+    <div>تاريخ الإصدار<b class="ltr">${ctx.dateStr}</b></div>
+    <div>وقت الطباعة<b class="ltr">${ctx.timeStr}</b></div>
+    ${ctx.highlight ? `<div class="num"><b>${esc(ctx.highlight.value)}</b>${esc(ctx.highlight.label)}</div>` : "<div></div>"}
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("11mm", `<div style="position:absolute;left:14mm;right:14mm;top:5mm;height:.4mm;background:${TP};"></div><div style="position:absolute;right:14mm;top:3.8mm;width:14mm;height:2.8mm;background:${TP_T};"></div>`),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:4mm;display:flex;justify-content:space-between;font-size:7pt;color:#8d7b6c;"><span>${label}</span><span style="font-family:'Courier New',monospace;color:${TP};">N 24°43′ · E 46°40′</span><span>${PAGE_NO}</span></div>`),
+};
+
+// 30. Marble: white marble veined in grey, with fine gold hairlines.
+const MB = "#2a2a2e";
+const MB_GOLD = "#b89a5a";
+function marbleSvg() {
+  const r = seeded(23);
+  const veins: string[] = [];
+  for (let k = 0; k < 14; k++) {
+    let x = r() * 600;
+    let y = r() * 190;
+    let d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+    for (let s = 0; s < 5; s++) {
+      const nx = x + 40 + r() * 110;
+      const ny = y + (r() - 0.5) * 70;
+      d += ` Q ${(x + (nx - x) / 2 + (r() - 0.5) * 60).toFixed(1)} ${(y + (r() - 0.5) * 80).toFixed(1)} ${nx.toFixed(1)} ${ny.toFixed(1)}`;
+      x = nx;
+      y = ny;
+    }
+    const w = (0.4 + r() * 1.8).toFixed(2);
+    const o = (0.12 + r() * 0.3).toFixed(2);
+    veins.push(`<path d="${d}" stroke-width="${w}" opacity="${o}"/>`);
+  }
+  const gold = `<path d="M0 150 Q 150 110 300 140 T 600 120" stroke="${MB_GOLD}" stroke-width="1.1" opacity=".8"/><path d="M0 40 Q 200 70 330 30 T 600 55" stroke="${MB_GOLD}" stroke-width=".7" opacity=".6"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 190" preserveAspectRatio="xMidYMid slice" width="100%" height="100%"><rect width="600" height="190" fill="#f7f6f3"/><g fill="none" stroke="#6b6b72">${veins.join("")}</g><g fill="none">${gold}</g></svg>`;
+}
+const marble: PrintTheme = {
+  id: "marble",
+  margin: { top: "12mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: "#ffffff", accent: MB, "accent-ink": "#ecdcb4", metal: MB_GOLD, "metal-deep": "#8e7440",
+      "metal-soft": "#f6f3ec", row: "#faf9f6", line: "#ebe8e1", "line-strong": "#c9c2b2",
+      radius: "0px", heading: "'Amiri', serif", foil: FOIL.gold, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(MB_GOLD))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .mb-slab { position: relative; margin: 0 -16mm 6mm; height: 50mm; overflow: hidden; border-bottom: .5mm solid ${MB_GOLD}; }
+  .mb-slab .art { position: absolute; inset: 0; }
+  .mb-in { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.5mm; }
+  .mb-medal { width: 18mm; height: 18mm; border-radius: 50%; background: #fff; border: .5mm solid ${MB_GOLD}; box-shadow: 0 0 0 1.5mm rgba(255,255,255,.8), 0 0 0 1.8mm ${MB_GOLD}; display: grid; place-items: center; }
+  .mb-medal .lg { width: 12mm; height: 12mm; object-fit: contain; }
+  .mb-medal .monogram { color: ${MB}; font-size: 15pt; font-family: 'Amiri', serif; }
+  .mb-co { font-family: 'Amiri', serif; font-size: 15pt; font-weight: 700; color: ${MB}; line-height: 1.25; margin-top: 1mm; }
+  .mb-coen { font-family: 'Cormorant Garamond', serif; font-size: 8pt; letter-spacing: .3em; color: #8e7440; text-transform: uppercase; font-weight: 700; direction: ltr; }
+  .mb-title { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 5mm; margin-bottom: 2mm; }
+  .mb-title i { height: .3mm; background: ${MB_GOLD}; }
+  .mb-title h1 { margin: 0; font-family: 'Amiri', serif; font-size: 23pt; color: ${MB}; line-height: 1.2; text-align: center; }
+  .mb-en { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: .35em; color: #8e7440; text-transform: uppercase; font-weight: 700; margin-bottom: 3mm; }
+  .mb-meta { display: flex; justify-content: center; gap: 6mm; margin-bottom: 5mm; font-size: 7pt; color: #7b776e; }
+  .mb-meta b { color: ${MB}; }
+  .mb-meta .hi { color: #8e7440; font-weight: 700; }
+`,
+  letterhead: (ctx) => `
+  <div class="mb-slab"><div class="art">${marbleSvg()}</div>
+    <div class="mb-in"><div class="mb-medal">${logo(ctx, "lg")}</div><div class="mb-co">${esc(ctx.companyNameAr)}</div><div class="mb-coen">${esc(ctx.companyNameEn)}</div></div>
+  </div>
+  <div class="mb-title"><i></i><h1>${esc(ctx.title)}</h1><i></i></div>
+  ${ctx.titleEn ? `<div class="mb-en">${esc(ctx.titleEn)}</div>` : ""}
+  <div class="mb-meta">${refLines(ctx)}${ctx.highlight ? `<span class="hi">${esc(ctx.highlight.value)} ${esc(ctx.highlight.label)}</span>` : ""}</div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:16mm;right:16mm;top:5mm;height:.3mm;background:${MB_GOLD};"></div><div style="position:absolute;left:16mm;right:16mm;top:6.2mm;height:.15mm;background:${MB_GOLD};"></div>`),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:4mm;border-top:.3mm solid ${MB_GOLD};padding-top:1.5mm;display:flex;justify-content:space-between;font-size:7pt;color:#7b776e;"><span>${label}</span><span style="letter-spacing:.3em;color:#8e7440;font-family:Georgia,serif;">SANAD</span><span>${PAGE_NO}</span></div>`),
+};
+
+// 31. Ticket: the heading as a boarding pass — a torn stub with a barcode.
+const TK = "#3b1d6e";
+const TK_O = "#f07f2e";
+function barcodeSvg(seedText: string) {
+  const r = seeded([...seedText].reduce((a, c) => a + c.charCodeAt(0), 0));
+  let x = 0;
+  const bars: string[] = [];
+  while (x < 190) {
+    const w = 1 + Math.floor(r() * 4);
+    if (r() > 0.35) bars.push(`<rect x="${x}" y="0" width="${w}" height="50"/>`);
+    x += w + 1;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 50" preserveAspectRatio="none" width="100%" height="100%"><g fill="${TK}">${bars.join("")}</g></svg>`;
+}
+const ticket: PrintTheme = {
+  id: "ticket",
+  margin: { top: "11mm", bottom: "15mm" },
+  css:
+    vars({
+      paper: "#faf8fd", accent: TK, "accent-ink": "#ffe3cf", metal: TK_O, "metal-deep": "#c4601b",
+      "metal-soft": "#f3eefa", row: "#f8f5fc", line: "#e7e0f1", "line-strong": "#bfb2d6",
+      radius: "2.5mm", heading: "'Reem Kufi', 'IBM Plex Sans Arabic', sans-serif", foil: `linear-gradient(90deg, ${TK_O}, #ffb347)`, "pad-r": "14mm", "pad-l": "14mm",
+      seal: `url("${dataUri(rosetteSvg(TK))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .lux thead th { border-bottom: .8mm solid ${TK_O}; }
+  .tk { position: relative; display: grid; grid-template-columns: 1fr 50mm; margin-bottom: 6mm; filter: drop-shadow(0 .6mm 1.4mm rgba(59,29,110,.18)); }
+  .tk-main { background: #fff; border-radius: 4mm 0 0 4mm; padding: 5mm 6mm; }
+  [dir="rtl"] .tk-main { border-radius: 0 4mm 4mm 0; }
+  .tk-stub { position: relative; background: ${TK}; color: #fff; border-radius: 0 4mm 4mm 0; padding: 5mm 5mm; display: flex; flex-direction: column; justify-content: space-between; border-inline-start: .6mm dashed #fff; }
+  [dir="rtl"] .tk-stub { border-radius: 4mm 0 0 4mm; }
+  .tk-stub::before, .tk-stub::after { content: ""; position: absolute; inset-inline-start: -3.3mm; width: 6mm; height: 6mm; border-radius: 50%; background: #faf8fd; }
+  .tk-stub::before { top: -3mm; }
+  .tk-stub::after { bottom: -3mm; }
+  .tk-row { display: flex; justify-content: space-between; align-items: center; gap: 4mm; }
+  .tk-brand { display: flex; align-items: center; gap: 2.5mm; }
+  .tk-brand .lg { width: 11mm; height: 11mm; object-fit: contain; }
+  .tk-brand .monogram { width: 11mm; height: 11mm; border-radius: 50%; background: ${TK}; color: #fff; font-size: 11pt; }
+  .tk-co { font-size: 10pt; font-weight: 700; color: ${TK}; line-height: 1.25; }
+  .tk-coen { font-size: 6.3pt; color: #8878a6; direction: ltr; text-align: right; }
+  .tk-class { font-size: 6.6pt; letter-spacing: .2em; color: ${TK_O}; font-weight: 700; text-transform: uppercase; direction: ltr; }
+  .tk-route { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 3mm; margin: 4mm 0 3mm; }
+  .tk-route .dot { width: 3mm; height: 3mm; border-radius: 50%; border: .6mm solid ${TK}; }
+  .tk-route .ln { height: .4mm; background: #d6cbe8; position: relative; }
+  .tk-route .ln::after { content: "✈"; position: absolute; left: 50%; top: -2.6mm; transform: translateX(-50%); color: ${TK_O}; font-size: 9pt; background: #fff; padding: 0 1mm; }
+  .tk-main h1 { margin: 0; font-family: 'Reem Kufi', sans-serif; font-size: 20pt; line-height: 1.2; color: ${TK}; }
+  .tk-main .en { font-size: 6.8pt; letter-spacing: .2em; text-transform: uppercase; color: #8878a6; direction: ltr; text-align: right; font-weight: 600; }
+  .tk-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; margin-top: 3.5mm; }
+  .tk-fields small { display: block; font-size: 5.8pt; color: #8878a6; letter-spacing: .1em; }
+  .tk-fields b { font-size: 8.4pt; color: ${TK}; }
+  .tk-stub small { font-size: 6pt; letter-spacing: .15em; color: #d6c6f2; direction: ltr; }
+  .tk-stub .big { font-family: 'Reem Kufi', sans-serif; font-size: 20pt; line-height: 1; color: ${TK_O}; }
+  .tk-stub .bc { height: 12mm; background: #fff; border-radius: 1mm; padding: 1.2mm; }
+`,
+  letterhead: (ctx) => `
+  <div class="tk">
+    <div class="tk-main">
+      <div class="tk-row"><div class="tk-brand">${logo(ctx, "lg")}<div><div class="tk-co">${esc(ctx.companyNameAr)}</div><div class="tk-coen">${esc(ctx.companyNameEn)}</div></div></div><div class="tk-class">Official · Pass</div></div>
+      <div class="tk-route"><i class="dot"></i><i class="ln"></i><i class="dot" style="background:${TK}"></i></div>
+      <h1>${esc(ctx.title)}</h1>${titleEn(ctx, "en")}
+      <div class="tk-fields">
+        <div><small>${ctx.referenceNumber ? "رقم المرجع" : "التصنيف"}</small><b class="${ctx.referenceNumber ? "ltr" : ""}">${ctx.referenceNumber ? esc(ctx.referenceNumber) : cls(ctx)}</b></div>
+        <div><small>تاريخ الإصدار</small><b class="ltr">${ctx.dateStr}</b></div>
+        <div><small>وقت الطباعة</small><b class="ltr">${ctx.timeStr}</b></div>
+      </div>
+    </div>
+    <div class="tk-stub">
+      <div><small>BOARDING · SANAD</small>${ctx.highlight ? `<div class="big">${esc(ctx.highlight.value)}</div><small>${esc(ctx.highlight.label)}</small>` : `<div class="big ltr">${ctx.dateStr.slice(0, 5)}</div>`}</div>
+      <div class="bc">${barcodeSvg(ctx.title + ctx.dateStr)}</div>
+    </div>
+  </div>`,
+  decor: "",
+  headerTemplate: tpl("11mm", `<div style="position:absolute;left:14mm;right:14mm;top:5mm;border-top:.5mm dashed #bfb2d6;"></div>`, "#faf8fd"),
+  footerTemplate: (label) =>
+    tpl("15mm", `<div dir="rtl" style="position:absolute;left:14mm;right:14mm;top:4mm;display:flex;justify-content:space-between;align-items:center;font-size:7pt;color:#8878a6;"><span>${label}</span><span style="background:${TK};color:#fff;border-radius:99px;padding:.6mm 3mm;">${PAGE_NO}</span></div>`, "#faf8fd"),
+};
+
+// 32. Calligraphy: a sweeping ink brush stroke behind the title and a red seal.
+const CL = "#161616";
+const CL_R = "#b3261e";
+function brushSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120" preserveAspectRatio="none" width="100%" height="100%"><path d="M8 78 C 70 40 150 30 250 44 C 340 56 420 30 520 36 C 560 38 590 50 596 62 C 560 58 520 60 470 70 C 380 88 300 70 210 80 C 140 88 70 98 8 78 Z" fill="${CL}" opacity=".9"/><path d="M40 70 C 120 52 200 50 300 58" stroke="#fff" stroke-width="1.2" fill="none" opacity=".18"/><g fill="${CL}" opacity=".55"><circle cx="560" cy="80" r="3"/><circle cx="578" cy="72" r="1.8"/><circle cx="24" cy="92" r="2.2"/></g></svg>`;
+}
+const calligraphy: PrintTheme = {
+  id: "calligraphy",
+  margin: { top: "12mm", bottom: "16mm" },
+  css:
+    vars({
+      paper: "#fbf7ee", accent: CL, "accent-ink": "#f3e6cf", metal: CL_R, "metal-deep": "#8c1c16",
+      "metal-soft": "#f3ece0", row: "#f8f2e7", line: "#e6dccb", "line-strong": "#bfae93",
+      radius: "0px", heading: "'Aref Ruqaa', 'Amiri', serif", foil: `linear-gradient(90deg, ${CL}, ${CL_R})`, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(CL_R))}")`,
+    }) +
+    LUX_BASE +
+    `
+  .lux .section-header, .lux .sig-title-ar { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  .cl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 5mm; margin-bottom: 3mm; }
+  .cl-brand .lg { width: 12mm; height: 12mm; object-fit: contain; }
+  .cl-brand { display: flex; align-items: center; gap: 3mm; }
+  .cl-brand .monogram { width: 12mm; height: 12mm; color: ${CL}; font-size: 16pt; font-family: 'Aref Ruqaa', serif; }
+  .cl-co { font-size: 11pt; font-weight: 700; color: ${CL}; line-height: 1.3; }
+  .cl-coen { font-size: 6.6pt; color: #8a7d68; direction: ltr; text-align: right; letter-spacing: .08em; }
+  .cl-seal { width: 20mm; height: 20mm; flex: none; background: ${CL_R}; color: #fbf7ee; display: grid; place-items: center; transform: rotate(-4deg); border-radius: 1.2mm; box-shadow: inset 0 0 0 1mm ${CL_R}, inset 0 0 0 1.4mm #fbf7ee; }
+  .cl-seal span { font-family: 'Aref Ruqaa', serif; font-size: 9pt; line-height: 1.15; text-align: center; font-weight: 700; }
+  .cl-stroke { position: relative; margin: 0 -8mm 3mm; height: 34mm; display: grid; place-items: center; }
+  .cl-stroke .ink { position: absolute; inset: 0; }
+  .cl-stroke h1 { position: relative; margin: 0; font-family: 'Aref Ruqaa', serif; font-size: 27pt; line-height: 1.2; color: #fbf7ee; text-align: center; padding: 0 10mm; }
+  .cl-en { text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 9pt; letter-spacing: .32em; color: ${CL_R}; text-transform: uppercase; font-weight: 700; margin-bottom: 3mm; }
+  .cl-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 5mm; margin-bottom: 5mm; font-size: 7pt; color: #8a7d68; border-top: .3mm solid #d8cbb3; border-bottom: .3mm solid #d8cbb3; padding: 1.8mm 0; }
+  .cl-meta b { color: ${CL}; }
+  .cl-meta .hi { color: ${CL_R}; font-weight: 700; }
+`,
+  letterhead: (ctx) => `
+  <div class="cl-top">
+    <div class="cl-brand">${logo(ctx, "lg")}<div><div class="cl-co">${esc(ctx.companyNameAr)}</div><div class="cl-coen">${esc(ctx.companyNameEn)}</div></div></div>
+    <div class="cl-seal"><span>${esc((ctx.companyNameAr.split(" ").filter(Boolean).slice(0, 2).join("<br>")) || "سند")}</span></div>
+  </div>
+  <div class="cl-stroke"><div class="ink">${brushSvg()}</div><h1>${esc(ctx.title)}</h1></div>
+  ${ctx.titleEn ? `<div class="cl-en">${esc(ctx.titleEn)}</div>` : ""}
+  <div class="cl-meta">${refLines(ctx)}${ctx.highlight ? `<span class="hi">${esc(ctx.highlight.value)} ${esc(ctx.highlight.label)}</span>` : ""}</div>`,
+  decor: "",
+  headerTemplate: tpl("12mm", `<div style="position:absolute;left:16mm;top:4mm;width:8mm;height:3mm;background:${CL_R};"></div><div style="position:absolute;left:26mm;right:16mm;top:5.3mm;height:.3mm;background:#bfae93;"></div>`, "#fbf7ee"),
+  footerTemplate: (label) =>
+    tpl("16mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:4mm;display:flex;justify-content:space-between;font-size:7pt;color:#8a7d68;"><span>${label}</span><span style="color:${CL_R};font-weight:700;">${PAGE_NO}</span></div>`, "#fbf7ee"),
+};
+
+const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson, ledger, blueprint, mono, ribbon, mosaic, ocean, sadu, glass, gazette, prism, pearl, passport, airmail, bauhaus, palm, circuit, topo, marble, ticket, calligraphy };
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {
   return isPrintThemeId(id) ? THEMES[id] : THEMES[DEFAULT_PRINT_THEME];

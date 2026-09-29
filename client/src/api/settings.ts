@@ -101,7 +101,8 @@ export interface PrintSignaturesSettings {
 export type PrintThemeId =
   | "classic" | "royal" | "emerald" | "executive" | "burgundy" | "sapphire" | "bronze"
   | "turquoise" | "slate" | "amethyst" | "olive" | "crimson"
-  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism";
+  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism"
+  | "pearl" | "passport" | "airmail" | "bauhaus" | "palm" | "circuit" | "topo" | "marble" | "ticket" | "calligraphy";
 
 export interface WhatsappMessageItem {
   id: string;

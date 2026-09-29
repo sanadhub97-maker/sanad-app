@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Eye, Loader2, Printer } from "lucide-react";
+import { Check, ExternalLink, Eye, Loader2, Printer, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppleIcon } from "@/components/common/apple-icon";
@@ -10,10 +10,13 @@ import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PrintSignaturesCard } from "./print-signatures-card";
+import { PrintLivePreview, type PreviewDoc } from "./print-live-preview";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Layout =
   | "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right" | "arch" | "split" | "damask" | "dunes" | "stripe"
-  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism";
+  | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism"
+  | "pearl" | "passport" | "airmail" | "bauhaus" | "palm" | "circuit" | "topo" | "marble" | "ticket" | "calligraphy";
 
 interface Design {
   id: PrintThemeId;
@@ -26,6 +29,8 @@ interface Design {
   metal: string;
   layout: Layout;
   ink: 1 | 2 | 3;
+  /** One of the ten designs added with the live preview. */
+  fresh?: boolean;
 }
 
 // Keep in sync with server/src/services/printThemes.ts.
@@ -51,6 +56,16 @@ const DESIGNS: Design[] = [
   { id: "glass", nameAr: "الزجاجي", nameEn: "Glass", descAr: "جرافيتي ونيلي، كارت عصري مستدير بتوهج ناعم، وجدول مستدير برأس فاتح.", descEn: "Graphite and indigo: a modern rounded card with a soft glow and a rounded table with a light header.", paper: "#f6f8fb", accent: "#334155", metal: "#6366f1", layout: "glass", ink: 1 },
   { id: "gazette", nameAr: "الصحفي", nameEn: "Gazette", descAr: "أسود وأحمر داكن، ترويسة جريدة بخط نسخ كبير، وجداول بثلاث خطوط فقط على الطريقة الصحفية.", descEn: "Ink black and dark red: a newspaper masthead in serif type and three-rule tables.", paper: "#fbf9f4", accent: "#1a1a1a", metal: "#8b0000", layout: "gazette", ink: 1 },
   { id: "prism", nameAr: "الماسي", nameEn: "Prism", descAr: "أسود وفضي وأزرق ثلجي، رأس بقصّات ماسية متعددة الأوجه، وشعار داخل سداسي فضي.", descEn: "Black, silver and ice blue: a faceted, crystal-cut header and a silver hexagon logo.", paper: "#ffffff", accent: "#1c1c1e", metal: "#7dd3fc", layout: "prism", ink: 3 },
+  { id: "pearl", nameAr: "لؤلؤ", nameEn: "Pearl", descAr: "مطابق لتصميم الموقع: ورق لؤلؤي وإضاءة باستيل ناعمة وبطاقات زجاجية مستديرة وجدول برأس متدرّج.", descEn: "Matches the SanaD site: pearl paper, soft pastel light, rounded glass cards and a gradient table header.", paper: "#f2f4f9", accent: "#172033", metal: "#0a84c6", layout: "pearl", ink: 2, fresh: true },
+  { id: "passport", nameAr: "الجوازي", nameEn: "Passport", descAr: "أخضر رسمي وذهبي، نقش أمان محفور مثل جواز السفر، شريط هولوغرام وسطر مقروء آليًا.", descEn: "Official green and gold: passport-style security engraving, a holographic stripe and a machine-readable line.", paper: "#fbfaf4", accent: "#0d4f3a", metal: "#b8914a", layout: "passport", ink: 2, fresh: true },
+  { id: "airmail", nameAr: "البريدي", nameEn: "Airmail", descAr: "حواف البريد الجوي الحمراء والزرقاء على كل صفحة، ختم بريد دائري وطابع مخرّم بشعار الشركة.", descEn: "Red and blue airmail edges on every page, a round postmark and a perforated stamp with your logo.", paper: "#fdfbf6", accent: "#1d3f8f", metal: "#c8102e", layout: "airmail", ink: 2, fresh: true },
+  { id: "bauhaus", nameAr: "الباوهاوس", nameEn: "Bauhaus", descAr: "أشكال هندسية بالأحمر والأصفر والأزرق، خطوط سوداء عريضة وشبكة صارمة.", descEn: "Red, yellow and blue geometric shapes, heavy black rules and a strict grid.", paper: "#f7f3ea", accent: "#111111", metal: "#d62828", layout: "bauhaus", ink: 3, fresh: true },
+  { id: "palm", nameAr: "النخيل", nameEn: "Palm", descAr: "أخضر مريمي ورملي، سعف نخيل مرسوم بخط رفيع حول العنوان وعنوان بخط الرقعة.", descEn: "Sage green and sand: line-drawn palm fronds around a calligraphic title.", paper: "#fbf8f1", accent: "#3f5b45", metal: "#c9a66b", layout: "palm", ink: 1, fresh: true },
+  { id: "circuit", nameAr: "التقني", nameEn: "Circuit", descAr: "لوحة إلكترونية داكنة بمسارات وعقد بلون النعناع، وبيانات بخط برمجي.", descEn: "A dark circuit board with mint traces and nodes, and code-style metadata.", paper: "#ffffff", accent: "#0b2e33", metal: "#2de2b4", layout: "circuit", ink: 3, fresh: true },
+  { id: "topo", nameAr: "الطبوغرافي", nameEn: "Topographic", descAr: "خطوط كنتور خريطة طبوغرافية بالتيراكوتا، دبوس موقع وإحداثيات.", descEn: "Terracotta map contour lines, a location pin and coordinates.", paper: "#fffdf9", accent: "#2b2b2b", metal: "#c65d3b", layout: "topo", ink: 2, fresh: true },
+  { id: "marble", nameAr: "الرخامي", nameEn: "Marble", descAr: "رخام أبيض بعروق رمادية وخيوط ذهبية، وشعار داخل ميدالية.", descEn: "White marble with grey veins and gold hairlines, the logo in a medallion.", paper: "#ffffff", accent: "#2a2a2e", metal: "#b89a5a", layout: "marble", ink: 2, fresh: true },
+  { id: "ticket", nameAr: "التذكرة", nameEn: "Ticket", descAr: "الترويسة على شكل بطاقة صعود طائرة بكعب مقطوع وباركود.", descEn: "The heading as a boarding pass with a torn stub and a barcode.", paper: "#faf8fd", accent: "#3b1d6e", metal: "#f07f2e", layout: "ticket", ink: 2, fresh: true },
+  { id: "calligraphy", nameAr: "الخطّاط", nameEn: "Calligraphy", descAr: "ضربة فرشاة حبر عريضة خلف العنوان وختم أحمر باسم الشركة.", descEn: "A broad ink brush stroke behind the title and a red seal with the company name.", paper: "#fbf7ee", accent: "#161616", metal: "#b3261e", layout: "calligraphy", ink: 2, fresh: true },
   { id: "crimson", nameAr: "القرمزي", nameEn: "Crimson", descAr: "قرمزي وجرافيتي، شريط علوي بخطوط مائلة وكتلة عنوان مقسومة بزاوية.", descEn: "Crimson and graphite, a diagonal-striped top bar and an angled split title block.", paper: "#ffffff", accent: "#2b2d31", metal: "#9b1c31", layout: "stripe", ink: 2 },
 ];
 
@@ -121,6 +136,13 @@ function Thumb({ d }: { d: Design }) {
       {d.layout === "sadu" && (
         <div className="absolute inset-y-0 left-0 w-[8px]" style={{ background: `repeating-linear-gradient(180deg, ${d.metal} 0 5px, #1a1a1a 5px 8px, #c8963e 8px 9px)` }} />
       )}
+      {d.layout === "airmail" && (
+        <>
+          <div className="absolute inset-y-0 left-0 w-[6px]" style={{ background: `repeating-linear-gradient(135deg, #c8102e 0 3px, #fdfbf6 3px 5px, #1d3f8f 5px 8px, #fdfbf6 8px 10px)` }} />
+          <div className="absolute inset-y-0 right-0 w-[6px]" style={{ background: `repeating-linear-gradient(135deg, #c8102e 0 3px, #fdfbf6 3px 5px, #1d3f8f 5px 8px, #fdfbf6 8px 10px)` }} />
+        </>
+      )}
+      {d.layout === "palm" && <div className="absolute -left-2 bottom-8 h-10 w-12 rounded-full border-t-2 opacity-40" style={{ borderColor: d.accent }} />}
       {d.layout === "lattice" && (
         <>
           <div className="absolute inset-x-0 top-0 h-[6px]" style={{ background: d.accent, borderBottom: `1px solid ${d.metal}` }} />
@@ -278,6 +300,75 @@ function Thumb({ d }: { d: Design }) {
             <div className="h-[3px] w-6 rounded-full" style={{ background: d.metal }} />
           </div>
         )}
+        {d.layout === "pearl" && (
+          <div className="relative overflow-hidden rounded-[7px] bg-white p-1.5 shadow-sm">
+            <div className="absolute -left-2 -top-3 h-9 w-9 rounded-full" style={{ background: "radial-gradient(circle, #cde9f9, rgba(205,233,249,0) 70%)" }} />
+            <div className="absolute left-5 -top-3 h-8 w-8 rounded-full" style={{ background: "radial-gradient(circle, #e3d6ff, rgba(227,214,255,0) 70%)" }} />
+            <div className="relative ml-auto h-[6px] w-2/3 rounded-full" style={{ background: d.accent }} />
+            <div className="relative mt-1 flex justify-end gap-1"><span className="h-[4px] w-4 rounded-full bg-[#e7f4fc]" /><span className="h-[4px] w-4 rounded-full bg-[#f3edff]" /></div>
+          </div>
+        )}
+        {d.layout === "passport" && (
+          <div className="-mx-[12px] -mt-[12px] grid grid-cols-[1fr_16px] gap-1.5 p-2" style={{ background: "#eef3ec", borderBottom: `2px solid ${d.accent}` }}>
+            <div className="flex flex-col items-end gap-1"><div className="h-[5px] w-3/4 rounded-full" style={{ background: d.accent }} /><div className="h-[3px] w-1/2 rounded-full" style={{ background: d.metal }} /><div className="mt-1 h-[6px] w-full rounded-[1px] bg-white" /></div>
+            <div className="order-first h-[20px] rounded-[1px] border bg-white" style={{ borderColor: d.metal }} />
+          </div>
+        )}
+        {d.layout === "airmail" && (
+          <div className="flex items-start justify-between px-1">
+            <div className="h-[16px] w-[14px] rounded-[1px] border-2 border-dotted" style={{ borderColor: d.metal }} />
+            <div className="h-[14px] w-[14px] rounded-full border-2" style={{ borderColor: d.accent, opacity: 0.6 }} />
+            <div className="h-[6px] w-1/3 rounded-full" style={{ background: d.accent }} />
+          </div>
+        )}
+        {d.layout === "bauhaus" && (
+          <div className="grid grid-cols-[1fr_24px] border-2" style={{ borderColor: d.accent }}>
+            <div className="flex flex-col items-end gap-1 p-1"><div className="h-[7px] w-3/4" style={{ background: d.accent }} /><div className="h-[3px] w-1/3" style={{ background: d.accent }} /></div>
+            <div className="relative order-first overflow-hidden" style={{ background: "#f2b705" }}>
+              <div className="absolute left-0.5 top-1 h-3 w-3 rounded-full" style={{ background: d.metal }} />
+              <div className="absolute right-0 top-0 h-2.5 w-2.5" style={{ background: "#1d4e89" }} />
+            </div>
+          </div>
+        )}
+        {d.layout === "palm" && (
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-end gap-1"><span className="h-2 w-4 rounded-t-full border-t-2" style={{ borderColor: d.accent }} /><span className="h-4 w-4 rounded-full border-2" style={{ borderColor: d.metal }} /><span className="h-2 w-4 rounded-t-full border-t-2" style={{ borderColor: d.accent }} /></div>
+            <div className="h-[5px] w-2/3 rounded-full" style={{ background: d.accent }} />
+          </div>
+        )}
+        {d.layout === "circuit" && (
+          <div className="relative -mx-[12px] -mt-[12px] h-[34px] overflow-hidden" style={{ background: d.accent }}>
+            <div className="absolute left-3 top-2 h-[12px] w-[30px] border-l border-t" style={{ borderColor: d.metal }} />
+            <div className="absolute right-8 top-4 h-[14px] w-[24px] border-b border-r" style={{ borderColor: d.metal }} />
+            <div className="absolute left-[40px] top-[5px] h-1.5 w-1.5 rounded-full border" style={{ borderColor: d.metal }} />
+            <div className="absolute bottom-2 right-2 h-[5px] w-1/2 rounded-full bg-white" />
+          </div>
+        )}
+        {d.layout === "topo" && (
+          <div className="relative -mx-[12px] -mt-[12px] h-[36px] overflow-hidden" style={{ background: "#f6efe6", borderBottom: `2px solid ${d.accent}` }}>
+            {[10, 16, 22, 28].map((r) => (<div key={r} className="absolute rounded-[50%] border" style={{ left: 18 - r / 2, top: 18 - r / 3, width: r * 1.5, height: r, borderColor: d.metal, opacity: 0.6 }} />))}
+            <div className="absolute right-2 top-2 h-[20px] w-[58px] border bg-white/90" style={{ borderColor: d.accent }}><div className="m-1 ml-auto h-[4px] w-2/3" style={{ background: d.accent }} /></div>
+          </div>
+        )}
+        {d.layout === "marble" && (
+          <div className="relative -mx-[12px] -mt-[12px] flex h-[36px] items-center justify-center overflow-hidden" style={{ background: "#f3f2ef", borderBottom: `1px solid ${d.metal}` }}>
+            <div className="absolute -left-2 top-3 h-px w-[120%] rotate-[8deg] bg-gray-400/50" />
+            <div className="absolute -left-2 top-6 h-px w-[120%] -rotate-[5deg]" style={{ background: d.metal }} />
+            <div className="relative h-4 w-4 rounded-full border bg-white" style={{ borderColor: d.metal }} />
+          </div>
+        )}
+        {d.layout === "ticket" && (
+          <div className="grid grid-cols-[1fr_22px] overflow-hidden rounded-[4px] shadow-sm">
+            <div className="flex flex-col items-end gap-1 bg-white p-1.5"><div className="h-[5px] w-2/3 rounded-full" style={{ background: d.accent }} /><div className="h-[3px] w-1/3 rounded-full" style={{ background: d.metal }} /></div>
+            <div className="order-first flex items-end justify-center p-1" style={{ background: d.accent, borderInlineStart: "1px dashed #fff" }}><div className="h-[6px] w-full" style={{ background: "repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 2px)" }} /></div>
+          </div>
+        )}
+        {d.layout === "calligraphy" && (
+          <div className="flex flex-col gap-1">
+            <div className="ml-auto h-3 w-3 rotate-[-4deg] rounded-[1px]" style={{ background: d.metal }} />
+            <div className="h-[10px] w-full rounded-[50%]" style={{ background: d.accent, transform: "skewX(-12deg)" }} />
+          </div>
+        )}
         {d.layout !== "classic" && title}
         {table}
         <div className="flex-1" />
@@ -287,10 +378,30 @@ function Thumb({ d }: { d: Design }) {
   );
 }
 
+function useWide() {
+  const q = "(min-width: 1024px)";
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && !!window.matchMedia?.(q).matches);
+  useEffect(() => {
+    const m = window.matchMedia?.(q);
+    if (!m) return;
+    const f = () => setWide(m.matches);
+    m.addEventListener("change", f);
+    return () => m.removeEventListener("change", f);
+  }, []);
+  return wide;
+}
+
 export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const queryClient = useQueryClient();
   const { data: current, isLoading } = useQuery({ queryKey: ["settings", "print-theme"], queryFn: settingsApi.getPrintTheme });
-  const [previewing, setPreviewing] = useState<PrintThemeId | null>(null);
+  const [picked, setPicked] = useState<PrintThemeId | null>(null);
+  const [doc, setDoc] = useState<PreviewDoc>("report");
+  const [filter, setFilter] = useState<"all" | "new">("all");
+  const [sheet, setSheet] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const wide = useWide();
+  const shown = picked ?? current ?? "classic";
+  const design = DESIGNS.find((x) => x.id === shown) ?? DESIGNS[0];
 
   const save = useMutation({
     mutationFn: (theme: PrintThemeId) => settingsApi.updatePrintTheme(theme),
@@ -302,107 +413,144 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
-  async function preview(id: PrintThemeId) {
-    setPreviewing(id);
+  async function openPdf() {
+    setOpening(true);
     try {
-      await openPdfInNewTab("/settings/print-theme/preview", { theme: id }, `print-design-${id}.pdf`);
+      await openPdfInNewTab("/settings/print-theme/preview", { theme: shown, doc }, `print-design-${shown}.pdf`);
     } catch {
       // openPdfInNewTab already reported it
     } finally {
-      setPreviewing(null);
+      setOpening(false);
     }
   }
 
+  function pick(id: PrintThemeId) {
+    setPicked(id);
+    if (!wide) setSheet(true);
+  }
+
+  const docs: [PreviewDoc, string, string][] = [
+    ["report", isRtl ? "تقرير" : "Report", "sky"],
+    ["voucher", isRtl ? "سند صرف" : "Payment voucher", "violet"],
+    ["profile", isRtl ? "ملف موظف" : "Employee profile", "indigo"],
+  ];
+  const list = DESIGNS.filter((d) => filter === "all" || d.fresh);
+  const inUse = current === design.id;
+
+  const head = (
+    <div className="lu-pd-head">
+      <div className="nm">
+        <b>
+          {isRtl ? design.nameAr : design.nameEn}
+          {inUse && <span className="lu-chip lt-green ms-2 align-middle">{isRtl ? "المعتمد" : "In use"}</span>}
+        </b>
+        <small>{isRtl ? design.descAr : design.descEn}</small>
+      </div>
+      <Button variant="outline" className="h-10" onClick={openPdf} disabled={opening}>
+        {opening ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />} {isRtl ? "فتح PDF" : "Open PDF"}
+      </Button>
+      <Button className="h-10" disabled={!canEdit || inUse || save.isPending} onClick={() => save.mutate(design.id)}>
+        {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} {inUse ? (isRtl ? "مستخدم حاليًا" : "In use") : isRtl ? "اعتماد التصميم" : "Use this design"}
+      </Button>
+    </div>
+  );
+  const docChips = (
+    <div className="lu-tools">
+      {docs.map(([k, label, tone]) => (
+        <button key={k} type="button" className={cn("lu-fchip", `lt-${tone}`, doc === k && "on")} onClick={() => setDoc(k)} aria-pressed={doc === k}>
+          <i /> {label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-    <Card className="rounded-2xl border border-border/80 shadow-sm">
-      <CardHeader className="space-y-1">
-        <div className="flex items-center gap-3">
-          <AppleIcon icon={Printer} tone="indigo" size="sm" />
-          <div>
-            <CardTitle className="text-lg font-bold">{isRtl ? "تصميم الطباعة" : "Print Design"}</CardTitle>
-            <CardDescription className="text-xs">
-              {isRtl
-                ? "اختر شكل كل المطبوعات الرسمية: التقارير وسند الصرف وملف الموظف. كل التصميمات A4 طولي، وزر المعاينة يطبع تقرير المؤسسات الفعلي بالتصميم."
-                : "Choose the look of every official print: reports, payment vouchers and employee profiles. All designs are A4 portrait; Preview prints your real establishments report in that design."}
-            </CardDescription>
+      {/* overflow-visible: the preview panel stays pinned beside the list while it scrolls. */}
+      <Card className="!overflow-visible rounded-2xl border border-border/80 shadow-sm">
+        <CardHeader className="space-y-1">
+          <div className="flex flex-wrap items-center gap-3">
+            <AppleIcon icon={Printer} tone="indigo" size="sm" />
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-lg font-bold">{isRtl ? "تصميم الطباعة" : "Print Design"}</CardTitle>
+              <CardDescription className="text-xs">
+                {isRtl
+                  ? `${DESIGNS.length} تصميمًا لكل المطبوعات الرسمية: التقارير وسند الصرف وملف الموظف. اختر تصميمًا لتراه مطبوعًا ببياناتك الحقيقية في المعاينة الحية، ثم اعتمده.`
+                  : `${DESIGNS.length} designs for every official print: reports, payment vouchers and employee profiles. Pick one to see it printed with your real data in the live preview, then use it.`}
+              </CardDescription>
+            </div>
+            <div className="lu-tools">
+              <button type="button" className={cn("lu-fchip lt-sky", filter === "all" && "on")} onClick={() => setFilter("all")}>
+                <i /> {isRtl ? `الكل ${DESIGNS.length}` : `All ${DESIGNS.length}`}
+              </button>
+              <button type="button" className={cn("lu-fchip lt-violet", filter === "new" && "on")} onClick={() => setFilter("new")}>
+                <Sparkles className="h-4 w-4" /> {isRtl ? "الجديدة 10" : "New 10"}
+              </button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {DESIGNS.map((d) => {
-              const selected = current === d.id;
-              return (
-                <div
-                  key={d.id}
-                  className={cn(
-                    "relative flex flex-col gap-3 rounded-2xl border bg-card p-4 transition-shadow",
-                    selected ? "border-primary ring-2 ring-primary/30 shadow-md" : "border-border/80 hover:shadow-sm"
-                  )}
-                >
-                  {selected && (
-                    <span className="absolute top-3 end-3 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                      <Check className="h-3 w-3" />
-                      {isRtl ? "المعتمد" : "In use"}
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="lu-pd">
+              <div className="lu-pd-list">
+                {list.map((d) => (
+                  <button key={d.id} type="button" className={cn("lu-pd-card", shown === d.id && "sel")} onClick={() => pick(d.id)} aria-pressed={shown === d.id}>
+                    {current === d.id ? <span className="tag use">{isRtl ? "المعتمد" : "In use"}</span> : d.fresh ? <span className="tag">{isRtl ? "جديد" : "New"}</span> : null}
+                    <span className="th">
+                      <Thumb d={d} />
                     </span>
-                  )}
-                  <div className="rounded-xl bg-muted/40 py-4">
-                    <Thumb d={d} />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-bold text-sm">{isRtl ? d.nameAr : d.nameEn}</h3>
-                      <div className="flex gap-1" aria-hidden>
+                    <span className="flex items-center justify-between gap-2">
+                      <b>{isRtl ? d.nameAr : d.nameEn}</b>
+                      <span className="sw" aria-hidden>
                         {[d.accent, d.metal, d.paper].map((c) => (
-                          <span key={c} className="h-3.5 w-3.5 rounded-full ring-1 ring-black/10" style={{ background: c }} />
+                          <i key={c} style={{ background: c }} />
                         ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{isRtl ? d.descAr : d.descEn}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {isRtl ? "استهلاك الحبر: " : "Ink use: "}
-                      <span className="font-semibold text-foreground">
-                        {isRtl ? ["منخفض", "متوسط", "عالي"][d.ink - 1] : ["Low", "Medium", "High"][d.ink - 1]}
                       </span>
-                    </p>
-                  </div>
-                  <div className="mt-auto flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1.5 rounded-xl text-xs"
-                      disabled={previewing !== null}
-                      onClick={() => preview(d.id)}
-                    >
-                      {previewing === d.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
-                      {isRtl ? "معاينة PDF" : "Preview PDF"}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="flex-1 gap-1.5 rounded-xl text-xs"
-                      disabled={!canEdit || selected || save.isPending}
-                      onClick={() => save.mutate(d.id)}
-                    >
-                      {save.isPending && save.variables === d.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                      {selected ? (isRtl ? "مستخدم حالياً" : "In use") : isRtl ? "اعتماد التصميم" : "Use this design"}
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-    <PrintSignaturesCard canEdit={canEdit} isRtl={isRtl} />
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {isRtl ? "الحبر: " : "Ink: "}
+                      <b className="text-[11px] text-foreground">{isRtl ? ["منخفض", "متوسط", "عالٍ"][d.ink - 1] : ["Low", "Medium", "High"][d.ink - 1]}</b>
+                      {!wide && (
+                        <span className="ms-2 inline-flex items-center gap-1 text-primary">
+                          <Eye className="h-3 w-3" /> {isRtl ? "معاينة" : "Preview"}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {wide && (
+                <aside className="lu-pd-side">
+                  {head}
+                  {docChips}
+                  <PrintLivePreview theme={shown} doc={doc} isAr={isRtl} />
+                </aside>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {!wide && (
+        <Dialog open={sheet} onOpenChange={setSheet}>
+          <DialogContent className="flex h-[92dvh] max-w-3xl flex-col gap-3 rounded-[26px] p-4">
+            <DialogHeader>
+              <DialogTitle className="sr-only">{isRtl ? "معاينة التصميم" : "Design preview"}</DialogTitle>
+            </DialogHeader>
+            {head}
+            {docChips}
+            <div className="min-h-0 flex-1">
+              <PrintLivePreview theme={shown} doc={doc} isAr={isRtl} />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      <PrintSignaturesCard canEdit={canEdit} isRtl={isRtl} />
     </div>
   );
 }

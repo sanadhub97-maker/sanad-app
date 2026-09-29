@@ -121,7 +121,9 @@ export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, r
   res.json({ data: body, message: "Signature settings saved." });
 });
 import { isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
-import { tableReportPdf } from "@/modules/pdf/templates";
+import { employeeProfilePdf, paymentReceiptPdf, tableReportPdf } from "@/modules/pdf/templates";
+import * as paymentsService from "@/modules/payments/payments.service";
+import * as employeesService from "@/modules/employees/employees.service";
 import { renderHtmlToPdf } from "@/services/pdf";
 
 export const getPrintTheme = asyncHandler(async (_req: Request, res: Response) => {
@@ -137,13 +139,40 @@ export const updatePrintTheme = asyncHandler(async (req: Request, res: Response)
 export const previewPrintTheme = asyncHandler(async (req: Request, res: Response) => {
   const theme = String(req.query.theme ?? "");
   if (!isPrintThemeId(theme)) throw ApiError.badRequest("Unknown print design.");
+  const doc = String(req.query.doc ?? "report");
+  const branding = { ...(await getBrandingContext()), printTheme: theme };
+  // The live preview (live=1) takes plain bytes: browsers and download
+  // managers that grab application/pdf responses would hand the page nothing.
+  const live = req.query.live === "1";
+  const send = (pdf: Buffer, name: string) => {
+    res.setHeader("Content-Type", live ? "application/octet-stream" : "application/pdf");
+    if (!live) res.setHeader("Content-Disposition", `inline; filename="${name}-${theme}.pdf"`);
+    res.setHeader("Cache-Control", "no-store");
+    res.send(pdf);
+  };
+
+  // The latest real payment voucher, or the first employee's profile, in the design.
+  if (doc === "voucher") {
+    const latest = await prisma.payment.findFirst({ where: { deletedAt: null }, orderBy: { paymentDate: "desc" }, select: { id: true } });
+    if (latest) {
+      const payment = await paymentsService.getById(latest.id);
+      return send(await renderHtmlToPdf(paymentReceiptPdf(payment as never, branding), { footerLabel: "Payment Receipt" }), "voucher");
+    }
+  }
+  if (doc === "profile") {
+    const first = await prisma.employee.findFirst({ where: { deletedAt: null }, orderBy: { employeeNumber: "asc" }, select: { id: true } });
+    if (first) {
+      const employee = await employeesService.getById(first.id);
+      return send(await renderHtmlToPdf(employeeProfilePdf(employee as never, branding), { footerLabel: "Employee Profile" }), "profile");
+    }
+  }
+
   const branches = await prisma.branch.findMany({
     where: { deletedAt: null },
     orderBy: { code: "asc" },
     take: 60,
     include: { _count: { select: { employees: { where: { deletedAt: null } } } } },
   });
-  const branding = { ...(await getBrandingContext()), printTheme: theme };
   const html = tableReportPdf(
     "تقرير المؤسسات والمنشآت",
     [
@@ -157,10 +186,7 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
     branding,
     { titleEn: "Establishments Report" }
   );
-  const pdf = await renderHtmlToPdf(html, { footerLabel: "تقرير المؤسسات والمنشآت — معاينة تصميم الطباعة" });
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `inline; filename="print-design-${theme}.pdf"`);
-  res.send(pdf);
+  send(await renderHtmlToPdf(html, { footerLabel: "تقرير المؤسسات والمنشآت — معاينة تصميم الطباعة" }), "print-design");
 });
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
