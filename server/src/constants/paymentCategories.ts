@@ -15,6 +15,12 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   VISA: "تأشيرات",
   SPONSORSHIP_TRANSFER: "نقل كفالة",
   PROFESSION_CHANGE: "تعديل مهنة",
+  RENT_PAYMENT: "إيجار",
+  INTERNET: "إنترنت",
+  ELECTRICITY: "كهرباء",
+  WATER: "مياه",
+  MAINTENANCE: "صيانة",
+  PURCHASES: "مشتريات",
 
   // Older categories no longer offered in the form, kept for existing records
   // السجل التجاري والتراخيص

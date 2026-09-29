@@ -55,6 +55,12 @@ export const PAYMENT_CATEGORIES = [
   "VISA",
   "SPONSORSHIP_TRANSFER",
   "PROFESSION_CHANGE",
+  "RENT_PAYMENT",
+  "INTERNET",
+  "ELECTRICITY",
+  "WATER",
+  "MAINTENANCE",
+  "PURCHASES",
 ] as const;
 
 /** Sub-types a category requires (labels in i18n paymentSubtypes.*). Keep in
