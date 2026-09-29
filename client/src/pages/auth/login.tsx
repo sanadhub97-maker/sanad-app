@@ -1,10 +1,12 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
+import { dashboardApi } from "@/api/dashboard";
 import { login } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { getErrorMessage } from "@/lib/api";
@@ -20,6 +22,14 @@ const makeSchema = () =>
   });
 
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
+
+/** The home page's code and first data, fetched while the gate opens. */
+function prefetchHome(queryClient: QueryClient) {
+  void import("@/pages/dashboard/dashboard-lulu");
+  void queryClient.prefetchQuery({ queryKey: ["dashboard", "summary"], queryFn: dashboardApi.summary });
+  void queryClient.prefetchQuery({ queryKey: ["dashboard", "overview"], queryFn: dashboardApi.overview });
+  void queryClient.prefetchQuery({ queryKey: ["dashboard", "charts"], queryFn: dashboardApi.charts });
+}
 
 const Svg = ({ d, w = 2 }: { d: string; w?: number }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -48,6 +58,12 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const queryClient = useQueryClient();
+  // The home page's code downloads while you type.
+  useEffect(() => {
+    const id = window.setTimeout(() => void import("@/pages/dashboard/dashboard-lulu"), 1200);
+    return () => window.clearTimeout(id);
+  }, []);
   const { night } = useGate();
   const root = useRef<HTMLDivElement>(null);
 
@@ -85,11 +101,10 @@ export default function LoginPage() {
       const result = await login(values);
       setWelcome(true);
       const from = (location.state as { from?: Location })?.from?.pathname ?? "/";
-      // Let the gate open before the app takes over.
-      setTimeout(() => {
-        setAuth(result.accessToken, result.user);
-        navigate(from, { replace: true });
-      }, 1500);
+      // Signed in at once, so the home page's data loads while the gate opens.
+      setAuth(result.accessToken, result.user);
+      if (from === "/") prefetchHome(queryClient);
+      setTimeout(() => navigate(from, { replace: true }), 900);
     } catch (err) {
       setFailure(getErrorMessage(err, isAr ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."));
       shake();
@@ -112,7 +127,7 @@ export default function LoginPage() {
         </button>
       </div>
       <div className="g-mark">
-        <img src="/brand/sanad-mark.png" alt="" />
+        <img src="/brand/sanad-mark.webp" alt="" />
         <div>
           <b>SanaD HR</b>
           <small>People · Process · Progress</small>
@@ -238,7 +253,7 @@ export default function LoginPage() {
       {createPortal(
         <div className={cn("g-app g-portal", night && "night", welcome && "on")} aria-live="polite">
           <div className="in">
-            <img src="/brand/sanad-logo.png" alt="" />
+            <img src="/brand/sanad-logo.webp" alt="" />
             <h2>{isAr ? "أهلًا بعودتك" : "Welcome back"}</h2>
             <p>{isAr ? "نجهّز لك يومك في SanaD…" : "Getting your day ready in SanaD…"}</p>
             <div className="g-dots">

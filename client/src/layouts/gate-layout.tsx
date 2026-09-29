@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { RouteProgressBar } from "@/components/layout/route-progress-bar";
 import { cn } from "@/lib/utils";
@@ -111,25 +110,44 @@ function Hero() {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const t0 = performance.now();
     let id = 0;
+    // Sizes are read on resize only, never inside the frame loop (reading them
+    // every frame forced a layout each time).
+    let chips: HTMLElement[] = [];
+    let w = 0;
+    let h = 0;
+    let e = 200;
+    const measure = () => {
+      chips = Array.from(el.querySelectorAll<HTMLElement>(".g-chip")).filter((c) => c.offsetParent !== null);
+      w = el.clientWidth;
+      h = el.clientHeight;
+      e = el.querySelector<HTMLElement>(".g-emblem")?.clientWidth ?? 200;
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    const front: boolean[] = [];
     const spin = (t: number) => {
-      const chips = Array.from(el.querySelectorAll<HTMLElement>(".g-chip")).filter((c) => c.offsetParent !== null);
-      const w = el.clientWidth;
-      const h = el.clientHeight;
-      const e = el.querySelector<HTMLElement>(".g-emblem")?.clientWidth ?? 200;
       const rx = Math.min(w / 2 - 70, e * 1.02);
       const ry = h * 0.34;
       const a0 = reduce ? 0.6 : ((t - t0) / 1000) * 0.22;
       chips.forEach((c, k) => {
         const a = a0 + (k * Math.PI * 2) / chips.length;
-        const front = Math.sin(a);
-        c.style.transform = `translate(-50%, -50%) translate(${(Math.cos(a) * rx).toFixed(1)}px, ${(front * ry + h * 0.06).toFixed(1)}px) scale(${(0.86 + (0.14 * (front + 1)) / 2).toFixed(3)})`;
-        c.style.zIndex = front > 0 ? "3" : "1";
-        c.style.opacity = (0.55 + (0.45 * (front + 1)) / 2).toFixed(2);
+        const f = Math.sin(a);
+        c.style.transform = `translate(-50%, -50%) translate(${(Math.cos(a) * rx).toFixed(1)}px, ${(f * ry + h * 0.06).toFixed(1)}px) scale(${(0.86 + (0.14 * (f + 1)) / 2).toFixed(3)})`;
+        c.style.opacity = (0.55 + (0.45 * (f + 1)) / 2).toFixed(2);
+        // Restacking only when a chip passes behind or in front of the emblem.
+        if (front[k] !== f > 0) {
+          front[k] = f > 0;
+          c.style.zIndex = f > 0 ? "3" : "1";
+        }
       });
       if (!reduce) id = requestAnimationFrame(spin);
     };
     id = requestAnimationFrame(spin);
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelAnimationFrame(id);
+      ro.disconnect();
+    };
   }, []);
 
   const date = (() => {
@@ -162,7 +180,7 @@ function Hero() {
           <i className="crater" style={{ width: "8%", height: "8%", top: "40%", left: "66%" }} />
         </div>
         <div className="g-emblem">
-          <img src="/brand/sanad-logo.png" alt="SanaD HR" />
+          <img src="/brand/sanad-logo.webp" alt="SanaD HR" />
         </div>
         {chips.map(([tone, d, label, state, far]) => (
           <span key={label} className={cn("g-chip", tone, far && "far")}>
@@ -227,11 +245,9 @@ export function GateLayout() {
         <div className="g-layout">
           <Hero />
           <section className="g-panel" aria-label="SanaD">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={location.pathname} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }} className="g-page">
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            <div key={location.pathname} className="g-page lu-page">
+              <Outlet />
+            </div>
           </section>
         </div>
       </div>

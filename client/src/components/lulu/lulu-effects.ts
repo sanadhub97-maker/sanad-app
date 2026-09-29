@@ -70,7 +70,19 @@ export function useLuluEffects(scroller: RefObject<HTMLElement | null>, enabled:
       b.appendChild(s);
       setTimeout(() => s.remove(), 650);
     }
+    // Touch has no hover light; the mouse updates at most once a frame.
+    let queuedMove: PointerEvent | null = null;
     function move(e: PointerEvent) {
+      if (e.pointerType !== "mouse") return;
+      if (!queuedMove)
+        requestAnimationFrame(() => {
+          const last = queuedMove;
+          queuedMove = null;
+          if (last) applyMove(last);
+        });
+      queuedMove = e;
+    }
+    function applyMove(e: PointerEvent) {
       const c = (e.target as HTMLElement | null)?.closest?.<HTMLElement>(".lu-cc,.lux-spot");
       if (!c) return;
       const r = c.getBoundingClientRect();

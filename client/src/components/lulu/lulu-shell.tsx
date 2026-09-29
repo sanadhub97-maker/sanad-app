@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
 import { Bell, ChevronDown, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sparkles, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
@@ -53,7 +52,7 @@ function useBranding() {
   const { data: mark } = useQuery({ queryKey: ["settings", "branding", "mark"], queryFn: settingsApi.getBrandingMark, staleTime: 30 * 60_000 });
   const { data: branding } = useQuery({ queryKey: ["settings", "branding"], queryFn: settingsApi.getBranding, staleTime: 5 * 60_000 });
   const name = isAr ? branding?.nameAr || branding?.nameEn : branding?.nameEn || branding?.nameAr;
-  return { mark: mark || "/brand/sanad-mark.png", name: name || "SanaD" };
+  return { mark: mark || "/brand/sanad-mark.webp", name: name || "SanaD" };
 }
 
 /** Profile, language, light/dark, the design simulator and sign-out. */
@@ -428,19 +427,10 @@ export function LuluShell() {
         <main ref={main} className="lu-main">
           <div className="lu-wrap">
             <Header onSearch={() => setCmd(true)} current={current} />
-            <AnimatePresence mode="wait" initial={false}>
-              {/* No blur filter here: a lingering filter would trap fixed panels (drawers) inside the page. */}
-              <motion.div
-                key={location.pathname}
-                initial={animationsEnabled ? { opacity: 0, y: 10 } : undefined}
-                animate={animationsEnabled ? { opacity: 1, y: 0 } : undefined}
-                exit={animationsEnabled ? { opacity: 0, y: -8 } : undefined}
-                transition={{ duration: animationsEnabled ? 0.2 : 0, ease: [0.16, 1, 0.3, 1] }}
-                className="relative space-y-[22px]"
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            {/* The new page fades in at once (CSS), without waiting for the old one to leave. */}
+            <div key={location.pathname} className="lu-page relative space-y-[22px]">
+              <Outlet />
+            </div>
           </div>
         </main>
         <Island items={items} current={current} />

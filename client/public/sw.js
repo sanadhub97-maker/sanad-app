@@ -3,14 +3,14 @@
    - Pages always ask the network first, so a new deploy shows at once;
      the last page seen is kept for when the connection drops.
    - The API is never cached. */
-const CACHE = "sanad-v1";
+const CACHE = "sanad-v2";
 const SHELL = "/";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((c) => c.addAll([SHELL, "/pwa/icon-192.png", "/brand/sanad-logo.png"]))
+      .then((c) => c.addAll([SHELL, "/pwa/icon-192.png", "/brand/sanad-logo.webp"]))
       .catch(() => undefined)
       .then(() => self.skipWaiting())
   );

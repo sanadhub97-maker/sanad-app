@@ -18,7 +18,8 @@ export default defineConfig({
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           "vendor-query": ["@tanstack/react-query", "@tanstack/react-table", "axios", "zustand"],
-          "vendor-ui": ["framer-motion", "lucide-react", "sonner"],
+          "vendor-ui": ["lucide-react", "sonner"],
+          "vendor-motion": ["framer-motion"],
           "vendor-i18n": ["i18next", "react-i18next"],
           "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
         },

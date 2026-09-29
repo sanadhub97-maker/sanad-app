@@ -744,3 +744,47 @@ html.dark .lu-pv { background: #0b0f19; }
 }
 .lu-pd-card .th { display: block; }
 .lu-pd-card .th { width: 100%; align-self: stretch; }
+
+/* =====================================================================
+   Light on the device.
+   Measured at phone CPU speed, blur filters and ~90 endless animations
+   held the home page at 10–13 frames a second. The look stays; the cost
+   goes:
+   - no backdrop blur on cards, rows, header, sidebar and panels — their
+     surfaces are near-opaque instead, which reads the same;
+   - the background light is one still gradient, not moving blurred blobs;
+   - card glows are gradients, not blurred shapes;
+   - decorative motions play twice when a page opens, and again while the
+     card is hovered.
+   ===================================================================== */
+html:root { --l-glass: rgba(255, 255, 255, 0.9); }
+html:root.dark { --l-glass: rgba(21, 27, 43, 0.92); }
+.lu-cc, .lux-glass, .lu-row, .lu-top, .lu-side, .lu-drawer, .lu-npanel, .lu-cmd, .lu-cmd-box, .lu-inst, .lu-island, .lu-field,
+.lu-app [role="tablist"] { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.lu-top, .lu-side { background: var(--l-glass-strong); }
+.lu-mesh i, .lu-mesh::after { display: none; }
+.lu-mesh {
+  background:
+    radial-gradient(55% 45% at 100% 0%, color-mix(in srgb, var(--l-sky-d) 85%, transparent), transparent 70%),
+    radial-gradient(45% 40% at 0% 45%, color-mix(in srgb, var(--l-violet-d) 70%, transparent), transparent 70%),
+    radial-gradient(40% 35% at 70% 100%, color-mix(in srgb, var(--l-rose-d) 55%, transparent), transparent 70%);
+}
+.lu-cc::after { filter: none; animation: none; background: radial-gradient(circle, var(--d, transparent) 0%, transparent 68%); opacity: 0.9; }
+
+.lu-app :is(.lu-faces i, .lu-sheets i, .lu-bell svg, .lu-bell::before, .lu-bell::after, .lu-glass-h, .lu-glass-h i, .lu-city i,
+  .lu-pay svg path, .lu-pay .coin, .lu-hero .waves svg, .lu-day.today, .lu-bar i::after, .lux-cta::after, .lu-go::after,
+  .lu-pi.pulse::after, .lu-nav.on::before) { animation-iteration-count: 2 !important; }
+.lu-scene :is(.rays, .halo, .cl1, .cl2, .birds, .bird, .palm) { animation-iteration-count: 1 !important; }
+.lu-cc:hover :is(.lu-faces i, .lu-sheets i, .lu-bell svg, .lu-bell::before, .lu-bell::after, .lu-glass-h, .lu-glass-h i, .lu-city i,
+  .lu-pay svg path, .lu-pay .coin, .waves svg, .lu-pi.pulse::after, .rays, .halo, .cl1, .cl2, .birds, .bird, .palm) { animation-iteration-count: infinite !important; }
+.lu-inst::before, .lu-inst .app img, .lu-inst .app .ring { animation-iteration-count: 3 !important; }
+/* Each card repaints on its own. */
+.lu-cc, .lu-row { contain: paint; }
+
+/* Page change and the top progress light, in CSS (no animation library). */
+.lu-page { animation: lu-page-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes lu-page-in { from { opacity: 0; transform: translateY(8px); } }
+.lu-still .lu-page { animation: none; }
+.lu-progress { transform-origin: 0% 50%; box-shadow: 0 0 12px rgba(37, 99, 235, 0.7); animation: lu-progress 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+[dir="rtl"] .lu-progress { transform-origin: 100% 50%; }
+@keyframes lu-progress { 0% { transform: scaleX(0); opacity: 1; } 70% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }

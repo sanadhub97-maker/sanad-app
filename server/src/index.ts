@@ -2,6 +2,7 @@ import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import { createApp } from "@/app";
 import { startScheduledJobs } from "@/jobs/scheduler";
+import { startKeepAwake } from "@/jobs/keepAwake";
 import { closePdfBrowser } from "@/services/pdf";
 
 const app = createApp();
@@ -9,6 +10,7 @@ const app = createApp();
 const server = app.listen(env.PORT, () => {
   logger.info(`Server listening on http://localhost:${env.PORT}`);
   startScheduledJobs();
+  startKeepAwake();
 });
 
 async function shutdown() {

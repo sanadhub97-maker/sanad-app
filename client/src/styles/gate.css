@@ -209,3 +209,17 @@
 @media (prefers-reduced-motion: reduce) {
   .g-app *, .g-app *::before, .g-app *::after, .g-portal * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Light on the device: no blur over the moving sky (it was redrawn every
+   frame), stars only move at night, fewer sparkles. */
+.g-app { --g-glass: rgba(255, 255, 255, 0.9); }
+.g-app.night { --g-glass: rgba(18, 24, 40, 0.9); }
+.g-panel, .g-chip, .g-clock { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.g-app:not(.night) .g-stars i, .g-app:not(.night) .g-shoot { animation: none; }
+.g-sparks i:nth-child(n + 11) { display: none; }
+.g-panel::after { animation-iteration-count: 3; }
+/* The ring around the panel is redrawn every frame: once round is enough.
+   The rays stand still; 30 stars twinkle instead of 70. */
+.g-panel::after { animation-iteration-count: 1 !important; }
+.g-rays { animation: none; }
+.g-stars i:nth-child(n + 32) { display: none; }
