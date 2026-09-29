@@ -223,3 +223,9 @@
 .g-panel::after { animation-iteration-count: 1 !important; }
 .g-rays { animation: none; }
 .g-stars i:nth-child(n + 32) { display: none; }
+/* The emblem: its shadow sits on the image, drawn once on its own layer, and
+   it arrives with fade and scale only (the blur plus the shadow of the
+   parent were redrawn on every frame of the float). */
+.g-emblem { filter: none; will-change: transform; }
+.g-emblem img { filter: drop-shadow(0 26px 34px rgba(10, 25, 70, 0.35)); animation-name: g-arrive-lite; will-change: transform, opacity; }
+@keyframes g-arrive-lite { from { opacity: 0; transform: scale(0.7) translateY(20px); } }
