@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "SanaD HR — نظام إدارة الوثائق والموظفين",
+  "short_name": "SanaD",
+  "description": "موظفوك ووثائقك تحت السيطرة: تنبيهات قبل انتهاء الإقامات والرخص، مهام يومية، مدفوعات وتقارير.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#F2F4F9",
+  "theme_color": "#F2F4F9",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/pwa/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "المهام اليومية", "short_name": "المهام", "url": "/daily-tasks", "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "الموظفون", "url": "/employees", "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }] },
+    { "name": "مستندات الموظفين", "short_name": "المستندات", "url": "/employee-documents", "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

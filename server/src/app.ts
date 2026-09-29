@@ -81,7 +81,17 @@ export function createApp() {
       "/assets",
       express.static(path.join(clientDistPath, "assets"), { maxAge: "365d", immutable: true, fallthrough: false })
     );
-    app.use(express.static(clientDistPath, { maxAge: "1d", index: false }));
+    // The service worker and the app manifest are re-checked on every visit,
+    // so installed copies pick up a new deploy.
+    app.use(
+      express.static(clientDistPath, {
+        maxAge: "1d",
+        index: false,
+        setHeaders: (res, file) => {
+          if (file.endsWith("sw.js") || file.endsWith(".webmanifest")) res.setHeader("Cache-Control", "no-cache");
+        },
+      })
+    );
     app.get(/^(?!\/api).*/, (_req, res) => {
       res.setHeader("Cache-Control", "no-cache");
       res.sendFile(path.join(clientDistPath, "index.html"));

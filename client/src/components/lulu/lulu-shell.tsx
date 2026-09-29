@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, ChevronUp, FileText, Globe, LogOut, Moon, Plus, Search, Sparkles, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, ChevronUp, Download, FileText, Globe, LogOut, Moon, Plus, Search, Sparkles, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,7 @@ import { RouteProgressBar } from "@/components/layout/route-progress-bar";
 import { LuluCommand } from "@/components/lulu/lulu-command";
 import { LuluNotifications, useNotificationsBell } from "@/components/lulu/lulu-notifications";
 import { useLuluEffects, luluSwapTheme } from "@/components/lulu/lulu-effects";
+import { openInstall, useCanInstall } from "@/components/lulu/lulu-install";
 import { isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
 import { settingsApi } from "@/api/settings";
 import { logout as logoutRequest } from "@/api/auth";
@@ -60,6 +61,7 @@ function AccountMenu({ children }: { children: ReactNode }) {
   useUiStore((s) => s.themeMode);
   const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
   const role = user?.isSuperAdmin ? "Super Admin" : user?.roles?.[0];
+  const canInstall = useCanInstall();
 
   async function signOut() {
     await logoutRequest().catch(() => undefined);
@@ -87,6 +89,11 @@ function AccountMenu({ children }: { children: ReactNode }) {
           {isDark ? <Sun className="h-4 w-4 text-muted-foreground" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
           {isDark ? (isAr ? "الوضع النهاري" : "Light mode") : isAr ? "الوضع الليلي" : "Dark mode"}
         </DropdownMenuItem>
+        {canInstall && (
+          <DropdownMenuItem onSelect={() => setTimeout(openInstall, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+            <Download className="h-4 w-4 text-muted-foreground" /> {isAr ? "تثبيت التطبيق" : "Install the app"}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={() => navigate("/preview")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Sparkles className="h-4 w-4 text-muted-foreground" /> {isAr ? "محاكي أبل" : "Apple Mode"}
         </DropdownMenuItem>

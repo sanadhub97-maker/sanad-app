@@ -9,6 +9,14 @@ import App from "@/App";
 import "@/index.css";
 import "@/styles/lulu.css";
 
+// Makes SanaD installable as an app (production builds only; the dev server
+// would otherwise serve stale files from the worker cache).
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },

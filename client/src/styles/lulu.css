@@ -573,3 +573,57 @@ html:root body { background: hsl(var(--background)); }
 @media (prefers-reduced-motion: reduce) {
   .lu-app *, .lu-app *::before, .lu-app *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------------- Install card ---------------- */
+.lu-inst-scrim { position: fixed; inset: 0; z-index: 140; background: rgba(13, 18, 32, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.35s; }
+.lu-inst { position: fixed; z-index: 141; bottom: 22px; inset-inline-start: 22px; width: min(400px, calc(100vw - 24px)); padding: 20px; border-radius: 26px; color: var(--l-ink); font-family: var(--font-sans); background: radial-gradient(420px circle at 85% -10%, color-mix(in srgb, var(--l-sky) 16%, transparent), transparent 60%), var(--l-glass-strong); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); box-shadow: 0 40px 80px -36px rgba(10, 25, 70, 0.55), inset 0 0 0 1px var(--l-edge); transform: translateY(24px) scale(0.96); opacity: 0; pointer-events: none; transition: transform 0.55s cubic-bezier(0.3, 1.35, 0.5, 1), opacity 0.3s; }
+.lu-inst::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; background: conic-gradient(from var(--lux-ang, 0deg), transparent 0 62%, var(--l-sky) 76%, var(--l-violet) 86%, transparent 96%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: lux-spin 7s linear infinite; pointer-events: none; }
+.lu-inst.open { transform: none; opacity: 1; pointer-events: auto; }
+.lu-inst .grab { display: none; }
+.lu-inst .x { position: absolute; top: 12px; inset-inline-end: 12px; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: var(--l-muted); transition: background 0.2s; }
+.lu-inst .x:hover { background: var(--l-ground); color: var(--l-ink); }
+.lu-inst .x svg { width: 17px; height: 17px; }
+.lu-inst .head { display: flex; align-items: center; gap: 14px; padding-inline-end: 30px; }
+.lu-inst .app { position: relative; width: 64px; height: 64px; flex: none; }
+.lu-inst .app img { width: 64px; height: 64px; border-radius: 18px; box-shadow: 0 14px 26px -12px rgba(10, 25, 70, 0.65); animation: lu-inst-float 4s ease-in-out infinite; }
+.lu-inst .app .ring { position: absolute; inset: -5px; border-radius: 22px; border: 2px solid var(--l-sky); opacity: 0; animation: lu-wave 2.6s ease-out infinite; }
+@keyframes lu-inst-float { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.lu-inst .head b { display: block; font-family: var(--font-head); font-size: 17px; font-weight: 600; }
+.lu-inst .head small { display: block; margin-top: 3px; color: var(--l-muted); font-size: 12.5px; line-height: 1.6; }
+.lu-inst .perks { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.lu-inst .perk { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px 6px 7px; border-radius: 12px; background: var(--l-surface); box-shadow: var(--l-shadow); font-size: 12.5px; font-weight: 600; opacity: 0; transform: translateY(8px); }
+.lu-inst.open .perk { animation: lu-inst-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) forwards; }
+.lu-inst.open .perk:nth-child(2) { animation-delay: 0.08s; } .lu-inst.open .perk:nth-child(3) { animation-delay: 0.16s; }
+@keyframes lu-inst-in { to { opacity: 1; transform: none; } }
+.lu-inst .perk i { width: 26px; height: 26px; border-radius: 9px; display: grid; place-items: center; background: var(--t); color: var(--c); }
+.lu-inst .perk svg { width: 14px; height: 14px; }
+.lu-inst .steps { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+.lu-inst .steps li { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 15px; background: var(--l-surface); font-size: 13.5px; line-height: 1.7; opacity: 0; transform: translateY(8px); }
+.lu-inst.open .steps li { animation: lu-inst-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) forwards; animation-delay: calc(var(--k) * 90ms + 0.1s); }
+.lu-inst .steps .n { width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(145deg, var(--l-sky), var(--l-violet)); color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 13px; }
+.lu-inst .key { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; padding: 2px 7px; border-radius: 8px; background: var(--l-sky-t); color: var(--l-sky); font-weight: 600; font-size: 12.5px; }
+.lu-inst .key svg { width: 15px; height: 15px; }
+.lu-inst .steps li:first-child .key { animation: lu-inst-nudge 1.8s ease-in-out infinite 0.8s; }
+@keyframes lu-inst-nudge { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-3px); } }
+.lu-inst .acts { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+.lu-inst .go { flex: 1; height: 50px; border-radius: 15px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: transform 0.2s; }
+.lu-inst .go:hover { transform: translateY(-2px); }
+.lu-inst .go svg { width: 18px; height: 18px; }
+.lu-inst .later { height: 50px; padding: 0 16px; border-radius: 15px; background: var(--l-surface); color: var(--l-muted); font-weight: 600; font-size: 14px; box-shadow: var(--l-shadow); }
+.lu-inst .later:hover { color: var(--l-ink); }
+.lu-inst .note { flex: 1; color: var(--l-muted); font-size: 12.5px; }
+/* iPhone: an arrow bouncing toward Safari's Share button at the bottom */
+.lu-inst .pointer { position: absolute; left: 50%; bottom: -30px; width: 22px; height: 22px; margin-left: -11px; border-radius: 6px; background: var(--l-glass-strong); box-shadow: 0 10px 20px -10px rgba(10, 25, 70, 0.5); transform: rotate(45deg); animation: lu-inst-point 1.4s ease-in-out infinite; }
+@keyframes lu-inst-point { 50% { transform: translateY(6px) rotate(45deg); } }
+@media (max-width: 599px) {
+  .lu-inst-scrim.open { opacity: 1; pointer-events: auto; }
+  .lu-inst { inset-inline: 0; bottom: 0; width: 100%; border-radius: 28px 28px 0 0; padding: 12px 18px calc(20px + env(safe-area-inset-bottom)); transform: translateY(105%); }
+  .lu-inst.ios { inset-inline: 10px; width: auto; bottom: calc(44px + env(safe-area-inset-bottom)); border-radius: 26px; padding-bottom: 18px; }
+  .lu-inst .grab { display: block; width: 44px; height: 5px; margin: 0 auto 12px; border-radius: 999px; background: var(--l-line); }
+  .lu-inst.ios .grab { display: none; }
+  .lu-inst .x { top: 18px; }
+}
+@media (min-width: 600px) { .lu-inst .pointer { display: none; } .lu-inst.ios { top: 18px; bottom: auto; left: auto; right: 18px; transform: translateY(-24px) scale(0.96); } .lu-inst.ios.open { transform: none; } }
+
+/* Installed app: keep the island above the home indicator */
+.lu-island { bottom: calc(14px + env(safe-area-inset-bottom)); }
