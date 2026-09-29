@@ -25,7 +25,7 @@ export async function loadAuthContext(userId: string): Promise<AuthContext | nul
     }
   }
 
-  return { userId: user.id, fullName: user.fullName, email: user.email, roles, permissions, isSuperAdmin };
+  return { userId: user.id, fullName: user.fullName, email: user.email, roles, permissions, isSuperAdmin, avatarFileId: user.avatarFileId, avatarKey: user.avatarKey };
 }
 
 export const requireAuth = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {

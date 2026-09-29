@@ -4,14 +4,16 @@ import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { ImageUp, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/common/page-header";
-import { changePassword } from "@/api/auth";
+import { changePassword, type AvatarUser } from "@/api/auth";
+import { UserAvatar } from "@/components/lulu/user-avatar";
+import { openAvatarEditor } from "@/components/lulu/avatar-editor";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { translateRoleName } from "@/lib/role-display";
@@ -22,7 +24,8 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 export default function ProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = (i18n.language || "ar").startsWith("ar");
   const user = useAuthStore((s) => s.user);
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -44,6 +47,16 @@ export default function ProfilePage() {
           <CardTitle>{t("profile.account")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
+          <div className="lu-ave-hero mb-2">
+            <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={72} ring />
+            <div className="min-w-0 flex-1">
+              <b className="truncate">{user?.fullName}</b>
+              <small>{isAr ? "صورتك تظهر في القائمة الجانبية والمهام وقائمة المستخدمين" : "Shown in the sidebar, tasks and the users list"}</small>
+            </div>
+            <Button type="button" variant="outline" onClick={openAvatarEditor}>
+              <ImageUp className="h-4 w-4" /> {isAr ? "تغيير الصورة" : "Change picture"}
+            </Button>
+          </div>
           <p>
             <span className="text-muted-foreground">{t("profile.name")}: </span>
             {user?.fullName}

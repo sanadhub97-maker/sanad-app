@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, ChevronUp, Download, FileText, Globe, LogOut, Moon, Plus, Search, Sparkles, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, ChevronDown, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sparkles, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,11 @@ import { useLuluEffects, luluSwapTheme } from "@/components/lulu/lulu-effects";
 import { openInstall, useCanInstall } from "@/components/lulu/lulu-install";
 import { isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
 import { settingsApi } from "@/api/settings";
-import { logout as logoutRequest } from "@/api/auth";
+import { tasksApi } from "@/api/tasks";
+import { dashboardApi } from "@/api/dashboard";
+import { UserAvatar } from "@/components/lulu/user-avatar";
+import { AvatarEditor, openAvatarEditor } from "@/components/lulu/avatar-editor";
+import { logout as logoutRequest, type AvatarUser } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { translateRoleName } from "@/lib/role-display";
@@ -30,16 +34,17 @@ import { cn } from "@/lib/utils";
    tablets), a sticky glass header that holds each page's title and actions,
    and on phones the island at the bottom that opens into every section. */
 
-function initialsOf(name?: string | null) {
-  return (
-    name
-      ?.split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0])
-      .join("")
-      .toUpperCase() ?? "U"
-  );
+function useMedia(query: string) {
+  const [on, setOn] = useState(() => typeof window !== "undefined" && !!window.matchMedia?.(query).matches);
+  useEffect(() => {
+    const m = window.matchMedia?.(query);
+    if (!m) return;
+    const f = () => setOn(m.matches);
+    f();
+    m.addEventListener("change", f);
+    return () => m.removeEventListener("change", f);
+  }, [query]);
+  return on;
 }
 
 function useBranding() {
@@ -73,14 +78,20 @@ function AccountMenu({ children }: { children: ReactNode }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="top" className="w-64 rounded-3xl p-2">
-        <DropdownMenuLabel className="p-2 font-normal">
-          <p className="text-sm font-semibold text-foreground">{user?.fullName}</p>
-          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-          {role && <p className="mt-1 text-xs text-primary">{translateRoleName(role, t)}</p>}
+        <DropdownMenuLabel className="flex items-center gap-3 p-2 font-normal">
+          <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={44} />
+          <span className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{user?.fullName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+            {role && <p className="mt-0.5 text-xs text-primary">{translateRoleName(role, t)}</p>}
+          </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate("/profile")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <UserIcon className="h-4 w-4 text-muted-foreground" /> {t("common.profile")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setTimeout(openAvatarEditor, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+          <ImageUp className="h-4 w-4 text-muted-foreground" /> {isAr ? "تغيير الصورة الشخصية" : "Change picture"}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}
@@ -106,37 +117,102 @@ function AccountMenu({ children }: { children: ReactNode }) {
   );
 }
 
+function useSectionState() {
+  const KEY = "sanad.sidebar.shut";
+  const [shut, setShut] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const toggle = (s: string) =>
+    setShut((cur) => {
+      const next = cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s];
+      try {
+        localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {
+        /* private mode: remembered for this visit */
+      }
+      return next;
+    });
+  return { shut, toggle };
+}
+
+/** Counts shown beside sections: open tasks today, expired documents. */
+function useNavBadges() {
+  const hasPermission = useAuthStore((s) => s.hasPermission);
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const { data: tasks } = useQuery({ queryKey: ["tasks", "day", today], queryFn: () => tasksApi.day(today), enabled: hasPermission("tasks.view"), staleTime: 60_000 });
+  const { data: summary } = useQuery({ queryKey: ["dashboard", "summary"], queryFn: dashboardApi.summary, staleTime: 60_000 });
+  const open = (tasks ?? []).filter((t) => !t.done).length;
+  const badges: Record<string, { n: number; tone: string }> = {};
+  if (open) badges["/daily-tasks"] = { n: open, tone: "green" };
+  if (summary?.expiredDocuments) badges["/employee-documents"] = { n: summary.expiredDocuments, tone: "rose" };
+  return badges;
+}
+
 function Sidebar({ items }: { items: LuluNavItem[] }) {
   const { t, i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
   const navigate = useNavigate();
   const path = useLocation().pathname;
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((s) => s.user) as AvatarUser | null;
   const brand = useBranding();
+  const collapsed = useUiStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const narrow = useMedia("(max-width: 1179px)");
+  const rail = narrow || collapsed;
+  const { shut, toggle } = useSectionState();
+  const badges = useNavBadges();
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 
+  // Sections in menu order, each with its items.
+  const groups: { key: string; items: LuluNavItem[] }[] = [];
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (!last || (item.section && item.section !== last.key)) groups.push({ key: item.section ?? "main", items: [item] });
+    else last.items.push(item);
+  }
+
   const measure = useCallback(() => {
     const el = wrap.current?.querySelector<HTMLElement>(".lu-nav.on");
-    if (!el || !el.offsetWidth) return setGlide(null);
-    setGlide({ top: el.offsetTop, left: el.offsetLeft, width: el.offsetWidth, height: el.offsetHeight, tone: el.dataset.tone ?? "sky" });
+    if (!el || !el.offsetWidth || !el.offsetHeight) return setGlide(null);
+    const nav = wrap.current!.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    setGlide({ top: r.top - nav.top + wrap.current!.scrollTop, left: r.left - nav.left, width: r.width, height: r.height, tone: el.dataset.tone ?? "sky" });
   }, []);
-  useLayoutEffect(measure, [path, items.length, measure]);
+  useLayoutEffect(measure, [path, items.length, rail, shut, measure]);
   useEffect(() => {
+    const id = window.setTimeout(measure, 460);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [measure]);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener("resize", measure);
+    };
+  }, [measure, rail, shut]);
 
-  let lastSection: string | undefined;
+  const role = user?.isSuperAdmin ? (isAr ? "المشرف العام" : "Super Admin") : user?.roles?.[0];
+  const collapseLabel = rail ? (isAr ? "توسيع القائمة" : "Expand menu") : isAr ? "تصغير القائمة" : "Collapse menu";
+
   return (
-    <aside className="lu-side no-print" aria-label={isAr ? "الأقسام" : "Sections"}>
-      <button type="button" className="lu-brand" onClick={() => navigate("/")}>
-        <img src={brand.mark} alt="" />
-        <span className="min-w-0">
-          <b>{brand.name}</b>
-          <small>{isAr ? "نظام SanaD" : "SanaD system"}</small>
-        </span>
-      </button>
+    <aside className={cn("lu-side no-print", rail && "rail")} aria-label={isAr ? "الأقسام" : "Sections"} onTransitionEnd={(e) => e.target === e.currentTarget && measure()}>
+      <div className="lu-side-top">
+        <button type="button" className="lu-brand" onClick={() => navigate("/")} title={brand.name}>
+          <img src={brand.mark} alt="" />
+          <span className="min-w-0">
+            <b>{brand.name}</b>
+            <small>{isAr ? "نظام SanaD · متصل" : "SanaD · online"}</small>
+          </span>
+        </button>
+        {!narrow && (
+          <button type="button" className="lu-collapse" onClick={toggleSidebar} aria-label={collapseLabel} title={collapseLabel}>
+            {isAr ? <PanelRightClose /> : <PanelLeftClose />}
+          </button>
+        )}
+      </div>
       <nav ref={wrap} className="lu-navs">
         {glide && (
           <span
@@ -145,30 +221,56 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
             style={{ top: glide.top, left: glide.left, width: glide.width, height: glide.height, ["--gt" as string]: `var(--l-${glide.tone}-t)`, ["--gc" as string]: `var(--l-${glide.tone})` }}
           />
         )}
-        {items.map((item) => {
-          const Icon = item.icon;
-          const on = isOnPath(path, item.href);
-          const head = item.section && item.section !== lastSection ? item.section : undefined;
-          if (item.section) lastSection = item.section;
+        {groups.map((g) => {
+          const holdsCurrent = g.items.some((i) => isOnPath(path, i.href));
+          const isShut = !rail && shut.includes(g.key) && !holdsCurrent;
+          const count = g.items.reduce((a, i) => a + (badges[i.href]?.n ?? 0), 0);
           return (
-            <div key={item.href} className="contents">
-              {head && <span className="lu-sec">{t(head)}</span>}
-              <button type="button" data-tone={item.tone} title={item.label} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} aria-current={on ? "page" : undefined}>
-                <span className="i">
-                  <Icon />
-                </span>
-                <span className="txt">{item.label}</span>
+            <div key={g.key} className={cn("lu-grp", isShut && "shut")}>
+              <button type="button" className="lu-grp-h" onClick={() => !holdsCurrent && toggle(g.key)} aria-expanded={!isShut}>
+                <span>{g.key === "main" ? "" : t(g.key)}</span>
+                {isShut && count > 0 && <span className="lu-badge lu-badge-sm">{count}</span>}
+                <i className="ln" />
+                {!holdsCurrent && <ChevronDown />}
               </button>
+              <div className="lu-grp-b">
+                <div>
+                  {g.items.map((item) => {
+                    const Icon = item.icon;
+                    const on = isOnPath(path, item.href);
+                    const b = badges[item.href];
+                    return (
+                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} aria-current={on ? "page" : undefined}>
+                        <span className="i">
+                          <Icon />
+                        </span>
+                        <span className="txt">{item.label}</span>
+                        {b && (
+                          <span className="lu-badge" style={{ ["--bc" as string]: `var(--l-${b.tone})` }}>
+                            {b.n > 99 ? "99+" : b.n}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           );
         })}
       </nav>
       <AccountMenu>
         <button type="button" className="lu-me" aria-label={isAr ? "الحساب" : "Account"}>
-          <span className="lu-av">{initialsOf(user?.fullName)}</span>
-          <span className="min-w-0">
+          <span className="relative">
+            <UserAvatar name={user?.fullName} fileId={user?.avatarFileId} avatarKey={user?.avatarKey} size={40} ring />
+            <i className="on-dot" />
+          </span>
+          <span className="who">
             <b>{user?.fullName}</b>
-            <small>{user?.isSuperAdmin ? (isAr ? "المشرف العام" : "Super Admin") : user?.roles?.[0]}</small>
+            <small>{role}</small>
+          </span>
+          <span className="more">
+            <ChevronsUpDown />
           </span>
         </button>
       </AccountMenu>
@@ -208,8 +310,8 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
         {unread > 0 && <span className="dot">{unread > 9 ? "9+" : unread}</span>}
       </button>
       <AccountMenu>
-        <button type="button" className="lu-av lu-phone-only" aria-label={isAr ? "الحساب" : "Account"}>
-          {initialsOf(user?.fullName)}
+        <button type="button" className="lu-phone-only rounded-full" aria-label={isAr ? "الحساب" : "Account"}>
+          <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={44} ring />
         </button>
       </AccountMenu>
       <LuluNotifications open={open} anchor={bell} onClose={close} />
@@ -343,6 +445,7 @@ export function LuluShell() {
         </main>
         <Island items={items} current={current} />
         <LuluCommand open={cmd} onClose={() => setCmd(false)} pages={items} />
+        <AvatarEditor />
       </div>
     </PageHeaderSlotProvider>
   );

@@ -4,6 +4,8 @@ import { validate } from "@/middleware/validate";
 import { requireAuth } from "@/middleware/auth";
 import { ApiError } from "@/utils/apiError";
 import * as controller from "@/modules/auth/auth.controller";
+import { upload } from "@/modules/files/files.upload";
+import { z } from "zod";
 import {
   changePasswordSchema,
   forgotPasswordSchema,
@@ -39,5 +41,12 @@ router.post("/forgot-password", authLimiter, validate({ body: forgotPasswordSche
 router.post("/reset-password", authLimiter, validate({ body: resetPasswordSchema }), controller.resetPassword);
 router.post("/verify-email", validate({ body: verifyEmailSchema }), controller.verifyEmail);
 router.post("/change-password", requireAuth, validate({ body: changePasswordSchema }), controller.changePassword);
+router.put(
+  "/avatar",
+  requireAuth,
+  validate({ body: z.object({ avatarKey: z.string().regex(/^[a-z0-9-]{2,60}$/).nullable() }) }),
+  controller.setAvatar
+);
+router.post("/avatar/photo", requireAuth, upload.single("file"), controller.uploadAvatarPhoto);
 
 export default router;

@@ -16,6 +16,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { UserDialog } from "@/pages/users/user-dialog";
 import { translateRoleName } from "@/lib/role-display";
 import type { AppUser } from "@/types/models";
+import { UserAvatar } from "@/components/lulu/user-avatar";
 
 const columnHelper = createColumnHelper<AppUser>();
 
@@ -52,12 +53,9 @@ export default function UsersPage() {
       header: t("users.table.fullName"),
       cell: (c) => {
         const name = c.getValue();
-        const initials = name?.split(" ").slice(0, 2).map((p: string) => p[0]).join("") || "U";
         return (
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm">
-              {initials}
-            </div>
+            <UserAvatar name={name} fileId={c.row.original.avatarFileId} avatarKey={c.row.original.avatarKey} size={38} />
             <div>
               <p className="font-bold text-sm text-foreground">{name}</p>
               <p className="text-[11px] text-muted-foreground font-mono">{c.row.original.email}</p>

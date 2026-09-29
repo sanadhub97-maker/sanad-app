@@ -138,6 +138,8 @@ export interface AppUser {
   isActive: boolean;
   emailVerifiedAt?: string | null;
   lastLoginAt?: string | null;
+  avatarFileId?: string | null;
+  avatarKey?: string | null;
   roles: { id: string; name: string }[];
   createdAt: string;
 }

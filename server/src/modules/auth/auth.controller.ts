@@ -4,6 +4,9 @@ import { ApiError } from "@/utils/apiError";
 import { isProduction } from "@/config/env";
 import * as authService from "@/modules/auth/auth.service";
 import { loadAuthContext } from "@/middleware/auth";
+import { prisma } from "@/lib/prisma";
+import * as filesService from "@/modules/files/files.service";
+import type { AuthContext } from "@/types/express";
 
 const REFRESH_COOKIE = "refresh_token";
 
@@ -24,7 +27,7 @@ function clientMeta(req: Request) {
   return { ipAddress: req.ip, userAgent: req.headers["user-agent"] };
 }
 
-function serializeAuth(auth: { userId: string; fullName: string; email: string; roles: string[]; permissions: Set<string>; isSuperAdmin: boolean }) {
+function serializeAuth(auth: AuthContext) {
   return {
     id: auth.userId,
     fullName: auth.fullName,
@@ -32,6 +35,8 @@ function serializeAuth(auth: { userId: string; fullName: string; email: string; 
     roles: auth.roles,
     permissions: auth.isSuperAdmin ? ["*"] : Array.from(auth.permissions),
     isSuperAdmin: auth.isSuperAdmin,
+    avatarFileId: auth.avatarFileId,
+    avatarKey: auth.avatarKey,
   };
 }
 
@@ -94,4 +99,45 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   if (!req.auth) throw ApiError.unauthorized();
   await authService.changePassword(req.auth.userId, req.body.currentPassword, req.body.newPassword);
   res.json({ message: "Password changed successfully." });
+});
+
+// ---- The signed-in user's own avatar: a photo, a ready-made one, or initials ----
+
+async function currentAuth(req: Request) {
+  if (!req.auth) throw ApiError.unauthorized();
+  const fresh = await loadAuthContext(req.auth.userId);
+  if (!fresh) throw ApiError.unauthorized();
+  return fresh;
+}
+
+async function dropOldPhoto(fileId: string | null) {
+  if (fileId) await filesService.remove(fileId).catch(() => undefined);
+}
+
+/** PUT /auth/avatar { avatarKey } — a ready-made avatar, or null for initials. */
+export const setAvatar = asyncHandler(async (req: Request, res: Response) => {
+  const before = await currentAuth(req);
+  const avatarKey = (req.body.avatarKey as string | null) ?? null;
+  await prisma.user.update({ where: { id: before.userId }, data: { avatarKey, avatarFileId: null } });
+  await dropOldPhoto(before.avatarFileId);
+  res.json({ data: serializeAuth(await currentAuth(req)) });
+});
+
+/** POST /auth/avatar/photo (multipart "file") — the user's own photo. */
+export const uploadAvatarPhoto = asyncHandler(async (req: Request, res: Response) => {
+  const before = await currentAuth(req);
+  if (!req.file) throw ApiError.badRequest("No image was uploaded.");
+  if (!["image/jpeg", "image/png"].includes(req.file.mimetype)) throw ApiError.badRequest("The photo must be a JPG or PNG image.");
+  if (req.file.size > 2 * 1024 * 1024) throw ApiError.badRequest("The photo must be under 2 MB.");
+  const file = await filesService.saveFile({
+    buffer: req.file.buffer,
+    originalName: req.file.originalname || "avatar.jpg",
+    mimeType: req.file.mimetype,
+    uploadedById: before.userId,
+    module: "user-avatar",
+    relatedId: before.userId,
+  });
+  await prisma.user.update({ where: { id: before.userId }, data: { avatarFileId: file.id, avatarKey: null } });
+  await dropOldPhoto(before.avatarFileId);
+  res.json({ data: serializeAuth(await currentAuth(req)) });
 });

@@ -20,6 +20,8 @@ const selectSafe = {
   isActive: true,
   emailVerifiedAt: true,
   lastLoginAt: true,
+  avatarFileId: true,
+  avatarKey: true,
   createdAt: true,
   userRoles: { include: { role: { select: { id: true, name: true } } } },
 } satisfies Prisma.UserSelect;
