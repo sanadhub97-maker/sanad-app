@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
+import { getTrackableItems } from "@/services/expiringItems";
+import { NOTIFICATION_TITLE, messageArFor, subjectAr } from "@/jobs/expirationScan";
 import type { z } from "zod";
 import type { listNotificationsQuerySchema } from "@/modules/notifications/notifications.schemas";
 
@@ -21,7 +23,7 @@ export async function list(userId: string, query: ListQuery) {
     prisma.notification.count({ where: { userId, isRead: false } }),
   ]);
 
-  return { data, meta: paginationMeta(page, pageSize, total), unreadCount };
+  return { data: await withArabic(data), meta: paginationMeta(page, pageSize, total), unreadCount };
 }
 
 export async function markRead(userId: string, id: string) {
@@ -38,4 +40,31 @@ export async function remove(userId: string, id: string) {
   const notification = await prisma.notification.findFirst({ where: { id, userId } });
   if (!notification) throw ApiError.notFound("Notification not found");
   await prisma.notification.delete({ where: { id } });
+}
+
+type Row = Awaited<ReturnType<typeof prisma.notification.findMany>>[number];
+
+/** Notifications made before the Arabic text existed get it once, from the
+ * document they are about (or their English label when it is gone), and it
+ * is saved so this only happens the first time they are listed. */
+async function withArabic(rows: Row[]): Promise<Row[]> {
+  // The " — " form is an early wording, redone in the sentence form.
+  const missing = rows.filter((r) => !r.messageAr || / — [^ ]+( [^ ]+)?\.$/.test(r.messageAr));
+  if (!missing.length) return rows;
+  const items = await getTrackableItems().catch(() => []);
+  const byRecord = new Map(items.map((i) => [`${i.sourceType}:${i.recordId}`, i]));
+  const filled = new Map<string, { titleAr: string; messageAr: string }>();
+  for (const r of missing) {
+    const days = /will expire in (\d+) day/.exec(r.message)?.[1];
+    const english = r.message.replace(/ (has expired|will expire in \d+ days?)\.$/, "");
+    const item = byRecord.get(`${r.relatedType}:${r.relatedId}`);
+    const subject = item ? subjectAr(item) : english;
+    const titleAr = r.title === NOTIFICATION_TITLE.en ? NOTIFICATION_TITLE.ar : r.title;
+    const messageAr = messageArFor(subject, days ?? "expired");
+    filled.set(r.id, { titleAr, messageAr });
+  }
+  await Promise.all(
+    [...filled].map(([id, data]) => prisma.notification.update({ where: { id }, data }).catch(() => undefined))
+  );
+  return rows.map((r) => (filled.has(r.id) ? { ...r, ...filled.get(r.id)! } : r));
 }

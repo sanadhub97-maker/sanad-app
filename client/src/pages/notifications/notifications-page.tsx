@@ -11,11 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { notificationsApi } from "@/api/notifications";
 import { cn, formatDateTime } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
+import { notificationText } from "@/types/models";
 
 const SEVERITY_DOT: Record<string, string> = { CRITICAL: "bg-destructive", WARNING: "bg-warning", INFO: "bg-info" };
 
 export default function NotificationsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = (i18n.language || "ar").startsWith("ar");
   const queryClient = useQueryClient();
   const [severity, setSeverity] = useState("");
   const [isRead, setIsRead] = useState("");
@@ -88,8 +90,8 @@ export default function NotificationsPage() {
               <div key={n.id} className={cn("flex items-start gap-3 p-4", !n.isRead && "bg-muted/40")}>
                 <span className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", SEVERITY_DOT[n.severity])} />
                 <div className="flex-1">
-                  <p className="font-medium">{n.title}</p>
-                  <p className="text-sm text-muted-foreground">{n.message}</p>
+                  <p className="font-medium">{notificationText(n, isAr).title}</p>
+                  <p className="text-sm text-muted-foreground">{notificationText(n, isAr).message}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(n.createdAt)}</p>
                 </div>
                 <div className="flex gap-1">

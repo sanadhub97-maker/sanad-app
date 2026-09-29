@@ -169,6 +169,8 @@ model User {
   emailVerifiedAt  DateTime?
   lastLoginAt      DateTime?
   avatarFileId     String?
+  /** A ready-made illustrated avatar (see client saudi-avatars-data), used when no photo is uploaded. */
+  avatarKey        String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
@@ -456,6 +458,9 @@ model Notification {
   severity    NotificationSeverity
   title       String
   message     String
+  /** Arabic title and message; title/message hold the English text. */
+  titleAr     String?
+  messageAr   String?
   relatedType String?
   relatedId   String?
   isRead      Boolean              @default(false)

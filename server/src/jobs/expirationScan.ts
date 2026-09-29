@@ -34,6 +34,21 @@ function messageFor(item: TrackableItem, threshold: string): string {
   return `${item.label} will expire in ${threshold} day${threshold === "1" ? "" : "s"}.`;
 }
 
+export const NOTIFICATION_TITLE = { en: "Document Expiration Alert", ar: "تنبيه انتهاء وثيقة" };
+
+const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
+
+/** What the Arabic message is about: "الإقامة للموظف فلان", or the document's own name. */
+export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr">): string {
+  return item.documentAr && item.employeeNameAr ? `${item.documentAr} للموظف ${item.employeeNameAr.trim()}` : item.labelAr;
+}
+
+/** The Arabic twin of messageFor. */
+export function messageArFor(subject: string, threshold: string): string {
+  if (threshold === "expired") return `انتهت صلاحية ${subject}.`;
+  return `تنتهي صلاحية ${subject} خلال ${daysAr(Number(threshold))}.`;
+}
+
 async function getRecipients() {
   return prisma.user.findMany({
     where: { deletedAt: null, isActive: true, userRoles: { some: { role: { name: { in: NOTIFY_ROLE_NAMES } } } } },
@@ -96,6 +111,7 @@ export async function runExpirationScan() {
 
     const severity = severityFor(threshold);
     const message = messageFor(item, threshold);
+    const messageAr = messageArFor(subjectAr(item), threshold);
     const dedupeBase = `${item.key}:${threshold}`;
 
     // In-app notifications (one row per recipient) — always attempted.
@@ -104,8 +120,10 @@ export async function runExpirationScan() {
         data: recipients.map((r) => ({
           userId: r.id,
           severity,
-          title: "Document Expiration Alert",
+          title: NOTIFICATION_TITLE.en,
           message,
+          titleAr: NOTIFICATION_TITLE.ar,
+          messageAr,
           relatedType: item.sourceType,
           relatedId: item.recordId,
         })),
@@ -115,7 +133,13 @@ export async function runExpirationScan() {
     if (emailSettings?.enabled) {
       for (const recipient of recipients) {
         await logOnce(`${dedupeBase}:EMAIL:${recipient.id}`, "EMAIL", async () => {
-          assertSent(await sendMail({ to: recipient.email, subject: "Document Expiration Alert", html: `<p>${message}</p>` }));
+          assertSent(
+            await sendMail({
+              to: recipient.email,
+              subject: `${NOTIFICATION_TITLE.ar} | ${NOTIFICATION_TITLE.en}`,
+              html: `<p dir="rtl" style="font-family:Tahoma,sans-serif">${messageAr}</p><p dir="ltr" style="font-family:Arial,sans-serif;color:#555">${message}</p>`,
+            })
+          );
         });
       }
     }

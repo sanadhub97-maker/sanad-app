@@ -156,6 +156,9 @@ export interface NotificationItem {
   severity: "CRITICAL" | "WARNING" | "INFO";
   title: string;
   message: string;
+  /** Arabic title and message; title/message hold the English. */
+  titleAr?: string | null;
+  messageAr?: string | null;
   relatedType?: string | null;
   relatedId?: string | null;
   isRead: boolean;
@@ -180,4 +183,9 @@ export interface FileMeta {
   mimeType: string;
   size: number;
   createdAt: string;
+}
+
+/** A notification's title and message in the chosen language (Arabic falls back to English). */
+export function notificationText(n: Pick<NotificationItem, "title" | "message" | "titleAr" | "messageAr">, isAr: boolean) {
+  return isAr ? { title: n.titleAr || n.title, message: n.messageAr || n.message } : { title: n.title, message: n.message };
 }

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Bell, Check, Clock, Info } from "lucide-react";
 import { notificationsApi } from "@/api/notifications";
 import { cn, formatDateTime } from "@/lib/utils";
+import { notificationText } from "@/types/models";
 
 const SEVERITY: Record<string, { tone: string; icon: typeof Bell }> = {
   CRITICAL: { tone: "rose", icon: AlertTriangle },
@@ -80,8 +81,8 @@ export function LuluNotifications({ open, anchor, onClose }: { open: boolean; an
                 <Icon />
               </span>
               <span className="lu-cell">
-                <b>{n.title}</b>
-                <small className="line-clamp-2">{n.message}</small>
+                <b>{notificationText(n, isAr).title}</b>
+                <small className="line-clamp-2">{notificationText(n, isAr).message}</small>
                 <small>{formatDateTime(n.createdAt)}</small>
               </span>
             </button>
