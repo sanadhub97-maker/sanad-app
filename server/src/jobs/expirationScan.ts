@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp } from "@/services/whatsapp";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
 import { alertContext } from "@/services/whatsappTemplates";
 import { getAlertStyle, prepareAlert, type PreparedAlert } from "@/services/whatsappAlert";
+import { withLang } from "@/services/lang";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -106,6 +107,8 @@ export async function runExpirationScan() {
   ]);
   const companyName = branding.company?.nameAr || branding.company?.nameEn;
   const alertStyle = await getAlertStyle(branding.company?.nameEn);
+  // WhatsApp and email go out in the language chosen in Settings → WhatsApp.
+  const { language } = await getWhatsappScheduleSetting();
   const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
 
   let dueCount = 0;
@@ -142,8 +145,11 @@ export async function runExpirationScan() {
           assertSent(
             await sendMail({
               to: recipient.email,
-              subject: `${NOTIFICATION_TITLE.ar} | ${NOTIFICATION_TITLE.en}`,
-              html: `<p dir="rtl" style="font-family:Tahoma,sans-serif">${messageAr}</p><p dir="ltr" style="font-family:Arial,sans-serif;color:#555">${message}</p>`,
+              subject: language === "en" ? NOTIFICATION_TITLE.en : NOTIFICATION_TITLE.ar,
+              html:
+                language === "en"
+                  ? `<p dir="ltr" style="font-family:Arial,sans-serif">${message}</p>`
+                  : `<p dir="rtl" style="font-family:Tahoma,sans-serif">${messageAr}</p>`,
             })
           );
         });
@@ -155,7 +161,8 @@ export async function runExpirationScan() {
       // the in-app and email channels). Prepared on first use, so a card is
       // only drawn when some number still has this alert to receive.
       let prepared: Promise<PreparedAlert> | null = null;
-      const whatsappAlert = () => (prepared ??= prepareAlert(alertContext(item, companyName), alertStyle));
+      const whatsappAlert = () =>
+        (prepared ??= withLang(language, () => prepareAlert(alertContext(item, companyName, branding.company?.nameEn), alertStyle)));
       // The numbers configured in Settings → WhatsApp decide who gets alerts.
       // With Meta and no list configured, fall back to notify-role users' phones.
       const phones =

@@ -135,12 +135,16 @@ export interface WhatsappCardsPreview {
   /** Stylesheet and markup of every card, rendered live in the preview. */
   css: string;
   cards: Record<WhatsappCardId, string>;
+  /** The alert language the cards are drawn in. */
+  language?: "ar" | "en";
 }
 
 export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
 
 export interface WhatsappScheduleSettings {
   dispatchMode: WhatsappDispatchMode;
+  /** The language of WhatsApp and email alerts. */
+  language?: "ar" | "en";
   sendTime: string; // "09:00"
   timezone: string; // "Asia/Riyadh"
   lastRunAt?: string | null;

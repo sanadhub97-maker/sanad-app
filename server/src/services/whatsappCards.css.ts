@@ -250,3 +250,21 @@ export const CARD_CSS = `
 .c-pearl .r b { font-weight: 600; margin-right: auto; text-align: left; }
 .c-pearl .foot { text-align: center; font-size: 2.4cqw; color: #8e8e93; margin-top: 3cqw; }
 `;
+
+/** English cards: left to right, with the few physically placed pieces flipped.
+ * Applies in the sent image (html[dir=ltr]) and the Settings preview (:host([dir=ltr])). */
+const ltr = (rule: string) => `html[dir="ltr"] ${rule}, :host([dir="ltr"]) ${rule}`;
+export const CARD_CSS_LTR = [
+  `${ltr(".card")} { direction: ltr; }`,
+  `${ltr(".c-pass .wm")} { left: auto; right: -14cqw; }`,
+  `${ltr(".c-pass .kind")} { text-align: right; }`,
+  `${ltr(".c-pass .primary .en")} { text-align: left; }`,
+  `${ltr(".c-pass .status .ring")} { margin-right: 0; margin-left: auto; }`,
+  `${ltr(".c-ios .row .in b")} { text-align: right; }`,
+  `${ltr(".c-health .cat small")}, ${ltr(".c-lock .note .hd small")} { margin-right: 0; margin-left: auto; }`,
+  `${ltr(".c-health .track i")} { right: auto; left: 0; }`,
+  `${ltr(".c-health .r b")}, ${ltr(".c-pearl .r b")} { margin-right: 0; margin-left: auto; text-align: right; }`,
+  `${ltr(".c-lock .wm")} { left: auto; right: 2cqw; }`,
+  // "Expired" is wider than "منتهية": the big status word is set a little smaller.
+  `${ltr(".word")} { zoom: 0.72; }`,
+].join("\n");

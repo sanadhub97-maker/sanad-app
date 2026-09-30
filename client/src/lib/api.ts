@@ -1,6 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/authStore";
-import { tr } from "@/i18n";
+import i18n, { tr, isRtlLanguage } from "@/i18n";
 import { localizeServerMessage } from "@/lib/server-messages";
 
 export const api = axios.create({
@@ -11,6 +11,8 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // PDFs and exports come back in the interface language.
+  config.headers["X-UI-Lang"] = isRtlLanguage(i18n.language) ? "ar" : "en";
   return config;
 });
 

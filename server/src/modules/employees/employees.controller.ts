@@ -4,6 +4,7 @@ import * as service from "@/modules/employees/employees.service";
 import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext } from "@/services/branding";
 import { employeeProfilePdf } from "@/modules/pdf/templates";
+import { L } from "@/services/lang";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
   res.json(await service.list(req.query as never));
@@ -37,7 +38,7 @@ export const exportPdf = asyncHandler(async (req: Request, res: Response) => {
   const employee = await service.getById(String(req.params.id));
   const branding = await getBrandingContext();
   const html = employeeProfilePdf(employee as never, branding);
-  const pdf = await renderHtmlToPdf(html, { footerLabel: "Employee Profile" });
+  const pdf = await renderHtmlToPdf(html, { footerLabel: L("ملف الموظف", "Employee Profile") });
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `inline; filename="employee-${employee.employeeNumber}.pdf"`);
   res.send(pdf);

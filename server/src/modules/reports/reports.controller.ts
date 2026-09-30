@@ -4,34 +4,55 @@ import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
 import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
+import { actionLabel, moduleLabel } from "@/constants/auditLabels";
 import { tableReportPdf, statusBadge } from "@/modules/pdf/templates";
+import { L, isEn } from "@/services/lang";
 import * as service from "@/modules/reports/reports.service";
 
 type Row = Record<string, unknown>;
+
+/* Every report prints in the interface language (services/lang): Arabic
+   headers and values for Arabic, English ones for English. */
+
+const STATUS: Record<string, [string, string]> = {
+  VALID: ["سارية", "Valid"],
+  EXPIRING_SOON: ["قاربت على الانتهاء", "Ending soon"],
+  EXPIRED: ["منتهية", "Expired"],
+  ACTIVE: ["على رأس العمل", "Active"],
+  ON_LEAVE: ["في إجازة", "On leave"],
+  TERMINATED: ["منتهي التعاقد", "Terminated"],
+  INACTIVE: ["غير نشط", "Inactive"],
+};
+const statusLabel = (v: unknown) => (typeof v === "string" && STATUS[v] ? L(STATUS[v][0], STATUS[v][1]) : ((v as string) ?? "—"));
+const STATUS_KEYS = new Set(["status", "iqamaStatus", "passportStatus", "employmentStatus"]);
+
+/** A column with Arabic and English titles, reading the English field on English reports. */
+function col(ar: string, en: string, key: string, keyEn?: string, format?: ColumnDef<Row>["format"]): ColumnDef<Row> {
+  const k = isEn() && keyEn ? keyEn : key;
+  return { header: ar, subHeader: en, key: k, format: format ?? (STATUS_KEYS.has(key) ? (v) => statusLabel(v) : undefined) };
+}
 
 async function respond(
   res: Response,
   opts: {
     title: string;
-    titleEn?: string;
+    titleEn: string;
     filenameBase: string;
     format: string;
     columns: ColumnDef<Row>[];
     rows: Row[];
   }
 ) {
-  const { title, titleEn, filenameBase, format, columns, rows } = opts;
+  const { filenameBase, format, columns, rows } = opts;
+  const title = L(opts.title, opts.titleEn);
   const branding = await getBrandingContext();
 
   if (format === "xlsx") {
-    const companyTitle = branding.company?.nameAr
-      ? `${branding.company.nameAr} ${branding.company.nameEn ? `— ${branding.company.nameEn}` : ""}`
-      : undefined;
-
+    const name = isEn() ? branding.company?.nameEn || branding.company?.nameAr : branding.company?.nameAr || branding.company?.nameEn;
     const buffer = await buildWorkbook(title, columns, rows, {
       logo: await getPrintLogoPng(),
-      title: titleEn ? `${title} (${titleEn})` : title,
-      companyName: companyTitle,
+      title,
+      companyName: name || undefined,
     });
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${filenameBase}.xlsx"`);
@@ -42,7 +63,7 @@ async function respond(
     const csv = buildCsv(columns, rows);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="${filenameBase}.csv"`);
-    return res.send("\uFEFF" + csv); // Include BOM for proper Arabic display in Excel CSV
+    return res.send("﻿" + csv); // Include BOM for proper Arabic display in Excel CSV
   }
 
   if (format === "pdf") {
@@ -51,11 +72,10 @@ async function respond(
       subHeader: c.subHeader,
       render: (row: Row) => {
         const raw = row[c.key];
+        // Statuses are coloured badges, made from the status code itself.
+        if (STATUS_KEYS.has(c.key)) return statusBadge(raw as string);
         const value = c.format ? c.format(raw, row) : raw;
-        if (c.key === "status" || c.key === "iqamaStatus" || c.key === "passportStatus" || c.key === "employmentStatus") {
-          return statusBadge(value as string);
-        }
-        if (c.key === "kindAr") return `<b>${String(value ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b>`;
+        if (c.key === "kindAr" || c.key === "kindEn") return `<b>${String(value ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b>`;
         if (value instanceof Date) {
           const d = new Date(value);
           return `<span class="nowrap">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>`;
@@ -63,10 +83,8 @@ async function respond(
         return value === null || value === undefined ? "—" : String(value);
       },
     }));
-    const html = tableReportPdf(title, pdfColumns, rows, branding, { titleEn });
-    const pdf = await renderHtmlToPdf(html, {
-      footerLabel: titleEn ? `${title} — ${titleEn}` : title,
-    });
+    const html = tableReportPdf(opts.title, pdfColumns, rows, branding, { titleEn: opts.titleEn });
+    const pdf = await renderHtmlToPdf(html, { footerLabel: title });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filenameBase}.pdf"`);
     return res.send(pdf);
@@ -80,22 +98,22 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
   const rows = await service.employeesReport(req.query as never);
   await respond(res, {
     title: "تقرير الموظفين الشامل",
-    titleEn: "Comprehensive Employees & Workforce Report",
+    titleEn: "Employees Report",
     filenameBase: "employees-report",
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "الرقم الوظيفي", subHeader: "Emp ID", key: "employeeNumber" },
-      { header: "اسم الموظف", subHeader: "Full Name", key: "fullName" },
-      { header: "الجنسية", subHeader: "Nationality", key: "nationality" },
-      { header: "المسمى الوظيفي", subHeader: "Job Title", key: "jobTitle" },
-      { header: "القسم الإداري", subHeader: "Department", key: "department" },
-      { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
-      { header: "حالة العمل", subHeader: "Status", key: "employmentStatus" },
-      { header: "انتهاء الإقامة", subHeader: "Iqama Expiry", key: "iqamaExpiryDate" },
-      { header: "حالة الإقامة", subHeader: "Iqama Status", key: "iqamaStatus" },
-      { header: "انتهاء الجواز", subHeader: "Passport Expiry", key: "passportExpiryDate" },
-      { header: "حالة الجواز", subHeader: "Passport Status", key: "passportStatus" },
+      col("الرقم الوظيفي", "Emp ID", "employeeNumber"),
+      col("اسم الموظف", "Full Name", "fullName", "fullNameEn"),
+      col("الجنسية", "Nationality", "nationality", "nationalityEn"),
+      col("المسمى الوظيفي", "Job Title", "jobTitle", "jobTitleEn"),
+      col("القسم الإداري", "Department", "department", "departmentEn"),
+      col("الفرع / المنشأة", "Branch", "branch", "branchEn"),
+      col("حالة العمل", "Status", "employmentStatus"),
+      col("انتهاء الإقامة", "Iqama Expiry", "iqamaExpiryDate"),
+      col("حالة الإقامة", "Iqama Status", "iqamaStatus"),
+      col("انتهاء الجواز", "Passport Expiry", "passportExpiryDate"),
+      col("حالة الجواز", "Passport Status", "passportStatus"),
     ],
   });
 });
@@ -105,18 +123,18 @@ export const documents = asyncHandler(async (req: Request, res: Response) => {
   const rows = await service.documentsReport(req.query as never);
   await respond(res, {
     title: "تقرير متابعة الوثائق الرسمية والامتثال",
-    titleEn: "Official Documents & Compliance Expiration Report",
+    titleEn: "Documents & Expiry Report",
     filenameBase: "documents-expiration-report",
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "نوع الوثيقة", subHeader: "Document type", key: "kindAr" },
-      { header: "صاحب الوثيقة", subHeader: "Belongs to", key: "owner" },
-      { header: "التبعية", subHeader: "Employee / Establishment", key: "ownerType" },
-      { header: "رقم الوثيقة", subHeader: "Number", key: "documentNumber" },
-      { header: "الفرع", subHeader: "Branch", key: "branch" },
-      { header: "تاريخ الانتهاء", subHeader: "Expiry Date", key: "expiryDate" },
-      { header: "حالة الصلاحية", subHeader: "Status", key: "status" },
+      col("نوع الوثيقة", "Document type", "kindAr", "kindEn"),
+      col("صاحب الوثيقة", "Belongs to", "owner", "ownerEn"),
+      col("التبعية", "Employee / Establishment", "ownerType", "ownerTypeEn"),
+      col("رقم الوثيقة", "Number", "documentNumber"),
+      col("الفرع", "Branch", "branch", "branchEn"),
+      col("تاريخ الانتهاء", "Expiry Date", "expiryDate"),
+      col("حالة الصلاحية", "Status", "status"),
     ],
   });
 });
@@ -126,20 +144,20 @@ export const payments = asyncHandler(async (req: Request, res: Response) => {
   const rows = await service.paymentsReport(req.query as never);
   await respond(res, {
     title: "تقرير سندات الصرف والمصروفات التشغيلية",
-    titleEn: "Payment Vouchers & Operational Expenses Report",
+    titleEn: "Payment Vouchers Report",
     filenameBase: "payments-report",
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "رقم السند", subHeader: "Voucher #", key: "paymentNumber" },
-      { header: "تاريخ السند", subHeader: "Date", key: "paymentDate" },
-      { header: "بند الصرف", subHeader: "Category", key: "category", format: (v, row) => paymentCategoryLabel(v as string, row.type as string | null) },
-      { header: "طريقة الدفع", subHeader: "Method", key: "method", format: (v) => paymentMethodLabel(v as string) },
-      { header: "الفرع / المنشأة", subHeader: "Branch", key: "branch" },
-      { header: "الموظف / المستفيد", subHeader: "Beneficiary", key: "employee" },
-      { header: "المبلغ الأساسي", subHeader: "Amount (SAR)", key: "amount" },
-      { header: "الضريبة", subHeader: "VAT (SAR)", key: "vat" },
-      { header: "المبلغ الإجمالي", subHeader: "Total (SAR)", key: "total" },
+      col("رقم السند", "Voucher #", "paymentNumber"),
+      col("تاريخ السند", "Date", "paymentDate"),
+      col("بند الصرف", "Category", "category", undefined, (v, row) => paymentCategoryLabel(v as string, row.type as string | null)),
+      col("طريقة الدفع", "Method", "method", undefined, (v) => paymentMethodLabel(v as string)),
+      col("الفرع / المنشأة", "Branch", "branch", "branchEn"),
+      col("الموظف / المستفيد", "Beneficiary", "employee", "employeeEn"),
+      col("المبلغ الأساسي", "Amount (SAR)", "amount"),
+      col("الضريبة", "VAT (SAR)", "vat"),
+      col("المبلغ الإجمالي", "Total (SAR)", "total"),
     ],
   });
 });
@@ -149,17 +167,17 @@ export const activity = asyncHandler(async (req: Request, res: Response) => {
   const rows = await service.activityReport(req.query as never);
   await respond(res, {
     title: "سجل العمليات والتدقيق الإداري",
-    titleEn: "System Audit & Administrative Activity Log",
+    titleEn: "Activity Log",
     filenameBase: "audit-activity-report",
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "التاريخ والوقت", subHeader: "Timestamp", key: "date" },
-      { header: "المستخدم", subHeader: "User", key: "user" },
-      { header: "العملية", subHeader: "Action", key: "action" },
-      { header: "الموديول", subHeader: "Module", key: "module" },
-      { header: "المعرف", subHeader: "Record ID", key: "recordId" },
-      { header: "تفاصيل العملية", subHeader: "Description", key: "description" },
+      col("التاريخ والوقت", "Timestamp", "date"),
+      col("المستخدم", "User", "user", undefined, (v) => (v === "System" ? L("النظام", "System") : ((v as string) ?? "—"))),
+      col("العملية", "Action", "action", undefined, (v) => actionLabel(v as string)),
+      col("القسم", "Section", "module", undefined, (v) => moduleLabel(v as string)),
+      col("المعرف", "Record ID", "recordId"),
+      col("تفاصيل العملية", "Description", "description"),
     ],
   });
 });

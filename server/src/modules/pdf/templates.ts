@@ -2,6 +2,11 @@ import { pdfDocumentShell } from "@/services/pdf";
 import { DEFAULT_PRINT_SIGNATURES, type PrintSignatures, type SignatureDocument } from "@/services/settingsStore";
 import { daysRemainingLabel } from "@/services/expiration";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
+import { DOCUMENT_KINDS } from "@/services/expiringItems";
+import { L, isEn } from "@/services/lang";
+
+/** A value with an optional English version, for the current language. */
+const pick = (ar: string | null | undefined, en: string | null | undefined) => (isEn() ? en || ar : ar || en) || "—";
 
 type Branding = {
   company: { nameAr?: string | null; nameEn?: string | null } | null;
@@ -32,16 +37,17 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
   const date = printDate();
   const box = (b: { ar: string; en: string; nameFileId?: string | null }) => {
     const nameImg = b.nameFileId ? branding.nameImages?.[b.nameFileId] : null;
+    // One language: the box title in the document's language only.
+    const heading = isEn() ? b.en || b.ar : b.ar || b.en;
     return `
       <div class="sig-card">
         <div class="sig-card-header">
-          <div class="sig-title-ar">${escHtml(b.ar)}</div>
-          ${b.en ? `<div class="sig-title-en">${escHtml(b.en)}</div>` : ""}
+          <div class="sig-title-ar">${escHtml(heading)}</div>
         </div>
         <div class="sig-card-body">
-          <div class="sig-row"><span class="sig-label">الاسم:</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
-          <div class="sig-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
-          <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">${date}</span></div>
+          <div class="sig-row"><span class="sig-label">${L("الاسم:", "Name:")}</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
+          <div class="sig-row"><span class="sig-label">${L("التوقيع:", "Signature:")}</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">${L("التاريخ:", "Date:")}</span><span class="sig-date">${date}</span></div>
         </div>
       </div>`;
   };
@@ -52,8 +58,7 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
       : `<div class="sig-seal-box">
         <div class="official-seal-circle">
           <div class="seal-stars">★★★★★</div>
-          <div class="seal-text-ar">${escHtml(doc.sealAr).replace(/\n/g, "<br/>")}</div>
-          ${doc.sealEn ? `<div class="seal-text-en">${escHtml(doc.sealEn)}</div>` : ""}
+          <div class="seal-text-ar">${escHtml(isEn() ? doc.sealEn || doc.sealAr : doc.sealAr).replace(/\n/g, "<br/>")}</div>
         </div>
       </div>`;
 
@@ -71,18 +76,17 @@ function fmtDate(d: Date | null | undefined) {
 
 function statusBadge(status: string | null | undefined) {
   if (!status) return "—";
-  // Short Arabic labels: on A4 portrait a bilingual badge ate most of a
-  // table's width; the column headers already carry the English names.
-  const labels: Record<string, string> = {
-    VALID: "سارية",
-    ACTIVE: "على رأس العمل",
-    EXPIRING_SOON: "قاربت على الانتهاء",
-    ON_LEAVE: "في إجازة",
-    EXPIRED: "منتهية",
-    TERMINATED: "منتهي التعاقد",
-    INACTIVE: "غير نشط",
+  // Short labels in the document's language.
+  const labels: Record<string, [string, string]> = {
+    VALID: ["سارية", "Valid"],
+    ACTIVE: ["على رأس العمل", "Active"],
+    EXPIRING_SOON: ["قاربت على الانتهاء", "Ending soon"],
+    ON_LEAVE: ["في إجازة", "On leave"],
+    EXPIRED: ["منتهية", "Expired"],
+    TERMINATED: ["منتهي التعاقد", "Terminated"],
+    INACTIVE: ["غير نشط", "Inactive"],
   };
-  const label = labels[status] ?? status;
+  const label = labels[status] ? L(labels[status][0], labels[status][1]) : status;
   return `<span class="badge-status status-${status}">${label}</span>`;
 }
 
@@ -95,9 +99,11 @@ export function employeeProfilePdf(
     fullNameAr: string;
     fullNameEn: string | null;
     nationality: string | null;
+    nationalityEn?: string | null;
     jobTitle: string | null;
+    jobTitleEn?: string | null;
     department: string | null;
-    branch: { name: string } | null;
+    branch: { name: string; nameEn?: string | null } | null;
     mobile: string | null;
     email: string | null;
     employmentStatus: string;
@@ -116,40 +122,38 @@ export function employeeProfilePdf(
     <!-- 👤 Section 1: Personal & Employment Information -->
     <div class="section-card">
       <div class="section-header">
-        <span>البيانات الشخصية والوظيفية الأساسية (Personal & Employment Information)</span>
+        <span>${L("البيانات الشخصية والوظيفية الأساسية", "Personal & Employment Information")}</span>
         <span class="ref-code">#${employee.employeeNumber}</span>
       </div>
       <div class="section-body">
         <table>
           <tr>
-            <th style="width:20%;">الاسم الكامل (عربي)</th>
-            <td style="width:30%; font-weight:700;">${employee.fullNameAr}</td>
-            <th style="width:20%;">Full Name (English)</th>
-            <td style="width:30%; font-weight:700;">${employee.fullNameEn || "—"}</td>
+            <th style="width:20%;">${L("الاسم الكامل", "Full name")}</th>
+            <td style="width:30%; font-weight:700;">${pick(employee.fullNameAr, employee.fullNameEn)}</td>
+            <th style="width:20%;">${L("الرقم الوظيفي", "Employee no.")}</th>
+            <td style="width:30%; font-family:monospace; font-weight:700;">${employee.employeeNumber}</td>
           </tr>
           <tr>
-            <th>الرقم الوظيفي</th>
-            <td style="font-family:monospace; font-weight:700;">${employee.employeeNumber}</td>
-            <th>الجنسية (Nationality)</th>
-            <td>${employee.nationality ?? "—"}</td>
+            <th>${L("الجنسية", "Nationality")}</th>
+            <td>${pick(employee.nationality, employee.nationalityEn)}</td>
+            <th>${L("المسمى الوظيفي", "Job title")}</th>
+            <td>${pick(employee.jobTitle, employee.jobTitleEn)}</td>
           </tr>
           <tr>
-            <th>المسمى الوظيفي</th>
-            <td>${employee.jobTitle ?? "—"}</td>
-            <th>الفرع / المؤسسة</th>
-            <td>${employee.branch?.name ?? "—"}</td>
-          </tr>
-          <tr>
-            <th>رقم الجوال</th>
-            <td dir="ltr" style="text-align:right;">${employee.mobile ?? "—"}</td>
-            <th>البريد الإلكتروني</th>
-            <td dir="ltr" style="text-align:right;">${employee.email ?? "—"}</td>
-          </tr>
-          <tr>
-            <th>تاريخ الالتحاق</th>
-            <td>${fmtDate(employee.joiningDate)}</td>
-            <th>حالة الموظف</th>
+            <th>${L("الفرع / المؤسسة", "Establishment")}</th>
+            <td>${pick(employee.branch?.name, employee.branch?.nameEn)}</td>
+            <th>${L("حالة الموظف", "Status")}</th>
             <td>${statusBadge(employee.employmentStatus)}</td>
+          </tr>
+          <tr>
+            <th>${L("رقم الجوال", "Mobile")}</th>
+            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${employee.mobile ?? "—"}</td>
+            <th>${L("البريد الإلكتروني", "Email")}</th>
+            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${employee.email ?? "—"}</td>
+          </tr>
+          <tr>
+            <th>${L("تاريخ الالتحاق", "Joining date")}</th>
+            <td colspan="3">${fmtDate(employee.joiningDate)}</td>
           </tr>
         </table>
       </div>
@@ -158,27 +162,27 @@ export function employeeProfilePdf(
     <!-- 🪪 Section 2: Iqama & Passport Details -->
     <div class="section-card">
       <div class="section-header">
-        <span>وثائق الهوية والإقامة وجواز السفر (Identity & Passports)</span>
+        <span>${L("وثائق الهوية والإقامة وجواز السفر", "Iqama & Passport")}</span>
       </div>
       <div class="section-body">
         <table>
           <thead>
             <tr>
-              <th>الوثيقة</th>
-              <th>الرقم الرسمي</th>
-              <th>تاريخ الانتهاء</th>
-              <th>حالة الامتثال</th>
+              <th>${L("الوثيقة", "Document")}</th>
+              <th>${L("الرقم الرسمي", "Number")}</th>
+              <th>${L("تاريخ الانتهاء", "Expiry date")}</th>
+              <th>${L("الحالة", "Status")}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style="font-weight:700;">هوية مقيم / الإقامة (Iqama)</td>
+              <td style="font-weight:700;">${L("الإقامة", "Iqama")}</td>
               <td style="font-family:monospace; font-weight:700;">${employee.iqamaNumber ?? "—"}</td>
               <td>${fmtDate(employee.iqamaExpiryDate)}</td>
               <td>${statusBadge(employee.iqamaStatus)}</td>
             </tr>
             <tr>
-              <td style="font-weight:700;">جواز السفر (Passport)</td>
+              <td style="font-weight:700;">${L("جواز السفر", "Passport")}</td>
               <td style="font-family:monospace; font-weight:700;">${employee.passportNumber ?? "—"}</td>
               <td>${fmtDate(employee.passportExpiryDate)}</td>
               <td>${statusBadge(employee.passportStatus)}</td>
@@ -191,17 +195,17 @@ export function employeeProfilePdf(
     <!-- 📁 Section 3: Official Workforce Documents Schedule -->
     <div class="section-card">
       <div class="section-header">
-        <span>جدول المستندات والتراخيص الرسمية الملحقة (${employee.documents.length} وثائق)</span>
+        <span>${L(`المستندات الملحقة (${employee.documents.length} وثائق)`, `Other documents (${employee.documents.length})`)}</span>
       </div>
       <div class="section-body">
         <table>
           <thead>
             <tr>
-              <th>نوع الوثيقة</th>
-              <th>المسمى الإضافي</th>
-              <th>رقم الوثيقة</th>
-              <th>تاريخ الانتهاء</th>
-              <th>الحالة</th>
+              <th>${L("نوع الوثيقة", "Document type")}</th>
+              <th>${L("المسمى", "Name")}</th>
+              <th>${L("رقم الوثيقة", "Number")}</th>
+              <th>${L("تاريخ الانتهاء", "Expiry date")}</th>
+              <th>${L("الحالة", "Status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -211,7 +215,7 @@ export function employeeProfilePdf(
                     .map(
                       (d) =>
                         `<tr>
-                          <td style="font-weight:700;">${d.type}</td>
+                          <td style="font-weight:700;">${DOCUMENT_KINDS[d.type] ? L(DOCUMENT_KINDS[d.type][0], DOCUMENT_KINDS[d.type][1]) : d.type}</td>
                           <td>${d.name ?? "—"}</td>
                           <td style="font-family:monospace;">${d.documentNumber ?? "—"}</td>
                           <td>${fmtDate(d.expiryDate)}</td>
@@ -219,7 +223,7 @@ export function employeeProfilePdf(
                         </tr>`
                     )
                     .join("")
-                : `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:18px;">لا توجد وثائق إضافية مسجلة في ملف الموظف</td></tr>`
+                : `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:18px;">${L("لا توجد وثائق إضافية مسجلة في ملف الموظف", "No other documents on this employee's file")}</td></tr>`
             }
           </tbody>
         </table>
@@ -259,7 +263,7 @@ export function paymentReceiptPdf(
     method: string;
     paidBy: string | null;
     referenceNumber: string | null;
-    branch: { name: string } | null;
+    branch: { name: string; nameEn?: string | null } | null;
     employee: { fullNameAr: string; fullNameEn: string | null } | null;
     supplierName: string | null;
   },
@@ -273,48 +277,47 @@ export function paymentReceiptPdf(
     <!-- 💰 Total Amount Highlight Banner -->
     <div class="kpi-total-card">
       <div>
-        <div class="amount-label">المبلغ الإجمالي المستحق والمصروف (شامل ضريبة القيمة المضافة)</div>
-        <div class="amount-sub">Total Payable & Disbursed (VAT Included)</div>
+        <div class="amount-label">${L("المبلغ الإجمالي المصروف (شامل ضريبة القيمة المضافة)", "Total paid (VAT included)")}</div>
       </div>
       <div class="amount-val">
-        ${totalNum} <span style="font-size:11pt; font-weight:700;">ر.س SAR</span>
+        ${totalNum} <span style="font-size:11pt; font-weight:700;">${L("ر.س", "SAR")}</span>
       </div>
     </div>
 
     <!-- 📋 Section 1: Voucher & Transaction Details -->
     <div class="section-card">
       <div class="section-header">
-        <span>بيانات قيد الصرف والمؤسسة (Voucher & Establishment Details)</span>
+        <span>${L("بيانات قيد الصرف والمؤسسة", "Voucher & Establishment Details")}</span>
         <span class="ref-code">#${payment.paymentNumber}</span>
       </div>
       <div class="section-body">
         <table>
           <tr>
-            <th style="width:20%;">رقم سند الصرف</th>
+            <th style="width:20%;">${L("رقم سند الصرف", "Voucher no.")}</th>
             <td style="width:30%; font-family:monospace; font-weight:700;">${payment.paymentNumber}</td>
-            <th style="width:20%;">تاريخ السند</th>
+            <th style="width:20%;">${L("تاريخ السند", "Voucher date")}</th>
             <td style="width:30%; font-weight:700;">${fmtDate(payment.paymentDate)}</td>
           </tr>
           <tr>
-            <th>بند / تصنيف الصرف</th>
+            <th>${L("بند الصرف", "Category")}</th>
             <td style="font-weight:700;">${paymentCategoryLabel(payment.category, payment.type)}</td>
-            <th>طريقة الدفع</th>
+            <th>${L("طريقة الدفع", "Payment method")}</th>
             <td style="font-weight:700;">${paymentMethodLabel(payment.method)}</td>
           </tr>
           <tr>
-            <th>المؤسسة / الفرع</th>
-            <td>${payment.branch?.name ?? "—"}</td>
-            <th>القائم بالصرف</th>
+            <th>${L("المؤسسة / الفرع", "Establishment")}</th>
+            <td>${pick(payment.branch?.name, payment.branch?.nameEn)}</td>
+            <th>${L("القائم بالصرف", "Paid by")}</th>
             <td>${payment.paidBy ?? "—"}</td>
           </tr>
           <tr>
-            <th>الموظف المستفيد</th>
-            <td>${payment.employee ? payment.employee.fullNameAr : "—"}</td>
-            <th>المورد / الجهة المستفيدة</th>
+            <th>${L("الموظف المستفيد", "Employee")}</th>
+            <td>${payment.employee ? pick(payment.employee.fullNameAr, payment.employee.fullNameEn) : "—"}</td>
+            <th>${L("المورد / الجهة المستفيدة", "Supplier / payee")}</th>
             <td style="font-weight:700;">${payment.supplierName ?? "—"}</td>
           </tr>
           <tr>
-            <th>رقم المرجع / الفاتورة</th>
+            <th>${L("رقم المرجع / الفاتورة", "Reference / invoice no.")}</th>
             <td colspan="3" style="font-family:monospace;">${payment.referenceNumber ?? "—"}</td>
           </tr>
         </table>
@@ -324,26 +327,26 @@ export function paymentReceiptPdf(
     <!-- 📝 Section 2: Description & Breakdown -->
     <div class="section-card">
       <div class="section-header">
-        <span>البيان والتفاصيل المالية (Description & Financial Breakdown)</span>
+        <span>${L("البيان والتفاصيل المالية", "Description & Amounts")}</span>
       </div>
       <div class="section-body">
         <p class="desc-box">
-          <strong>البيان: </strong>${payment.description ?? "لا يوجد بيان مسجل لهذا السند."}
+          <strong>${L("البيان:", "Description:")} </strong>${payment.description ?? L("لا يوجد بيان مسجل لهذا السند.", "No description on this voucher.")}
         </p>
 
         <table>
           <thead>
             <tr>
-              <th style="text-align:center;">المبلغ الأساسي (خالي الضريبة)</th>
-              <th style="text-align:center;">ضريبة القيمة المضافة (VAT)</th>
-              <th class="total-th" style="text-align:center;">المبلغ الإجمالي المعتمد</th>
+              <th style="text-align:center;">${L("المبلغ الأساسي (بدون ضريبة)", "Amount (before VAT)")}</th>
+              <th style="text-align:center;">${L("ضريبة القيمة المضافة", "VAT")}</th>
+              <th class="total-th" style="text-align:center;">${L("المبلغ الإجمالي", "Total")}</th>
             </tr>
           </thead>
           <tbody>
             <tr style="text-align:center; font-family:'Cairo',monospace; font-size:11pt; font-weight:700;">
-              <td style="text-align:center;">${amountNum} ر.س</td>
-              <td style="text-align:center;">${vatNum} ر.س</td>
-              <td class="total-cell" style="text-align:center;">${totalNum} ر.س</td>
+              <td style="text-align:center;">${amountNum} ${L("ر.س", "SAR")}</td>
+              <td style="text-align:center;">${vatNum} ${L("ر.س", "SAR")}</td>
+              <td class="total-cell" style="text-align:center;">${totalNum} ${L("ر.س", "SAR")}</td>
             </tr>
           </tbody>
         </table>
@@ -363,7 +366,7 @@ export function paymentReceiptPdf(
     referenceNumber: payment.paymentNumber,
     classification: "سند صرف معتمد | Payment Voucher",
     theme: branding.printTheme,
-    highlight: { value: totalNum, label: "ريال سعودي" },
+    highlight: { value: totalNum, label: L("ريال سعودي", "Saudi riyals") },
     bodyHtml: body,
   });
 }
@@ -397,8 +400,8 @@ export function tableReportPdf(
     ? `
     <div class="section-card">
       <div class="section-header">
-        <span>جدول البيانات والنتائج (${rows.length} سجل مطابق)</span>
-        <span style="font-size:8pt; color:#64748b; font-weight:600;">تاريخ التصدير: ${fmtDate(new Date())}</span>
+        <span>${L(`جدول البيانات والنتائج (${rows.length} سجل مطابق)`, `Results (${rows.length} records)`)}</span>
+        <span style="font-size:8pt; color:#64748b; font-weight:600;">${L("تاريخ التصدير:", "Exported:")} ${fmtDate(new Date())}</span>
       </div>
       <div class="section-body" style="padding:0;">
         <table class="report-table ${density}" style="margin:0; border:none;">
@@ -408,7 +411,8 @@ export function tableReportPdf(
               ${columns
                 .map(
                   (c) =>
-                    `<th><div>${c.header}</div>${c.subHeader ? `<div class="th-sub">${c.subHeader}</div>` : ""}</th>`
+                    // One language: the English column name on English documents.
+                    `<th><div>${isEn() ? c.subHeader || c.header : c.header}</div></th>`
                 )
                 .join("")}
             </tr>
@@ -430,14 +434,14 @@ export function tableReportPdf(
 
     <!-- End of report summary -->
     <div class="report-summary-bar">
-      <span>✓ نهاية التقرير الرسمي — تم الاستخراج آلياً عبر منظومة سند لإدارة الموارد البشرية والامتثال</span>
-      <span class="summary-kpi">إجمالي السجلات: ${rows.length} سجل</span>
+      <span>${L("✓ نهاية التقرير الرسمي — تم الاستخراج آلياً عبر منظومة سند لإدارة الموارد البشرية والامتثال", "✓ End of report — generated by SanaD HR & Compliance")}</span>
+      <span class="summary-kpi">${L(`إجمالي السجلات: ${rows.length} سجل`, `Total records: ${rows.length}`)}</span>
     </div>
   `
     : `
     <div class="empty-state-card">
-            <div class="empty-state-title">لا توجد سجلات مطابقة لمعايير البحث الحالية</div>
-      <div class="empty-state-desc">لم يتم العثور على أي نتائج في قاعدة البيانات بناءً على الفلاتر والخيارات المحددة في هذا التقرير.</div>
+            <div class="empty-state-title">${L("لا توجد سجلات مطابقة لمعايير البحث الحالية", "No records match this report")}</div>
+      <div class="empty-state-desc">${L("لم يتم العثور على أي نتائج في قاعدة البيانات بناءً على الفلاتر والخيارات المحددة في هذا التقرير.", "Nothing was found for the filters chosen for this report.")}</div>
     </div>
   `;
 
@@ -456,7 +460,7 @@ export function tableReportPdf(
     logoDataUrl: branding.logoDataUrl,
     classification: opts?.classification || "تقرير تنفيذي رسمي معتمد | Official Executive Report",
     theme: branding.printTheme,
-    highlight: { value: String(rows.length).padStart(2, "0"), label: "سجل في التقرير" },
+    highlight: { value: String(rows.length).padStart(2, "0"), label: L("سجل في التقرير", "records") },
     bodyHtml: body,
   });
 }

@@ -12,6 +12,7 @@ import { logger } from "@/lib/logger";
 import { errorHandler, notFoundHandler } from "@/middleware/errorHandler";
 import { ApiError } from "@/utils/apiError";
 import routes from "@/routes";
+import { langMiddleware } from "@/services/lang";
 
 // When the client's production build sits alongside this repo (single
 // combined deploy, e.g. on Render), serve it from the same origin — avoids
@@ -53,6 +54,8 @@ export function createApp() {
   app.use(compression());
   app.use(cookieParser());
   app.use(express.json({ limit: "2mb" }));
+  // What PDFs and exports print in: the interface language the client sends.
+  app.use(langMiddleware);
   app.use(express.urlencoded({ extended: true }));
   app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/api/health" } }));
 

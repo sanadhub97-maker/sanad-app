@@ -11,8 +11,7 @@ import {
   CheckCircle2,
   CalendarClock,
   Layers,
-  Info,
-} from "lucide-react";
+  Info, Languages } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,11 +45,13 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
 
   const [mode, setMode] = useState<WhatsappDispatchMode>("both");
   const [time, setTime] = useState<string>("09:00");
+  const [language, setLanguage] = useState<"ar" | "en">("ar");
 
   useEffect(() => {
     if (data) {
       setMode(data.dispatchMode || "both");
       setTime(data.sendTime || "09:00");
+      setLanguage(data.language === "en" ? "en" : "ar");
     }
   }, [data]);
 
@@ -59,6 +60,8 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
       settingsApi.updateWhatsappSchedule(updated),
     onSuccess: (res) => {
       queryClient.setQueryData(["settings", "whatsapp", "schedule"], res.data);
+      // The design previews are drawn in the alert language.
+      queryClient.invalidateQueries({ queryKey: ["settings", "whatsapp"], predicate: (q) => q.queryKey[2] !== "schedule" });
       toast.success(
         isRtl
           ? "تم حفظ طريقة إرسال التنبيهات وموعد الجدولة بنجاح"
@@ -85,20 +88,26 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
   const isDirty = data && (mode !== data.dispatchMode || time !== data.sendTime);
 
   const handleSave = () => {
-    saveMutation.mutate({ dispatchMode: mode, sendTime: time });
+    saveMutation.mutate({ dispatchMode: mode, sendTime: time, language });
+  };
+
+  const handleLanguage = (next: "ar" | "en") => {
+    if (!canEdit || next === language) return;
+    setLanguage(next);
+    saveMutation.mutate({ dispatchMode: mode, sendTime: time, language: next });
   };
 
   const handleModeChange = (newMode: WhatsappDispatchMode) => {
     if (!canEdit) return;
     setMode(newMode);
     // Auto-save mode selection for a seamless experience
-    saveMutation.mutate({ dispatchMode: newMode, sendTime: time });
+    saveMutation.mutate({ dispatchMode: newMode, sendTime: time, language });
   };
 
   const handleTimePreset = (newTime: string) => {
     if (!canEdit) return;
     setTime(newTime);
-    saveMutation.mutate({ dispatchMode: mode, sendTime: newTime });
+    saveMutation.mutate({ dispatchMode: mode, sendTime: newTime, language });
   };
 
   return (
@@ -145,6 +154,39 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
+        {/* The language of the WhatsApp and email alerts */}
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label className="text-xs font-black text-foreground flex items-center gap-1.5">
+              <Languages className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{isRtl ? "لغة التنبيهات (واتساب والبريد):" : "Alert language (WhatsApp & email):"}</span>
+            </label>
+            <span className="text-[11px] text-muted-foreground">
+              {isRtl ? "الرسالة والبطاقة والبريد بلغة واحدة. تصميم «ثنائي اللغة» يبقى بالعربي والإنجليزي." : "The message, card and email in one language. The “Bilingual” design stays Arabic and English."}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:max-w-md" role="radiogroup" aria-label={isRtl ? "لغة التنبيهات" : "Alert language"}>
+            {(["ar", "en"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="radio"
+                aria-checked={language === l}
+                disabled={!canEdit}
+                onClick={() => handleLanguage(l)}
+                className={cn(
+                  "h-11 rounded-2xl border text-sm font-bold transition-all",
+                  language === l
+                    ? "bg-emerald-500/10 border-emerald-500/80 text-emerald-700 ring-2 ring-emerald-500/30 dark:text-emerald-300"
+                    : "bg-background/60 border-border/80 text-muted-foreground hover:bg-muted/30"
+                )}
+              >
+                {l === "ar" ? "العربية" : "English"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* ============================================================== */}
         {/* Section 1: Dispatch Mode Selection (3 Cards)                   */}
         {/* ============================================================== */}

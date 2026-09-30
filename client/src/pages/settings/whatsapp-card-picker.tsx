@@ -38,7 +38,7 @@ const FONTS_HREF = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabi
 
 /** One card, drawn live from the server's markup. A shadow root keeps its
  * stylesheet and the app's from touching each other. */
-function CardPreview({ css, markup }: { css: string; markup: string }) {
+function CardPreview({ css, markup, dir = "rtl" }: { css: string; markup: string; dir?: "rtl" | "ltr" }) {
   const host = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = host.current;
@@ -47,7 +47,7 @@ function CardPreview({ css, markup }: { css: string; markup: string }) {
     root.innerHTML = `<style>${css}</style><div class="cardbox">${markup}</div>`;
   }, [css, markup]);
   // The card sizes itself from its width (cqw), so the host must be given one.
-  return <div ref={host} dir="rtl" className="block w-full min-w-0 overflow-hidden rounded-md" />;
+  return <div ref={host} dir={dir} className="block w-full min-w-0 overflow-hidden rounded-md" />;
 }
 
 /** Settings → WhatsApp: the picture sent with each alert, or none. */
@@ -128,7 +128,7 @@ export function WhatsappCardPicker({ canEdit, isRtl }: { canEdit: boolean; isRtl
               {selected && <Check className="h-3 w-3" />}
             </span>
           </div>
-          <div className="w-full px-3 pb-3">{data && <CardPreview css={data.css} markup={data.cards[d.id]} />}</div>
+          <div className="w-full px-3 pb-3">{data && <CardPreview css={data.css} markup={data.cards[d.id]} dir={data.language === "en" ? "ltr" : "rtl"} />}</div>
         </button>
         <button
           type="button"
@@ -271,7 +271,7 @@ export function WhatsappCardPicker({ canEdit, isRtl }: { canEdit: boolean; isRtl
             <DialogTitle>{enlarged && (isRtl ? enlarged.nameAr : enlarged.nameEn)}</DialogTitle>
             <DialogDescription>{enlarged && (isRtl ? enlarged.descAr : enlarged.descEn)}</DialogDescription>
           </DialogHeader>
-          {enlarged && data && <CardPreview css={data.css} markup={data.cards[enlarged.id]} />}
+          {enlarged && data && <CardPreview css={data.css} markup={data.cards[enlarged.id]} dir={data.language === "en" ? "ltr" : "rtl"} />}
         </DialogContent>
       </Dialog>
     </Card>

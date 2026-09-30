@@ -5,6 +5,7 @@ import { buildEmployeesImportTemplate } from "@/modules/importExport/employeesTe
 import { importEmployees } from "@/modules/importExport/employeesImport";
 import { buildWorkbook } from "@/services/excel";
 import * as service from "@/modules/importExport/importExport.service";
+import { L } from "@/services/lang";
 
 export const employeesTemplate = asyncHandler(async (_req: Request, res: Response) => {
   const buffer = await buildEmployeesImportTemplate();
@@ -39,11 +40,11 @@ export const getJob = asyncHandler(async (req: Request, res: Response) => {
 export const downloadJobErrors = asyncHandler(async (req: Request, res: Response) => {
   const job = await service.getJob(String(req.params.id));
   const buffer = await buildWorkbook(
-    "Import Errors",
+    L("أخطاء الاستيراد", "Import Errors"),
     [
-      { header: "Row", key: "rowNumber" },
-      { header: "Field", key: "field" },
-      { header: "Message", key: "message" },
+      { header: "الصف", subHeader: "Row", key: "rowNumber" },
+      { header: "الحقل", subHeader: "Field", key: "field" },
+      { header: "المشكلة", subHeader: "Problem", key: "message" },
     ],
     job.errors as never
   );

@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
+import { isEn } from "@/services/lang";
 
 // Canonical header -> field mapping. Matching is case-insensitive and tries
 // every alias (Arabic, English, Bilingual) so the bundled template always
@@ -10,6 +11,8 @@ const HEADER_ALIASES: Record<string, string> = {
   "employee number": "employeeNumber",
   "employee no": "employeeNumber",
   "full name (arabic)": "fullNameAr",
+  "full name arabic": "fullNameAr",
+  "full name english": "fullNameEn",
   "full name ar": "fullNameAr",
   "full name (english)": "fullNameEn",
   "full name en": "fullNameEn",
@@ -466,7 +469,8 @@ export async function importEmployees(
             create: allErrors.map((e) => ({
               rowNumber: e.rowNumber,
               field: e.field,
-              message: e.message,
+              // Saved in the language the import was run in, for the errors file.
+              message: isEn() ? e.messageEn ?? e.message : e.message,
               rawData: e.rawData as never,
             })),
           }

@@ -2,6 +2,11 @@ import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { getPrintLogoPng } from "@/services/branding";
 import { addLogoToSheet } from "@/services/excel";
+import { L, isEn } from "@/services/lang";
+
+/* The template comes in the interface language: English headers, hints and
+   example on English, Arabic ones on Arabic. The importer reads either. */
+const headerOf = (c: TemplateColumn) => (isEn() ? `${c.required ? "* " : ""}${c.headerEn}` : c.headerAr);
 
 export interface TemplateColumn {
   key: string;
@@ -12,6 +17,8 @@ export interface TemplateColumn {
   group: "identity" | "personal" | "job" | "documents" | "notes";
   noteAr?: string;
   exampleVal: string;
+  noteEn?: string;
+  exampleEn?: string;
 }
 
 const TEMPLATE_COLUMNS: TemplateColumn[] = [
@@ -25,6 +32,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "identity",
     noteAr: "رقم فريد غير مكرر لكل موظف (مثل: EMP-001)",
     exampleVal: "EMP-0001",
+    noteEn: "A unique number for each employee (e.g. EMP-001)",
+    exampleEn: "EMP-0001",
   },
   {
     key: "fullNameAr",
@@ -35,6 +44,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "identity",
     noteAr: "الاسم الرباعي أو الثلاثي باللغة العربية",
     exampleVal: "عبدالله بن محمد العتيبي",
+    noteEn: "The full name in Arabic",
+    exampleEn: "عبدالله بن محمد العتيبي",
   },
   {
     key: "fullNameEn",
@@ -44,6 +55,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "identity",
     noteAr: "الاسم باللغة الإنجليزية كما في الجواز أو الإقامة",
     exampleVal: "Abdullah Mohammed Al-Otaibi",
+    noteEn: "The name in English as on the passport or iqama",
+    exampleEn: "Abdullah Mohammed Al-Otaibi",
   },
 
   // 2. Personal & Contact
@@ -55,6 +68,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "personal",
     noteAr: "الجنسية (مثال: سعودي / مصري / أردني...)",
     exampleVal: "سعودي",
+    noteEn: "Nationality (e.g. Saudi / Egyptian / Jordanian…)",
+    exampleEn: "Saudi",
   },
   {
     key: "gender",
@@ -64,6 +79,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "personal",
     noteAr: "الاختيار من القائمة: MALE أو FEMALE (أو: ذكر / أنثى)",
     exampleVal: "MALE",
+    noteEn: "Pick from the list: MALE or FEMALE",
+    exampleEn: "MALE",
   },
   {
     key: "dateOfBirth",
@@ -73,6 +90,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "personal",
     noteAr: "صيغة التاريخ: YYYY-MM-DD (سنة-شهر-يوم)",
     exampleVal: "1992-05-14",
+    noteEn: "Date format: YYYY-MM-DD",
+    exampleEn: "1992-05-14",
   },
   {
     key: "mobile",
@@ -82,6 +101,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "personal",
     noteAr: "رقم الاتصال المباشر (مثل: 0501234567)",
     exampleVal: "0501234567",
+    noteEn: "Direct contact number (e.g. 0501234567)",
+    exampleEn: "0501234567",
   },
   {
     key: "email",
@@ -91,6 +112,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "personal",
     noteAr: "البريد الإلكتروني الرسمي أو الشخصي",
     exampleVal: "a.alotaibi@example.com",
+    noteEn: "Work or personal email",
+    exampleEn: "a.alotaibi@example.com",
   },
 
   // 3. Job & Branch
@@ -102,6 +125,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "job",
     noteAr: "المسمى الوظيفي المعتمد في العقد",
     exampleVal: "مدير الموارد البشرية",
+    noteEn: "The job title in the contract",
+    exampleEn: "HR Manager",
   },
   {
     key: "department",
@@ -111,6 +136,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "job",
     noteAr: "الإدارة التابع لها الموظف",
     exampleVal: "الموارد البشرية",
+    noteEn: "The employee's department",
+    exampleEn: "Human Resources",
   },
   {
     key: "branchCode",
@@ -120,6 +147,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "job",
     noteAr: "كود الفرع المسجل بالنظام (يتم اختياره من القائمة)",
     exampleVal: "",
+    noteEn: "The establishment's code in the system (pick from the list)",
+    exampleEn: "",
   },
   {
     key: "joiningDate",
@@ -129,6 +158,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "job",
     noteAr: "تاريخ المباشرة بصيغة: YYYY-MM-DD",
     exampleVal: "2023-01-01",
+    noteEn: "Start date: YYYY-MM-DD",
+    exampleEn: "2023-01-01",
   },
   {
     key: "employmentStatus",
@@ -138,6 +169,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "job",
     noteAr: "ACTIVE (نشط) / INACTIVE (غير نشط) / ON_LEAVE (إجازة) / TERMINATED (منتهي)",
     exampleVal: "ACTIVE",
+    noteEn: "ACTIVE / INACTIVE / ON_LEAVE / TERMINATED",
+    exampleEn: "ACTIVE",
   },
 
   // 4. Official Documents
@@ -149,6 +182,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "رقم الهوية الوطنية أو الإقامة المكون من 10 أرقام",
     exampleVal: "1023456789",
+    noteEn: "The 10-digit national ID or iqama number",
+    exampleEn: "1023456789",
   },
   {
     key: "iqamaIssueDate",
@@ -158,6 +193,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "صيغة التاريخ: YYYY-MM-DD",
     exampleVal: "2023-01-01",
+    noteEn: "Date format: YYYY-MM-DD",
+    exampleEn: "2023-01-01",
   },
   {
     key: "iqamaExpiryDate",
@@ -167,6 +204,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "مهم جداً لنظام التنبيهات والرادار: YYYY-MM-DD",
     exampleVal: "2026-12-31",
+    noteEn: "Needed for the expiry alerts: YYYY-MM-DD",
+    exampleEn: "2026-12-31",
   },
   {
     key: "passportNumber",
@@ -176,6 +215,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "رقم جواز السفر للموظف",
     exampleVal: "G98765432",
+    noteEn: "The employee's passport number",
+    exampleEn: "G98765432",
   },
   {
     key: "passportCountry",
@@ -185,6 +226,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "الدولة المصدرة للجواز",
     exampleVal: "المملكة العربية السعودية",
+    noteEn: "The country that issued the passport",
+    exampleEn: "Saudi Arabia",
   },
   {
     key: "passportIssueDate",
@@ -194,6 +237,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "صيغة التاريخ: YYYY-MM-DD",
     exampleVal: "2022-05-10",
+    noteEn: "Date format: YYYY-MM-DD",
+    exampleEn: "2022-05-10",
   },
   {
     key: "passportExpiryDate",
@@ -203,6 +248,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "documents",
     noteAr: "صيغة التاريخ: YYYY-MM-DD",
     exampleVal: "2032-05-09",
+    noteEn: "Date format: YYYY-MM-DD",
+    exampleEn: "2032-05-09",
   },
 
   // 5. Notes
@@ -214,6 +261,8 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     group: "notes",
     noteAr: "أي ملاحظات إضافية خاصة بالموظف",
     exampleVal: "نموذج استرشادي توضيحي (يرجى حذفه أو استبداله)",
+    noteEn: "Any other notes about the employee",
+    exampleEn: "Example row (delete or replace it)",
   },
 ];
 
@@ -244,8 +293,8 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   // -------------------------------------------------------------
   // 📄 ورقة العمل 1: بيانات الموظفين (RTL)
   // -------------------------------------------------------------
-  const sheet = workbook.addWorksheet("بيانات الموظفين (Employees)", {
-    views: [{ state: "frozen", ySplit: 4, rightToLeft: true }],
+  const sheet = workbook.addWorksheet(L("بيانات الموظفين", "Employees"), {
+    views: [{ state: "frozen", ySplit: 4, rightToLeft: !isEn() }],
   });
 
   // تعيين عروض الأعمدة
@@ -263,7 +312,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   row1.height = logo ? 48 : 36;
   if (logo) addLogoToSheet(workbook, sheet, logo);
   const cell1 = sheet.getCell(1, 1);
-  cell1.value = "🏢 نظام SanaD لإدارة الموارد البشرية والامتثال الحكومي | SanaD Enterprise HR & Compliance Suite";
+  cell1.value = L("🏢 نظام SanaD لإدارة الموارد البشرية والامتثال الحكومي", "🏢 SanaD HR & Compliance");
   cell1.font = { name: "Cairo", size: 13, bold: true, color: { argb: "FFFFFFFF" } };
   cell1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   cell1.alignment = { vertical: "middle", horizontal: "center" };
@@ -273,7 +322,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   const row2 = sheet.getRow(2);
   row2.height = 28;
   const cell2 = sheet.getCell(2, 1);
-  cell2.value = "📋 قالب استيراد وتحديث بيانات الموظفين المعتمد (Official Employee Import Template - v2.4)";
+  cell2.value = L("📋 قالب استيراد وتحديث بيانات الموظفين المعتمد", "📋 Employee import template");
   cell2.font = { name: "Cairo", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   cell2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A8A" } };
   cell2.alignment = { vertical: "middle", horizontal: "center" };
@@ -283,8 +332,10 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   const row3 = sheet.getRow(3);
   row3.height = 24;
   const cell3 = sheet.getCell(3, 1);
-  cell3.value =
-    "💡 تنبيه: الحقول ذات النجمة (*) إلزامية. التواريخ بصيغة (YYYY-MM-DD). الصف 5 نموذج توضيحي يمكن حذفه أو استبداله. راجع ورقة 'التعليمات' لمزيد من التفاصيل.";
+  cell3.value = L(
+    "💡 تنبيه: الحقول ذات النجمة (*) إلزامية. التواريخ بصيغة (YYYY-MM-DD). الصف 5 نموذج توضيحي يمكن حذفه أو استبداله. راجع ورقة 'التعليمات' لمزيد من التفاصيل.",
+    "💡 Fields marked * are required. Dates are YYYY-MM-DD. Row 5 is an example you can delete or replace. See the 'Guide' sheet for details."
+  );
   cell3.font = { name: "Cairo", size: 9.5, italic: true, bold: true, color: { argb: "FF1E293B" } };
   cell3.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
   cell3.alignment = { vertical: "middle", horizontal: "center" };
@@ -300,7 +351,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     const colNum = idx + 1;
     const cell = sheet.getCell(4, colNum);
     // ثنائي اللغة: العربي في الأعلى والإنجليزية في الأسفل
-    cell.value = `${col.headerAr}\n(${col.headerEn})`;
+    cell.value = headerOf(col);
     const grp = GROUP_COLORS[col.group] ?? GROUP_COLORS.personal;
 
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: grp.bg } };
@@ -317,7 +368,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   // 🌟 الصف 5: الصف النموذجي الاسترشادي (Example Row)
   const exampleValues = TEMPLATE_COLUMNS.map((c) => {
     if (c.key === "branchCode") return defaultBranch;
-    return c.exampleVal;
+    return isEn() ? c.exampleEn ?? c.exampleVal : c.exampleVal;
   });
 
   const exampleRow = sheet.getRow(5);
@@ -329,7 +380,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     const cell = sheet.getCell(5, colNum);
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0FDF4" } }; // Soft light mint tint
     cell.font = { name: "Cairo", size: 9.5, italic: true, color: { argb: "FF334155" } };
-    cell.alignment = { vertical: "middle", horizontal: idx < 3 ? "right" : "center" };
+    cell.alignment = { vertical: "middle", horizontal: idx < 3 ? (isEn() ? "left" : "right") : "center" };
     cell.border = {
       top: { style: "thin", color: { argb: "FFCBD5E1" } },
       bottom: { style: "thin", color: { argb: "FFCBD5E1" } },
@@ -349,7 +400,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
       const cell = sheet.getCell(r, c);
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgArgb } };
       cell.font = { name: "Cairo", size: 10, color: { argb: "FF0F172A" } };
-      cell.alignment = { vertical: "middle", horizontal: c === 2 || c === 3 || c === 21 ? "right" : "center" };
+      cell.alignment = { vertical: "middle", horizontal: c === 2 || c === 3 || c === 21 ? (isEn() ? "left" : "right") : "center" };
       cell.border = {
         top: { style: "thin", color: { argb: "FFE2E8F0" } },
         bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
@@ -373,8 +424,8 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
       type: "list",
       formulae: ['"MALE,FEMALE"'],
       allowBlank: true,
-      error: "يرجى اختيار MALE أو FEMALE من القائمة",
-      errorTitle: "قيمة غير صحيحة للجنس",
+      error: L("يرجى اختيار MALE أو FEMALE من القائمة", "Pick MALE or FEMALE from the list"),
+      errorTitle: L("قيمة غير صحيحة للجنس", "Invalid gender"),
     };
 
     // قائمة الحالة الوظيفية
@@ -382,8 +433,8 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
       type: "list",
       formulae: ['"ACTIVE,INACTIVE,ON_LEAVE,TERMINATED"'],
       allowBlank: true,
-      error: "يرجى اختيار إحدى الحالات المعتمدة: ACTIVE / INACTIVE / ON_LEAVE / TERMINATED",
-      errorTitle: "حالة وظيفية غير معتمدة",
+      error: L("يرجى اختيار إحدى الحالات المعتمدة: ACTIVE / INACTIVE / ON_LEAVE / TERMINATED", "Pick one of: ACTIVE / INACTIVE / ON_LEAVE / TERMINATED"),
+      errorTitle: L("حالة وظيفية غير معتمدة", "Invalid employment status"),
     };
 
     // قائمة الفروع النشطة
@@ -392,8 +443,8 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
         type: "list",
         formulae: [`"${branchCodes.join(",")}"`],
         allowBlank: true,
-        error: `يرجى اختيار كود فرع صحيح من الفروع المسجلة: (${branchCodes.join(", ")})`,
-        errorTitle: "كود فرع غير مسجل",
+        error: L(`يرجى اختيار كود فرع صحيح من الفروع المسجلة: (${branchCodes.join(", ")})`, `Pick a registered establishment code: (${branchCodes.join(", ")})`),
+        errorTitle: L("كود فرع غير مسجل", "Unknown establishment code"),
       };
     }
   }
@@ -401,22 +452,22 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   // -------------------------------------------------------------
   // 📖 ورقة العمل 2: دليل التعليمات والإرشادات (Instructions Sheet)
   // -------------------------------------------------------------
-  const instructions = workbook.addWorksheet("دليل التعليمات (Guide)", {
-    views: [{ state: "frozen", ySplit: 3, rightToLeft: true }],
+  const instructions = workbook.addWorksheet(L("دليل التعليمات", "Guide"), {
+    views: [{ state: "frozen", ySplit: 3, rightToLeft: !isEn() }],
   });
 
   instructions.columns = [
-    { header: "اسم الحقل (العربي)", width: 26 },
-    { header: "English Name", width: 24 },
-    { header: "درجة الإلزامية", width: 16 },
-    { header: "الصيغة المعتمدة", width: 22 },
-    { header: "إرشادات وتوجيهات الاستخدام", width: 60 },
+    { header: L("اسم الحقل", "Field"), width: 26 },
+    { header: L("الاسم في القالب", "Column in the template"), width: 24 },
+    { header: L("درجة الإلزامية", "Required"), width: 16 },
+    { header: L("الصيغة المعتمدة", "Format"), width: 22 },
+    { header: L("إرشادات وتوجيهات الاستخدام", "How to fill it"), width: 60 },
   ];
 
   // ترويسة دليل التعليمات
   instructions.mergeCells(1, 1, 1, 5);
   const insTitle = instructions.getCell(1, 1);
-  insTitle.value = "📖 دليل وضوابط تعبئة قالب استيراد وتحديث بيانات الموظفين";
+  insTitle.value = L("📖 دليل وضوابط تعبئة قالب استيراد وتحديث بيانات الموظفين", "📖 How to fill in the employee import template");
   insTitle.font = { name: "Cairo", size: 12, bold: true, color: { argb: "FFFFFFFF" } };
   insTitle.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   insTitle.alignment = { vertical: "middle", horizontal: "center" };
@@ -424,7 +475,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
 
   instructions.mergeCells(2, 1, 2, 5);
   const insSub = instructions.getCell(2, 1);
-  insSub.value = "يرجى قراءة التعليمات والالتزام بالصيغ المحددة لضمان اكتمال الاستيراد بنجاح وبدون أي أخطاء نظامية.";
+  insSub.value = L("يرجى قراءة التعليمات والالتزام بالصيغ المحددة لضمان اكتمال الاستيراد بنجاح وبدون أي أخطاء نظامية.", "Follow the formats below so the import goes through without errors.");
   insSub.font = { name: "Cairo", size: 10, italic: true, color: { argb: "FF334155" } };
   insSub.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
   insSub.alignment = { vertical: "middle", horizontal: "center" };
@@ -447,11 +498,11 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     const isReq = Boolean(col.required);
 
     row.values = [
-      col.headerAr.replace("* ", ""),
-      col.headerEn,
-      isReq ? "إلزامي (Required) *" : "اختياري (Optional)",
-      col.key.toLowerCase().includes("date") ? "تاريخ (YYYY-MM-DD)" : col.key === "gender" || col.key === "employmentStatus" || col.key === "branchCode" ? "قائمة منسدلة" : "نص / أرقام",
-      col.noteAr ?? "—",
+      isEn() ? col.headerEn : col.headerAr.replace("* ", ""),
+      headerOf(col),
+      isReq ? L("إلزامي *", "Required *") : L("اختياري", "Optional"),
+      col.key.toLowerCase().includes("date") ? L("تاريخ (YYYY-MM-DD)", "Date (YYYY-MM-DD)") : col.key === "gender" || col.key === "employmentStatus" || col.key === "branchCode" ? L("قائمة منسدلة", "Drop-down list") : L("نص / أرقام", "Text / numbers"),
+      (isEn() ? col.noteEn : col.noteAr) ?? "—",
     ];
 
     const isEven = idx % 2 === 0;
@@ -461,7 +512,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
       const cell = instructions.getCell(r, c);
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgArgb } };
       cell.font = { name: "Cairo", size: 9.5, color: { argb: "FF0F172A" } };
-      cell.alignment = { vertical: "middle", horizontal: c === 1 || c === 5 ? "right" : "center" };
+      cell.alignment = { vertical: "middle", horizontal: c === 1 || c === 5 ? (isEn() ? "left" : "right") : "center" };
       cell.border = {
         top: { style: "thin", color: { argb: "FFE2E8F0" } },
         bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
@@ -480,20 +531,29 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
 
   instructions.mergeCells(startRuleRow, 1, startRuleRow, 5);
   const ruleHeader = instructions.getCell(startRuleRow, 1);
-  ruleHeader.value = "⭐ القواعد والضوابط الذهبية لضمان نجاح الاستيراد الفوري:";
+  ruleHeader.value = L("⭐ القواعد والضوابط الذهبية لضمان نجاح الاستيراد الفوري:", "⭐ Rules for a clean import:");
   ruleHeader.font = { name: "Cairo", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   ruleHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F4C5C" } };
-  ruleHeader.alignment = { vertical: "middle", horizontal: "right" };
+  ruleHeader.alignment = { vertical: "middle", horizontal: isEn() ? "left" : "right" };
   instructions.getRow(startRuleRow).height = 28;
 
-  const RULES = [
+  const RULES = isEn()
+    ? [
+        "1. Do not delete, rename or reorder the column headers in row 4 of the Employees sheet.",
+        "2. Each employee needs a unique employee number; a number already in the system updates that employee.",
+        "3. Every date is year-month-day, e.g. 2026-05-15.",
+        "4. Use the drop-down choices for gender, employment status and establishment code.",
+        "5. You can delete the example in row 5 before uploading, or leave it: it is skipped.",
+        "6. Save the file as Excel (.xlsx) before uploading it on the Import & Export page.",
+      ]
+    : [
     "1. عدم حذف أو تعديل أو إعادة ترتيب عناوين الأعمدة في الصف رقم 4 من ورقة 'بيانات الموظفين'.",
     "2. رقم الموظف يجب أن يكون فريداً لكل موظف - في حال تكرار رقم موجود بالنظام سيتم تحديث بياناته تلقائياً.",
     "3. جميع التواريخ يجب أن تكون بالصيغة القياسية (سنة-شهر-يوم) مثل: 2026-05-15.",
     "4. يُرجى الالتزام بالخيارات المتاحة في القوائم المنسدلة لحقول (الجنس، الحالة الوظيفية، رمز الفرع).",
     "5. يمكنك حذف الصف النموذجي رقم 5 قبل الرفع، أو تركه وسيتم معالجته أو تجاوزه بأمان.",
     "6. يجب حفظ الملف بصيغة Excel القياسية (.xlsx) قبل رفعه إلى النظام عبر صفحة 'استيراد وتصدير البيانات'.",
-  ];
+      ];
 
   RULES.forEach((rule, rIdx) => {
     const r = startRuleRow + 1 + rIdx;
@@ -502,7 +562,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     cell.value = rule;
     cell.font = { name: "Cairo", size: 9.5, bold: rIdx === 0 || rIdx === 1, color: { argb: "FF1E293B" } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF8FAFC" } };
-    cell.alignment = { vertical: "middle", horizontal: "right" };
+    cell.alignment = { vertical: "middle", horizontal: isEn() ? "left" : "right" };
     instructions.getRow(r).height = 22;
   });
 

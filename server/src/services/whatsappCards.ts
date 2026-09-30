@@ -1,4 +1,5 @@
-import { CARD_CSS } from "@/services/whatsappCards.css";
+import { L, isEn } from "@/services/lang";
+import { CARD_CSS, CARD_CSS_LTR } from "@/services/whatsappCards.css";
 import { daysAr, type AlertContext } from "@/services/whatsappTemplates";
 
 // The picture sent with a WhatsApp expiry alert, in the design chosen in
@@ -42,19 +43,21 @@ export interface CardAssets {
 type Sev = { days: number; c: string; a: string; b: string; text: string; soft: string; label: string; emoji: string };
 
 function severity(daysLeft: number): Omit<Sev, "days"> {
-  if (daysLeft <= 0) return { c: "#ff3b30", a: "#ff6b61", b: "#d9261c", text: "#d70015", soft: "#ffe5e3", label: "حرجة", emoji: "🔴" };
-  if (daysLeft <= 7) return { c: "#ff9500", a: "#ffb340", b: "#e57c00", text: "#c93400", soft: "#fff0db", label: "عاجلة", emoji: "🟠" };
-  if (daysLeft <= 30) return { c: "#ffcc00", a: "#ffd60a", b: "#e0a800", text: "#a05a00", soft: "#fff6d1", label: "تنبيه مبكر", emoji: "🟡" };
-  return { c: "#34c759", a: "#4cd964", b: "#1c9e45", text: "#248a3d", soft: "#e3f9e7", label: "للعلم", emoji: "🟢" };
+  if (daysLeft <= 0) return { c: "#ff3b30", a: "#ff6b61", b: "#d9261c", text: "#d70015", soft: "#ffe5e3", label: L("حرجة", "Critical"), emoji: "🔴" };
+  if (daysLeft <= 7) return { c: "#ff9500", a: "#ffb340", b: "#e57c00", text: "#c93400", soft: "#fff0db", label: L("عاجلة", "Urgent"), emoji: "🟠" };
+  if (daysLeft <= 30) return { c: "#ffcc00", a: "#ffd60a", b: "#e0a800", text: "#a05a00", soft: "#fff6d1", label: L("تنبيه مبكر", "Early notice"), emoji: "🟡" };
+  return { c: "#34c759", a: "#4cd964", b: "#1c9e45", text: "#248a3d", soft: "#e3f9e7", label: L("للعلم", "For your information"), emoji: "🟢" };
 }
 
 const RIYADH = "Asia/Riyadh";
 const dmy = (d: Date) => d.toLocaleDateString("en-GB", { timeZone: RIYADH, day: "2-digit", month: "2-digit", year: "numeric" });
-const weekday = (d: Date) => d.toLocaleDateString("ar-EG", { timeZone: RIYADH, weekday: "long" });
+const weekday = (d: Date) => d.toLocaleDateString(isEn() ? "en-GB" : "ar-EG", { timeZone: RIYADH, weekday: "long" });
 const longDate = (d: Date) =>
-  `${d.toLocaleDateString("en-GB", { timeZone: RIYADH, day: "numeric" })} ${d.toLocaleDateString("ar-EG", { timeZone: RIYADH, month: "long" })} ${d.toLocaleDateString("en-GB", { timeZone: RIYADH, year: "numeric" })}`;
+  `${d.toLocaleDateString("en-GB", { timeZone: RIYADH, day: "numeric" })} ${d.toLocaleDateString(isEn() ? "en-GB" : "ar-EG", { timeZone: RIYADH, month: "long" })} ${d.toLocaleDateString("en-GB", { timeZone: RIYADH, year: "numeric" })}`;
 const clock = (d: Date) => d.toLocaleTimeString("en-GB", { timeZone: RIYADH, hour: "2-digit", minute: "2-digit" });
-const unitAr = (n: number) => (n === 1 ? "يوم" : n <= 10 ? "أيام" : "يومًا");
+const unitAr = (n: number) => (isEn() ? (n === 1 ? "day" : "days") : n === 1 ? "يوم" : n <= 10 ? "أيام" : "يومًا");
+/** "3 days" / "3 أيام" in the card's language. */
+const daysL = (n: number) => (isEn() ? `${n} day${n === 1 ? "" : "s"}` : daysAr(n));
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 interface CardCtx {
@@ -85,30 +88,38 @@ interface CardCtx {
 function cardCtx(a: AlertContext, companyEn: string | null | undefined, assets: CardAssets): CardCtx {
   const days = a.daysLeft;
   const expired = days <= 0;
-  const employee = a.employeeAr;
-  const nameAr = employee ?? a.documentAr;
-  const doc = employee ? a.documentAr : "وثيقة المنشأة";
-  const status = days < 0 ? `منتهية منذ ${daysAr(-days)}` : days === 0 ? "تنتهي اليوم" : `باقي ${daysAr(days)}`;
-  const subject = employee ? `${a.documentAr} للموظف ${employee}` : a.documentAr;
+  const en = isEn();
+  const employee = en ? a.employeeEn ?? a.employeeAr : a.employeeAr;
+  const document = en ? a.documentEn : a.documentAr;
+  const nameAr = employee ?? document;
+  const doc = employee ? document : L("وثيقة المنشأة", "Company document");
+  const status = days < 0 ? L(`منتهية منذ ${daysL(-days)}`, `Expired ${daysL(-days)} ago`) : days === 0 ? L("تنتهي اليوم", "Ends today") : L(`باقي ${daysL(days)}`, `${daysL(days)} left`);
+  const subject = employee ? L(`${document} للموظف ${employee}`, `${employee}'s ${document}`) : document;
   // An empty 1×1 image keeps the layout when the company has no logo yet.
   const blank = "data:image/gif;base64,R0lGODlhAQABAAAAACw=";
   return {
-    company: esc(a.company),
+    company: esc(en ? companyEn || a.company : a.company),
     companyEn: esc(companyEn ?? ""),
     nameAr: esc(nameAr),
-    nameEn: esc(employee ? a.employeeEn ?? "" : a.documentEn),
-    whoLabel: employee ? "الموظف" : "الوثيقة",
+    nameEn: esc(en ? "" : employee ? a.employeeEn ?? "" : a.documentEn),
+    whoLabel: employee ? L("الموظف", "Employee") : L("الوثيقة", "Document"),
     doc: esc(doc),
-    docLabel: employee ? "الوثيقة" : "النوع",
+    docLabel: employee ? L("الوثيقة", "Document") : L("النوع", "Type"),
     number: esc(a.number ?? "—"),
-    branch: esc(a.branch ?? "—"),
+    branch: esc((en ? a.branchEn ?? a.branch : a.branch) ?? "—"),
     s: { days, ...severity(days) },
     expired,
     expStr: dmy(a.expiryDate),
     expLong: longDate(a.expiryDate),
     expDay: weekday(a.expiryDate),
     status,
-    headline: esc(expired ? `${subject} ${days < 0 ? `انتهت منذ ${daysAr(-days)}` : "تنتهي اليوم"}` : `${subject} تنتهي خلال ${daysAr(days)}`),
+    headline: esc(
+      expired
+        ? days < 0
+          ? L(`${subject} انتهت منذ ${daysL(-days)}`, `${subject} expired ${daysL(-days)} ago`)
+          : L(`${subject} تنتهي اليوم`, `${subject} ends today`)
+        : L(`${subject} تنتهي خلال ${daysL(days)}`, `${subject} ends in ${daysL(days)}`)
+    ),
     filled: expired ? 10 : Math.min(10, Math.max(1, Math.round(10 * (1 - days / 30)))),
     frac: expired ? 1 : Math.max(0.04, 1 - days / 30),
     today: new Date(),
@@ -166,64 +177,64 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
     <img class="wm" src="${c.MARK}" alt="">
     <div class="top">
       <div class="plate"><img src="${c.LOGO}" alt=""></div>
-      <div class="kind"><small>إشعار وثيقة</small><b>${c.expired ? "منتهية الصلاحية" : "قرب الانتهاء"}</b></div>
+      <div class="kind"><small>${L("إشعار وثيقة", "Document notice")}</small><b>${c.expired ? L("منتهية الصلاحية", "Expired") : L("قرب الانتهاء", "Ending soon")}</b></div>
     </div>
     <div class="primary"><p class="lbl">${c.whoLabel}</p><p class="v">${c.nameAr}</p><p class="en ltr">${c.nameEn}</p></div>
     <div class="fields">
       <div><p class="lbl">${c.docLabel}</p><p class="v">${c.doc}</p></div>
-      <div><p class="lbl">الرقم</p><p class="v ltr" style="text-align:right">${c.number}</p></div>
-      <div><p class="lbl">تاريخ الانتهاء</p><p class="v">${c.expStr}</p></div>
+      <div><p class="lbl">${L("الرقم", "Number")}</p><p class="v ltr" style="text-align:right">${c.number}</p></div>
+      <div><p class="lbl">${L("تاريخ الانتهاء", "Expiry date")}</p><p class="v">${c.expStr}</p></div>
     </div>
     <div class="perf"></div>
     <div class="status">${tile("sev", sevIcon(c)).replace('class="tile', 'style="--s:11cqw" class="tile')}
       <div class="tx"><b>${c.status}</b><small>${c.expDay} ${c.expLong}</small></div>
       <div class="ring">${ring(c, 14, "#f2f2f7")}</div>
     </div>
-    <p class="foot">SanaD · نظام إدارة الوثائق والتراخيص</p>
+    <p class="foot">SanaD · ${L("نظام إدارة الوثائق والتراخيص", "Documents & Licenses")}</p>
   </div>`,
 
   ios: (c) => `<div class="card c-ios" style="${sevVars(c)}">
     <div class="top"><img src="${c.LOGO}" alt=""><small>${weekday(c.today)} ${longDate(c.today)}</small></div>
-    <h4>تنبيه انتهاء وثيقة</h4>
+    <h4>${L("تنبيه انتهاء وثيقة", "Document expiry alert")}</h4>
     <div class="hero">
-      <div class="ring">${ring(c, 12, c.s.soft)}<div>${c.expired ? `<b class="word" style="color:${c.s.text}">منتهية</b>` : `<b>${c.s.days}</b><small>${unitAr(c.s.days)}</small>`}</div></div>
+      <div class="ring">${ring(c, 12, c.s.soft)}<div>${c.expired ? `<b class="word" style="color:${c.s.text}">${L("منتهية", "Expired")}</b>` : `<b>${c.s.days}</b><small>${unitAr(c.s.days)}</small>`}</div></div>
       <div><p class="sev">${small34(glyph(sevIcon(c), 2.4))} ${c.s.label}</p><p class="big">${c.status}</p><p class="sub">${c.expDay} ${c.expLong}</p></div>
     </div>
     <div class="list">
       <div class="row">${tile("blue", "user")}<div class="in"><span>${c.whoLabel}</span><b>${c.nameAr}</b></div></div>
       <div class="row">${tile("green", "doc")}<div class="in"><span>${c.docLabel}</span><b>${c.doc}</b></div></div>
-      <div class="row">${tile("indigo", "hash")}<div class="in"><span>الرقم</span><b class="ltr">${c.number}</b></div></div>
-      <div class="row">${tile("teal", "building")}<div class="in"><span>الفرع</span><b>${c.branch}</b></div></div>
+      <div class="row">${tile("indigo", "hash")}<div class="in"><span>${L("الرقم", "Number")}</span><b class="ltr">${c.number}</b></div></div>
+      <div class="row">${tile("teal", "building")}<div class="in"><span>${L("الفرع", "Branch")}</span><b>${c.branch}</b></div></div>
     </div>
-    <p class="foot">أُرسلت تلقائيًا من نظام SanaD</p>
+    <p class="foot">${L("أُرسلت تلقائيًا من نظام SanaD", "Sent automatically by SanaD")}</p>
   </div>`,
 
   bento: (c) => `<div class="card c-bento" style="${sevVars(c)}">
-    <div class="top"><span class="plate"><img src="${c.MARK}" alt=""></span><div><b>${c.company}</b><small>تنبيه انتهاء وثيقة</small></div></div>
+    <div class="top"><span class="plate"><img src="${c.MARK}" alt=""></span><div><b>${c.company}</b><small>${L("تنبيه انتهاء وثيقة", "Document expiry alert")}</small></div></div>
     <div class="box hero">
-      <div class="num">${c.expired ? `<b class="word">منتهية</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)}</span>`}</div>
-      <div class="side">${tile("sev", sevIcon(c))}<p>${c.expired ? (c.s.days < 0 ? `منذ ${daysAr(-c.s.days)}` : "اليوم") : `حتى انتهاء ${c.doc}`}</p><small>${c.expDay} ${c.expStr}</small></div>
+      <div class="num">${c.expired ? `<b class="word">${L("منتهية", "Expired")}</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)}</span>`}</div>
+      <div class="side">${tile("sev", sevIcon(c))}<p>${c.expired ? (c.s.days < 0 ? L(`منذ ${daysL(-c.s.days)}`, `${daysL(-c.s.days)} ago`) : L("اليوم", "Today")) : L(`حتى انتهاء ${c.doc}`, `until the ${c.doc} ends`)}</p><small>${c.expDay} ${c.expStr}</small></div>
     </div>
     <div class="segs">${Array.from({ length: 10 }, (_, i) => `<i class="${i < c.filled ? "on" : ""}"></i>`).join("")}</div>
     <div class="box cell">${tile("blue", "user")}<small>${c.whoLabel}</small><b>${c.nameAr}</b></div>
     <div class="box cell">${tile("green", "doc")}<small>${c.docLabel}</small><b>${c.doc}</b></div>
-    <div class="box cell">${tile("indigo", "hash")}<small>الرقم</small><b class="ltr" style="text-align:right">${c.number}</b></div>
-    <div class="box cell">${tile("teal", "building")}<small>الفرع</small><b>${c.branch}</b></div>
-    <p class="foot">SanaD · إدارة الوثائق والتراخيص</p>
+    <div class="box cell">${tile("indigo", "hash")}<small>${L("الرقم", "Number")}</small><b class="ltr" style="text-align:right">${c.number}</b></div>
+    <div class="box cell">${tile("teal", "building")}<small>${L("الفرع", "Branch")}</small><b>${c.branch}</b></div>
+    <p class="foot">SanaD · ${L("إدارة الوثائق والتراخيص", "Documents & Licenses")}</p>
   </div>`,
 
   health: (c) => `<div class="card c-health" style="${sevVars(c)}">
-    <div class="cat">${tile("sev", "bell")}<b>تنبيهات الوثائق · ${c.s.label}</b><small>اليوم</small></div>
+    <div class="cat">${tile("sev", "bell")}<b>${L("تنبيهات الوثائق", "Document alerts")} · ${c.s.label}</b><small>${L("اليوم", "Today")}</small></div>
     <h4>${c.headline}</h4>
-    <div class="metric">${c.expired ? `<b class="word">منتهية</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)} متبقية</span>`}</div>
+    <div class="metric">${c.expired ? `<b class="word">${L("منتهية", "Expired")}</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)} ${L("متبقية", "left")}</span>`}</div>
     <div class="track"><i style="width:${Math.round(c.frac * 100)}%"></i></div>
-    <div class="scale"><span>30 يومًا</span><span>15</span><span>تاريخ الانتهاء</span></div>
+    <div class="scale"><span>${L("30 يومًا", "30 days")}</span><span>15</span><span>${L("تاريخ الانتهاء", "Expiry")}</span></div>
     <div class="rows">
-      <div class="r">${tile("indigo", "hash")}<span>رقم الوثيقة</span><b class="ltr">${c.number}</b></div>
-      <div class="r">${tile("sev", "cal")}<span>تاريخ الانتهاء</span><b>${c.expDay} ${c.expStr}</b></div>
-      <div class="r">${tile("teal", "building")}<span>الفرع</span><b>${c.branch}</b></div>
+      <div class="r">${tile("indigo", "hash")}<span>${L("رقم الوثيقة", "Document no.")}</span><b class="ltr">${c.number}</b></div>
+      <div class="r">${tile("sev", "cal")}<span>${L("تاريخ الانتهاء", "Expiry date")}</span><b>${c.expDay} ${c.expStr}</b></div>
+      <div class="r">${tile("teal", "building")}<span>${L("الفرع", "Branch")}</span><b>${c.branch}</b></div>
     </div>
-    <div class="foot"><img src="${c.LOGO}" alt=""><small>أُرسلت تلقائيًا من نظام SanaD</small></div>
+    <div class="foot"><img src="${c.LOGO}" alt=""><small>${L("أُرسلت تلقائيًا من نظام SanaD", "Sent automatically by SanaD")}</small></div>
   </div>`,
 
   lock: (c) => `<div class="card c-lock" style="${sevVars(c)}">
@@ -232,9 +243,9 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
     <p class="date">${weekday(c.today)} ${longDate(c.today)}</p>
     <p class="time ltr">${clock(c.today)}</p>
     <div class="stack"><div class="note">
-      <div class="hd"><span class="app"><img src="${c.MARK}" alt=""></span><span>SANAD · ${c.company}</span><small>الآن</small></div>
-      <h4>${c.s.emoji} ${c.expired ? `${c.doc} ${c.s.days < 0 ? `منتهية منذ ${daysAr(-c.s.days)}` : "تنتهي اليوم"}` : `${c.doc} تنتهي خلال ${daysAr(c.s.days)}`}</h4>
-      <p>${c.nameAr} · رقم <span class="ltr">${c.number}</span><br>تاريخ الانتهاء ${c.expDay} ${c.expStr}</p>
+      <div class="hd"><span class="app"><img src="${c.MARK}" alt=""></span><span>SANAD · ${c.company}</span><small>${L("الآن", "now")}</small></div>
+      <h4>${c.s.emoji} ${c.expired ? (c.s.days < 0 ? L(`${c.doc} منتهية منذ ${daysL(-c.s.days)}`, `${c.doc} expired ${daysL(-c.s.days)} ago`) : L(`${c.doc} تنتهي اليوم`, `${c.doc} ends today`)) : L(`${c.doc} تنتهي خلال ${daysL(c.s.days)}`, `${c.doc} ends in ${daysL(c.s.days)}`)}</h4>
+      <p>${c.nameAr} · ${L("رقم", "No.")} <span class="ltr">${c.number}</span><br>${L("تاريخ الانتهاء", "Expires")} ${c.expDay} ${c.expStr}</p>
     </div></div>
     <div class="qa"><span>${glyph("torch", 2)}</span><span>${glyph("camera", 2)}</span></div>
   </div>`,
@@ -242,29 +253,29 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
   letter: (c) => `<div class="card c-letter" style="${sevVars(c)}">
     <div class="head"><img src="${c.LOGO}" alt=""><p class="en ltr" style="text-align:center">${c.companyEn}</p></div>
     <div class="rule"></div>
-    <h4>إشعار ${c.expired ? "انتهاء" : "قرب انتهاء"} صلاحية وثيقة</h4>
+    <h4>${c.expired ? L("إشعار انتهاء صلاحية وثيقة", "Document expired") : L("إشعار قرب انتهاء صلاحية وثيقة", "Document ending soon")}</h4>
     <span class="chip">${small34(glyph(sevIcon(c), 2.4))} ${c.status}</span>
     <div class="tbl">
       <div class="tr">${tile("blue", "user")}<span>${c.whoLabel}</span><b>${c.nameAr}</b></div>
       <div class="tr">${tile("green", "doc")}<span>${c.docLabel}</span><b>${c.doc}</b></div>
-      <div class="tr">${tile("indigo", "hash")}<span>الرقم</span><b class="ltr">${c.number}</b></div>
-      <div class="tr">${tile("sev", "cal")}<span>تاريخ الانتهاء</span><b>${c.expDay} ${c.expStr}</b></div>
-      <div class="tr">${tile("teal", "building")}<span>الفرع</span><b>${c.branch}</b></div>
+      <div class="tr">${tile("indigo", "hash")}<span>${L("الرقم", "Number")}</span><b class="ltr">${c.number}</b></div>
+      <div class="tr">${tile("sev", "cal")}<span>${L("تاريخ الانتهاء", "Expiry date")}</span><b>${c.expDay} ${c.expStr}</b></div>
+      <div class="tr">${tile("teal", "building")}<span>${L("الفرع", "Branch")}</span><b>${c.branch}</b></div>
     </div>
-    <div class="band"><span>SanaD · إدارة الوثائق والتراخيص</span><span class="ltr">${dmy(c.today)}</span></div>
+    <div class="band"><span>SanaD · ${L("إدارة الوثائق والتراخيص", "Documents & Licenses")}</span><span class="ltr">${dmy(c.today)}</span></div>
   </div>`,
 
   titanium: (c) => `<div class="card c-ti" style="${sevVars(c)}">
     <div class="top"><img src="${c.MARK}" alt=""><span class="ltr">SANAD</span></div>
-    <p class="kick">إشعار ${c.expired ? "انتهاء" : "قرب انتهاء"} ${c.doc}</p>
+    <p class="kick">${c.expired ? L(`إشعار انتهاء ${c.doc}`, `${c.doc} expired`) : L(`إشعار قرب انتهاء ${c.doc}`, `${c.doc} ending soon`)}</p>
     <h4 class="silver-txt">${c.status}</h4>
     <span class="led"><i></i>${c.s.label}</span>
     <div class="rule"></div>
     <div class="grid2">
       <div><small>${c.whoLabel}</small><b>${c.nameAr}</b></div>
       <div><small>${c.docLabel}</small><b>${c.doc}</b></div>
-      <div><small>الرقم</small><b class="ltr" style="display:block;text-align:right">${c.number}</b></div>
-      <div><small>تاريخ الانتهاء</small><b>${c.expStr}</b></div>
+      <div><small>${L("الرقم", "Number")}</small><b class="ltr" style="display:block;text-align:right">${c.number}</b></div>
+      <div><small>${L("تاريخ الانتهاء", "Expiry date")}</small><b>${c.expStr}</b></div>
     </div>
     <div class="foot"><span>${c.company}</span><span class="ltr">${dmy(c.today)}</span></div>
   </div>`,
@@ -272,8 +283,8 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
   whitecard: (c) => `<div class="card c-card" style="${sevVars(c)}">
     <div class="top"><img src="${c.LOGO}" alt=""><img class="mk" src="${c.MARK}" alt=""></div>
     <div class="mid">
-      <small>${c.expired ? (c.s.days < 0 ? `${c.doc} منتهية منذ` : `${c.doc} تنتهي`) : `متبقٍ على انتهاء ${c.doc}`}</small>
-      <div class="num">${c.expired ? `<b class="word">${c.s.days < 0 ? daysAr(-c.s.days) : "اليوم"}</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)}</span>`}</div>
+      <small>${c.expired ? (c.s.days < 0 ? L(`${c.doc} منتهية منذ`, `${c.doc} expired`) : L(`${c.doc} تنتهي`, `${c.doc} ends`)) : L(`متبقٍ على انتهاء ${c.doc}`, `Left until the ${c.doc} ends`)}</small>
+      <div class="num">${c.expired ? `<b class="word">${c.s.days < 0 ? (isEn() ? `${daysL(-c.s.days)} ago` : daysL(-c.s.days)) : L("اليوم", "today")}</b>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)}</span>`}</div>
       <span class="pill"><i></i>${c.s.label} · ${c.expDay} ${c.expLong}</span>
     </div>
     <p class="holder">${c.nameAr}</p>
@@ -283,7 +294,7 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
   ultra: (c) => `<div class="card c-dial" style="${sevVars(c)}">
     <div class="top"><img class="etched" src="${c.MARK}" alt=""><span>${weekday(c.today)} ${longDate(c.today)}</span></div>
     <div class="dial">${dial(c)}
-      <div class="ctr"><small>${c.s.label}</small>${c.expired ? `<b class="word">منتهية</b><span>${c.s.days < 0 ? `منذ ${daysAr(-c.s.days)}` : "اليوم"}</span>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)} متبقية</span>`}</div>
+      <div class="ctr"><small>${c.s.label}</small>${c.expired ? `<b class="word">${L("منتهية", "Expired")}</b><span>${c.s.days < 0 ? L(`منذ ${daysL(-c.s.days)}`, `${daysL(-c.s.days)} ago`) : L("اليوم", "today")}</span>` : `<b>${c.s.days}</b><span>${unitAr(c.s.days)} ${L("متبقية", "left")}</span>`}</div>
     </div>
     <div class="who"><b>${c.nameAr}</b><span>${c.doc} · <span class="ltr">${c.number}</span></span></div>
     <div class="comps">
@@ -294,12 +305,12 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
 
   vision: (c) => `<div class="card c-vision" style="${sevVars(c)}">
     <div class="win">
-      <div class="hd"><span class="orn"><img src="${c.MARK}" alt=""></span><div><b>${c.company}</b><small>تنبيه انتهاء وثيقة · SanaD</small></div></div>
+      <div class="hd"><span class="orn"><img src="${c.MARK}" alt=""></span><div><b>${c.company}</b><small>${L("تنبيه انتهاء وثيقة", "Document expiry alert")} · SanaD</small></div></div>
       <div class="status"><div><small>${c.s.label}</small><b>${c.status}</b><small>${c.expDay} ${c.expLong}</small></div><div class="ring">${ring(c, 13, "rgba(255,255,255,.18)")}</div></div>
       <div class="pills">
         <div>${tile("blue", "user")}<span>${c.whoLabel}</span><b>${c.nameAr}</b></div>
         <div>${tile("green", "doc")}<span>${c.docLabel}</span><b>${c.doc}</b></div>
-        <div>${tile("indigo", "hash")}<span>الرقم</span><b class="ltr">${c.number}</b></div>
+        <div>${tile("indigo", "hash")}<span>${L("الرقم", "Number")}</span><b class="ltr">${c.number}</b></div>
       </div>
     </div>
     <span class="bar"></span>
@@ -308,16 +319,16 @@ const CARDS: Record<WhatsappCardId, (c: CardCtx) => string> = {
   pearl: (c) => `<div class="card c-pearl" style="${sevVars(c)}">
     <div class="sheet">
       <div class="top"><img src="${c.LOGO}" alt=""><small>${weekday(c.today)} ${longDate(c.today)}</small></div>
-      <h4>تنبيه انتهاء وثيقة</h4>
+      <h4>${L("تنبيه انتهاء وثيقة", "Document expiry alert")}</h4>
       <p class="big">${c.status}</p>
       <p class="nm">${c.nameAr}</p>
       <div class="rows">
         <div class="r">${tile("green", "doc")}<span>${c.docLabel}</span><b>${c.doc}</b></div>
-        <div class="r">${tile("indigo", "hash")}<span>الرقم</span><b class="ltr">${c.number}</b></div>
-        <div class="r">${tile("sev", "cal")}<span>تاريخ الانتهاء</span><b>${c.expDay} ${c.expStr}</b></div>
-        <div class="r">${tile("teal", "building")}<span>الفرع</span><b>${c.branch}</b></div>
+        <div class="r">${tile("indigo", "hash")}<span>${L("الرقم", "Number")}</span><b class="ltr">${c.number}</b></div>
+        <div class="r">${tile("sev", "cal")}<span>${L("تاريخ الانتهاء", "Expiry date")}</span><b>${c.expDay} ${c.expStr}</b></div>
+        <div class="r">${tile("teal", "building")}<span>${L("الفرع", "Branch")}</span><b>${c.branch}</b></div>
       </div>
-      <p class="foot">أُرسلت تلقائيًا من نظام SanaD</p>
+      <p class="foot">${L("أُرسلت تلقائيًا من نظام SanaD", "Sent automatically by SanaD")}</p>
     </div>
   </div>`,
 };
@@ -329,17 +340,19 @@ export function cardMarkup(id: WhatsappCardId, alert: AlertContext, companyEn: s
 
 /** Shared stylesheet for the preview (the markup above goes inside a `.cardbox`). */
 export const CARD_PREVIEW_CSS = `:host { --font: "IBM Plex Sans Arabic", -apple-system, "Segoe UI", Tahoma, sans-serif; display: block; }
-${CARD_CSS}`;
+${CARD_CSS}
+${CARD_CSS_LTR}`;
 
 /** A whole page holding one card at WhatsApp size, ready to be shot to PNG. */
 export function cardDocument(id: WhatsappCardId, alert: AlertContext, companyEn: string | null | undefined, assets: CardAssets): string {
-  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+  return `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8">
 <link rel="stylesheet" href="${CARD_FONTS_HREF}">
 <style>
 :root { --font: "IBM Plex Sans Arabic", -apple-system, "Segoe UI", Tahoma, sans-serif; }
 html, body { margin: 0; background: #fff; }
 .cardbox { width: ${CARD_WIDTH}px; }
 ${CARD_CSS}
+${CARD_CSS_LTR}
 .card { border-radius: 0; }
 </style></head><body><div class="cardbox">${cardMarkup(id, alert, companyEn, assets)}</div></body></html>`;
 }

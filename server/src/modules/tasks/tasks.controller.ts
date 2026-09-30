@@ -5,6 +5,7 @@ import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
 import { tableReportPdf } from "@/modules/pdf/templates";
 import * as service from "@/modules/tasks/tasks.service";
+import { L, isEn } from "@/services/lang";
 
 type Row = Record<string, unknown>;
 const q = (req: Request) => req.query as Record<string, string>;
@@ -41,10 +42,12 @@ export const carry = asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.carryOver(req.body.from, req.body.to) });
 });
 
-const CATEGORY_AR: Record<string, string> = { employees: "الموظفون", documents: "الوثائق والإقامات", branches: "المؤسسات", payments: "المدفوعات", general: "عام" };
-const PRIORITY_AR: Record<string, string> = { URGENT: "عاجلة", HIGH: "مهمة", NORMAL: "عادية" };
+// Category, priority and status in both languages; the export uses the interface language.
+const CATEGORY: Record<string, [string, string]> = { employees: ["الموظفون", "Employees"], documents: ["الوثائق والإقامات", "Documents & iqamas"], branches: ["المؤسسات", "Establishments"], payments: ["المدفوعات", "Payments"], general: ["عام", "General"] };
+const PRIORITY: Record<string, [string, string]> = { URGENT: ["عاجلة", "Urgent"], HIGH: ["مهمة", "High"], NORMAL: ["عادية", "Normal"] };
+const pickL = (m: Record<string, [string, string]>, k: string) => (m[k] ? L(m[k][0], m[k][1]) : k);
 const dmy = (day: string) => day.split("-").reverse().join("/");
-const weekdayAr = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("ar-EG", { weekday: "long", timeZone: "UTC" });
+const weekday = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString(isEn() ? "en-GB" : "ar-EG", { weekday: "long", timeZone: "UTC" });
 
 /** The day's (or range's) tasks as a PDF in the chosen print design, or an Excel sheet. */
 export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
@@ -55,9 +58,10 @@ export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
     n: i + 1,
     date: dmy(t.date),
     title: t.title,
-    category: CATEGORY_AR[t.category] ?? t.category,
-    priority: PRIORITY_AR[t.priority] ?? t.priority,
-    status: t.done ? "منجزة" : "متبقية",
+    category: pickL(CATEGORY, t.category),
+    priority: pickL(PRIORITY, t.priority),
+    done: t.done,
+    status: t.done ? L("منجزة", "Done") : L("متبقية", "Open"),
   }));
   // The PDF template numbers its rows itself; only the Excel sheet needs its own "#".
   const columns: ColumnDef<Row>[] = [
@@ -69,18 +73,20 @@ export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
     { header: "الحالة", subHeader: "Status", key: "status" },
   ];
   const done = tasks.filter((t) => t.done).length;
-  const period = oneDay ? `${weekdayAr(from)} ${dmy(from)}` : `من ${dmy(from)} إلى ${dmy(to)}`;
-  const title = `تقرير المهام اليومية — ${period}`;
-  const summary = `${tasks.length} مهمة · ${done} منجزة · ${tasks.length - done} متبقية`;
+  const periodAr = oneDay ? `${weekday(from)} ${dmy(from)}` : `من ${dmy(from)} إلى ${dmy(to)}`;
+  const periodEn = oneDay ? `${weekday(from)} ${dmy(from)}` : `${dmy(from)} to ${dmy(to)}`;
+  const titleAr = `تقرير المهام اليومية — ${periodAr}`;
+  const titleEn = `Daily Tasks — ${periodEn}`;
+  const summary = L(`${tasks.length} مهمة · ${done} منجزة · ${tasks.length - done} متبقية`, `${tasks.length} tasks · ${done} done · ${tasks.length - done} open`);
   const filenameBase = oneDay ? `daily-tasks-${from}` : `daily-tasks-${from}-to-${to}`;
   const branding = await getBrandingContext();
 
   if (format === "xlsx") {
-    const company = branding.company?.nameAr ? `${branding.company.nameAr}${branding.company.nameEn ? ` — ${branding.company.nameEn}` : ""}` : undefined;
-    const buffer = await buildWorkbook(oneDay ? `المهام ${dmy(from).replace(/\//g, "-")}` : "المهام", columns, rows, {
+    const company = isEn() ? branding.company?.nameEn || branding.company?.nameAr : branding.company?.nameAr || branding.company?.nameEn;
+    const buffer = await buildWorkbook(oneDay ? L(`المهام ${dmy(from).replace(/\//g, "-")}`, `Tasks ${dmy(from).replace(/\//g, "-")}`) : L("المهام", "Tasks"), columns, rows, {
       logo: await getPrintLogoPng(),
-      title: `${title} (${summary})`,
-      companyName: company,
+      title: `${L(titleAr, titleEn)} (${summary})`,
+      companyName: company || undefined,
     });
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${filenameBase}.xlsx"`);
@@ -89,22 +95,22 @@ export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
 
   const esc = (v: unknown) => String(v ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const html = tableReportPdf(
-    title,
+    `${titleAr} · ${summary}`,
     columns.map((c) => ({
       header: c.header,
       subHeader: c.subHeader,
       render: (r: Row) =>
         c.key === "status"
-          ? `<b style="color:${r.status === "منجزة" ? "#15803d" : "#b45309"};white-space:nowrap">${esc(r.status)}</b>`
+          ? `<b style="color:${r.done ? "#15803d" : "#b45309"};white-space:nowrap">${esc(r.status)}</b>`
           : c.key === "date"
             ? `<span style="white-space:nowrap">${esc(r.date)}</span>`
             : esc(r[c.key]),
     })),
     rows,
     branding,
-    { titleEn: `Daily Tasks Report · ${summary}` }
+    { titleEn: `${titleEn} · ${summary}` }
   );
-  const pdf = await renderHtmlToPdf(html, { footerLabel: title });
+  const pdf = await renderHtmlToPdf(html, { footerLabel: L(titleAr, titleEn) });
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `inline; filename="${filenameBase}.pdf"`);
   return res.send(pdf);

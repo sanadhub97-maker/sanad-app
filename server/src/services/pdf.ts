@@ -1,3 +1,4 @@
+import { isEn } from "@/services/lang";
 import puppeteer, { Browser } from "puppeteer";
 import { logger } from "@/lib/logger";
 import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
@@ -37,6 +38,32 @@ export async function closePdfBrowser() {
   }
 }
 
+/** The designs' Arabic labels in English, for documents printed in English. */
+const EN_LABELS: [RegExp, string][] = [
+  [/تاريخ الإصدار/g, "Issue date"],
+  [/وقت الطباعة/g, "Printed at"],
+  [/الرقم المرجعي/g, "Reference no."],
+  [/رقم المرجع/g, "Reference no."],
+  [/رقم المستند/g, "Document no."],
+  [/المرجع/g, "Ref."],
+  [/التصنيف/g, "Classification"],
+  [/التاريخ/g, "Date"],
+  [/الوقت/g, "Time"],
+  [/العدد/g, "No."],
+  [/ · رسمي/g, ""],
+  [/ · بريد جوي/g, ""],
+  [/صفحة(\s*<span class="pageNumber"><\/span>\s*)من/g, "Page$1of"],
+];
+export function englishLabels(html: string) {
+  return EN_LABELS.reduce((h, [re, en]) => h.replace(re, en), html);
+}
+/** "عربي | English" → the half for the current language. */
+export function pickHalf(text: string) {
+  if (!text.includes("|")) return text;
+  const [ar, en] = text.split("|").map((x) => x.trim());
+  return isEn() ? en || ar : ar || en;
+}
+
 // Every PDF is A4 portrait; wide report tables use a compact style instead.
 export interface RenderPdfOptions {
   footerLabel?: string;
@@ -56,7 +83,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // The shell stamps its design into the page; margins and the per-page
     // header/footer come from that design.
     const theme = getPrintTheme(html.match(/<meta name="print-theme" content="(\w+)"/)?.[1]);
-    const footerLabel = options.footerLabel ?? "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق";
+    const english = /<html[^>]*\blang="en"/.test(html);
+    const footerLabel = options.footerLabel ?? (english ? "Official administrative document — valid for archiving and audit" : "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق");
     // A4 at 96dpi: fixed-position page decoration is laid out against the
     // viewport, so it must match the paper or the first page comes out wrong.
     await page.setViewport({ width: 794, height: 1123 });
@@ -70,8 +98,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       landscape: false,
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: theme.headerTemplate,
-      footerTemplate: theme.footerTemplate(footerLabel),
+      headerTemplate: english ? englishLabels(theme.headerTemplate) : theme.headerTemplate,
+      footerTemplate: english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel),
       // No side margins: designs draw full-bleed side columns and the body's
       // own padding keeps the content in.
       margin: { top: theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
@@ -140,10 +168,17 @@ export function pdfDocumentShell(opts: {
   theme?: string | null;
   highlight?: ShellContext["highlight"];
 }): string {
-  const dir = opts.dir ?? "rtl";
-  const companyNameAr = opts.companyNameAr || "منظومة سند لإدارة الموارد البشرية والامتثال";
-  const companyNameEn = opts.companyNameEn || "SanaD Enterprise HR & Compliance Suite";
-  const classification = opts.classification || "وثيقة إدارية رسمية معتمدة | Official Document";
+  // The document is in the interface language only: the title and company name
+  // in that language (English reads left to right), without the other one under it.
+  const en = isEn();
+  const dir = en ? "ltr" : "rtl";
+  const nameAr = opts.companyNameAr || "منظومة سند لإدارة الموارد البشرية والامتثال";
+  const nameEn = opts.companyNameEn || "SanaD Enterprise HR & Compliance Suite";
+  const companyNameAr = en ? nameEn : nameAr;
+  const companyNameEn = "";
+  const classification = pickHalf(opts.classification || "وثيقة إدارية رسمية معتمدة | Official Document");
+  const docTitle = en ? opts.titleEn || opts.title : opts.title;
+  const docTitleEn: string | undefined = undefined;
 
   // Riyadh time: the server clock (Render) is UTC.
   const now = opts.generatedAt ?? new Date();
@@ -153,8 +188,8 @@ export function pdfDocumentShell(opts: {
 
   const theme = getPrintTheme(opts.theme);
   const ctx: ShellContext = {
-    title: opts.title,
-    titleEn: opts.titleEn,
+    title: docTitle,
+    titleEn: docTitleEn,
     companyNameAr,
     companyNameEn,
     logoDataUrl: opts.logoDataUrl,
@@ -170,7 +205,7 @@ export function pdfDocumentShell(opts: {
 <html dir="${dir}" lang="${dir === "rtl" ? "ar" : "en"}">
 <head>
 <meta charset="utf-8" />
-<title>${opts.title}</title>
+<title>${docTitle}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta name="print-theme" content="${theme.id}">
@@ -529,7 +564,10 @@ ${theme.css}
 </style>
 </head>
 <body class="${isClassic ? "" : "lux"}">
-${isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx)}
+${(() => {
+  const top = isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx);
+  return en ? englishLabels(top) : top;
+})()}
 
   ${opts.bodyHtml}
 </body>
@@ -545,7 +583,7 @@ ${isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx)}
       ${opts.logoDataUrl ? `<img src="${opts.logoDataUrl}" class="company-logo-img" alt="Logo" />` : ""}
       <div class="company-names">
         <h2>${companyNameAr}</h2>
-        <p>${companyNameEn}</p>
+        ${companyNameEn ? `<p>${companyNameEn}</p>` : ""}
       </div>
     </div>
     <div class="doc-meta-card">
@@ -558,8 +596,8 @@ ${isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx)}
   <!-- 🏷️ Document Title Banner -->
   <div class="doc-title-banner">
     <div class="title-content">
-      <h1>${opts.title}</h1>
-      ${opts.titleEn ? `<div class="title-subtitle-en">${opts.titleEn}</div>` : ""}
+      <h1>${docTitle}</h1>
+      ${docTitleEn ? `<div class="title-subtitle-en">${docTitleEn}</div>` : ""}
     </div>
     <span class="title-badge">${classification}</span>
   </div>`;

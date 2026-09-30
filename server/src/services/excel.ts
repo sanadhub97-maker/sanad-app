@@ -1,4 +1,8 @@
 import ExcelJS from "exceljs";
+import { L, isEn } from "@/services/lang";
+
+/** A column's title in the sheet's language (the English one on English sheets). */
+const colTitle = (c: { header: string; subHeader?: string }) => (isEn() ? c.subHeader || c.header : c.header);
 
 export interface ColumnDef<T> {
   header: string;
@@ -56,11 +60,11 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   const reportTitle = options.title || sheetName;
-  const companyTitle = options.companyName || "منظومة سند للحلول الرقمية وإدارة الموارد البشرية | SanaD Enterprise";
+  const companyTitle = options.companyName || L("منظومة سند للحلول الرقمية وإدارة الموارد البشرية", "SanaD Enterprise HR");
 
   // Create worksheet with RTL enabled and frozen pane below header row (row 4)
   const sheet = workbook.addWorksheet(sheetName.slice(0, 31), {
-    views: [{ state: "frozen", ySplit: 4, rightToLeft: true }],
+    views: [{ state: "frozen", ySplit: 4, rightToLeft: !isEn() }],
     pageSetup: {
       paperSize: 9, // A4
       orientation: "portrait",
@@ -71,13 +75,12 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
       margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 },
       printTitlesRow: "4:4", // repeat the column headers on every printed page
     },
-    headerFooter: { oddFooter: "&Lصفحة &P من &N&R&D" },
+    headerFooter: { oddFooter: L("&Lصفحة &P من &N&R&D", "&LPage &P of &N&R&D") },
   });
 
   // Track max string length per column for intelligent auto-width calculation
   const colLengths: number[] = columns.map((c) => {
-    const fullHeader = c.subHeader ? `${c.header} (${c.subHeader})` : c.header;
-    return Math.max(fullHeader.length, 10);
+    return Math.max(colTitle(c).length, 10);
   });
 
   // 👑 Row 1: Royal Navy Corporate Title Banner
@@ -104,7 +107,10 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const metaRow = sheet.getRow(3);
   metaRow.height = 24;
   const metaCell = sheet.getCell(3, 1);
-  metaCell.value = `📅 تاريخ التصدير: ${formattedDate}   |   📊 إجمالي السجلات: ${rows.length} سجل   |   🔒 وثيقة رسمية معتمدة صالحة للأرشفة والتدقيق`;
+  metaCell.value = L(
+    `📅 تاريخ التصدير: ${formattedDate}   |   📊 إجمالي السجلات: ${rows.length} سجل   |   🔒 وثيقة رسمية معتمدة صالحة للأرشفة والتدقيق`,
+    `📅 Exported: ${formattedDate}   |   📊 Records: ${rows.length}   |   🔒 Official document, valid for archiving and audit`
+  );
   metaCell.font = { name: "Cairo", size: 9.5, bold: true, color: { argb: "FF334155" } };
   metaCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
   metaCell.alignment = { vertical: "middle", horizontal: "center" };
@@ -120,7 +126,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   columns.forEach((col, idx) => {
     const colNumber = idx + 1;
     const cell = sheet.getCell(4, colNumber);
-    cell.value = col.subHeader ? `${col.header} (${col.subHeader})` : col.header;
+    cell.value = colTitle(col);
     cell.border = {
       top: { style: "medium", color: { argb: "FF0F172A" } },
       bottom: { style: "medium", color: { argb: "FF0F172A" } },
@@ -169,11 +175,11 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
       const isNumber = typeof val === "number";
 
       // Status Pill Detection
-      if (["VALID", "ACTIVE", "سارية", "نشط", "مفعل", "COMPLETED", "APPROVED"].includes(upperStr)) {
+      if (["VALID", "ACTIVE", "سارية", "نشط", "مفعل", "COMPLETED", "APPROVED", "DONE"].includes(upperStr)) {
         cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6F7ED" } };
         cell.font = { name: "Cairo", size: 9.5, bold: true, color: { argb: "FF047857" } };
         cell.alignment = { vertical: "middle", horizontal: "center" };
-      } else if (["EXPIRING_SOON", "توشك على الانتهاء", "ON_LEAVE", "PENDING", "قيد المراجعة"].includes(upperStr)) {
+      } else if (["EXPIRING_SOON", "ENDING SOON", "توشك على الانتهاء", "قاربت على الانتهاء", "ON_LEAVE", "ON LEAVE", "PENDING", "OPEN", "قيد المراجعة"].includes(upperStr)) {
         cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEF3C7" } };
         cell.font = { name: "Cairo", size: 9.5, bold: true, color: { argb: "FFB45309" } };
         cell.alignment = { vertical: "middle", horizontal: "center" };
@@ -190,7 +196,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
           cell.alignment = { vertical: "middle", horizontal: "right" };
           cell.numFmt = "#,##0.00";
         } else {
-          cell.alignment = { vertical: "middle", horizontal: "right" };
+          cell.alignment = { vertical: "middle", horizontal: isEn() ? "left" : "right" };
         }
       }
     });
@@ -202,7 +208,10 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   footerRow.height = 28;
   sheet.mergeCells(footerRowIndex, 1, footerRowIndex, totalCols);
   const footerCell = sheet.getCell(footerRowIndex, 1);
-  footerCell.value = `✓ انتهى التقرير  —  إجمالي عدد السجلات المطابقة: ${rows.length} سجل  |  تم الإنشاء عبر نظام سند السحابي`;
+  footerCell.value = L(
+    `✓ انتهى التقرير  —  إجمالي عدد السجلات المطابقة: ${rows.length} سجل  |  تم الإنشاء عبر نظام سند السحابي`,
+    `✓ End of report  —  ${rows.length} records  |  Generated by SanaD`
+  );
   footerCell.font = { name: "Cairo", size: 9.5, bold: true, color: { argb: "FF475569" } };
   footerCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF8FAFC" } };
   footerCell.alignment = { vertical: "middle", horizontal: "center" };
@@ -236,7 +245,7 @@ function csvEscape(value: unknown): string {
 }
 
 export function buildCsv<T extends Record<string, unknown>>(columns: ColumnDef<T>[], rows: T[]): string {
-  const header = columns.map((c) => csvEscape(c.subHeader ? `${c.header} (${c.subHeader})` : c.header)).join(",");
+  const header = columns.map((c) => csvEscape(colTitle(c))).join(",");
   const lines = rows.map((row) =>
     columns.map((c) => csvEscape(c.format ? c.format(row[c.key], row) : row[c.key])).join(",")
   );

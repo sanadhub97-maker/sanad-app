@@ -90,6 +90,8 @@ export const testWhatsappSchema = z.object({ to: z.string().min(6) });
 
 export const whatsappScheduleSchema = z.object({
   dispatchMode: z.enum(["text_only", "card_only", "both"]),
+  /** The language of WhatsApp and email alerts. */
+  language: z.enum(["ar", "en"]).optional(),
   sendTime: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format, e.g. 09:00"),
   timezone: z.string().optional(),
 });

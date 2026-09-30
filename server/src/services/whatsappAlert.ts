@@ -6,6 +6,7 @@ import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
 import { getWhatsappCardSetting, getWhatsappScheduleSetting, getWhatsappTemplateSetting, type WhatsappDispatchMode } from "@/services/settingsStore";
 import { renderWhatsappAlert, type AlertContext, type WhatsappTemplateId } from "@/services/whatsappTemplates";
 import { cardDocument, CARD_HEIGHT, CARD_WIDTH, type WhatsappCardSetting } from "@/services/whatsappCards";
+import { L, isEn } from "@/services/lang";
 
 export const CARD_NAMES_AR: Record<Exclude<WhatsappCardSetting, "none">, string> = {
   pass: "بطاقة المحفظة",
@@ -74,7 +75,8 @@ export async function prepareAlert(context: AlertContext, style: AlertStyle): Pr
     const cardName = CARD_NAMES_AR[style.card] ?? "بطاقة معتمدة";
 
     if (style.dispatchMode === "card_only") {
-      const caption = `📋 تنبيه وثيقة رسمية: ${context.documentAr || context.documentEn || "إشعار نظام"}`;
+      const doc = isEn() ? context.documentEn || context.documentAr : context.documentAr || context.documentEn;
+      const caption = L(`📋 تنبيه وثيقة رسمية: ${doc || "إشعار نظام"}`, `📋 Document alert: ${doc || "System notice"}`);
       return {
         mode: "card_only",
         text: caption,
@@ -85,7 +87,7 @@ export async function prepareAlert(context: AlertContext, style: AlertStyle): Pr
     }
 
     // Both together (text message + card image)
-    const cardCaption = `🖼️ بطاقة توثيق «${cardName}»`;
+    const cardCaption = L(`🖼️ بطاقة توثيق «${cardName}»`, "🖼️ Document card");
     return {
       mode: "both",
       text,

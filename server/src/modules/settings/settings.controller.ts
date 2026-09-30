@@ -29,7 +29,7 @@ import {
 /** A real document to fill the WhatsApp alert preview and test message — the
  * next one to expire, preferring an employee's — or a labelled example when
  * the system has none yet. */
-async function sampleAlertContext(companyName: string | null | undefined): Promise<{ context: AlertContext; real: boolean }> {
+async function sampleAlertContext(companyName: string | null | undefined, companyEn?: string | null): Promise<{ context: AlertContext; real: boolean }> {
   const ranked = (await getTrackableItems())
     .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
     .sort(
@@ -38,11 +38,13 @@ async function sampleAlertContext(companyName: string | null | undefined): Promi
         Number(b.days >= 0) - Number(a.days >= 0) ||
         Math.abs(a.days) - Math.abs(b.days)
     );
-  if (ranked[0]) return { context: alertContext(ranked[0].item, companyName), real: true };
+  if (ranked[0]) return { context: alertContext(ranked[0].item, companyName, companyEn), real: true };
   return {
     context: {
       company: companyName || "المنشأة",
+      companyEn: companyEn || "The company",
       employeeAr: "اسم الموظف (مثال)",
+      employeeEn: "Employee name (example)",
       documentAr: "الإقامة",
       documentEn: "Iqama",
       expiryDate: new Date(Date.now() + 7 * 86_400_000),
@@ -56,9 +58,10 @@ async function sampleAlertContext(companyName: string | null | undefined): Promi
 const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
 
 export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Response) => {
-  const [{ company }, template] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn);
-  const previews = Object.fromEntries(
+  const [{ company }, template, { language }] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting(), getWhatsappScheduleSetting()]);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
+  // Shown in the language the alerts go out in (Settings → WhatsApp).
+  const previews = withLang(language, () => Object.fromEntries(
     WHATSAPP_TEMPLATE_IDS.map((id) => [
       id,
       Object.fromEntries(
@@ -68,7 +71,7 @@ export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Respo
         ])
       ),
     ])
-  );
+  ));
   res.json({ data: { template, sampleIsReal: real, previews } });
 });
 
@@ -77,11 +80,11 @@ export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Respo
 export const getWhatsappCards = asyncHandler(async (req: Request, res: Response) => {
   const state = String(req.query.state ?? "week") as keyof typeof PREVIEW_STATES;
   const days = PREVIEW_STATES[state] ?? PREVIEW_STATES.week;
-  const [{ company }, card, provider, assets] = await Promise.all([getBrandingContext(), getWhatsappCardSetting(), getWhatsappProvider(), getCardAssets()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn);
+  const [{ company }, card, provider, assets, { language }] = await Promise.all([getBrandingContext(), getWhatsappCardSetting(), getWhatsappProvider(), getCardAssets(), getWhatsappScheduleSetting()]);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
   const shown = { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) };
-  const cards = Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)]));
-  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards } });
+  const cards = withLang(language, () => Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)])));
+  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards, language } });
 });
 
 export const updateWhatsappCard = asyncHandler(async (req: Request, res: Response) => {
@@ -125,6 +128,7 @@ import { employeeProfilePdf, paymentReceiptPdf, tableReportPdf } from "@/modules
 import * as paymentsService from "@/modules/payments/payments.service";
 import * as employeesService from "@/modules/employees/employees.service";
 import { renderHtmlToPdf } from "@/services/pdf";
+import { L, isEn, withLang } from "@/services/lang";
 
 export const getPrintTheme = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: { theme: await getPrintThemeSetting() } });
@@ -156,14 +160,14 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
     const latest = await prisma.payment.findFirst({ where: { deletedAt: null }, orderBy: { paymentDate: "desc" }, select: { id: true } });
     if (latest) {
       const payment = await paymentsService.getById(latest.id);
-      return send(await renderHtmlToPdf(paymentReceiptPdf(payment as never, branding), { footerLabel: "Payment Receipt" }), "voucher");
+      return send(await renderHtmlToPdf(paymentReceiptPdf(payment as never, branding), { footerLabel: L("سند صرف", "Payment Receipt") }), "voucher");
     }
   }
   if (doc === "profile") {
     const first = await prisma.employee.findFirst({ where: { deletedAt: null }, orderBy: { employeeNumber: "asc" }, select: { id: true } });
     if (first) {
       const employee = await employeesService.getById(first.id);
-      return send(await renderHtmlToPdf(employeeProfilePdf(employee as never, branding), { footerLabel: "Employee Profile" }), "profile");
+      return send(await renderHtmlToPdf(employeeProfilePdf(employee as never, branding), { footerLabel: L("ملف الموظف", "Employee Profile") }), "profile");
     }
   }
 
@@ -176,17 +180,17 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
   const html = tableReportPdf(
     "تقرير المؤسسات والمنشآت",
     [
-      { header: "اسم المؤسسة", subHeader: "Establishment", render: (r) => String(r.name) },
+      { header: "اسم المؤسسة", subHeader: "Establishment", render: (r) => String((isEn() && r.nameEn) || r.name) },
       { header: "الرمز", subHeader: "Code", render: (r) => `<span class="nowrap">${r.code}</span>` },
-      { header: "المدينة", subHeader: "City", render: (r) => String(r.city ?? "—") },
+      { header: "المدينة", subHeader: "City", render: (r) => String((isEn() && r.cityEn) || r.city || "—") },
       { header: "الموظفون", subHeader: "Staff", render: (r) => String(r.staff) },
-      { header: "الحالة", subHeader: "Status", render: (r) => `<span class="badge-status status-${r.status}">${r.status === "ACTIVE" ? "نشط" : "غير نشط"}</span>` },
+      { header: "الحالة", subHeader: "Status", render: (r) => `<span class="badge-status status-${r.status}">${r.status === "ACTIVE" ? L("نشط", "Active") : L("غير نشط", "Inactive")}</span>` },
     ],
-    branches.map((b) => ({ name: b.name, code: b.code, city: b.city, staff: b._count.employees, status: b.status })),
+    branches.map((b) => ({ name: b.name, nameEn: b.nameEn, code: b.code, city: b.city, cityEn: b.cityEn, staff: b._count.employees, status: b.status })),
     branding,
     { titleEn: "Establishments Report" }
   );
-  send(await renderHtmlToPdf(html, { footerLabel: "تقرير المؤسسات والمنشآت — معاينة تصميم الطباعة" }), "print-design");
+  send(await renderHtmlToPdf(html, { footerLabel: L("تقرير المؤسسات والمنشآت — معاينة تصميم الطباعة", "Establishments report — print design preview") }), "print-design");
 });
 
 export const getCompany = asyncHandler(async (_req: Request, res: Response) => {
@@ -291,14 +295,19 @@ export const runWhatsappScanNow = asyncHandler(async (_req: Request, res: Respon
 });
 
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const [{ company }, provider] = await Promise.all([getBrandingContext(), getWhatsappProvider()]);
+  const [{ company }, provider, { language }] = await Promise.all([getBrandingContext(), getWhatsappProvider(), getWhatsappScheduleSetting()]);
+  const en = language === "en";
   const providerLabel =
-    provider === WHATSAPP_WEB_PROVIDER ? "رقم مربوط بكود QR" : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : "واتساب الرسمي (Meta)";
+    provider === WHATSAPP_WEB_PROVIDER ? (en ? "a number linked by QR code" : "رقم مربوط بكود QR") : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : en ? "official WhatsApp (Meta)" : "واتساب الرسمي (Meta)";
   // The test is the chosen design (card and text) on a real document, so it
   // looks exactly like the alerts this number will get.
-  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn);
-  const alert = await prepareAlert(context, await getAlertStyle(company?.nameEn));
-  const header = ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`, ""].join("\n");
+  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
+  const style = await getAlertStyle(company?.nameEn);
+  const alert = await withLang(language, () => prepareAlert(context, style));
+  const header = (en
+    ? ["🧪 *A test message from SanaD*", `_Sent through ${providerLabel}. This shows what the alerts look like; it is not a new alert._`, ""]
+    : ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`, ""]
+  ).join("\n");
 
   let result: { sent: boolean; reason?: string };
 

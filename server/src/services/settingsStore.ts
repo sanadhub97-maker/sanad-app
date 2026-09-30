@@ -126,8 +126,12 @@ const WHATSAPP_SCHEDULE_KEY = "whatsapp.schedule";
 
 export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
 
+export type AlertLanguage = "ar" | "en";
+
 export interface WhatsappScheduleSetting {
   dispatchMode: WhatsappDispatchMode;
+  /** The language of the WhatsApp and email alerts. */
+  language: AlertLanguage;
   sendTime: string; // e.g. "09:00"
   timezone: string; // e.g. "Asia/Riyadh"
   lastRunAt?: string | null;
@@ -135,6 +139,7 @@ export interface WhatsappScheduleSetting {
 
 export const DEFAULT_WHATSAPP_SCHEDULE: WhatsappScheduleSetting = {
   dispatchMode: "both",
+  language: "ar",
   sendTime: "09:00",
   timezone: "Asia/Riyadh",
   lastRunAt: null,
@@ -149,6 +154,7 @@ export async function getWhatsappScheduleSetting(): Promise<WhatsappScheduleSett
   const data = await getSetting<WhatsappScheduleSetting>(WHATSAPP_SCHEDULE_KEY, DEFAULT_WHATSAPP_SCHEDULE);
   return {
     dispatchMode: isWhatsappDispatchMode(data.dispatchMode) ? data.dispatchMode : DEFAULT_WHATSAPP_SCHEDULE.dispatchMode,
+    language: data.language === "en" ? "en" : "ar",
     sendTime: typeof data.sendTime === "string" && /^\d{2}:\d{2}$/.test(data.sendTime) ? data.sendTime : DEFAULT_WHATSAPP_SCHEDULE.sendTime,
     timezone: typeof data.timezone === "string" && data.timezone ? data.timezone : DEFAULT_WHATSAPP_SCHEDULE.timezone,
     lastRunAt: data.lastRunAt ?? null,
@@ -159,6 +165,7 @@ export async function setWhatsappScheduleSetting(input: Partial<WhatsappSchedule
   const current = await getWhatsappScheduleSetting();
   const updated: WhatsappScheduleSetting = {
     dispatchMode: input.dispatchMode && isWhatsappDispatchMode(input.dispatchMode) ? input.dispatchMode : current.dispatchMode,
+    language: input.language === "en" || input.language === "ar" ? input.language : current.language,
     sendTime: input.sendTime && /^\d{2}:\d{2}$/.test(input.sendTime) ? input.sendTime : current.sendTime,
     timezone: input.timezone || current.timezone,
     lastRunAt: input.lastRunAt !== undefined ? input.lastRunAt : current.lastRunAt,

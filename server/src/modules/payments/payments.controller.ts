@@ -5,6 +5,7 @@ import * as service from "@/modules/payments/payments.service";
 import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext } from "@/services/branding";
 import { paymentReceiptPdf } from "@/modules/pdf/templates";
+import { L } from "@/services/lang";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
   res.json(await service.list(req.query as never));
@@ -34,7 +35,7 @@ export const receiptPdf = asyncHandler(async (req: Request, res: Response) => {
   const payment = await service.getById(String(req.params.id));
   const branding = await getBrandingContext();
   const html = paymentReceiptPdf(payment as never, branding);
-  const pdf = await renderHtmlToPdf(html, { footerLabel: "Payment Receipt" });
+  const pdf = await renderHtmlToPdf(html, { footerLabel: L("سند صرف", "Payment Receipt") });
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `inline; filename="receipt-${payment.paymentNumber}.pdf"`);
   res.send(pdf);
