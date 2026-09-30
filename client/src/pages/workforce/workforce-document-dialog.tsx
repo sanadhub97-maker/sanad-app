@@ -370,7 +370,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-sm text-foreground">
-                    {document.fullNameAr || document.employee?.fullNameAr}
+                    {localized(document.fullNameAr || document.employee?.fullNameAr, document.fullNameEn || document.employee?.fullNameEn)}
                   </span>
                   <span className="font-mono text-xs text-primary font-semibold px-2 py-0.5 rounded-full bg-primary/10">
                     {document.employeeNumber || document.employee?.employeeNumber}
@@ -420,12 +420,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <span className="truncate">{emp.fullNameAr}</span>
-                          {emp.fullNameEn && (
-                            <span className={`text-[10px] ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                              ({emp.fullNameEn})
-                            </span>
-                          )}
+                          <span className="truncate">{localized(emp.fullNameAr, emp.fullNameEn)}</span>
                         </div>
                         <span className={`font-mono text-[11px] px-1.5 py-0.5 rounded ${
                           isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"

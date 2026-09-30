@@ -135,14 +135,14 @@ export function WorkforceDocumentsView({
 
   const columns = [
     columnHelper.accessor(
-      (row) => row.fullNameAr || row.employee?.fullNameAr || "—",
+      (row) => localized(row.fullNameAr || row.employee?.fullNameAr, row.fullNameEn || row.employee?.fullNameEn) || "—",
       {
         id: "employee",
         header: isAr ? "الموظف" : "Employee",
         cell: (c) => {
           const emp = c.row.original;
-          const nameAr = emp.fullNameAr || emp.employee?.fullNameAr || "—";
-          const nameEn = emp.fullNameEn || emp.employee?.fullNameEn;
+          // One name, in the interface language.
+          const nameAr = localized(emp.fullNameAr || emp.employee?.fullNameAr, emp.fullNameEn || emp.employee?.fullNameEn) || "—";
           const empNum = emp.employeeNumber || emp.employee?.employeeNumber;
           const empId = emp.employeeId || emp.employee?.id || emp.id;
 
@@ -163,11 +163,6 @@ export function WorkforceDocumentsView({
                   <span className="font-mono text-[11px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.2 rounded border border-border/50">
                     {empNum}
                   </span>
-                  {nameEn && (
-                    <span className="text-[11px] text-muted-foreground/80 truncate max-w-[130px]">
-                      {nameEn}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
