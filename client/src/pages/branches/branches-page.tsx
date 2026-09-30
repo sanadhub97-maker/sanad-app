@@ -2,29 +2,28 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localized, localizedCity } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Edit, Eye, MapPin, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Plus, Search, Trash2, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LuPager } from "@/components/lulu/lulu-ui";
-import { Kpis, Pill, Ring, type Tone } from "@/components/royal/rp";
+import { Kpis } from "@/components/royal/rp";
+import { LicCard, Ticker, estColor, initialsOf } from "@/components/royal/cards";
 import { branchesApi } from "@/api/branches";
 import { workforceDocumentsApi } from "@/api/workforceDocuments";
 import { companyDocumentsApi } from "@/api/companyDocuments";
 import { getErrorMessage } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
-import { BranchDetailsDialog } from "@/pages/branches/branch-details-dialog";
 import type { Branch } from "@/types/models";
 
 /* Establishments in the Royal design, as in the approved preview: a card per
    establishment with its English name, a ring of its valid documents, the
    city and code, and its employees, documents and what needs follow-up. */
 
-const TONES: Tone[] = ["pri", "teal", "gold", "vio", "sky", "ok", "bad"];
 type Tally = { valid: number; soon: number; expired: number };
 
 export default function BranchesPage() {
@@ -35,7 +34,7 @@ export default function BranchesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [dialog, setDialog] = useState<{ open: boolean; branch?: Branch }>({ open: false });
-  const [detailsTarget, setDetailsTarget] = useState<Branch | null>(null);
+  const navigate = useNavigate();
   const [deleteTarget, setDeleteTarget] = useState<Branch | null>(null);
   const pageSize = 24;
 
@@ -96,7 +95,7 @@ export default function BranchesPage() {
   const follow = [...tally.values()].reduce((n, x) => n + x.soon + x.expired, 0);
 
   return (
-    <div className="rp">
+    <div className="rp rc">
       <PageHeader
         title={t("branches.title")}
         description={description}
@@ -135,9 +134,9 @@ export default function BranchesPage() {
       </div>
 
       {isLoading ? (
-        <div className="rp-cards">
+        <div className="rc-lic-grid">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[210px] animate-pulse rounded-[20px] bg-[var(--l-surface)]" />
+            <div key={i} className="h-[440px] animate-pulse rounded-[24px] bg-[var(--l-surface)]" />
           ))}
         </div>
       ) : branches.length === 0 ? (
@@ -152,79 +151,81 @@ export default function BranchesPage() {
           )}
         </div>
       ) : (
-        <div className="rp-cards">
+        <div className="rc-lic-grid">
           {branches.map((b, j) => {
-            const tone = TONES[j % TONES.length];
             const x = tally.get(b.id) ?? { valid: 0, soon: 0, expired: 0 };
             const docs = x.valid + x.soon + x.expired;
             const city = localizedCity(b.city, b.cityEn);
+            const name = localized(b.name, b.nameEn) || b.name;
             const other = isAr ? b.nameEn : b.name;
+            const own = (coDocs?.data ?? []).filter((d) => (d.branchId ?? d.branch?.id) === b.id);
+            const pct = docs ? Math.round((x.valid / docs) * 100) : 0;
+            const open = () => navigate(`/branches/${b.id}`);
             return (
-              <article key={b.id} className={cn("rp-card rp-br rp-lift rp-rise", `rp-${tone}`)} style={{ ["--i" as string]: Math.min(j, 10) }}>
-                <div className="hd">
-                  <span className="rp-ico" style={{ background: "var(--l-surface)" }}>
-                    <Building2 />
-                  </span>
-                  <button type="button" className="min-w-0 flex-1 text-start" onClick={() => setDetailsTarget(b)}>
-                    <h3>{localized(b.name, b.nameEn)}</h3>
-                    {other && other !== localized(b.name, b.nameEn) && <div className="en">{other}</div>}
-                  </button>
-                  {docs > 0 ? <Ring pct={Math.round((x.valid / docs) * 100)} /> : null}
-                </div>
-                <div className="meta">
-                  <MapPin />
-                  {city ?? "—"}
-                  <span className="rp-mono ms-auto">{b.code}</span>
-                  {b.status === "INACTIVE" && <Pill tone="mut">{isAr ? "غير نشطة" : "Inactive"}</Pill>}
-                </div>
-                <div className="stats">
-                  <div>
-                    <b>{b._count?.employees ?? 0}</b>
-                    <small>{isAr ? "موظف" : "employees"}</small>
-                  </div>
-                  <div>
-                    <b>{docs}</b>
-                    <small>{isAr ? "وثيقة" : "documents"}</small>
-                  </div>
-                  <div>
-                    <b style={{ color: x.expired ? "var(--l-rose)" : x.soon ? "var(--l-amber)" : undefined }}>{x.expired + x.soon}</b>
-                    <small>{isAr ? "تحتاج متابعة" : "to follow up"}</small>
-                  </div>
-                </div>
-                <div className="acts">
-                  <button type="button" className="rp-chip" onClick={() => setDetailsTarget(b)}>
-                    <Eye className="h-4 w-4" /> {t("common.viewDetails")}
-                  </button>
-                  {(hasPermission("branches.edit") || hasPermission("branches.delete")) && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button type="button" className="lu-kebab" aria-label={t("common.actions")}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
-                        {hasPermission("branches.edit") && (
-                          <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, branch: b })}>
-                            <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
-                          </DropdownMenuItem>
-                        )}
-                        {hasPermission("branches.delete") && (
-                          <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(b)}>
-                            <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </article>
+              <LicCard
+                key={b.id}
+                i={j}
+                color={estColor(b.code || b.id)}
+                code={b.code}
+                status={b.status === "INACTIVE" ? (isAr ? "غير نشطة" : "Inactive") : isAr ? "نشطة" : "Active"}
+                statusColor={b.status === "INACTIVE" ? "#ff9a9a" : undefined}
+                seal={initialsOf(name)}
+                title={name}
+                sub={other && other !== name ? <bdi>{other}</bdi> : undefined}
+                onOpen={open}
+                facts={[
+                  [isAr ? "المدينة" : "City", city],
+                  [isAr ? "الرمز" : "Code", <span className="rp-mono">{b.code}</span>],
+                  [isAr ? "المسؤول" : "Manager", b.manager?.fullName],
+                  [isAr ? "الجوال" : "Phone", b.phone ? <span className="rp-num">{b.phone}</span> : null],
+                ]}
+                stats={[
+                  { value: b._count?.employees ?? 0, label: isAr ? "موظف" : "employees" },
+                  { value: docs, label: isAr ? "وثيقة" : "documents" },
+                  { value: x.expired + x.soon, label: isAr ? "تحتاج متابعة" : "to follow up", color: x.expired ? "var(--bad)" : x.soon ? "var(--warn)" : "var(--ok)" },
+                ]}
+                comp={docs ? { pct, title: isAr ? "الامتثال" : "Compliance", sub: isAr ? `${x.valid} من ${docs} سارية` : `${x.valid} of ${docs} valid` } : undefined}
+                ticker={<Ticker items={own.map((d) => ({ key: d.id, label: t(`documentCategories.${d.category}`), date: d.expiryDate }))} />}
+                actions={
+                  <>
+                    <button type="button" className="rc-btn" onClick={open}>
+                      <Eye />
+                      {isAr ? "التفاصيل" : "Details"}
+                    </button>
+                    <button type="button" className="rc-btn" onClick={() => navigate(`/employees?branchId=${b.id}`)}>
+                      <Users />
+                      {isAr ? "الموظفون" : "Employees"}
+                    </button>
+                    {(hasPermission("branches.edit") || hasPermission("branches.delete")) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>
+                            <MoreHorizontal />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
+                          {hasPermission("branches.edit") && (
+                            <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, branch: b })}>
+                              <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
+                            </DropdownMenuItem>
+                          )}
+                          {hasPermission("branches.delete") && (
+                            <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(b)}>
+                              <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </>
+                }
+              />
             );
           })}
         </div>
       )}
       <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
 
-      <BranchDetailsDialog open={Boolean(detailsTarget)} branch={detailsTarget} onOpenChange={(open) => !open && setDetailsTarget(null)} onEdit={(b) => setDialog({ open: true, branch: b })} />
       <BranchDialog open={dialog.open} branch={dialog.branch} onOpenChange={(open) => setDialog({ open })} />
       <ConfirmDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)} title={t("branches.deleteConfirmTitle")} onConfirm={handleDelete} />
     </div>

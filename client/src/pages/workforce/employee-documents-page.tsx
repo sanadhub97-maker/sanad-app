@@ -2,8 +2,8 @@ import { useState } from "react";
 import { localized, namePair } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams, Link } from "react-router-dom";
-import { FileText, CreditCard, BookUser, HeartPulse, ShieldPlus, Stamp, Plane, Plus, Eye, Edit, Trash2, FileDown, Copy, ExternalLink, Download, MoreHorizontal, Search } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { FileText, Plus, Edit, Trash2, FileDown, MoreHorizontal, Search, User, LayoutGrid, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -11,67 +11,44 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LuPager } from "@/components/lulu/lulu-ui";
-import { Kpis, LeftMeter, daysFromToday, dmy, hijri, weekday, type Tone } from "@/components/royal/rp";
+import { Kpis, type Tone } from "@/components/royal/rp";
+import { DocCard, KindLanes, MonthCards, Seg, kindColor, type ListDoc } from "@/components/royal/cards";
 import { listActiveBranches } from "@/api/branches";
 import { reportsApi } from "@/api/reports";
-import { filesApi } from "@/api/files";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { workforceDocumentsApi, type WorkforceDocumentItem, type WorkforceQueryParams } from "@/api/workforceDocuments";
 import { WorkforceDocumentDialog } from "./workforce-document-dialog";
-import { WorkforceDocumentDetailsDialog } from "./workforce-document-details-dialog";
+import { documentAuthority } from "./authority";
+import { EMP_DOC_KINDS, empDocPath, kindOfDoc } from "./emp-doc-kinds";
 
-/* Employee documents in the Royal design, as in the approved preview: the
-   status band, a tab per document type, and the documents soonest first,
-   grouped into expired, within 7 days, within 30 days and valid. */
+/* Employee documents in the Royal card design, as in the approved preview:
+   the status band, a tab per document type, then every document on its own
+   card, or the same documents by kind or by month. */
 
-const TYPE_TONE: Record<string, Tone> = { IQAMA: "pri", PASSPORT: "vio", HEALTH_CERTIFICATE: "teal", MEDICAL_INSURANCE: "sky", VISA: "gold", FLIGHT_TICKET: "bad" };
-
-const CATEGORIES = [
-  { value: "IQAMA", labelAr: "الإقامات", labelEn: "Iqamas", icon: CreditCard },
-  { value: "PASSPORT", labelAr: "جوازات السفر", labelEn: "Passports", icon: BookUser },
-  { value: "HEALTH_CERTIFICATE", labelAr: "الشهادات الصحية", labelEn: "Health Certificates", icon: HeartPulse },
-  { value: "MEDICAL_INSURANCE", labelAr: "التأمين الطبي", labelEn: "Medical Insurance", icon: ShieldPlus },
-  { value: "VISA", labelAr: "التأشيرات", labelEn: "Visas", icon: Stamp },
-  { value: "FLIGHT_TICKET", labelAr: "تذاكر الطيران", labelEn: "Flight Tickets", icon: Plane },
-] as const;
-const SINGULAR: Record<string, [string, string]> = {
-  IQAMA: ["الإقامة", "Iqama"],
-  PASSPORT: ["جواز السفر", "Passport"],
-  HEALTH_CERTIFICATE: ["الشهادة الصحية", "Health certificate"],
-  MEDICAL_INSURANCE: ["التأمين الطبي", "Medical insurance"],
-  VISA: ["التأشيرة", "Visa"],
-  FLIGHT_TICKET: ["تذكرة الطيران", "Flight ticket"],
-};
+type View = "doc" | "kind" | "month";
 
 export default function EmployeeDocumentsPage() {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Category from URL query param if present
-  const initialCategory = searchParams.get("category") || "";
-  const [category, setCategory] = useState<string>(initialCategory);
+  const [category, setCategory] = useState<string>(searchParams.get("category") || "");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<View>("doc");
   const [statusFilter, setStatusFilter] = useState<string>(() => {
     const s = searchParams.get("status");
     return s === "VALID" || s === "EXPIRING_SOON" || s === "EXPIRED" ? s : "ALL";
   });
   const [branchFilter, setBranchFilter] = useState<string>("ALL");
-
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    docType?: any;
-    document?: WorkforceDocumentItem | null;
-  }>({ open: false, document: null });
-
-  const [detailsDoc, setDetailsDoc] = useState<WorkforceDocumentItem | null>(null);
+  const [dialog, setDialog] = useState<{ open: boolean; docType?: any; document?: WorkforceDocumentItem | null }>({ open: false, document: null });
   const [deleteTarget, setDeleteTarget] = useState<WorkforceDocumentItem | null>(null);
-  const pageSize = 20;
+  const pageSize = 60;
 
   const queryParams: WorkforceQueryParams = {
     page,
@@ -81,30 +58,14 @@ export default function EmployeeDocumentsPage() {
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     category: category || undefined,
   };
+  const { data, isLoading } = useQuery({ queryKey: ["workforce-documents-unified", queryParams], queryFn: () => workforceDocumentsApi.listUnified(queryParams) });
+  const { data: counts = {} } = useQuery({ queryKey: ["workforce-category-counts"], queryFn: workforceDocumentsApi.categoryCounts });
+  const { data: branches = [] } = useQuery({ queryKey: ["active-branches"], queryFn: listActiveBranches });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["workforce-documents-unified", queryParams],
-    queryFn: () => workforceDocumentsApi.listUnified(queryParams),
-  });
-
-  const { data: counts = {} } = useQuery({
-    queryKey: ["workforce-category-counts"],
-    queryFn: workforceDocumentsApi.categoryCounts,
-  });
-
-  const { data: branches = [] } = useQuery({
-    queryKey: ["active-branches"],
-    queryFn: listActiveBranches,
-  });
-
-  function handleCategoryChange(newCategory: string) {
-    setCategory(newCategory);
+  function handleCategoryChange(next: string) {
+    setCategory(next);
     setPage(1);
-    if (newCategory) {
-      setSearchParams({ category: newCategory });
-    } else {
-      setSearchParams({});
-    }
+    setSearchParams(next ? { category: next } : {});
   }
 
   async function handleDelete() {
@@ -121,42 +82,32 @@ export default function EmployeeDocumentsPage() {
     }
   }
 
-  function copyText(text?: string | null) {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    toast.success(isAr ? "تم النسخ للحافظة" : "Copied to clipboard");
-  }
-
   const totalDocsCount = Object.values(counts).reduce((acc, curr) => acc + curr, 0);
-
-  const stats = data?.stats || {
-    total: totalDocsCount,
-    valid: 0,
-    expiringSoon: 0,
-    expired: 0,
-  };
-
-  const statusChips: [string, string, number, string][] = [
-    ["ALL", isAr ? "الكل" : "All", stats.total, "sky"],
-    ["EXPIRED", isAr ? "منتهية" : "Expired", stats.expired, "rose"],
-    ["EXPIRING_SOON", isAr ? "تنتهي قريبًا" : "Ending soon", stats.expiringSoon, "amber"],
-    ["VALID", isAr ? "سارية" : "Valid", stats.valid, "green"],
-  ];
+  const stats = data?.stats || { total: totalDocsCount, valid: 0, expiringSoon: 0, expired: 0 };
   const rows = [...(data?.data ?? [])].sort((a, b) => (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity) - (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity));
-  const BUCKETS: { key: string; label: string; tone: Tone; has: (d: number | null) => boolean }[] = [
-    { key: "expired", label: isAr ? "منتهية" : "Expired", tone: "bad", has: (d) => d !== null && d < 0 },
-    { key: "week", label: isAr ? "خلال 7 أيام" : "Within 7 days", tone: "warn", has: (d) => d !== null && d >= 0 && d <= 7 },
-    { key: "month", label: isAr ? "خلال 30 يوم" : "Within 30 days", tone: "gold", has: (d) => d !== null && d > 7 && d <= 30 },
-    { key: "valid", label: isAr ? "سارية" : "Valid", tone: "ok", has: (d) => d !== null && d > 30 },
-    { key: "none", label: isAr ? "بدون تاريخ انتهاء" : "No expiry date", tone: "mut", has: (d) => d === null },
-  ];
   const pages = Math.max(1, Math.ceil((data?.meta.total ?? 0) / pageSize));
-  const exportDocs = (format: "xlsx" | "pdf") =>
-    reportsApi.documents.export({ sourceType: "EMPLOYEE_DOCUMENT", category: category || undefined, status: statusFilter !== "ALL" ? statusFilter : undefined }, format);
+  const exportDocs = (format: "xlsx" | "pdf") => reportsApi.documents.export({ sourceType: "EMPLOYEE_DOCUMENT", category: category || undefined, status: statusFilter !== "ALL" ? statusFilter : undefined }, format);
   const openNew = () => setDialog({ open: true, docType: category || "IQAMA", document: null });
+  const nameOf = (doc: WorkforceDocumentItem) => namePair(doc.fullNameAr || doc.employee?.fullNameAr, doc.fullNameEn || doc.employee?.fullNameEn, isAr).primary || "—";
+  const branchOf = (doc: WorkforceDocumentItem) => localized(doc.branch?.name, doc.branch?.nameEn) || localized(doc.employee?.branch?.name, doc.employee?.branch?.nameEn);
+  const labelOf = (doc: WorkforceDocumentItem) => {
+    const { kind } = kindOfDoc(doc);
+    return kind ? kind.one[isAr ? 0 : 1] : doc.name || (isAr ? "وثيقة" : "Document");
+  };
+  const listDocs: ListDoc[] = rows.map((doc) => {
+    const { raw, kind } = kindOfDoc(doc);
+    return { key: `${doc.type}-${doc.id}`, kind: labelOf(doc), kindCode: kind?.value ?? raw, icon: kind?.icon ?? FileText, owner: nameOf(doc), date: doc.expiryDate, onOpen: () => navigate(empDocPath(doc)) };
+  });
+
+  const kpis: [string, string, number, string, Tone][] = [
+    ["ALL", isAr ? "إجمالي الوثائق" : "All documents", stats.total, isAr ? "لكل الموظفين" : "Across all employees", "pri"],
+    ["EXPIRED", isAr ? "منتهية" : "Expired", stats.expired, isAr ? "جدّدها فورًا" : "Renew now", "bad"],
+    ["EXPIRING_SOON", isAr ? "تنتهي قريبًا" : "Ending soon", stats.expiringSoon, isAr ? "جهّز التجديد" : "Get the renewal ready", "warn"],
+    ["VALID", isAr ? "سارية" : "Valid", stats.valid, isAr ? "لا شيء مطلوب" : "Nothing to do", "ok"],
+  ];
 
   return (
-    <div className="rp">
+    <div className="rp rc">
       <PageHeader
         title={t("employeeDocuments.title", { defaultValue: "مستندات الموظفين" })}
         description={isAr ? `${stats.total} وثيقة · ${stats.expired} منتهية و${stats.expiringSoon} تنتهي قريبًا` : `${stats.total} documents · ${stats.expired} expired, ${stats.expiringSoon} ending soon`}
@@ -187,11 +138,11 @@ export default function EmployeeDocumentsPage() {
       />
 
       <Kpis
-        items={statusChips.map(([v, label, n], k) => ({
-          label: k === 0 ? (isAr ? "إجمالي الوثائق" : "All documents") : label,
+        items={kpis.map(([v, label, n, sub, tone], k) => ({
+          label,
           value: n,
-          sub: v === "ALL" ? (isAr ? "لكل الموظفين" : "Across all employees") : v === "EXPIRED" ? (isAr ? "جدّدها فورًا" : "Renew now") : v === "EXPIRING_SOON" ? (isAr ? "جهّز التجديد" : "Get the renewal ready") : isAr ? "لا شيء مطلوب" : "Nothing to do",
-          tone: (v === "ALL" ? "pri" : v === "EXPIRED" ? "bad" : v === "EXPIRING_SOON" ? "warn" : "ok") as Tone,
+          sub,
+          tone,
           hero: k === 0,
           active: statusFilter === v,
           onClick: () => {
@@ -211,9 +162,9 @@ export default function EmployeeDocumentsPage() {
             <small>{isAr ? `${totalDocsCount} وثيقة` : `${totalDocsCount} documents`}</small>
           </span>
         </button>
-        {CATEGORIES.map((c) => (
+        {EMP_DOC_KINDS.map((c) => (
           <button key={c.value} type="button" className="rp-dtab" aria-pressed={category === c.value} onClick={() => handleCategoryChange(c.value)}>
-            <span className={cn("rp-ico sm", `rp-${TYPE_TONE[c.value]}`)}>
+            <span className="rp-ico sm" style={{ ["--c" as string]: kindColor(c.value), ["--t" as string]: `color-mix(in srgb, ${kindColor(c.value)} 12%, var(--surf))` }}>
               <c.icon />
             </span>
             <span>
@@ -259,14 +210,23 @@ export default function EmployeeDocumentsPage() {
             </SelectContent>
           </Select>
         )}
+        <span className="sp" />
+        <Seg
+          label={isAr ? "طريقة العرض" : "View"}
+          value={view}
+          onChange={setView}
+          items={[
+            { value: "doc", label: isAr ? "كل وثيقة" : "Each document", icon: FileText },
+            { value: "kind", label: isAr ? "حسب النوع" : "By kind", icon: LayoutGrid },
+            { value: "month", label: isAr ? "حسب الشهر" : "By month", icon: CalendarDays },
+          ]}
+        />
       </div>
 
       {isLoading ? (
-        <div className="rp-card">
+        <div className="rc-dc-grid">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rp-item">
-              <div className="h-10 w-full animate-pulse rounded-xl bg-[var(--l-ground)]" />
-            </div>
+            <div key={i} className="h-[330px] animate-pulse rounded-[22px] bg-[var(--l-surface)]" />
           ))}
         </div>
       ) : rows.length === 0 ? (
@@ -280,125 +240,73 @@ export default function EmployeeDocumentsPage() {
             </div>
           )}
         </div>
+      ) : view === "kind" ? (
+        <KindLanes docs={listDocs} kinds={EMP_DOC_KINDS.map((k) => ({ code: k.value, label: isAr ? k.labelAr : k.labelEn, icon: k.icon }))} />
+      ) : view === "month" ? (
+        <MonthCards docs={listDocs} unit={["وثيقة", "documents"]} />
       ) : (
-        <div className="rp-card rp-rise overflow-hidden" style={{ ["--i" as string]: 4 }}>
-          {BUCKETS.map((bk) => {
-            const inBucket = rows.filter((d) => bk.has(daysFromToday(d.expiryDate)));
-            if (!inBucket.length) return null;
+        <div className="rc-dc-grid">
+          {rows.map((doc, i) => {
+            const { raw, kind } = kindOfDoc(doc);
+            const number = doc.documentNumber || doc.iqamaNumber || doc.passportNumber;
+            const branch = branchOf(doc);
+            const employeeId = doc.employeeId || doc.employee?.id;
             return (
-              <div key={bk.key}>
-                <div className={cn("rp-bucket", `rp-${bk.tone}`)}>
-                  <i />
-                  {bk.label}
-                  <span>{isAr ? `${inBucket.length} وثيقة` : `${inBucket.length} documents`}</span>
-                </div>
-                {inBucket.map((doc) => {
-                  const rawType = (doc.type || (doc.iqamaNumber ? "IQAMA" : "PASSPORT")).toUpperCase();
-                  const found = CATEGORIES.find((c) => c.value === rawType || (rawType.includes("VISA") && c.value === "VISA"));
-                  const Icon = found?.icon ?? FileText;
-                  const typeLabel = found ? SINGULAR[found.value][isAr ? 0 : 1] : doc.name || (isAr ? "وثيقة" : "Document");
-                  const { primary: name } = namePair(doc.fullNameAr || doc.employee?.fullNameAr, doc.fullNameEn || doc.employee?.fullNameEn, isAr);
-                  const number = doc.documentNumber || doc.iqamaNumber || doc.passportNumber;
-                  const branchName = localized(doc.branch?.name, doc.branch?.nameEn) || localized(doc.employee?.branch?.name, doc.employee?.branch?.nameEn);
-                  const days = daysFromToday(doc.expiryDate);
-                  return (
-                    <div
-                      key={`${doc.type}-${doc.id}`}
-                      role="button"
-                      tabIndex={0}
-                      className="rp-item cursor-pointer hover:bg-[var(--l-ground)]"
-                      onClick={() => setDetailsDoc(doc)}
-                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setDetailsDoc(doc))}
-                    >
-                      <span className={cn("rp-ico sm", `rp-${TYPE_TONE[found?.value ?? "IQAMA"] ?? "pri"}`)}>
-                        <Icon />
-                      </span>
-                      <span className="t">
-                        <b>{name || "—"}</b>
-                        <small>
-                          {typeLabel}
-                          {number && (
-                            <>
-                              {" · "}
-                              <span className="rp-mono">{number}</span>
-                            </>
-                          )}
-                          {branchName && ` · ${branchName}`}
-                        </small>
-                      </span>
-                      <span className="end">
-                        <b className="rp-num">{doc.expiryDate ? dmy(doc.expiryDate) : "—"}</b>
-                        {doc.expiryDate && (
-                          <small>
-                            {weekday(doc.expiryDate)} · {hijri(doc.expiryDate)}
-                          </small>
-                        )}
-                      </span>
-                      <LeftMeter days={days} />
-                      <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button type="button" className="lu-kebab" aria-label={t("common.actions")}>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-                            <DropdownMenuItem className="rounded-2xl" onSelect={() => setDetailsDoc(doc)}>
-                              <Eye className="me-2 h-4 w-4" /> {t("common.viewDetails")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="rounded-2xl">
-                              <Link to={`/employees/${doc.employeeId || doc.employee?.id}`}>
-                                <ExternalLink className="me-2 h-4 w-4" /> {isAr ? "ملف الموظف" : "Employee profile"}
-                              </Link>
-                            </DropdownMenuItem>
-                            {number && (
-                              <DropdownMenuItem className="rounded-2xl" onSelect={() => copyText(number)}>
-                                <Copy className="me-2 h-4 w-4" /> {isAr ? "نسخ الرقم" : "Copy number"}
-                              </DropdownMenuItem>
-                            )}
-                            {doc.fileId && (
-                              <DropdownMenuItem className="rounded-2xl" onSelect={() => filesApi.download(doc.fileId!, `${number || "document"}.pdf`)}>
-                                <Download className="me-2 h-4 w-4" /> {isAr ? "تحميل المرفق" : "Download attachment"}
-                              </DropdownMenuItem>
-                            )}
-                            {hasPermission("employees.edit") && (
-                              <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, docType: rawType, document: doc })}>
-                                <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
-                              </DropdownMenuItem>
-                            )}
-                            {hasPermission("employees.edit") && (
-                              <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(doc)}>
-                                <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <DocCard
+                key={`${doc.type}-${doc.id}`}
+                i={i}
+                kind={labelOf(doc)}
+                kindCode={kind?.value ?? raw}
+                icon={kind?.icon ?? FileText}
+                owner={branch ? `${nameOf(doc)} · ${branch}` : nameOf(doc)}
+                ownerIcon={User}
+                number={number}
+                authority={documentAuthority(doc, isAr)}
+                issueDate={doc.issueDate || doc.startDate}
+                expiryDate={doc.expiryDate}
+                hasFile={Boolean(doc.fileId)}
+                onView={() => navigate(empDocPath(doc))}
+                onRenew={hasPermission("employees.edit") ? () => setDialog({ open: true, docType: raw, document: doc }) : undefined}
+                extra={
+                  <>
+                    {employeeId && (
+                      <button type="button" className={cn("rc-btn icon")} onClick={() => navigate(`/employees/${employeeId}`)} title={isAr ? "ملف الموظف" : "Employee profile"} aria-label={isAr ? "ملف الموظف" : "Employee profile"}>
+                        <User />
+                      </button>
+                    )}
+                    {hasPermission("employees.edit") && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>
+                            <MoreHorizontal />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
+                          <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, docType: raw, document: doc })}>
+                            <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(doc)}>
+                            <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </>
+                }
+              />
             );
           })}
         </div>
       )}
       <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
 
-      <WorkforceDocumentDetailsDialog
-        open={Boolean(detailsDoc)}
-        document={detailsDoc}
-        onOpenChange={(open) => !open && setDetailsDoc(null)}
-        onEdit={(doc) => setDialog({ open: true, docType: doc.type || (doc.iqamaNumber ? "IQAMA" : "PASSPORT"), document: doc })}
-      />
       <WorkforceDocumentDialog
         open={dialog.open}
         docType={dialog.docType || category || "IQAMA"}
         document={dialog.document}
         queryKey="workforce-documents-unified"
         onOpenChange={(open) => setDialog((prev) => ({ ...prev, open }))}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["workforce-category-counts"] });
-        }}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ["workforce-category-counts"] })}
       />
       <ConfirmDialog
         open={Boolean(deleteTarget)}

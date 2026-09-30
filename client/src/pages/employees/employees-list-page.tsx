@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { localized } from "@/lib/names";
 import { namePair } from "@/lib/names";
 import { tr } from "@/i18n";
@@ -7,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Building2, ChevronLeft, ChevronRight, Eye, FileDown, FileUp, LayoutGrid, List, MoreHorizontal, Plus, Printer, Search, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, FileDown, FileUp, LayoutGrid, List, MoreHorizontal, Plus, Printer, Search, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -28,186 +27,86 @@ import type { Employee } from "@/types/models";
 import { useAuthStore } from "@/stores/authStore";
 import { DESK_QUERY } from "@/lib/use-desk";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
-import { Kpis, LeftPill, dmy, daysFromToday } from "@/components/royal/rp";
+import { Kpis, dmy, daysFromToday } from "@/components/royal/rp";
+import { LicCard, Ticker, estColor } from "@/components/royal/cards";
 
 const columnHelper = createColumnHelper<Employee>();
 
-function daysAr(n: number) {
-  return n === 1 ? "يوم واحد" : n === 2 ? "يومان" : n <= 10 ? `${n} أيام` : `${n} يومًا`;
-}
-
-const TONES = ["indigo", "rose", "amber", "teal", "violet", "sky", "green"] as const;
-
-/** Days from today until a date (negative once it has passed). */
-function daysUntil(iso?: string | null) {
-  if (!iso) return null;
-  const exp = new Date(iso);
-  const now = new Date();
-  return Math.round((Date.UTC(exp.getUTCFullYear(), exp.getUTCMonth(), exp.getUTCDate()) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86_400_000);
-}
-
-/** A document's tone and wording: rose once expired, amber within 30 days, green after. */
-function docState(days: number | null, isAr: boolean): { tone: string; text: string } {
-  if (days === null) return { tone: "sky", text: isAr ? "غير مسجّلة" : "Not recorded" };
-  if (days < 0) return { tone: "rose", text: isAr ? `منتهية منذ ${daysAr(-days)}` : `Expired ${-days}d ago` };
-  return { tone: days <= 30 ? "amber" : "green", text: isAr ? `باقي ${daysAr(days)}` : `${days}d left` };
-}
-
-/** One employee as a Royal card: avatar, name, job and nationality, the
- * iqama and passport with their dates and time left, and the establishment. */
-function PersonCard({ employee, index, isAr, onOpen }: { employee: Employee; index: number; isAr: boolean; onOpen: () => void }) {
-  const { primary: name } = namePair(employee.fullNameAr, employee.fullNameEn, isAr);
-  const job = localized(employee.jobTitle, employee.jobTitleEn);
-  const nat = isAr ? employee.nationality || employee.nationalityEn : employee.nationalityEn || employee.nationality;
-  const branch = localized(employee.branch?.name, employee.branch?.nameEn);
+/** One employee as a licence card, as in the approved preview: the band with
+ * the number and status, the avatar seal, the facts, the figures, how many
+ * documents are valid, and the rotating ticker of what ends soon. */
+function EmployeeCard({ employee: e, index, isAr, onOpen, onEdit, onPrint, onDelete }: { employee: Employee; index: number; isAr: boolean; onOpen: () => void; onEdit?: () => void; onPrint: () => void; onDelete?: () => void }) {
+  const { t } = useTranslation();
+  const { primary: name } = namePair(e.fullNameAr, e.fullNameEn, isAr);
+  const job = localized(e.jobTitle, e.jobTitleEn);
+  const nat = isAr ? e.nationality || e.nationalityEn : e.nationalityEn || e.nationality;
   const docs = [
-    { label: isAr ? "الإقامة" : "Iqama", date: employee.iqamaExpiryDate },
-    { label: isAr ? "الجواز" : "Passport", date: employee.passportExpiryDate },
-  ];
+    { key: "iq", label: isAr ? "الإقامة" : "Iqama", date: e.iqamaExpiryDate, has: Boolean(e.iqamaNumber || e.iqamaExpiryDate) },
+    { key: "pp", label: isAr ? "جواز السفر" : "Passport", date: e.passportExpiryDate, has: Boolean(e.passportNumber || e.passportExpiryDate) },
+  ].filter((d) => d.has);
+  const valid = docs.filter((d) => (daysFromToday(d.date) ?? 999) > 30).length;
+  const due = docs.length - valid;
+  const pct = docs.length ? Math.round((valid / docs.length) * 100) : 0;
+  const months = e.joiningDate ? Math.max(0, Math.round((Date.now() - new Date(e.joiningDate).getTime()) / 864e5 / 30)) : null;
+  const stc = e.employmentStatus === "ACTIVE" ? "#7cf0b5" : e.employmentStatus === "ON_LEAVE" ? "#ffd27a" : "#ff9a9a";
+  const worst = docs.length ? Math.min(...docs.map((d) => daysFromToday(d.date) ?? 999)) : 999;
   return (
-    <button type="button" onClick={onOpen} className="rp-card rp-emp rp-lift rp-rise" style={{ ["--i" as string]: Math.min(index, 10) }}>
-      <span className="hd">
-        <span className="rp-av">
-          <SaudiAvatar gender={employee.gender} size="md" className="h-full w-full" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <h3>{name}</h3>
-          <small>{[job, nat].filter(Boolean).join(" · ") || employee.employeeNumber}</small>
-        </span>
-        <EmploymentStatusBadge status={employee.employmentStatus} />
-      </span>
-      <span className="docs">
-        {docs.map((d) => (
-          <span key={d.label} className="doc">
-            {d.label}
-            <b className="rp-num">{d.date ? dmy(d.date) : "—"}</b>
-            <LeftPill days={daysFromToday(d.date)} />
-          </span>
-        ))}
-      </span>
-      <span className="ft">
-        <span>
-          <Building2 />
-          {branch ?? "—"}
-        </span>
-        <span className="rp-mono">{employee.employeeNumber}</span>
-      </span>
-    </button>
-  );
-}
-
-/** The employee at a glance: a side panel on wide screens, a bottom sheet on phones. */
-function PersonDrawer({ employee, tone, isAr, onClose, onOpenProfile, onEdit }: { employee: Employee | null; tone: string; isAr: boolean; onClose: () => void; onOpenProfile: () => void; onEdit?: () => void }) {
-  const open = Boolean(employee);
-  const [shown, setShown] = useState<Employee | null>(employee);
-  useEffect(() => {
-    if (employee) setShown(employee);
-  }, [employee]);
-  useEffect(() => {
-    if (!open) return;
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", esc);
-    return () => window.removeEventListener("keydown", esc);
-  }, [open, onClose]);
-  const e = shown;
-  const docs = e
-    ? [
-        { label: isAr ? "الإقامة" : "Iqama", number: e.iqamaNumber, days: daysUntil(e.iqamaExpiryDate), date: e.iqamaExpiryDate },
-        { label: isAr ? "جواز السفر" : "Passport", number: e.passportNumber, days: daysUntil(e.passportExpiryDate), date: e.passportExpiryDate },
-      ]
-    : [];
-  const name = e ? namePair(e.fullNameAr, e.fullNameEn, isAr).primary : "";
-  const job = e ? localized(e.jobTitle, e.jobTitleEn) : null;
-  const nat = e ? (isAr ? e.nationality || e.nationalityEn : e.nationalityEn || e.nationality) : null;
-
-  return createPortal(
-    <>
-      <div className={cn("lu-scrim", open && "open")} onClick={onClose} />
-      <aside className={cn("lu-drawer", `lt-${tone}`, open && "open")} aria-hidden={!open} aria-label={name}>
-        <span className="grab" />
-        {e && (
-          <>
-            <div className="lu-dh">
-              <span className="lu-sq av">
-                <SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate">{name}</h3>
-                <small className="text-muted-foreground">{[job, nat].filter(Boolean).join(" · ") || e.employeeNumber}</small>
-              </div>
-              <button type="button" className="lu-btn" onClick={onClose} aria-label={isAr ? "إغلاق" : "Close"}>
-                <X />
+    <LicCard
+      i={index}
+      color={estColor(e.branch?.code || e.branchId)}
+      code={[e.employeeNumber, e.iqamaNumber && `IQ ${e.iqamaNumber}`].filter(Boolean).join(" · ")}
+      status={t(`status.${e.employmentStatus}`, { defaultValue: e.employmentStatus })}
+      statusColor={stc}
+      round
+      seal={<SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />}
+      title={name}
+      sub={[job, nat].filter(Boolean).join(" · ") || e.employeeNumber}
+      onOpen={onOpen}
+      facts={[
+        [isAr ? "المؤسسة" : "Establishment", localized(e.branch?.name, e.branch?.nameEn)],
+        [isAr ? "تاريخ الالتحاق" : "Joined", e.joiningDate ? <span className="rp-num">{dmy(e.joiningDate)}</span> : null],
+        [isAr ? "المسمى الوظيفي" : "Job title", job],
+        [isAr ? "الجوال" : "Mobile", e.mobile ? <span className="rp-num">{e.mobile}</span> : null],
+      ]}
+      stats={[
+        { value: docs.length, label: isAr ? "وثيقة" : "documents" },
+        { value: months ?? "—", label: isAr ? "شهر خدمة" : "months" },
+        { value: due, label: isAr ? "تحتاج متابعة" : "to follow up", color: worst < 0 ? "var(--bad)" : due ? "var(--warn)" : "var(--ok)" },
+      ]}
+      comp={docs.length ? { pct, title: isAr ? "اكتمال المستندات" : "Documents in order", sub: isAr ? `${valid} من ${docs.length} سارية` : `${valid} of ${docs.length} valid` } : undefined}
+      ticker={<Ticker items={docs.map((d) => ({ key: d.key, label: d.label, date: d.date }))} />}
+      actions={
+        <>
+          <button type="button" className="rc-btn" onClick={onOpen}>
+            <Eye />
+            {isAr ? "الملف" : "Profile"}
+          </button>
+          {onEdit && (
+            <button type="button" className="rc-btn" onClick={onEdit}>
+              <Pencil />
+              {isAr ? "تعديل" : "Edit"}
+            </button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>
+                <MoreHorizontal />
               </button>
-            </div>
-            <div className="lu-facts">
-              <div>
-                <small>{isAr ? "الرقم الوظيفي" : "Employee no."}</small>
-                <b dir="ltr" className="text-start">
-                  {e.employeeNumber}
-                </b>
-              </div>
-              <div>
-                <small>{isAr ? "الجنسية" : "Nationality"}</small>
-                <b>{nat || "—"}</b>
-              </div>
-              <div style={{ gridColumn: "span 2" }}>
-                <small>{isAr ? "المؤسسة" : "Establishment"}</small>
-                <b>{localized(e.branch?.name, e.branch?.nameEn) ?? "—"}</b>
-              </div>
-              {(e.sponsorName || e.onSponsorship != null) && (
-                <div style={{ gridColumn: "span 2" }}>
-                  <small>{isAr ? "الكفيل" : "Sponsor"}</small>
-                  <b>
-                    {e.sponsorName || "—"}
-                    {e.onSponsorship != null && ` ·${e.onSponsorship ? (isAr ? "على الكفالة" : "on sponsorship") : isAr ? "ليس على الكفالة" : "not on sponsorship"}`}
-                  </b>
-                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
+              <DropdownMenuItem onSelect={onPrint} className="rounded-2xl text-xs font-medium">
+                <Printer className="me-2 h-4 w-4 text-muted-foreground" /> {t("employees.menu.printProfile")}
+              </DropdownMenuItem>
+              {onDelete && (
+                <DropdownMenuItem onSelect={onDelete} className="rounded-2xl text-xs font-medium text-destructive">
+                  <Trash2 className="me-2 h-4 w-4" /> {t("employees.menu.delete")}
+                </DropdownMenuItem>
               )}
-            </div>
-            {docs.map((d) => {
-              const st = docState(d.days, isAr);
-              const pct = d.days === null ? 0 : d.days < 0 ? 100 : Math.max(6, Math.min(100, (d.days / 365) * 100));
-              return (
-                <div key={d.label} className={cn("lu-doc", `lt-${st.tone}`)} style={d.days === null ? { background: "var(--l-ground)" } : undefined}>
-                  <div className="r">
-                    <span className="min-w-0">
-                      <b>{d.label}</b>{" "}
-                      {d.number && (
-                        <small dir="ltr" className="text-muted-foreground">
-                          {d.number}
-                        </small>
-                      )}
-                    </span>
-                    <span className="lu-chip" style={{ background: "var(--l-surface)" }}>
-                      {st.text}
-                    </span>
-                  </div>
-                  {d.days !== null && (
-                    <>
-                      <em className="lu-left">
-                        <i style={{ width: open ? `${pct}%` : 0 }} />
-                      </em>
-                      <small className="text-muted-foreground">{formatDate(d.date)}</small>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-            <div className="mt-auto flex gap-2 pt-1.5">
-              <Button className="h-11 flex-1 rounded-[14px]" onClick={onOpenProfile}>
-                <Eye className="h-4 w-4" /> {isAr ? "فتح الملف" : "Open profile"}
-              </Button>
-              {onEdit && (
-                <button type="button" className="lu-btn" onClick={onEdit}>
-                  {isAr ? "تعديل" : "Edit"}
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </aside>
-    </>,
-    document.body
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      }
+    />
   );
 }
 
@@ -225,11 +124,10 @@ export default function EmployeesListPage() {
   const [editTarget, setEditTarget] = useState<Employee | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [branchId, setBranchId] = useState<string>("");
+  const [branchId, setBranchId] = useState<string>(() => searchParams.get("branchId") || "");
   const [employmentStatus, setEmploymentStatus] = useState<string>("");
   const [expiryStatus, setExpiryStatus] = useState<"" | "EXPIRING_SOON" | "EXPIRED">("");
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
-  const [quick, setQuick] = useState<{ employee: Employee; tone: string } | null>(null);
   const [view, setView] = useState<"cards" | "table">(() => {
     try {
       const saved = localStorage.getItem("employees.view");
@@ -412,7 +310,7 @@ export default function EmployeesListPage() {
     : `${total} employees in ${branchCount} branches${attention ? ` · ${attention} iqamas need your attention` : ""}`;
 
   return (
-    <div className="rp">
+    <div className="rp rc">
       <PageHeader
         title={t("employees.title")}
         description={description}
@@ -518,9 +416,9 @@ export default function EmployeesListPage() {
       {view === "cards" ? (
         <>
           {isLoading ? (
-            <div className="rp-cards">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-[200px] animate-pulse rounded-[20px] bg-[var(--l-surface)]" />
+            <div className="rc-lic-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-[440px] animate-pulse rounded-[24px] bg-[var(--l-surface)]" />
               ))}
             </div>
           ) : (data?.data ?? []).length === 0 ? (
@@ -529,11 +427,26 @@ export default function EmployeesListPage() {
               {t("employees.emptyDescription")}
             </div>
           ) : (
-            <div className="rp-cards">
-              {(data?.data ?? []).map((emp, i) => {
-                const tone = TONES[i % TONES.length];
-                return <PersonCard key={emp.id} employee={emp} index={i} isAr={isAr} onOpen={() => setQuick({ employee: emp, tone })} />;
-              })}
+            <div className="rc-lic-grid">
+              {(data?.data ?? []).map((emp, i) => (
+                <EmployeeCard
+                  key={emp.id}
+                  employee={emp}
+                  index={i}
+                  isAr={isAr}
+                  onOpen={() => navigate(`/employees/${emp.id}`)}
+                  onPrint={() => openPdfInNewTab(employeePdfUrl(emp.id))}
+                  onEdit={
+                    hasPermission("employees.edit")
+                      ? () => {
+                          setEditTarget(emp);
+                          setDialogOpen(true);
+                        }
+                      : undefined
+                  }
+                  onDelete={hasPermission("employees.delete") ? () => setDeleteTarget(emp) : undefined}
+                />
+              ))}
             </div>
           )}
           {pages > 1 && (
@@ -564,24 +477,6 @@ export default function EmployeesListPage() {
           emptyDescription={t("employees.emptyDescription")}
         />
       )}
-
-      <PersonDrawer
-        employee={quick?.employee ?? null}
-        tone={quick?.tone ?? "sky"}
-        isAr={isAr}
-        onClose={() => setQuick(null)}
-        onOpenProfile={() => quick && navigate(`/employees/${quick.employee.id}`)}
-        onEdit={
-          hasPermission("employees.edit")
-            ? () => {
-                if (!quick) return;
-                setEditTarget(quick.employee);
-                setQuick(null);
-                setDialogOpen(true);
-              }
-            : undefined
-        }
-      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

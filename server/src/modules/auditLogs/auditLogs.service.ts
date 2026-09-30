@@ -7,11 +7,12 @@ import type { listAuditLogsQuerySchema } from "@/modules/auditLogs/auditLogs.sch
 type ListQuery = z.infer<typeof listAuditLogsQuerySchema>;
 
 export async function list(query: ListQuery) {
-  const { page, pageSize, module, userId, action, dateFrom, dateTo } = query;
+  const { page, pageSize, module, userId, recordId, action, dateFrom, dateTo } = query;
 
   const where: Prisma.AuditLogWhereInput = {
     ...(module ? { module } : {}),
     ...(userId ? { userId } : {}),
+    ...(recordId ? { recordId } : {}),
     ...(action ? { action } : {}),
     ...(dateFrom || dateTo ? { createdAt: { gte: dateFrom, lte: dateTo } } : {}),
   };

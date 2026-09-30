@@ -45,6 +45,7 @@ export interface EmployeeDocument {
   status?: DocumentStatus | null;
   fileId?: string | null;
   notes?: string | null;
+  createdAt?: string;
 }
 
 export interface Employee {

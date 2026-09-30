@@ -1,417 +1,280 @@
 import { useState } from "react";
 import { localized, localizedCity } from "@/lib/names";
 import { namePair } from "@/lib/names";
-import { tr } from "@/i18n";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import {
-  Edit,
-  Plus,
-  Printer,
-  Trash2,
-  FileText,
-  Building2,
-  MapPin,
-  Phone,
-  Mail,
-  Calendar,
-  CreditCard,
-  Globe,
-  Clock,
-  Sparkles,
-  ShieldCheck,
-  UserCheck,
-} from "lucide-react";
+import { AlertTriangle, Briefcase, Building2, Calendar, CheckCircle2, Clock, Edit, Globe, Hash, IdCard, Mail, MapPin, Phone, Plus, Printer, ShieldCheck, Sparkles, StickyNote, User, UserCheck, Wallet } from "lucide-react";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
 import { AvatarPickerDialog } from "@/components/avatars/avatar-picker-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PageHeader } from "@/components/common/page-header";
-import { StatusBadge, EmploymentStatusBadge } from "@/components/common/status-badge";
-import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { EmptyState } from "@/components/common/empty-state";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
-import { employeesApi, employeePdfUrl, employeeDocumentsApi } from "@/api/employees";
+import { employeesApi, employeePdfUrl } from "@/api/employees";
 import { paymentsApi } from "@/api/payments";
 import { openPdfInNewTab } from "@/lib/download";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { getErrorMessage } from "@/lib/api";
+import { formatCurrency } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { EmployeeDocumentDialog } from "@/pages/employees/employee-document-dialog";
-import { AppleIcon, type AppleTone } from "@/components/common/apple-icon";
-import { CategoryChips } from "@/components/common/category-chips";
 import { PrintDocumentHeader, PrintDocumentFooter } from "@/components/common/print-document-header";
-import { EMPLOYEE_DOCUMENT_TYPE_ICONS } from "@/lib/document-type-icons";
-import type { EmployeeDocument } from "@/types/models";
+import { daysFromToday, dmy, weekday } from "@/components/royal/rp";
+import { BigRing, CoverHero, DCard, DetailBar, Fact, History, MiniDoc, Owner, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory } from "@/components/royal/cards";
+import { employeeDocs } from "@/pages/workforce/employee-docs";
+
+/* The employee's own page, as in the approved preview: a cover hero with the
+   avatar, the status and how many documents are valid, then cards for the
+   documents, the personal and work details, the payments, what the file is
+   missing, the establishment and the latest activity. */
 
 export default function EmployeeProfilePage() {
   const { t, i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
   const { id } = useParams();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const hasPermission = useAuthStore((s) => s.hasPermission);
+  const back = useBack("/employees");
 
-  const { data: employee, isLoading } = useQuery({ queryKey: ["employees", id], queryFn: () => employeesApi.getById(id!) });
+  const { data: employee, isLoading, isError } = useQuery({ queryKey: ["employees", id], queryFn: () => employeesApi.getById(id!) });
   const { data: payments } = useQuery({
     queryKey: ["payments", "byEmployee", id],
     queryFn: () => paymentsApi.list({ employeeId: id, pageSize: 10 }),
+    enabled: hasPermission("payments.view"),
   });
+  const { data: history } = useRecordHistory(id);
 
-  const [docDialog, setDocDialog] = useState<{ open: boolean; document?: EmployeeDocument }>({ open: false });
-  const [deleteDoc, setDeleteDoc] = useState<EmployeeDocument | null>(null);
+  const [docDialogOpen, setDocDialogOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [docTypeFilter, setDocTypeFilter] = useState("");
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [customAvatarId, setCustomAvatarId] = useState<string | null>(null);
 
-  const deleteDocMutation = useMutation({
-    mutationFn: () => employeeDocumentsApi.remove(id!, deleteDoc!.id),
-    onSuccess: () => {
-      toast.success(t("common.deletedSuccess"));
-      queryClient.invalidateQueries({ queryKey: ["employees", id] });
-      setDeleteDoc(null);
-    },
-    onError: (err) => toast.error(getErrorMessage(err)),
-  });
+  if (isLoading) return <div className="p-6 text-sm text-muted-foreground">{t("common.loading")}</div>;
+  if (isError || !employee)
+    return (
+      <div className="rp rc">
+        <DetailBar from={t("employees.title")} here="—" onBack={() => navigate("/employees")} />
+        <div className="rp-card rp-empty">{isAr ? "الموظف غير موجود أو تم حذفه" : "This employee was not found or was deleted"}</div>
+      </div>
+    );
 
-  if (isLoading || !employee) return <div className="text-sm text-muted-foreground p-6">{t("common.loading")}</div>;
-
-  const names = namePair(employee.fullNameAr, employee.fullNameEn, i18n.language === "ar");
-
-  const allDocuments = employee.documents ?? [];
-  const docTypeCounts = allDocuments.reduce<Record<string, number>>((acc, d) => {
-    acc[d.type] = (acc[d.type] ?? 0) + 1;
-    return acc;
-  }, {});
-  const docTypesPresent = Object.keys(docTypeCounts);
-  const docTypeChips = docTypesPresent.map((type) => ({
-    value: type,
-    label: t(`documentTypes.${type}`),
-    icon: EMPLOYEE_DOCUMENT_TYPE_ICONS[type] ?? EMPLOYEE_DOCUMENT_TYPE_ICONS.OTHER,
-  }));
-  const filteredDocuments = docTypeFilter ? allDocuments.filter((d) => d.type === docTypeFilter) : allDocuments;
+  const e = employee;
+  const names = namePair(e.fullNameAr, e.fullNameEn, isAr);
+  const job = localized(e.jobTitle, e.jobTitleEn);
+  const nat = localized(e.nationality, e.nationalityEn);
+  const branch = localized(e.branch?.name, e.branch?.nameEn);
+  const color = estColor(e.branch?.code || e.branchId);
+  const docs = employeeDocs(e, isAr).sort((a, b) => (daysFromToday(a.expiryDate) ?? 99999) - (daysFromToday(b.expiryDate) ?? 99999));
+  const dated = docs.filter((d) => d.expiryDate);
+  const valid = dated.filter((d) => (daysFromToday(d.expiryDate) ?? 0) > 30).length;
+  const due = dated.length - valid;
+  const pct = dated.length ? Math.round((valid / dated.length) * 100) : 0;
+  const months = e.joiningDate ? Math.max(0, Math.round((Date.now() - new Date(e.joiningDate).getTime()) / 864e5 / 30)) : null;
+  const statusTone = e.employmentStatus === "ACTIVE" ? ["var(--ok)", "var(--ok-s)"] : e.employmentStatus === "ON_LEAVE" ? ["var(--sky)", "var(--sky-s)"] : ["var(--bad)", "var(--bad-s)"];
+  const has = (type: string) => docs.some((d) => d.type === type);
+  const checks: [string, boolean][] = [
+    [isAr ? "الإقامة" : "Iqama", has("IQAMA")],
+    [isAr ? "جواز السفر" : "Passport", has("PASSPORT")],
+    [isAr ? "الشهادة الصحية" : "Health certificate", has("HEALTH_CERTIFICATE")],
+    [isAr ? "التأمين الطبي" : "Medical insurance", has("MEDICAL_INSURANCE")],
+    [isAr ? "عقد العمل" : "Employment contract", has("EMPLOYMENT_CONTRACT")],
+    [isAr ? "رقم الجوال" : "Mobile number", Boolean(e.mobile)],
+  ];
+  const done = checks.filter((c) => c[1]).length;
+  const age = e.dateOfBirth ? Math.floor(-(daysFromToday(e.dateOfBirth) ?? 0) / 365.25) : null;
 
   return (
-    <div className="space-y-6">
-      <PrintDocumentHeader
-        title={t("employees.profile.title")}
-        subtitle={employee.fullNameAr || employee.fullNameEn || undefined}
-        referenceNumber={employee.employeeNumber}
-      />
-      <PageHeader
-        title={t("employees.profile.title")}
-        actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => openPdfInNewTab(employeePdfUrl(employee.id))} className="gap-1.5 shadow-sm">
-              <Printer className="h-4 w-4" /> {t("common.print")}
-            </Button>
-            {hasPermission("employees.edit") && (
-              <Button onClick={() => setEditOpen(true)} className="gap-1.5 shadow-sm">
-                <Edit className="h-4 w-4" /> {t("common.edit")}
-              </Button>
-            )}
-          </div>
-        }
-      />
-
-      {/* Executive VIP Cover Dossier Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-card via-card to-muted/30 p-6 shadow-luxury"
-      >
-        {/* Subtle decorative mesh orbs */}
-        <div className="pointer-events-none absolute -top-24 -end-24 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-600/15" />
-        <div className="pointer-events-none absolute -bottom-24 -start-24 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/10" />
-
-        <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center">
-          {/* Saudi Avatar with status beacon and change button */}
-          <div className="relative shrink-0 group">
-            <SaudiAvatar
-              avatarId={customAvatarId}
-              gender={employee.gender}
-              size="xl"
-              className="h-20 w-20 rounded-2xl border-2 border-primary/40 shadow-lg ring-4 ring-background cursor-pointer transition-transform group-hover:scale-105"
-              onClick={() => setAvatarPickerOpen(true)}
-            />
-            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-background ring-2 ring-background">
-              <span className="h-3.5 w-3.5 rounded-full bg-emerald-500 animate-pulse" />
-            </span>
-            <button
-              type="button"
-              onClick={() => setAvatarPickerOpen(true)}
-              title={i18n.language === "ar" ? "تغيير الأفاتار بالزي السعودي" : "Change Saudi Avatar"}
-              className="absolute -top-1 -start-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background hover:scale-110 transition-transform"
-            >
-              <Sparkles className="h-3 w-3" />
+    <div className="rp rc">
+      <PrintDocumentHeader title={t("employees.profile.title")} subtitle={e.fullNameAr || e.fullNameEn || undefined} referenceNumber={e.employeeNumber} />
+      <DetailBar from={t("employees.title")} here={names.primary} onBack={back}>
+        <div className="rc-acts">
+          {hasPermission("employeeDocuments.create") && (
+            <button type="button" className="rc-btn pri" style={{ height: 38 }} onClick={() => setDocDialogOpen(true)}>
+              <Plus />
+              {t("employees.profile.addDocument")}
             </button>
-          </div>
-
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
-                {names.primary}
-              </h2>
-              {names.secondary && (
-                <span className="text-sm text-muted-foreground font-medium">
-                  (<bdi>{names.secondary}</bdi>)
-                </span>
-              )}
-              <EmploymentStatusBadge status={employee.employmentStatus} />
-            </div>
-
-            <p className="text-sm font-medium text-muted-foreground flex flex-wrap items-center gap-2">
-              <span className="text-foreground font-semibold">{localized(employee.jobTitle, employee.jobTitleEn) ?? tr("موظف", "Employee")}</span>
-              <span>•</span>
-              <span>{localized(employee.department, employee.departmentEn) ?? tr("عام", "General")}</span>
-              <span>•</span>
-              <span className="inline-flex items-center gap-1 text-primary font-medium">
-                <Building2 className="h-3.5 w-3.5" />
-                {localized(employee.branch?.name, employee.branch?.nameEn) ?? t("employees.profile.noBranch")}
-              </span>
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1 font-mono font-semibold text-foreground bg-muted/80 px-2.5 py-1 rounded-lg border border-border/60">
-                #{employee.employeeNumber}
-              </span>
-              {employee.mobile && (
-                <span className="inline-flex items-center gap-1 hover:text-foreground">
-                  <Phone className="h-3.5 w-3.5 text-blue-500" />
-                  <span dir="ltr">{employee.mobile}</span>
-                </span>
-              )}
-              {employee.email && (
-                <span className="inline-flex items-center gap-1 hover:text-foreground">
-                  <Mail className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>{employee.email}</span>
-                </span>
-              )}
-            </div>
-          </div>
+          )}
+          {hasPermission("employees.edit") && (
+            <button type="button" className="rc-btn" style={{ height: 38 }} onClick={() => setEditOpen(true)}>
+              <Edit />
+              {isAr ? "تعديل البيانات" : "Edit details"}
+            </button>
+          )}
+          <button type="button" className="rc-btn" style={{ height: 38 }} onClick={() => openPdfInNewTab(employeePdfUrl(e.id))}>
+            <Printer />
+            {isAr ? "طباعة الملف" : "Print profile"}
+          </button>
         </div>
-      </motion.div>
+      </DetailBar>
 
-      {/* Tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-card/70 border border-border/60 p-1 rounded-xl">
-          <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold px-4">{t("employees.profile.tabs.overview")}</TabsTrigger>
-          <TabsTrigger value="documents" className="rounded-lg text-xs font-semibold px-4">{t("employees.profile.tabs.documents")}</TabsTrigger>
-          <TabsTrigger value="payments" className="rounded-lg text-xs font-semibold px-4">{t("employees.profile.tabs.payments")}</TabsTrigger>
-        </TabsList>
+      <CoverHero
+        color={color}
+        round
+        tile={
+          <button type="button" className="h-full w-full" onClick={() => setAvatarPickerOpen(true)} title={isAr ? "تغيير الصورة" : "Change avatar"}>
+            <SaudiAvatar avatarId={customAvatarId} gender={e.gender} size="xl" className="h-full w-full" />
+          </button>
+        }
+        title={names.primary}
+        sub={
+          <>
+            {names.secondary && <bdi>{names.secondary}</bdi>}
+            {job && (
+              <span>
+                <Briefcase />
+                {job}
+              </span>
+            )}
+            {nat && (
+              <span>
+                <Globe />
+                {nat}
+              </span>
+            )}
+            <span className="rp-mono">{e.employeeNumber}</span>
+          </>
+        }
+        chips={
+          <>
+            <span className="rp-pill" style={{ ["--c" as string]: statusTone[0], ["--t" as string]: statusTone[1] }}>
+              {t(`status.${e.employmentStatus}`, { defaultValue: e.employmentStatus })}
+            </span>
+            {branch && (
+              <span>
+                <Building2 />
+                {branch}
+              </span>
+            )}
+            {e.joiningDate && (
+              <span>
+                <small>{isAr ? "منذ" : "Since"}</small>
+                <span className="rp-num">{dmy(e.joiningDate)}</span>
+              </span>
+            )}
+            <button type="button" className="rc-btn no-print" onClick={() => setAvatarPickerOpen(true)} style={{ height: 28 }}>
+              <Sparkles />
+              {isAr ? "الصورة" : "Avatar"}
+            </button>
+          </>
+        }
+        ring={dated.length ? <BigRing pct={pct} color={compColor(pct)} value={`${pct}%`} sub={isAr ? "اكتمال المستندات" : "Documents in order"} /> : undefined}
+        stats={[
+          { value: docs.length, label: isAr ? "وثيقة" : "documents" },
+          { value: due, label: isAr ? "تحتاج متابعة" : "to follow up", color: due ? "var(--warn)" : "var(--ok)" },
+          { value: months ?? "—", label: isAr ? "شهر خدمة" : "months of service" },
+          { value: e.iqamaExpiryDate ? <span className="rp-num" style={{ fontSize: 18 }}>{dmy(e.iqamaExpiryDate)}</span> : "—", label: isAr ? "انتهاء الإقامة" : "Iqama expiry" },
+        ]}
+      />
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="card-luxury-hover">
-              <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-                  <AppleIcon icon={FileText} tone="blue" size="xs" />
-                  {t("employees.profile.personalInfo")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-2 sm:grid-cols-2 p-4 text-sm">
-                <InfoRow icon={Building2} tone="indigo" label={t("employees.fields.employeeNumber")} value={employee.employeeNumber} />
-                <InfoRow icon={Globe} tone="cyan" label={t("employees.fields.nationality")} value={localized(employee.nationality, employee.nationalityEn)} />
-                <InfoRow icon={Phone} tone="emerald" label={t("employees.fields.mobile")} value={employee.mobile} />
-                <InfoRow icon={Mail} tone="blue" label={t("employees.fields.email")} value={employee.email} />
-                <InfoRow icon={Calendar} tone="amber" label={t("employees.fields.joiningDate")} value={formatDate(employee.joiningDate)} />
-                <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={localizedCity(employee.city, employee.cityEn)} />
-                <InfoRow
-                  icon={ShieldCheck}
-                  tone="teal"
-                  label={t("employees.fields.onSponsorship")}
-                  value={employee.onSponsorship == null ? null : employee.onSponsorship ? tr("نعم، على كفالة المنشأة", "Yes, on our sponsorship") : tr("لا، ليس على الكفالة", "No, not on our sponsorship")}
-                />
-                <InfoRow icon={UserCheck} tone="purple" label={t("employees.fields.sponsorName")} value={employee.sponsorName} />
-              </CardContent>
-            </Card>
-
-            <Card className="card-luxury-hover">
-              <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground">
-                  <AppleIcon icon={Clock} tone="amber" size="xs" />
-                  {t("employees.profile.iqamaPassport")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-4 text-sm">
-                <div className="rounded-xl border border-border/60 bg-muted/30 p-3.5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-muted-foreground">{t("employees.profile.iqama")}</p>
-                    <StatusBadge status={employee.iqamaStatus} />
-                  </div>
-                  <p className="font-mono text-base font-bold text-foreground">{employee.iqamaNumber ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tr("تاريخ الانتهاء:", "Expiry date:")} <span className="font-mono font-medium text-foreground">{formatDate(employee.iqamaExpiryDate)}</span>
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-border/60 bg-muted/30 p-3.5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-muted-foreground">{t("employees.profile.passport")}</p>
-                    <StatusBadge status={employee.passportStatus} />
-                  </div>
-                  <p className="font-mono text-base font-bold text-foreground">{employee.passportNumber ?? "—"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {tr("تاريخ الانتهاء:", "Expiry date:")} <span className="font-mono font-medium text-foreground">{formatDate(employee.passportExpiryDate)}</span>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="documents" className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            {allDocuments.length > 0 ? (
-              <CategoryChips
-                items={docTypeChips}
-                active={docTypeFilter}
-                onChange={setDocTypeFilter}
-                counts={docTypeCounts}
-                allLabel={t("common.all")}
-                totalCount={allDocuments.length}
-              />
+      <div className="rc-dgrid">
+        <div className="rc-dcol">
+          <DCard title={isAr ? "الوثائق" : "Documents"} icon={IdCard} right={isAr ? `${docs.length} وثائق · اضغط للتفاصيل` : `${docs.length} documents · open for details`}>
+            {docs.length ? (
+              <div className="rc-mdocs">
+                {docs.map((d) => (
+                  <MiniDoc key={d.key} title={d.label} sub={<span className="rp-mono">{d.number || "—"}</span>} expiryDate={d.expiryDate} onClick={() => navigate(`/employee-documents/${e.id}/${d.key}`)} />
+                ))}
+              </div>
             ) : (
-              <div />
+              <div className="rc-none">{t("employees.profile.noDocuments")}</div>
             )}
-            {hasPermission("employeeDocuments.create") && (
-              <Button size="sm" onClick={() => setDocDialog({ open: true })} className="shrink-0 gap-1.5 shadow-sm">
-                <Plus className="h-4 w-4" /> {t("employees.profile.addDocument")}
-              </Button>
-            )}
-          </div>
-          {filteredDocuments.length > 0 ? (
-            <div className="rounded-2xl border border-border/70 bg-card shadow-luxury overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/40 border-b border-border/70">
-                    <TableHead>{t("employees.profile.docTable.type")}</TableHead>
-                    <TableHead>{t("employees.profile.docTable.name")}</TableHead>
-                    <TableHead>{t("employees.profile.docTable.number")}</TableHead>
-                    <TableHead>{t("employees.profile.docTable.expiryDate")}</TableHead>
-                    <TableHead>{t("employees.profile.docTable.status")}</TableHead>
-                    <TableHead>{t("common.actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDocuments.map((doc) => (
-                    <TableRow key={doc.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-medium text-foreground">{t(`documentTypes.${doc.type}`)}</TableCell>
-                      <TableCell>{doc.name ?? "—"}</TableCell>
-                      <TableCell className="font-mono text-xs font-semibold">{doc.documentNumber ?? "—"}</TableCell>
-                      <TableCell className="font-mono text-xs">{formatDate(doc.expiryDate)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={doc.status} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => setDocDialog({ open: true, document: doc })} className="h-8 w-8 rounded-lg">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteDoc(doc)} className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          </DCard>
+          <DCard title={t("employees.profile.personalInfo")} icon={User} color="var(--vio)" i={4}>
+            <div className="rc-facts">
+              <Fact label={isAr ? "الاسم بالعربي" : "Name in Arabic"} icon={User} value={e.fullNameAr || "—"} />
+              <Fact label={isAr ? "الاسم بالإنجليزي" : "Name in English"} icon={User} value={e.fullNameEn ? <bdi>{e.fullNameEn}</bdi> : "—"} />
+              <Fact label={t("employees.fields.nationality")} icon={Globe} value={nat || "—"} />
+              <Fact label={isAr ? "رقم الإقامة" : "Iqama number"} icon={IdCard} value={<span className="rp-mono" style={{ fontSize: 14 }}>{e.iqamaNumber || "—"}</span>} copy={e.iqamaNumber} />
+              <Fact label={isAr ? "تاريخ الميلاد" : "Date of birth"} icon={Calendar} value={<span className="rp-num">{e.dateOfBirth ? dmy(e.dateOfBirth) : "—"}</span>} em={age !== null ? (isAr ? `${age} سنة` : `${age} years`) : undefined} />
+              <Fact label={t("employees.fields.mobile")} icon={Phone} value={e.mobile ? <a href={`tel:${e.mobile}`} className="rp-num">{e.mobile}</a> : "—"} copy={e.mobile} />
+              <Fact label={t("employees.fields.email")} icon={Mail} value={e.email ? <a href={`mailto:${e.email}`}>{e.email}</a> : "—"} />
+              <Fact label={t("employees.fields.city")} icon={MapPin} value={localizedCity(e.city, e.cityEn) || "—"} em={e.address || undefined} />
             </div>
-          ) : (
-            <EmptyState icon={FileText} title={t("employees.profile.noDocuments")} description={t("employees.profile.noDocumentsDescription")} />
-          )}
-        </TabsContent>
-
-        <TabsContent value="payments" className="space-y-3">
-          {payments && payments.data.length > 0 ? (
-            <div className="rounded-2xl border border-border/70 bg-card shadow-luxury overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/40 border-b border-border/70">
-                    <TableHead>{t("employees.profile.paymentTable.paymentNumber")}</TableHead>
-                    <TableHead>{t("employees.profile.paymentTable.date")}</TableHead>
-                    <TableHead>{t("employees.profile.paymentTable.category")}</TableHead>
-                    <TableHead>{t("employees.profile.paymentTable.total")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+          </DCard>
+          <DCard title={isAr ? "بيانات العمل" : "Work details"} icon={Briefcase} color="var(--teal)" i={5}>
+            <div className="rc-facts">
+              <Fact label={t("employees.fields.employeeNumber")} icon={Hash} value={<span className="rp-mono" style={{ fontSize: 14 }}>{e.employeeNumber}</span>} copy={e.employeeNumber} />
+              <Fact label={isAr ? "المسمى الوظيفي" : "Job title"} icon={Briefcase} value={job || "—"} />
+              <Fact label={isAr ? "القسم" : "Department"} icon={Building2} value={localized(e.department, e.departmentEn) || "—"} />
+              <Fact label={isAr ? "المؤسسة" : "Establishment"} icon={Building2} value={branch || t("employees.profile.noBranch")} em={e.branch?.code} />
+              <Fact label={t("employees.fields.joiningDate")} icon={Calendar} value={<span className="rp-num">{e.joiningDate ? dmy(e.joiningDate) : "—"}</span>} em={dateEm(e.joiningDate)} />
+              <Fact label={isAr ? "الحالة" : "Status"} icon={CheckCircle2} value={<span style={{ color: statusTone[0] }}>{t(`status.${e.employmentStatus}`, { defaultValue: e.employmentStatus })}</span>} />
+              <Fact
+                label={t("employees.fields.onSponsorship")}
+                icon={ShieldCheck}
+                value={e.onSponsorship == null ? "—" : e.onSponsorship ? (isAr ? "نعم، على كفالة المنشأة" : "Yes, on our sponsorship") : isAr ? "لا، ليس على الكفالة" : "No, not on our sponsorship"}
+              />
+              <Fact label={t("employees.fields.sponsorName")} icon={UserCheck} value={e.sponsorName || "—"} />
+              {e.notes && <Fact label={isAr ? "ملاحظات" : "Notes"} icon={StickyNote} value={<span style={{ whiteSpace: "pre-wrap", fontWeight: 500 }}>{e.notes}</span>} wide />}
+            </div>
+          </DCard>
+          {hasPermission("payments.view") && (
+            <DCard title={t("employees.profile.tabs.payments")} icon={Wallet} color="var(--gold)" right={payments?.data.length ?? 0} i={6}>
+              {payments && payments.data.length > 0 ? (
+                <div className="rc-rows">
                   {payments.data.map((p) => (
-                    <TableRow key={p.id} className="border-b border-border/40 hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-mono text-xs font-bold text-foreground">{p.paymentNumber}</TableCell>
-                      <TableCell className="text-xs font-mono">{formatDate(p.paymentDate)}</TableCell>
-                      <TableCell className="text-xs font-medium">{p.category}</TableCell>
-                      <TableCell className="font-mono font-bold text-sm text-foreground">{formatCurrency(p.total)}</TableCell>
-                    </TableRow>
+                    <div key={p.id}>
+                      <span className="d">{new Date(p.paymentDate).getDate()}</span>
+                      <span className="min-w-0">
+                        <b>
+                          {t(`paymentCategories.${p.category}`, { defaultValue: p.category })} · <span className="rp-num">{formatCurrency(p.total)}</span>
+                        </b>
+                        <small>
+                          {weekday(p.paymentDate)} {dmy(p.paymentDate)}
+                        </small>
+                      </span>
+                      <small className="rp-mono">{p.paymentNumber}</small>
+                    </div>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <EmptyState icon={CreditCard} title={t("employees.profile.noPayments", { defaultValue: "لا توجد مدفوعات مسجلة" })} />
+                </div>
+              ) : (
+                <div className="rc-none">{t("employees.profile.noPayments", { defaultValue: "لا توجد مدفوعات مسجلة" })}</div>
+              )}
+            </DCard>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+        <div className="rc-dcol">
+          <DCard title={isAr ? "اكتمال الملف" : "Profile completeness"} icon={CheckCircle2} color="var(--ok)">
+            <div className="rc-cmp">
+              <BigRing pct={Math.round((done / checks.length) * 100)} color="var(--ok)" value={`${done}/${checks.length}`} sub={isAr ? "مكتمل" : "complete"} />
+              <div className="min-w-0">
+                <b className="h">{done === checks.length ? (isAr ? "الملف مكتمل" : "The profile is complete") : isAr ? "ينقص الملف" : "Missing from the profile"}</b>
+                <small>{checks.filter((c) => !c[1]).map((c) => c[0]).join(isAr ? "، " : ", ") || (isAr ? "كل المطلوب موجود" : "Everything needed is here")}</small>
+              </div>
+            </div>
+            <div className="rc-chk">
+              {checks.map(([l, ok]) => (
+                <div key={l} className={ok ? "y" : "n"}>
+                  <i>{ok ? <CheckCircle2 /> : <AlertTriangle />}</i>
+                  {l}
+                </div>
+              ))}
+            </div>
+          </DCard>
+          {e.branch && (
+            <DCard title={isAr ? "المؤسسة" : "Establishment"} icon={Building2} i={4}>
+              <Owner tile={initialsOf(branch || e.branch.code)} color={color} title={branch || e.branch.code} sub={e.branch.code} onOpen={hasPermission("branches.view") ? () => navigate(`/branches/${e.branch!.id}`) : undefined} />
+            </DCard>
+          )}
+          {hasPermission("auditLogs.view") && (
+            <DCard title={isAr ? "آخر النشاط" : "Latest activity"} icon={Clock} color="var(--vio)" i={5}>
+              <History items={history?.data} createdAt={e.createdAt} />
+            </DCard>
+          )}
+        </div>
+      </div>
 
-      <EmployeeDocumentDialog
-        employeeId={employee.id}
-        open={docDialog.open}
-        document={docDialog.document}
-        onOpenChange={(open) => setDocDialog({ open })}
-      />
-      <ConfirmDialog
-        open={Boolean(deleteDoc)}
-        onOpenChange={(open) => !open && setDeleteDoc(null)}
-        title={t("employees.documentDialog.editTitle") === "" ? "" : t("common.confirmDeleteTitle")}
-        onConfirm={() => deleteDocMutation.mutate()}
-        loading={deleteDocMutation.isPending}
-      />
-      <EmployeeDialog
-        open={editOpen}
-        employee={employee}
-        onOpenChange={setEditOpen}
-      />
-
+      <EmployeeDocumentDialog employeeId={e.id} open={docDialogOpen} onOpenChange={setDocDialogOpen} />
+      <EmployeeDialog open={editOpen} employee={e} onOpenChange={setEditOpen} />
       <AvatarPickerDialog
         open={avatarPickerOpen}
         onOpenChange={setAvatarPickerOpen}
-        gender={employee.gender}
+        gender={e.gender}
         selectedAvatarId={customAvatarId}
-        onSelectAvatar={(id) => {
-          setCustomAvatarId(id);
-          toast.success(
-            i18n.language === "ar"
-              ? "تم تطبيق الأفاتار بالزي السعودي بنجاح"
-              : "Saudi avatar applied successfully"
-          );
+        onSelectAvatar={(avatarId) => {
+          setCustomAvatarId(avatarId);
+          toast.success(isAr ? "تم تطبيق الأفاتار بالزي السعودي بنجاح" : "Saudi avatar applied successfully");
         }}
-        isRtl={i18n.language === "ar"}
+        isRtl={isAr}
       />
-
-      {/* 🖨️ Official Print Signatures & Stamp Block */}
-      <PrintDocumentFooter
-        prepTitle={tr("إعداد قسم شؤون الموظفين", "Prepared by HR")}
-        authTitle={tr("اعتماد الإدارة العامة", "Approved by the General Manager")}
-      />
-    </div>
-  );
-}
-
-function InfoRow({ icon: Icon, tone = "blue", label, value }: { icon?: React.ComponentType<{ className?: string }>; tone?: AppleTone; label: string; value?: string | null }) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-xl p-2 transition-colors hover:bg-muted/40">
-      {Icon && (
-        <AppleIcon icon={Icon} tone={tone} size="xs" />
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-        <p className="font-semibold text-xs text-foreground truncate mt-0.5">{value || "—"}</p>
-      </div>
+      <PrintDocumentFooter prepTitle={isAr ? "إعداد قسم شؤون الموظفين" : "Prepared by HR"} authTitle={isAr ? "اعتماد الإدارة العامة" : "Approved by the General Manager"} />
     </div>
   );
 }

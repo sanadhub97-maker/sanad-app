@@ -10,6 +10,7 @@ import "@/index.css";
 import "@/styles/lulu.css";
 import "@/styles/royal.css";
 import "@/styles/pages-royal.css";
+import "@/styles/cards-royal.css";
 
 // Makes SanaD installable as an app (production builds only; the dev server
 // would otherwise serve stale files from the worker cache).

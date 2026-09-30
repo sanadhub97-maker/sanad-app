@@ -20,6 +20,9 @@ const DashboardPage = lazy(() => import("@/pages/dashboard/dashboard-lulu"));
 const EmployeesListPage = lazy(() => import("@/pages/employees/employees-list-page"));
 const EmployeeProfilePage = lazy(() => import("@/pages/employees/employee-profile-page"));
 const EmployeeDocumentsPage = lazy(() => import("@/pages/workforce/employee-documents-page"));
+const EmployeeDocumentDetailsPage = lazy(() => import("@/pages/workforce/employee-document-details-page"));
+const CompanyDocumentDetailsPage = lazy(() => import("@/pages/companyDocuments/company-document-details-page"));
+const BranchDetailsPage = lazy(() => import("@/pages/branches/branch-details-page"));
 const CompanyDocumentsPage = lazy(() => import("@/pages/companyDocuments/company-documents-page"));
 const BranchesPage = lazy(() => import("@/pages/branches/branches-page"));
 const DailyTasksPage = lazy(() => import("@/pages/tasks/daily-tasks-page"));
@@ -71,6 +74,7 @@ export default function App() {
                   <Route path="/employees" element={<EmployeesListPage />} />
                   <Route path="/employees/:id" element={<EmployeeProfilePage />} />
                   <Route path="/employee-documents" element={<EmployeeDocumentsPage />} />
+                  <Route path="/employee-documents/:employeeId/:docKey" element={<EmployeeDocumentDetailsPage />} />
                   <Route path="/workforce/iqamas" element={<Navigate to="/employee-documents?category=IQAMA" replace />} />
                   <Route path="/workforce/passports" element={<Navigate to="/employee-documents?category=PASSPORT" replace />} />
                   <Route path="/workforce/health-certificates" element={<Navigate to="/employee-documents?category=HEALTH_CERTIFICATE" replace />} />
@@ -83,6 +87,7 @@ export default function App() {
 
                 <Route element={<RequirePermission permission="companyDocuments.view" />}>
                   <Route path="/company-documents" element={<CompanyDocumentsPage />} />
+                  <Route path="/company-documents/:id" element={<CompanyDocumentDetailsPage />} />
                 </Route>
                 <Route path="/licenses" element={<Navigate to="/company-documents" replace />} />
                 <Route element={<RequirePermission permission="tasks.view" />}>
@@ -90,6 +95,7 @@ export default function App() {
                 </Route>
                 <Route element={<RequirePermission permission="branches.view" />}>
                   <Route path="/branches" element={<BranchesPage />} />
+                  <Route path="/branches/:id" element={<BranchDetailsPage />} />
                 </Route>
                 <Route element={<RequirePermission permission="payments.view" />}>
                   <Route path="/payments" element={<PaymentsPage />} />
