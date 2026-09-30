@@ -150,7 +150,13 @@ function useNavBadges() {
   const open = (tasks ?? []).filter((t) => !t.done).length;
   const badges: Record<string, { n: number; tone: string }> = {};
   if (open) badges["/daily-tasks"] = { n: open, tone: "green" };
-  if (summary?.expiredDocuments) badges["/employee-documents"] = { n: summary.expiredDocuments, tone: "rose" };
+  // Expired documents in red; when none have expired, the ones ending soon in amber.
+  const put = (href: string, c?: { expired: number; expiring: number }) => {
+    if (c?.expired) badges[href] = { n: c.expired, tone: "rose" };
+    else if (c?.expiring) badges[href] = { n: c.expiring, tone: "amber" };
+  };
+  put("/employee-documents", summary?.employeeDocuments);
+  put("/company-documents", summary?.companyDocuments);
   return badges;
 }
 

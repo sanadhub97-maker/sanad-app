@@ -8,6 +8,8 @@ export interface DashboardSummary {
   validDocuments: number;
   expiringDocuments: number;
   expiredDocuments: number;
+  employeeDocuments?: { expired: number; expiring: number };
+  companyDocuments?: { expired: number; expiring: number };
   totalPaymentsAmount: number;
   monthlyPaymentsAmount: number;
 }

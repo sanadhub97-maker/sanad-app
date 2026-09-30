@@ -7,6 +7,9 @@ export async function getSummary() {
   const rules = await getExpirationRules();
   const items = await getTrackableItems();
   const statusBuckets = bucketByStatus(items, rules);
+  // The same counts split by owner, for the sidebar's two document sections.
+  const companyBuckets = bucketByStatus(items.filter((i) => i.sourceType === "COMPANY_DOCUMENT"), rules);
+  const employeeBuckets = bucketByStatus(items.filter((i) => i.sourceType !== "COMPANY_DOCUMENT"), rules);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -28,6 +31,8 @@ export async function getSummary() {
     validDocuments: statusBuckets.VALID,
     expiringDocuments: statusBuckets.EXPIRING_SOON,
     expiredDocuments: statusBuckets.EXPIRED,
+    employeeDocuments: { expired: employeeBuckets.EXPIRED, expiring: employeeBuckets.EXPIRING_SOON },
+    companyDocuments: { expired: companyBuckets.EXPIRED, expiring: companyBuckets.EXPIRING_SOON },
     totalPaymentsAmount: totalPayments._sum.total ?? 0,
     monthlyPaymentsAmount: monthlyPayments._sum.total ?? 0,
   };
