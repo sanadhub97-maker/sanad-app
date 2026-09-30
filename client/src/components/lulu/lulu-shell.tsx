@@ -160,7 +160,6 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const navigate = useNavigate();
   const path = useLocation().pathname;
   const user = useAuthStore((s) => s.user) as AvatarUser | null;
-  const brand = useBranding();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const narrow = useMedia("(max-width: 1179px)");
@@ -203,10 +202,11 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   return (
     <aside className={cn("lu-side no-print", rail && "rail")} aria-label={isAr ? "الأقسام" : "Sections"} onTransitionEnd={(e) => e.target === e.currentTarget && measure()}>
       <div className="lu-side-top">
-        <button type="button" className="lu-brand" onClick={() => navigate("/")} title={brand.name}>
-          <img src={brand.mark} alt="" />
+        {/* The sidebar always shows the system itself; the company branding is for print. */}
+        <button type="button" className="lu-brand" onClick={() => navigate("/")} title="SanaD">
+          <img src="/brand/sanad-mark.webp" alt="" />
           <span className="min-w-0">
-            <b>{brand.name}</b>
+            <b>SanaD</b>
             <small>{isAr ? "الموارد البشرية والوثائق" : "People and documents"}</small>
           </span>
         </button>
