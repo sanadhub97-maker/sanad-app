@@ -42,7 +42,7 @@ export async function getCharts() {
   const rules = await getExpirationRules();
   const items = await getTrackableItems();
 
-  const [employeesByStatus, employeesByDepartment, paymentsByCategory, paymentsByBranch, monthlyPaymentsRaw] = await Promise.all([
+  const [employeesByStatus, employeesByDepartment, paymentsByCategory, paymentsByBranch, monthlyPaymentsRaw, monthlyByCategoryRaw] = await Promise.all([
     prisma.employee.groupBy({ by: ["employmentStatus"], where: { deletedAt: null }, _count: { _all: true } }),
     prisma.employee.groupBy({ by: ["department"], where: { deletedAt: null }, _count: { _all: true } }),
     prisma.payment.groupBy({ by: ["category"], where: { deletedAt: null }, _sum: { total: true } }),
@@ -52,6 +52,13 @@ export async function getCharts() {
       FROM "Payment"
       WHERE "deletedAt" IS NULL AND "paymentDate" >= NOW() - INTERVAL '12 months'
       GROUP BY 1 ORDER BY 1
+    `,
+    // The last six months (this one included), split by category.
+    prisma.$queryRaw<{ month: Date; category: string; total: string }[]>`
+      SELECT date_trunc('month', "paymentDate") AS month, category::text AS category, SUM(total) AS total
+      FROM "Payment"
+      WHERE "deletedAt" IS NULL AND "paymentDate" >= date_trunc('month', NOW()) - INTERVAL '5 months'
+      GROUP BY 1, 2 ORDER BY 1
     `,
   ]);
 
@@ -68,6 +75,7 @@ export async function getCharts() {
       total: Number(r._sum.total ?? 0),
     })),
     monthlyPayments: monthlyPaymentsRaw.map((r) => ({ month: r.month, total: Number(r.total) })),
+    monthlyByCategory: monthlyByCategoryRaw.map((r) => ({ month: r.month, category: r.category, total: Number(r.total) })),
   };
 }
 

@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import App from "@/App";
 import "@/index.css";
 import "@/styles/lulu.css";
+import "@/styles/royal.css";
 
 // Makes SanaD installable as an app (production builds only; the dev server
 // would otherwise serve stale files from the worker cache).

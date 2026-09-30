@@ -11,7 +11,6 @@ import { login } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
-import { useGate } from "@/layouts/gate-layout";
 import { cn } from "@/lib/utils";
 
 const makeSchema = () =>
@@ -49,9 +48,8 @@ const I = {
   shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
 };
 
-/** Sign in, in the SanaD gate: floating labels, the first letter of the email
- * in a bubble, a Caps Lock warning, the button filling while it checks, and
- * the gate opening onto a welcome once it succeeds. */
+/** Sign in, in the Royal design: floating labels, a Caps Lock warning, the
+ * button sweeping while it checks, and a welcome once it succeeds. */
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
@@ -64,7 +62,6 @@ export default function LoginPage() {
     const id = window.setTimeout(() => void import("@/pages/dashboard/dashboard-lulu"), 1200);
     return () => window.clearTimeout(id);
   }, []);
-  const { night } = useGate();
   const root = useRef<HTMLDivElement>(null);
 
   const [show, setShow] = useState(false);
@@ -82,13 +79,10 @@ export default function LoginPage() {
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: { rememberMe: true, email: "", password: "" },
   });
-  const email = watch("email") ?? "";
   const remember = watch("rememberMe");
-  const hour = new Date().getHours();
-  const greeting = isAr ? (hour < 12 ? "صباح الخير" : "مساء الخير") : hour < 12 ? "Good morning" : "Good evening";
 
   function shake() {
-    const p = root.current?.closest(".g-panel");
+    const p = root.current?.querySelector(".ry-form");
     if (!p) return;
     p.classList.remove("shake");
     void (p as HTMLElement).offsetWidth;
@@ -116,57 +110,17 @@ export default function LoginPage() {
 
   return (
     <div ref={root}>
-      <div className="g-row1">
-        <span className="g-pill">
-          <span className="live" />
-          {isAr ? "النظام متصل" : "System online"}
-        </span>
-        <button type="button" className="g-pill" onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}>
-          <Svg d={I.globe} />
-          <span>{isAr ? "English" : "العربية"}</span>
-        </button>
-      </div>
-      <div className="g-mark">
-        <img src="/brand/sanad-mark.webp" alt="" />
-        <div>
-          <b>SanaD HR</b>
-          <small>People · Process · Progress</small>
-        </div>
-      </div>
-      <div className="g-hello">
-        <span className={cn("g-who", email.indexOf("@") > 0 && "on")} aria-hidden="true">
-          {email.trim().charAt(0).toUpperCase()}
-        </span>
-        <h2>
-          {greeting}{" "}
-          <span className="wave" aria-hidden="true">
-            👋
-          </span>
-        </h2>
-      </div>
-      <p className="g-sub">
-        {isAr ? (
-          <>
-            سجّل دخولك إلى <b>SanaD</b> لمتابعة موظفيك ووثائقك.
-          </>
-        ) : (
-          <>
-            Sign in to <b>SanaD</b> to follow your people and documents.
-          </>
+      <form className="ry-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <h1>{isAr ? "مرحبًا بعودتك" : "Welcome back"}</h1>
+        <p className="sub">{isAr ? "سجّل دخولك لمتابعة موظفيك ووثائق شركتك." : "Sign in to follow your people and your company's documents."}</p>
+        {failure && (
+          <div className="ry-alert" role="alert">
+            <Svg d={I.warn} />
+            {failure}
+          </div>
         )}
-      </p>
-      {failure && (
-        <div className="g-alert" role="alert">
-          <Svg d={I.warn} />
-          {failure}
-        </div>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <div className={cn("g-f", errors.email && "bad")}>
-          <div className="g-box">
-            <span className="ic">
-              <Svg d={I.mail} />
-            </span>
+        <div>
+          <label className={cn("ry-fl", errors.email && "bad")}>
             <input
               id="email"
               type="email"
@@ -179,15 +133,13 @@ export default function LoginPage() {
                 emailField.onChange(e);
               }}
             />
-            <label htmlFor="email">{t("auth.email")}</label>
-          </div>
-          {errors.email && <div className="g-err">{errors.email.message}</div>}
+            <span>{t("auth.email")}</span>
+            <Svg d={I.mail} />
+          </label>
+          {errors.email && <div className="ry-ferr">{errors.email.message}</div>}
         </div>
-        <div className={cn("g-f", errors.password && "bad")}>
-          <div className="g-box">
-            <span className="ic">
-              <Svg d={I.lock} />
-            </span>
+        <div>
+          <label className={cn("ry-fl", errors.password && "bad")}>
             <input
               id="password"
               type={show ? "text" : "password"}
@@ -206,61 +158,43 @@ export default function LoginPage() {
                 passField.onBlur(e);
               }}
             />
-            <label htmlFor="password">{t("auth.password")}</label>
-            <button type="button" className="g-eye" onClick={() => setShow((s) => !s)} aria-label={show ? (isAr ? "إخفاء كلمة المرور" : "Hide password") : isAr ? "إظهار كلمة المرور" : "Show password"}>
+            <span>{t("auth.password")}</span>
+            <Svg d={I.lock} />
+            <button type="button" className="eye" onClick={() => setShow((s) => !s)} aria-label={show ? (isAr ? "إخفاء كلمة المرور" : "Hide password") : isAr ? "إظهار كلمة المرور" : "Show password"}>
               <Svg d={show ? I.eyeOff : I.eye} />
             </button>
-          </div>
-          {errors.password && <div className="g-err">{errors.password.message}</div>}
+          </label>
+          {errors.password && <div className="ry-ferr">{errors.password.message}</div>}
           {caps && (
-            <div className="g-caps">
+            <div className="ry-caps">
               <Svg d={I.caps} w={2.2} />
               {isAr ? "زر الأحرف الكبيرة (Caps Lock) مفعّل" : "Caps Lock is on"}
             </div>
           )}
         </div>
-        <div className="g-opts">
-          <button type="button" className="g-rem" role="checkbox" aria-checked={remember} onClick={() => setValue("rememberMe", !remember)}>
-            <span className={cn("g-check", remember && "on")}>
-              <Svg d={I.check} w={3.4} />
-            </span>
+        <div className="ry-row">
+          <label className="ry-check">
+            <input type="checkbox" checked={!!remember} onChange={(e) => setValue("rememberMe", e.target.checked)} />
             {t("auth.rememberMe")}
-          </button>
-          <Link to="/forgot-password" className="g-forgot">
-            {t("auth.forgotPassword")}
-          </Link>
+          </label>
+          <Link to="/forgot-password">{t("auth.forgotPassword")}</Link>
         </div>
-        <button type="submit" className={cn("g-go", isSubmitting && "busy")} disabled={isSubmitting || welcome}>
-          <span className="fill" />
-          {isSubmitting ? (
-            <span className="spin" />
-          ) : (
-            <>
-              <span className="lbl">{t("auth.signIn")}</span>
-              <span className="arrow">
-                <Svg d={I.arrow} w={2.4} />
-              </span>
-            </>
-          )}
+        <button type="submit" className={cn("ry-go", (isSubmitting || welcome) && "busy")} disabled={isSubmitting || welcome}>
+          <span>{isSubmitting ? (isAr ? "جاري الدخول…" : "Signing in…") : t("auth.signIn")}</span>
+          <Svg d={I.arrow} w={2.4} />
         </button>
+        <div className="ry-safe">
+          <Svg d={I.shield} />
+          {isAr ? "اتصال مشفّر · بياناتك محمية" : "Encrypted connection · your data is protected"}
+        </div>
       </form>
-      <div className="g-safe">
-        <Svg d={I.shield} />
-        {isAr ? "اتصال مشفّر · بياناتك محمية" : "Encrypted connection · your data is protected"}
-      </div>
-      <div className="g-foot">© {new Date().getFullYear()} SanaD HR</div>
 
       {createPortal(
-        <div className={cn("g-app g-portal", night && "night", welcome && "on")} aria-live="polite">
+        <div className={cn("ry-welcome-over", welcome && "on")} aria-live="polite">
           <div className="in">
-            <img src="/brand/sanad-logo.webp" alt="" />
+            <img src="/brand/sanad-mark.webp" alt="" />
             <h2>{isAr ? "أهلًا بعودتك" : "Welcome back"}</h2>
-            <p>{isAr ? "نجهّز لك يومك في SanaD…" : "Getting your day ready in SanaD…"}</p>
-            <div className="g-dots">
-              <i />
-              <i />
-              <i />
-            </div>
+            <p>{isAr ? "نجهّز لك لوحة التحكم…" : "Getting your dashboard ready…"}</p>
           </div>
         </div>,
         document.body

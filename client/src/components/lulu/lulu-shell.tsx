@@ -33,6 +33,8 @@ import { cn } from "@/lib/utils";
    tablets), a sticky glass header that holds each page's title and actions,
    and on phones the island at the bottom that opens into every section. */
 
+const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "وثيقتان" : n <= 10 ? `${n} وثائق` : `${n} وثيقة`);
+
 function useMedia(query: string) {
   const [on, setOn] = useState(() => typeof window !== "undefined" && !!window.matchMedia?.(query).matches);
   useEffect(() => {
@@ -165,6 +167,8 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const rail = narrow || collapsed;
   const { shut, toggle } = useSectionState();
   const badges = useNavBadges();
+  const { data: summary } = useQuery({ queryKey: ["dashboard", "summary"], queryFn: dashboardApi.summary, staleTime: 60_000 });
+  const needs = (summary?.expiringDocuments ?? 0) + (summary?.expiredDocuments ?? 0);
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 
@@ -203,7 +207,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
           <img src={brand.mark} alt="" />
           <span className="min-w-0">
             <b>{brand.name}</b>
-            <small>{isAr ? "نظام SanaD · متصل" : "SanaD · online"}</small>
+            <small>{isAr ? "الموارد البشرية والوثائق" : "People and documents"}</small>
           </span>
         </button>
         {!narrow && (
@@ -258,21 +262,31 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
           );
         })}
       </nav>
-      <AccountMenu>
-        <button type="button" className="lu-me" aria-label={isAr ? "الحساب" : "Account"}>
-          <span className="relative">
-            <UserAvatar name={user?.fullName} fileId={user?.avatarFileId} avatarKey={user?.avatarKey} size={40} ring />
-            <i className="on-dot" />
-          </span>
-          <span className="who">
-            <b>{user?.fullName}</b>
-            <small>{role}</small>
-          </span>
-          <span className="more">
-            <ChevronsUpDown />
-          </span>
-        </button>
-      </AccountMenu>
+      {needs > 0 ? (
+        <div className="ry-promo">
+          <b>{isAr ? `${docsAr(needs)} تحتاج تجديدًا` : `${needs} documents need renewal`}</b>
+          <p>{isAr ? "منتهية أو تنتهي خلال الثلاثين يومًا القادمة." : "Expired or ending within 30 days."}</p>
+          <button type="button" onClick={() => navigate("/employee-documents?status=EXPIRING_SOON")}>
+            {isAr ? "راجعها الآن" : "Review now"}
+          </button>
+        </div>
+      ) : (
+        <AccountMenu>
+          <button type="button" className="lu-me" aria-label={isAr ? "الحساب" : "Account"}>
+            <span className="relative">
+              <UserAvatar name={user?.fullName} fileId={user?.avatarFileId} avatarKey={user?.avatarKey} size={40} ring />
+              <i className="on-dot" />
+            </span>
+            <span className="who">
+              <b>{user?.fullName}</b>
+              <small>{role}</small>
+            </span>
+            <span className="more">
+              <ChevronsUpDown />
+            </span>
+          </button>
+        </AccountMenu>
+      )}
     </aside>
   );
 }
@@ -289,32 +303,51 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
+  const { t, i18n: i18 } = useTranslation();
+  const role = user?.isSuperAdmin ? (isAr ? "المشرف العام" : "Super Admin") : user?.roles?.[0] ? translateRoleName(user.roles[0], t) : "";
+
   return (
-    <header className="lu-top no-print">
-      <div className="t">
-        <div ref={slots?.setTitle} data-slot="title" className="peer min-w-0" />
-        <div className="hidden min-w-0 peer-empty:block">
-          <h1>{current?.label ?? brand.name}</h1>
-          <p>{brand.name}</p>
-        </div>
-      </div>
-      <div ref={slots?.setActions} className="acts" />
-      <button type="button" className="lu-btn search" onClick={onSearch} aria-label={isAr ? "بحث" : "Search"}>
-        <Search />
-        <span className="lbl">{isAr ? "ابحث عن موظف أو إقامة" : "Search employees, iqamas"}</span>
-        <kbd className="lu-kbd k">Ctrl K</kbd>
-      </button>
-      <button type="button" ref={setBell} className="lu-btn" onClick={() => setOpen((v) => !v)} aria-label={isAr ? "الإشعارات" : "Notifications"} aria-expanded={open}>
-        <Bell />
-        {unread > 0 && <span className="dot">{unread > 9 ? "9+" : unread}</span>}
-      </button>
-      <AccountMenu>
-        <button type="button" className="lu-phone-only rounded-full" aria-label={isAr ? "الحساب" : "Account"}>
-          <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={44} ring />
+    <>
+      <header className="lu-top no-print">
+        <button type="button" className="lu-btn search" onClick={onSearch} aria-label={isAr ? "بحث" : "Search"}>
+          <Search />
+          <span className="lbl">{isAr ? "ابحث عن موظف، رقم إقامة، أو وثيقة" : "Search employees, iqamas, documents"}</span>
+          <kbd className="lu-kbd k">Ctrl K</kbd>
         </button>
-      </AccountMenu>
-      <LuluNotifications open={open} anchor={bell} onClose={close} />
-    </header>
+        <span className="sp" />
+        <button type="button" className="lu-btn lang" onClick={() => i18.changeLanguage(isAr ? "en" : "ar")} aria-label={isAr ? "English" : "العربية"}>
+          {isAr ? "EN" : "ع"}
+        </button>
+        <button type="button" ref={setBell} className="lu-btn" onClick={() => setOpen((v) => !v)} aria-label={isAr ? "الإشعارات" : "Notifications"} aria-expanded={open}>
+          <Bell />
+          {unread > 0 && <span className="dot">{unread > 9 ? "9+" : unread}</span>}
+        </button>
+        <AccountMenu>
+          <button type="button" className="lu-phone-only rounded-full" aria-label={isAr ? "الحساب" : "Account"}>
+            <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={40} ring />
+          </button>
+        </AccountMenu>
+        <AccountMenu>
+          <button type="button" className="ry-me" aria-label={isAr ? "الحساب" : "Account"}>
+            <UserAvatar name={user?.fullName} fileId={(user as AvatarUser | null)?.avatarFileId} avatarKey={(user as AvatarUser | null)?.avatarKey} size={38} />
+            <span>
+              <b>{user?.fullName}</b>
+              <small>{role}</small>
+            </span>
+          </button>
+        </AccountMenu>
+        <LuluNotifications open={open} anchor={bell} onClose={close} />
+      </header>
+      <div className="ry-head no-print">
+        <div className="t">
+          <div ref={slots?.setTitle} data-slot="title" className="peer min-w-0" />
+          <div className="hidden min-w-0 peer-empty:block">
+            <h1>{current?.label ?? brand.name}</h1>
+          </div>
+        </div>
+        <div ref={slots?.setActions} className="acts" />
+      </div>
+    </>
   );
 }
 

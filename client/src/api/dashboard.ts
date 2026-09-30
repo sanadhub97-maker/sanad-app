@@ -28,6 +28,16 @@ export interface DashboardCharts {
   paymentsByCategory: { category: string; total: number }[];
   paymentsByBranch: { branch: string; total: number }[];
   monthlyPayments: { month: string; total: number }[];
+  /** The last six months split by payment category. */
+  monthlyByCategory?: { month: string; category: string; total: number }[];
+}
+
+export interface RecentActivity {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  recentEmployees: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  recentPayments: any[];
+  recentActivities: { id: string; action: string; module: string; createdAt: string; description?: string; user?: { fullName: string } }[];
 }
 
 export interface DashboardAttentionItem {
@@ -66,5 +76,5 @@ export const dashboardApi = {
   summary: async () => (await api.get<{ data: DashboardSummary }>("/dashboard/summary")).data.data,
   expirationWidget: async () => (await api.get<{ data: ExpirationWidget }>("/dashboard/expiration-widget")).data.data,
   charts: async () => (await api.get<{ data: DashboardCharts }>("/dashboard/charts")).data.data,
-  recentActivity: async () => (await api.get("/dashboard/recent-activity")).data.data,
+  recentActivity: async () => (await api.get<{ data: RecentActivity }>("/dashboard/recent-activity")).data.data,
 };
