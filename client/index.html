@@ -19,21 +19,7 @@
       rel="stylesheet"
     />
     <title>SanaD | نظام SanaD لإدارة الوثائق والموظفين</title>
-    <script>
-      (function() {
-        try {
-          // 1. Direction and Language sync
-          var savedLang = localStorage.getItem('i18nextLng') || navigator.language || 'ar';
-          var isRtl = !savedLang || savedLang.indexOf('en') !== 0;
-          document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-          document.documentElement.lang = isRtl ? 'ar' : 'en';
-
-          // 2. Theme: the Oasis design opens light; the app then applies the
-          // admin's Settings → Appearance choice once it loads.
-          document.documentElement.classList.remove('dark');
-        } catch (e) {}
-      })();
-    </script>
+    <script src="/boot.js"></script>
   </head>
   <body>
     <div id="root"></div>
