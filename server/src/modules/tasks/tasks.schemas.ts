@@ -5,6 +5,10 @@ export const TASK_CATEGORIES = ["employees", "documents", "branches", "payments"
 
 export const idParamSchema = z.object({ id: z.string().min(1) });
 export const dayQuerySchema = z.object({ date: day });
+export const rangeQuerySchema = z
+  .object({ from: day, to: day, today: day.optional() })
+  .refine((v) => v.from <= v.to, "from must not be after to")
+  .refine((v) => (Date.parse(v.to) - Date.parse(v.from)) / 86_400_000 <= 62, "Ask for 62 days at most");
 export const exportQuerySchema = z.object({ from: day, to: day, format: z.enum(["pdf", "xlsx"]) });
 
 const fields = {

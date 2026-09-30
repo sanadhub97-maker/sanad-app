@@ -44,6 +44,11 @@ export async function listRange(from: string, to: string) {
   return rows.map(shape);
 }
 
+/** Unfinished tasks on days before the given one. */
+export async function overdueCount(before: string) {
+  return prisma.dailyTask.count({ where: { date: { lt: toDate(before) }, done: false, deletedAt: null } });
+}
+
 /** Sunday to Saturday around the given day: how many tasks, how many done. */
 export async function weekSummary(day: string) {
   const d = toDate(day);

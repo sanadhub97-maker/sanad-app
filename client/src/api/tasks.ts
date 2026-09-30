@@ -48,6 +48,9 @@ export interface NewTask {
 
 export const tasksApi = {
   day: async (date: string) => (await api.get<{ data: DailyTask[] }>("/tasks", { params: { date } })).data.data,
+  /** Every task from one day to another, and the unfinished ones left before today. */
+  range: async (from: string, to: string, today: string) =>
+    (await api.get<{ data: { tasks: DailyTask[]; overdue: number } }>("/tasks/range", { params: { from, to, today } })).data.data,
   week: async (date: string) => (await api.get<{ data: WeekDay[] }>("/tasks/week", { params: { date } })).data.data,
   assignees: async () => (await api.get<{ data: { id: string; fullName: string }[] }>("/tasks/assignees")).data.data,
   suggestions: async () => (await api.get<{ data: TaskSuggestion[] }>("/tasks/suggestions")).data.data,

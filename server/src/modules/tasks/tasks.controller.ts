@@ -12,7 +12,13 @@ const q = (req: Request) => req.query as Record<string, string>;
 export const listDay = asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.listForDay(q(req).date) });
 });
-export const week = asyncHandler(async (req: Request, res: Response) => {
+/** Every task between two days, and how many unfinished ones are left before the viewer's today. */
+export const range = asyncHandler(async (req: Request, res: Response) => {
+  const { from, to, today } = q(req);
+  const [tasks, overdue] = await Promise.all([service.listRange(from, to), today ? service.overdueCount(today) : Promise.resolve(0)]);
+  res.json({ data: { tasks, overdue } });
+});
+export const week =asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.weekSummary(q(req).date) });
 });
 export const assignees = asyncHandler(async (_req: Request, res: Response) => {

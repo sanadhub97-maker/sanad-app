@@ -1,11 +1,33 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, Clock, FileSpreadsheet, Loader2, Plus, Printer, Trash2, User } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Columns3,
+  FileSpreadsheet,
+  FileText,
+  List,
+  Loader2,
+  Plus,
+  Printer,
+  Sparkles,
+  Star,
+  Trash2,
+  User,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/common/page-header";
-import { Button } from "@/components/ui/button";
 import { luluPop } from "@/components/lulu/lulu-effects";
 import { tasksApi, type DailyTask, type TaskCategory, type TaskPriority } from "@/api/tasks";
 import { useAuthStore } from "@/stores/authStore";
@@ -13,23 +35,27 @@ import { downloadFile, openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
 import { tr, isRtlLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
+import "@/styles/tasks-royal.css";
 
-/* Daily tasks in the Pearl design, as in the approved preview: the tasks of
-   the day in the green card, what is coming up in the amber one, and the week
-   to move between days. */
+/* Daily tasks in the Royal design, as in the approved preview: every task
+   under its day with the Gregorian and Hijri date and the day's progress,
+   seen as days, as the week board, or as the month. */
 
-const CATEGORIES: Record<TaskCategory, { ar: string; en: string; tone: string }> = {
-  employees: { ar: "الموظفون", en: "Employees", tone: "lt-indigo" },
-  documents: { ar: "الوثائق والإقامات", en: "Documents & iqamas", tone: "lt-sky" },
-  branches: { ar: "المؤسسات", en: "Establishments", tone: "lt-teal" },
-  payments: { ar: "المدفوعات", en: "Payments", tone: "lt-violet" },
-  general: { ar: "عام", en: "General", tone: "lt-green" },
+type View = "days" | "week" | "month";
+
+const CATEGORIES: Record<TaskCategory, { ar: string; en: string; c: string; t: string; Icon: LucideIcon }> = {
+  employees: { ar: "الموظفون", en: "Employees", c: "var(--l-indigo)", t: "var(--l-indigo-t)", Icon: Users },
+  documents: { ar: "الوثائق والإقامات", en: "Documents & iqamas", c: "var(--l-teal)", t: "var(--l-teal-t)", Icon: FileText },
+  branches: { ar: "المؤسسات", en: "Establishments", c: "var(--l-violet)", t: "var(--l-violet-t)", Icon: Building2 },
+  payments: { ar: "المدفوعات", en: "Payments", c: "var(--ry-gold)", t: "var(--ry-gold-t)", Icon: Wallet },
+  general: { ar: "عام", en: "General", c: "var(--l-sky)", t: "var(--l-sky-t)", Icon: Star },
 };
-const PRIORITIES: Record<TaskPriority, { ar: string; en: string; tone: string }> = {
-  URGENT: { ar: "عاجلة", en: "Urgent", tone: "lt-rose" },
-  HIGH: { ar: "مهمة", en: "High", tone: "lt-amber" },
-  NORMAL: { ar: "عادية", en: "Normal", tone: "lt-sky" },
+const PRIORITIES: Record<TaskPriority, { ar: string; en: string; c: string; t: string }> = {
+  URGENT: { ar: "عاجلة", en: "Urgent", c: "var(--l-rose)", t: "var(--l-rose-t)" },
+  HIGH: { ar: "مهمة", en: "High", c: "var(--l-amber)", t: "var(--l-amber-t)" },
+  NORMAL: { ar: "عادية", en: "Normal", c: "var(--l-sky)", t: "var(--l-sky-t)" },
 };
+const RANK: Record<TaskPriority, number> = { URGENT: 0, HIGH: 1, NORMAL: 2 };
 
 // ---------- Dates: tasks belong to calendar days in the viewer's time ----------
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -43,17 +69,32 @@ const addDays = (k: string, n: number) => {
   d.setDate(d.getDate() + n);
   return keyOf(d);
 };
-const dmy = (k: string) => k.split("-").reverse().join("/");
+const daysBetween = (a: string, b: string) => Math.round((fromKey(b).getTime() - fromKey(a).getTime()) / 86_400_000);
+const weekStart = (k: string) => addDays(k, -fromKey(k).getDay());
+const monthStart = (k: string) => `${k.slice(0, 7)}-01`;
+const monthEnd = (k: string) => {
+  const d = fromKey(monthStart(k));
+  return keyOf(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+};
+const addMonths = (k: string, n: number) => {
+  const d = fromKey(monthStart(k));
+  return keyOf(new Date(d.getFullYear(), d.getMonth() + n, 1));
+};
+/** The Sunday-first grid of a month: five weeks, or six when the month needs it. */
+function monthGrid(month: string) {
+  const from = weekStart(month);
+  const weeks = daysBetween(from, monthEnd(month)) >= 35 ? 6 : 5;
+  return { from, to: addDays(from, weeks * 7 - 1) };
+}
 function fmt(k: string, o: Intl.DateTimeFormatOptions, locale: string) {
   try {
     return fromKey(k).toLocaleDateString(locale, o);
   } catch {
-    return dmy(k);
+    return k.split("-").reverse().join("/");
   }
 }
 
 const prefersReducedMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
-const CELEBRATE_MS = 760;
 
 /** A short burst of confetti over the page, for finishing every task of the day. */
 function confetti() {
@@ -68,7 +109,7 @@ function confetti() {
   cv.style.width = `${innerWidth}px`;
   cv.style.height = `${innerHeight}px`;
   ctx.scale(dpr, dpr);
-  const colors = ["#4ade80", "#52bcff", "#fbbf24", "#a78bfa", "#f472b6", "#ffffff"];
+  const colors = ["#1f45c4", "#2f7fe0", "#c99a2e", "#0f9d6e", "#7c6cf0", "#ffffff"];
   const bits = Array.from({ length: 120 }, (_, i) => ({
     x: innerWidth / 2 + (Math.random() - 0.5) * 120,
     y: innerHeight * 0.38,
@@ -103,114 +144,140 @@ function confetti() {
   requestAnimationFrame(frame);
 }
 
+// ---------- People ----------
+const hueOf = (id: string) => [...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7);
+const initials = (name: string) =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w.replace(/^ال(?=..)/, "").charAt(0))
+    .join(" ");
+function Avatar({ person }: { person: { id: string; fullName: string } | null }) {
+  if (!person)
+    return (
+      <span className="tk-av" style={{ ["--h" as string]: 225 }} title={tr("بدون مسؤول", "Unassigned")}>
+        <User />
+      </span>
+    );
+  return (
+    <span className="tk-av" style={{ ["--h" as string]: hueOf(person.id) }} title={person.fullName}>
+      {initials(person.fullName)}
+    </span>
+  );
+}
+
+const tone = (c: string, t: string) => ({ ["--c" as string]: c, ["--t" as string]: t }) as CSSProperties;
+
 export default function DailyTasksPage() {
   const { i18n } = useTranslation();
   const isRtl = isRtlLanguage(i18n.language);
   const locale = isRtl ? "ar-EG-u-nu-latn" : "en-GB";
+  const hijriLocale = isRtl ? "ar-SA-u-ca-islamic-umalqura-nu-latn" : "en-u-ca-islamic-umalqura";
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const can = { create: hasPermission("tasks.create"), edit: hasPermission("tasks.edit"), del: hasPermission("tasks.delete"), exp: hasPermission("tasks.export") };
+  const me = useAuthStore((s) => s.user?.id);
   const queryClient = useQueryClient();
 
   const today = keyOf(new Date());
   // The dashboard's week strip opens a day with ?date=YYYY-MM-DD.
   const [searchParams] = useSearchParams();
   const asked = searchParams.get("date");
-  const [day, setDay] = useState(asked && /^d{4}-d{2}-d{2}$/.test(asked) ? asked : today);
-  const [filter, setFilter] = useState<"all" | "open" | "done">("all");
-  const [range, setRange] = useState<"day" | "week">("day");
-  // Tasks mid-animation keep their old place in the list until it finishes.
-  const [animating, setAnimating] = useState<Record<string, "done" | "undone">>({});
-  // Counts completions this visit, so the done counter bounces on a change only.
-  const [bumps, setBumps] = useState(0);
+  const opened = asked && /^\d{4}-\d{2}-\d{2}$/.test(asked) ? asked : today;
 
-  const dayQuery = useQuery({ queryKey: ["tasks", "day", day], queryFn: () => tasksApi.day(day) });
-  const weekQuery = useQuery({ queryKey: ["tasks", "week", day], queryFn: () => tasksApi.week(day) });
-  const prevQuery = useQuery({ queryKey: ["tasks", "day", addDays(today, -1)], queryFn: () => tasksApi.day(addDays(today, -1)), enabled: day === today });
+  const [view, setView] = useState<View>("days");
+  const [anchor, setAnchor] = useState(() => weekStart(opened));
+  const [month, setMonth] = useState(() => monthStart(opened));
+  const [cats, setCats] = useState<TaskCategory[]>([]);
+  const [pri, setPri] = useState<"all" | TaskPriority>("all");
+  const [status, setStatus] = useState<"all" | "open" | "done">("all");
+  const scrollTarget = useRef<string | null>(opened !== today ? opened : null);
+
+  const range = view === "month" ? monthGrid(month) : { from: anchor, to: addDays(anchor, 6) };
+  const rangeKey = ["tasks", "range", range.from, range.to, today] as const;
+  const rangeQuery = useQuery({ queryKey: rangeKey, queryFn: () => tasksApi.range(range.from, range.to, today), placeholderData: (prev) => prev });
+  const todayQuery = useQuery({ queryKey: ["tasks", "day", today], queryFn: () => tasksApi.day(today) });
   const assigneesQuery = useQuery({ queryKey: ["tasks", "assignees"], queryFn: tasksApi.assignees, staleTime: 5 * 60_000 });
   const suggestionsQuery = useQuery({ queryKey: ["tasks", "suggestions"], queryFn: tasksApi.suggestions });
 
-  const tasks = dayQuery.data ?? [];
-  const done = tasks.filter((t) => t.done).length;
-  const pct = tasks.length ? done / tasks.length : 0;
-  const urgentOpen = tasks.filter((t) => !t.done && t.priority === "URGENT").length;
-  const carryable = day === today ? (prevQuery.data ?? []).filter((t) => !t.done).length : 0;
+  const tasks = useMemo(() => rangeQuery.data?.tasks ?? [], [rangeQuery.data]);
+  const overdue = rangeQuery.data?.overdue ?? 0;
+  const byDay = useMemo(() => {
+    const m = new Map<string, DailyTask[]>();
+    for (const t of tasks) m.set(t.date, [...(m.get(t.date) ?? []), t]);
+    return m;
+  }, [tasks]);
+  const on = (k: string) => byDay.get(k) ?? [];
+  const pass = (t: DailyTask) => (!cats.length || cats.includes(t.category)) && (pri === "all" || t.priority === pri) && (status === "all" || (status === "done" ? t.done : !t.done));
+  const sorted = (list: DailyTask[]) =>
+    list
+      .filter(pass)
+      .sort((a, b) => Number(a.done) - Number(b.done) || RANK[a.priority] - RANK[b.priority] || (a.time ?? "99").localeCompare(b.time ?? "99") || a.createdAt.localeCompare(b.createdAt));
 
-  const shown = useMemo(() => {
-    const placeDone = (t: DailyTask) => (animating[t.id] ? animating[t.id] === "undone" : t.done);
-    return tasks
-      .filter((t) => (filter === "all" ? true : filter === "done" ? t.done : !t.done))
-      .slice()
-      .sort((a, b) => Number(placeDone(a)) - Number(placeDone(b)) || (a.time ?? "99").localeCompare(b.time ?? "99") || a.createdAt.localeCompare(b.createdAt));
-  }, [tasks, filter, animating]);
+  // What the band and the side cards count: the week shown, or the month's own days.
+  const scope = view === "month" ? { from: month, to: monthEnd(month) } : range;
+  const scoped = tasks.filter((t) => t.date >= scope.from && t.date <= scope.to);
+  const scopedDone = scoped.filter((t) => t.done).length;
+  const pct = scoped.length ? Math.round((scopedDone / scoped.length) * 100) : 0;
+  const urgentOpen = scoped.filter((t) => !t.done && t.priority === "URGENT").length;
+  const todayList = todayQuery.data ?? [];
 
-  // ---------- Rows glide to their new place (FLIP) ----------
-  const rowRefs = useRef(new Map<string, HTMLDivElement>());
-  const flipFrom = useRef<Map<string, number> | null>(null);
-  const snapshot = () => {
-    flipFrom.current = new Map([...rowRefs.current].map(([id, el]) => [id, el.getBoundingClientRect().top]));
+  // Opening a day from the dashboard or the month brings it into view.
+  useEffect(() => {
+    const k = scrollTarget.current;
+    if (!k || view !== "days" || !rangeQuery.data) return;
+    const el = document.getElementById(`tk-day-${k}`);
+    if (!el) return;
+    scrollTarget.current = null;
+    requestAnimationFrame(() => el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" }));
+  }, [view, rangeQuery.data, anchor]);
+
+  // ---------- Changes ----------
+  const refresh = () => {
+    for (const k of ["range", "day", "week", "suggestions"]) void queryClient.invalidateQueries({ queryKey: ["tasks", k] });
   };
-  useLayoutEffect(() => {
-    const from = flipFrom.current;
-    if (!from) return;
-    flipFrom.current = null;
-    rowRefs.current.forEach((el, id) => {
-      const before = from.get(id);
-      if (before == null) return;
-      const dy = before - el.getBoundingClientRect().top;
-      if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 480, easing: "cubic-bezier(.2,.8,.2,1)" });
-    });
-  });
+  const patchRange = (fn: (list: DailyTask[]) => DailyTask[]) =>
+    queryClient.setQueryData<{ tasks: DailyTask[]; overdue: number }>(rangeKey, (old) => (old ? { ...old, tasks: fn(old.tasks) } : old));
 
-  const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["tasks", "week"] });
-    void queryClient.invalidateQueries({ queryKey: ["tasks", "suggestions"] });
-  };
-
-  const setDayCache = (key: string, fn: (list: DailyTask[]) => DailyTask[]) =>
-    queryClient.setQueryData<DailyTask[]>(["tasks", "day", key], (old) => fn(old ?? []));
-
-  const toggle = useMutation({
-    mutationFn: ({ task }: { task: DailyTask }) => tasksApi.update(task.id, { done: !task.done }),
-    onMutate: ({ task }) => {
-      const nowDone = !task.done;
-      setDayCache(day, (list) => list.map((t) => (t.id === task.id ? { ...t, done: nowDone } : t)));
-      if (prefersReducedMotion()) {
-        if (nowDone) celebrateIfAllDone(task.id);
-        return;
-      }
-      if (nowDone) navigator.vibrate?.(12);
-      setBumps((b) => b + 1);
-      setAnimating((a) => ({ ...a, [task.id]: nowDone ? "done" : "undone" }));
-      window.setTimeout(
-        () => {
-          snapshot();
-          setAnimating(({ [task.id]: _gone, ...rest }) => rest);
-          if (nowDone) celebrateIfAllDone(task.id);
-        },
-        nowDone ? CELEBRATE_MS : 320
-      );
-    },
-    onError: (err, { task }) => {
-      setDayCache(day, (list) => list.map((t) => (t.id === task.id ? { ...t, done: task.done } : t)));
-      toast.error(getErrorMessage(err));
-    },
-    onSettled: invalidate,
-  });
-
-  function celebrateIfAllDone(justDoneId: string) {
-    const list = queryClient.getQueryData<DailyTask[]>(["tasks", "day", day]) ?? [];
-    if (!list.length || list.some((t) => !t.done && t.id !== justDoneId)) return;
+  function celebrateIfAllDone(list: DailyTask[]) {
+    if (!list.length || list.some((t) => !t.done)) return;
     toast.success(tr("🎉 أحسنت! أنجزت كل مهام اليوم", "🎉 Well done! Every task for today is complete"));
     if (!prefersReducedMotion()) confetti();
   }
 
+  const toggle = useMutation({
+    mutationFn: (task: DailyTask) => tasksApi.update(task.id, { done: !task.done }),
+    onMutate: (task) => {
+      const nowDone = !task.done;
+      patchRange((list) => list.map((t) => (t.id === task.id ? { ...t, done: nowDone } : t)));
+      if (nowDone) navigator.vibrate?.(12);
+      if (nowDone && task.date === today) {
+        const list = (todayQuery.data ?? []).map((t) => (t.id === task.id ? { ...t, done: true } : t));
+        celebrateIfAllDone(list.some((t) => t.id === task.id) ? list : [...list, { ...task, done: true }]);
+      }
+    },
+    onError: (err, task) => {
+      patchRange((list) => list.map((t) => (t.id === task.id ? { ...t, done: task.done } : t)));
+      toast.error(getErrorMessage(err));
+    },
+    onSettled: refresh,
+  });
+
   const remove = useMutation({
     mutationFn: (id: string) => tasksApi.remove(id),
     onSuccess: (_r, id) => {
-      snapshot();
-      setDayCache(day, (list) => list.filter((t) => t.id !== id));
+      patchRange((list) => list.filter((t) => t.id !== id));
       toast.success(tr("تم حذف المهمة", "Task deleted"));
-      invalidate();
+      refresh();
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+
+  const carry = useMutation({
+    mutationFn: (from: string) => tasksApi.carry(from, today),
+    onSuccess: ({ moved }) => {
+      toast.success(tr(`تم نقل ${moved} مهام إلى اليوم`, `Moved ${moved} tasks to today`));
+      refresh();
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
@@ -221,7 +288,8 @@ export default function DailyTasksPage() {
   const [priority, setPriority] = useState<TaskPriority>("NORMAL");
   const [assigneeId, setAssigneeId] = useState<string>("");
   const [time, setTime] = useState("");
-  const me = useAuthStore((s) => s.user?.id);
+  const [formDate, setFormDate] = useState(today);
+  const titleRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (!assigneeId && me) setAssigneeId(me);
   }, [me, assigneeId]);
@@ -229,42 +297,64 @@ export default function DailyTasksPage() {
   const create = useMutation({
     mutationFn: tasksApi.create,
     onSuccess: (task) => {
-      snapshot();
-      setDayCache(task.date, (list) => [...list, task]);
-      invalidate();
+      if (task.date >= range.from && task.date <= range.to) patchRange((list) => [...list, task]);
+      refresh();
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return toast.error(tr("اكتب عنوان المهمة أولاً", "Type the task first"));
+    if (!title.trim()) {
+      titleRef.current?.focus();
+      return toast.error(tr("اكتب عنوان المهمة أولاً", "Type the task first"));
+    }
+    const date = formDate || today;
     create.mutate(
-      { date: day, title: title.trim(), category, priority, assigneeId: assigneeId || null, time: time || null },
-      { onSuccess: () => { setTitle(""); setTime(""); toast.success(tr("تمت إضافة المهمة", "Task added")); } }
+      { date, title: title.trim(), category, priority, assigneeId: assigneeId || null, time: time || null },
+      {
+        onSuccess: () => {
+          setTitle("");
+          setTime("");
+          toast.success(tr(`تمت إضافة المهمة ليوم ${fmt(date, { weekday: "long" }, locale)}`, `Task added for ${fmt(date, { weekday: "long" }, locale)}`));
+          if (view !== "month" && weekStart(date) !== anchor) {
+            scrollTarget.current = date;
+            setAnchor(weekStart(date));
+          }
+        },
+      }
     );
   };
-
-  const carry = useMutation({
-    mutationFn: () => tasksApi.carry(addDays(today, -1), today),
-    onSuccess: ({ moved }) => {
-      toast.success(tr(`تم ترحيل ${moved} مهام إلى اليوم`, `Moved ${moved} tasks to today`));
-      void queryClient.invalidateQueries({ queryKey: ["tasks"] });
-    },
-    onError: (err) => toast.error(getErrorMessage(err)),
-  });
+  const addTo = (k: string) => {
+    setFormDate(k);
+    titleRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+    titleRef.current?.focus({ preventScroll: true });
+  };
 
   const addSuggestion = (s: { key: string; title: string; category: TaskCategory; priority: TaskPriority }) =>
     create.mutate(
       { date: today, title: s.title, category: s.category, priority: s.priority, assigneeId: me ?? null, sourceKey: s.key },
-      { onSuccess: () => { setDay(today); toast.success(tr("أضيفت لمهام اليوم", "Added to today")); } }
+      { onSuccess: () => toast.success(tr("أضيفت لمهام اليوم", "Added to today")) }
     );
 
-  // ---------- Export ----------
-  const exportRange = () => {
-    if (range === "day") return { from: day, to: day };
-    const start = addDays(day, -fromKey(day).getDay());
-    return { from: start, to: addDays(start, 6) };
+  // ---------- Moving around ----------
+  const step = (d: number) => (view === "month" ? setMonth((m) => addMonths(m, d)) : setAnchor((a) => addDays(a, 7 * d)));
+  const goToday = () => {
+    setAnchor(weekStart(today));
+    setMonth(monthStart(today));
   };
+  const openDay = (k: string) => {
+    scrollTarget.current = k;
+    setAnchor(weekStart(k));
+    setView("days");
+  };
+  const switchView = (v: View) => {
+    if (v === "month") setMonth(monthStart(view === "month" ? month : anchor <= today && today <= addDays(anchor, 6) ? today : anchor));
+    else if (view === "month") setAnchor(weekStart(month <= today && today <= monthEnd(month) ? today : month));
+    setView(v);
+  };
+
+  // ---------- Export: the week or the month on screen ----------
+  const exportRange = () => (view === "month" ? { from: month, to: monthEnd(month) } : range);
   const printPdf = () => {
     const r = exportRange();
     void openPdfInNewTab("/tasks/export", { ...r, format: "pdf" }, `daily-tasks-${r.from}.pdf`).catch(() => undefined);
@@ -274,260 +364,553 @@ export default function DailyTasksPage() {
     void downloadFile("/tasks/export", { ...r, format: "xlsx" }, `daily-tasks-${r.from}.xlsx`).catch(() => undefined);
   };
 
-  const dayLabel =
-    (day === today ? tr("اليوم · ", "Today · ") : day === addDays(today, -1) ? tr("أمس · ", "Yesterday · ") : day === addDays(today, 1) ? tr("غدًا · ", "Tomorrow · ") : "") +
-    fmt(day, { weekday: "long", day: "numeric", month: "long", year: "numeric" }, locale);
-  const hijri = fmt(day, { day: "numeric", month: "long", year: "numeric" }, isRtl ? "ar-SA-u-ca-islamic-umalqura-nu-latn" : "en-u-ca-islamic-umalqura");
+  // ---------- Words ----------
+  const hijri = (k: string) => `${fmt(k, { day: "numeric", month: "long", year: "numeric" }, hijriLocale).replace(/\s*(هـ|AH)$/, "")} ${isRtl ? "هـ" : "AH"}`;
+  const hijriDay = (k: string) => fmt(k, { day: "numeric" }, hijriLocale);
+  const hijriDm = (k: string) => fmt(k, { day: "numeric", month: "long" }, hijriLocale);
+  const rel = (k: string) => {
+    const d = daysBetween(today, k);
+    if (d === 0) return tr("اليوم", "Today");
+    if (d === 1) return tr("غدًا", "Tomorrow");
+    if (d === -1) return tr("أمس", "Yesterday");
+    return d < 0 ? tr(`منذ ${-d} أيام`, `${-d} days ago`) : tr(`بعد ${d} أيام`, `In ${d} days`);
+  };
+  const dm = (k: string) => fmt(k, { day: "numeric", month: "long" }, locale);
+  const rangeLabel = view === "month" ? fmt(month, { month: "long", year: "numeric" }, locale) : `${dm(range.from)} – ${dm(range.to)}`;
+  const catName = (c: TaskCategory) => (isRtl ? CATEGORIES[c].ar : CATEGORIES[c].en);
   const Prev = isRtl ? ChevronRight : ChevronLeft;
   const Next = isRtl ? ChevronLeft : ChevronRight;
   const Carry = isRtl ? ArrowLeft : ArrowRight;
+  const C = 2 * Math.PI * 30;
 
-
-  const dayTitle = day === today ? tr("مهام اليوم", "Today's tasks") : tr(`مهام ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`, `Tasks for ${fmt(day, { weekday: "long" }, locale)} ${dmy(day)}`);
-  const week = weekQuery.data ?? [];
-  const weekNote = week.length ? `${fmt(week[0].date, { day: "numeric", month: "long" }, locale)} – ${fmt(week[week.length - 1].date, { day: "numeric", month: "long" }, locale)}` : "";
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(anchor, i));
   const suggestions = suggestionsQuery.data ?? [];
-  const sel = "h-9 rounded-xl border-0 bg-[var(--l-surface)] px-2.5 text-[13px] text-foreground shadow-[var(--l-shadow)] focus:outline-none focus:ring-2 focus:ring-primary/30";
+  const assignees = assigneesQuery.data ?? [];
+
+  // ---------- Pieces ----------
+  const taskRow = (t: DailyTask, j: number) => {
+    const cat = CATEGORIES[t.category] ?? CATEGORIES.general;
+    return (
+      <div key={t.id} className={cn("tk-task", `p-${t.priority}`, t.done && "done")} style={{ ["--j" as string]: j }}>
+        <button
+          type="button"
+          className="tk-ck"
+          aria-pressed={t.done}
+          aria-label={t.done ? tr("إلغاء الإنجاز", "Mark as open") : tr("تم", "Mark as done")}
+          disabled={!can.edit}
+          onClick={(e) => {
+            if (!t.done) luluPop(e.currentTarget);
+            toggle.mutate(t);
+          }}
+        >
+          <Check strokeWidth={3.2} />
+        </button>
+        <div className="tk-tb">
+          <b>{t.title}</b>
+          <div className="tk-meta">
+            <span className="tk-pill" style={tone(cat.c, cat.t)}>
+              {catName(t.category)}
+            </span>
+            {t.priority !== "NORMAL" && (
+              <span className="tk-pill" style={tone(PRIORITIES[t.priority].c, PRIORITIES[t.priority].t)}>
+                {isRtl ? PRIORITIES[t.priority].ar : PRIORITIES[t.priority].en}
+              </span>
+            )}
+            {t.time && (
+              <span>
+                <Clock />
+                {t.time}
+              </span>
+            )}
+            {t.assignee && (
+              <span>
+                <User />
+                {t.assignee.fullName}
+              </span>
+            )}
+            {t.carriedFrom && (
+              <span className="moved">
+                <Carry />
+                {tr(`منقولة من ${fmt(t.carriedFrom, { weekday: "long" }, locale)} ${dm(t.carriedFrom)}`, `Moved from ${fmt(t.carriedFrom, { weekday: "long" }, locale)} ${dm(t.carriedFrom)}`)}
+              </span>
+            )}
+            {!t.done && t.date < today && <span className="late">{tr("متأخرة", "Overdue")}</span>}
+          </div>
+          {t.notes && <div className="tk-note">{t.notes}</div>}
+        </div>
+        <div className="tk-end">
+          {can.del && (
+            <button type="button" className="tk-del" onClick={() => remove.mutate(t.id)} aria-label={tr("حذف المهمة", "Delete task")}>
+              <Trash2 />
+            </button>
+          )}
+          <Avatar person={t.assignee} />
+        </div>
+      </div>
+    );
+  };
+
+  const dayProgress = (k: string) => {
+    const all = on(k);
+    const d = all.filter((t) => t.done).length;
+    const p = all.length ? (d / all.length) * 100 : 0;
+    return (
+      <div className="tk-prog">
+        <small>{all.length ? tr(`${d} من ${all.length} منجزة`, `${d} of ${all.length} done`) : tr("لا توجد مهام", "No tasks")}</small>
+        <div className="tk-bar">
+          <i className={cn(p === 100 && "full")} style={{ width: `${p}%` }} />
+        </div>
+      </div>
+    );
+  };
+
+  const daysView = weekDays.map((k, i) => {
+    const past = k < today;
+    const all = on(k);
+    const list = sorted(all);
+    const open = all.filter((t) => !t.done).length;
+    return (
+      <section key={k} id={`tk-day-${k}`} className={cn("tk-card tk-day tk-rise", k === today && "today", past && "past")} style={{ ["--i" as string]: i }}>
+        <div className="tk-dh">
+          <div className="tk-cal">
+            <small>{fmt(k, { month: "short" }, locale)}</small>
+            <b>{fromKey(k).getDate()}</b>
+          </div>
+          <div className="t">
+            <h3>
+              {fmt(k, { weekday: "long" }, locale)} <span className="tag">{rel(k)}</span>
+            </h3>
+            <p>
+              {fmt(k, { day: "numeric", month: "long", year: "numeric" }, locale)} · {hijri(k)}
+            </p>
+          </div>
+          {past && open > 0 && can.edit && (
+            <button type="button" className="tk-btn sm" onClick={() => carry.mutate(k)} disabled={carry.isPending}>
+              <Carry /> {tr(`انقل ${open} إلى اليوم`, `Move ${open} to today`)}
+            </button>
+          )}
+          {dayProgress(k)}
+        </div>
+        <div>
+          {list.length ? (
+            list.map(taskRow)
+          ) : (
+            <div className="tk-empty">{all.length ? tr("لا توجد مهام مطابقة للفلتر في هذا اليوم", "No tasks match the filter on this day") : tr("يوم فارغ — لا توجد مهام", "A free day — no tasks")}</div>
+          )}
+        </div>
+        {!past && can.create && (
+          <button type="button" className="tk-more" onClick={() => addTo(k)}>
+            + {tr(`أضف مهمة ليوم ${fmt(k, { weekday: "long" }, locale)}`, `Add a task for ${fmt(k, { weekday: "long" }, locale)}`)}
+          </button>
+        )}
+      </section>
+    );
+  });
+
+  const weekView = (
+    <div className="tk-board">
+      {weekDays.map((k, i) => {
+        const all = on(k);
+        return (
+          <div key={k} className={cn("tk-bcol tk-rise", k === today && "today")} style={{ ["--i" as string]: i }}>
+            <div className="tk-bh">
+              <small>{fmt(k, { weekday: "long" }, locale)}</small>
+              <b>{fromKey(k).getDate()}</b>
+              <em>
+                {fmt(k, { month: "short" }, locale)} · {hijriDm(k)}
+              </em>
+            </div>
+            <div className="tk-bl">
+              {sorted(all).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={cn("tk-bt", `p-${t.priority}`, t.done && "done")}
+                  aria-pressed={t.done}
+                  disabled={!can.edit}
+                  onClick={() => toggle.mutate(t)}
+                >
+                  {t.title}
+                  <small>
+                    {catName(t.category)}
+                    {t.time ? ` · ${t.time}` : ""}
+                    {t.assignee ? ` · ${t.assignee.fullName}` : ""}
+                  </small>
+                </button>
+              ))}
+              {!sorted(all).length && <div className="tk-empty" style={{ padding: "14px 4px" }}>—</div>}
+            </div>
+            <div className="tk-bf">
+              <span>{tr(`${all.length} مهام`, `${all.length} tasks`)}</span>
+              <span>{tr(`${all.filter((t) => t.done).length} منجزة`, `${all.filter((t) => t.done).length} done`)}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const grid = monthGrid(month);
+  const cells = Array.from({ length: daysBetween(grid.from, grid.to) + 1 }, (_, i) => addDays(grid.from, i));
+  const monthView = (
+    <div className="tk-card tk-month tk-rise">
+      <div className="tk-mgrid">
+        {cells.slice(0, 7).map((k) => (
+          <div key={`w${k}`} className="tk-mwd">
+            {fmt(k, { weekday: "short" }, locale)}
+          </div>
+        ))}
+        {cells.map((k) => {
+          const all = on(k).filter(pass);
+          const dn = all.filter((t) => t.done).length;
+          return (
+            <button key={k} type="button" className={cn("tk-mday", k.slice(0, 7) !== month.slice(0, 7) && "out", k === today && "today")} onClick={() => openDay(k)}>
+              <span className="n">
+                <b>{fromKey(k).getDate()}</b>
+                <small>{hijriDay(k)}</small>
+              </span>
+              <span className="dots">
+                {all.slice(0, 12).map((t) => (
+                  <i key={t.id} style={{ ["--c" as string]: (CATEGORIES[t.category] ?? CATEGORIES.general).c, opacity: t.done ? 0.45 : 1 }} />
+                ))}
+              </span>
+              {all.length > 0 && (
+                <span className={cn("cnt", dn === all.length && "all")}>{dn === all.length ? tr("✓ كلها منجزة", "✓ All done") : tr(`${all.length - dn} متبقية`, `${all.length - dn} open`)}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // Who has what, among the tasks counted.
+  const who = new Map<string, { person: { id: string; fullName: string } | null; total: number; done: number }>();
+  for (const t of scoped) {
+    const row = who.get(t.assignee?.id ?? "") ?? { person: t.assignee, total: 0, done: 0 };
+    row.total++;
+    if (t.done) row.done++;
+    who.set(t.assignee?.id ?? "", row);
+  }
+  const people = [...who.values()].sort((a, b) => b.total - a.total).slice(0, 6);
+
+  const scopeWord = view === "month" ? tr("الشهر", "month") : tr("الأسبوع", "week");
 
   return (
     <>
       <PageHeader
         title={tr("المهام اليومية", "Daily Tasks")}
-        description={`${dayLabel} · ${hijri.replace(/\s*(هـ|AH)$/, "")} ${isRtl ? "هـ" : "AH"}`}
+        description={`${fmt(today, { weekday: "long", day: "numeric", month: "long", year: "numeric" }, locale)} · ${hijri(today)}`}
         actions={
-          can.exp && (
-            <>
-              <div className="inline-flex h-11 rounded-[14px] bg-[var(--l-surface)] p-1 shadow-[var(--l-shadow)]" role="group" aria-label={tr("نطاق التصدير", "Export range")}>
-                {(["day", "week"] as const).map((r) => (
-                  <button key={r} type="button" aria-pressed={range === r} onClick={() => setRange(r)} className={cn("rounded-[11px] px-4 text-[13px] font-semibold", range === r ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>
-                    {r === "day" ? tr("اليوم", "Day") : tr("الأسبوع", "Week")}
-                  </button>
-                ))}
-              </div>
-              <Button variant="outline" onClick={printPdf}>
-                <Printer /> {tr("طباعة / PDF", "Print / PDF")}
-              </Button>
-              <Button variant="outline" onClick={excel}>
-                <FileSpreadsheet /> Excel
-              </Button>
-            </>
-          )
+          <>
+            {can.exp && (
+              <>
+                <button type="button" className="tk-btn" onClick={printPdf}>
+                  <Printer /> {view === "month" ? tr("طباعة الشهر", "Print month") : tr("طباعة الأسبوع", "Print week")}
+                </button>
+                <button type="button" className="tk-btn" onClick={excel}>
+                  <FileSpreadsheet /> Excel
+                </button>
+              </>
+            )}
+            {can.create && (
+              <button type="button" className="tk-btn pri" onClick={() => addTo(today)}>
+                <Plus /> {tr("مهمة جديدة", "New task")}
+              </button>
+            )}
+          </>
         }
       />
 
-      <div className="lu-grid">
-        {/* The day's tasks */}
-        <section className="lu-cc lu-rise lt-green lu-s8" style={{ ["--i" as string]: 0 }}>
-          <div className="lu-hd">
-            <h2>{dayTitle}</h2>
-            <span key={bumps} className="lu-note">
-              {tr(`${done} من ${tasks.length}`, `${done} of ${tasks.length}`)}
-              {urgentOpen ? tr(` · ${urgentOpen} عاجلة`, ` · ${urgentOpen} urgent`) : ""}
-            </span>
+      <div className="tk">
+        {/* The numbers of the week (or month) on screen */}
+        <div className="tk-card tk-band tk-rise" style={{ ["--i" as string]: 0 }}>
+          <div className="tk-ring">
+            <div className="r">
+              <svg viewBox="0 0 74 74" aria-hidden="true">
+                <circle cx="37" cy="37" r="30" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="8" />
+                <circle className="v" cx="37" cy="37" r="30" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(C * pct) / 100} ${C}`} />
+              </svg>
+              <b>{pct}%</b>
+            </div>
+            <div>
+              <h3>{tr(`إنجاز ${scopeWord}`, `This ${scopeWord}'s progress`)}</h3>
+              <p>
+                {tr(`${scopedDone} من ${scoped.length} مهمة منجزة`, `${scopedDone} of ${scoped.length} tasks done`)} · {dm(scope.from)} – {dm(scope.to)}
+              </p>
+            </div>
           </div>
-          {can.create && (
-            <form onSubmit={submit}>
-              <div className="mt-3 flex gap-2">
+          <div>
+            <span className="l">
+              <i style={{ background: "hsl(var(--primary))" }} />
+              {tr("مهام اليوم", "Today's tasks")}
+            </span>
+            <span className="v">
+              {todayList.filter((t) => !t.done).length}
+              <small> / {todayList.length}</small>
+            </span>
+            <span className="s">{tr("متبقية من إجمالي اليوم", "Open of today's total")}</span>
+          </div>
+          <div>
+            <span className="l">
+              <i style={{ background: "var(--l-violet)" }} />
+              {tr("متأخرة", "Overdue")}
+            </span>
+            <span className="v" style={{ color: overdue ? "var(--l-violet)" : undefined }}>
+              {overdue}
+            </span>
+            <span className="s">{overdue ? tr("من أيام سابقة ولم تُنجز", "From earlier days, still open") : tr("لا شيء متأخر", "Nothing overdue")}</span>
+          </div>
+          <div>
+            <span className="l">
+              <i style={{ background: "var(--l-rose)" }} />
+              {tr(`عاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`)}
+            </span>
+            <span className="v" style={{ color: urgentOpen ? "var(--l-rose)" : undefined }}>
+              {urgentOpen}
+            </span>
+            <span className="s">{tr("لم تُنجز بعد", "Not done yet")}</span>
+          </div>
+          <div>
+            <span className="l">
+              <i style={{ background: "var(--l-green)" }} />
+              {tr("تم إنجازها", "Done")}
+            </span>
+            <span className="v" style={{ color: "var(--l-green)" }}>
+              {scopedDone}
+            </span>
+            <span className="s">{tr(`هذا ${scopeWord}`, `This ${scopeWord}`)}</span>
+          </div>
+        </div>
+
+        {can.create && (
+          <form className="tk-card tk-add tk-rise" style={{ ["--i" as string]: 1 }} onSubmit={submit} autoComplete="off">
+            <div className="row">
+              <div className="tt">
+                <Plus />
                 <input
+                  ref={titleRef}
+                  className="tk-in"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={200}
-                  placeholder={tr("اكتب مهمة جديدة…", "Write a new task…")}
+                  placeholder={tr("اكتب مهمة جديدة واضغط Enter…", "Write a new task and press Enter…")}
                   aria-label={tr("عنوان المهمة", "Task title")}
-                  className="h-11 min-w-0 flex-1 rounded-xl border-0 bg-[var(--l-surface)] px-3.5 text-[14.5px] text-foreground outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/30"
                 />
-                <button type="submit" className="lu-do" style={{ minHeight: 44 }} disabled={create.isPending}>
-                  {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />} {tr("إضافة", "Add")}
-                </button>
               </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <select className={sel} value={category} onChange={(e) => setCategory(e.target.value as TaskCategory)} aria-label={tr("التصنيف", "Category")}>
-                  {Object.entries(CATEGORIES).map(([k, c]) => (
-                    <option key={k} value={k}>
-                      {isRtl ? c.ar : c.en}
-                    </option>
-                  ))}
-                </select>
-                <select className={sel} value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} aria-label={tr("الأولوية", "Priority")}>
-                  {(["NORMAL", "HIGH", "URGENT"] as const).map((p) => (
-                    <option key={p} value={p}>
-                      {isRtl ? PRIORITIES[p].ar : PRIORITIES[p].en}
-                    </option>
-                  ))}
-                </select>
-                <select className={sel} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} aria-label={tr("المسؤول", "Assignee")}>
-                  <option value="">{tr("بدون مسؤول", "Unassigned")}</option>
-                  {(assigneesQuery.data ?? []).map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.fullName}
-                    </option>
-                  ))}
-                </select>
-                <input type="time" className={sel} value={time} onChange={(e) => setTime(e.target.value)} aria-label={tr("الوقت", "Time")} />
-              </div>
-            </form>
-          )}
-          <div className="lu-bar">
-            <i style={{ width: `${pct * 100}%` }} />
-          </div>
-          <div className="mb-1 flex flex-wrap items-center gap-2">
-            {(["all", "open", "done"] as const).map((f) => (
-              <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)} className={cn("lu-fchip lt-green", filter === f && "on")} style={{ height: 34, padding: "0 12px", fontSize: 12.5 }}>
-                {f === "all" ? tr("الكل", "All") : f === "open" ? tr("المتبقية", "Open") : tr("المنجزة", "Done")}
+              <button type="submit" className="tk-btn pri" disabled={create.isPending}>
+                {create.isPending ? <Loader2 className="animate-spin" /> : <Plus />} {tr("إضافة", "Add")}
+              </button>
+            </div>
+            <div className="row">
+              <select className="tk-in" value={category} onChange={(e) => setCategory(e.target.value as TaskCategory)} aria-label={tr("التصنيف", "Category")}>
+                {(Object.keys(CATEGORIES) as TaskCategory[]).map((k) => (
+                  <option key={k} value={k}>
+                    {catName(k)}
+                  </option>
+                ))}
+              </select>
+              <select className="tk-in" value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} aria-label={tr("الأولوية", "Priority")}>
+                {(["NORMAL", "HIGH", "URGENT"] as const).map((p) => (
+                  <option key={p} value={p}>
+                    {isRtl ? PRIORITIES[p].ar : PRIORITIES[p].en}
+                  </option>
+                ))}
+              </select>
+              <select className="tk-in" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} aria-label={tr("المسؤول", "Assignee")}>
+                <option value="">{tr("بدون مسؤول", "Unassigned")}</option>
+                {assignees.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.fullName}
+                  </option>
+                ))}
+              </select>
+              <input type="date" className="tk-in" value={formDate} onChange={(e) => setFormDate(e.target.value)} aria-label={tr("التاريخ", "Date")} />
+              <input type="time" className="tk-in" value={time} onChange={(e) => setTime(e.target.value)} aria-label={tr("الوقت", "Time")} />
+            </div>
+          </form>
+        )}
+
+        <div className="tk-tools tk-rise" style={{ ["--i" as string]: 2 }}>
+          <div className="tk-views" role="group" aria-label={tr("طريقة العرض", "View")}>
+            {(
+              [
+                ["days", List, tr("الأيام", "Days")],
+                ["week", Columns3, tr("الأسبوع", "Week")],
+                ["month", CalendarDays, tr("الشهر", "Month")],
+              ] as const
+            ).map(([v, Icon, label]) => (
+              <button key={v} type="button" aria-pressed={view === v} onClick={() => switchView(v)}>
+                <Icon /> {label}
               </button>
             ))}
-            {carryable > 0 && can.edit && (
-              <button type="button" className="lu-fchip lt-amber ms-auto" style={{ height: 34, padding: "0 12px", fontSize: 12.5 }} onClick={() => carry.mutate()} disabled={carry.isPending}>
-                <Carry className="h-4 w-4" /> {tr(`ترحيل ${carryable} من أمس`, `Move ${carryable} from yesterday`)}
-              </button>
+          </div>
+          <div className="tk-nav">
+            <button type="button" className="ib" onClick={() => step(-1)} aria-label={tr("السابق", "Previous")}>
+              <Prev />
+            </button>
+            <b>{rangeLabel}</b>
+            <button type="button" className="ib" onClick={() => step(1)} aria-label={tr("التالي", "Next")}>
+              <Next />
+            </button>
+            <button type="button" className="tk-chip" onClick={goToday}>
+              {tr("اليوم", "Today")}
+            </button>
+          </div>
+          <div className="sp" />
+          {(Object.keys(CATEGORIES) as TaskCategory[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              className="tk-chip"
+              aria-pressed={cats.includes(k)}
+              style={tone(CATEGORIES[k].c, CATEGORIES[k].t)}
+              onClick={() => setCats((c) => (c.includes(k) ? c.filter((x) => x !== k) : [...c, k]))}
+            >
+              <i />
+              {catName(k)}
+              <span>{scoped.filter((t) => t.category === k).length}</span>
+            </button>
+          ))}
+          <select className="tk-chip" value={status} onChange={(e) => setStatus(e.target.value as typeof status)} aria-label={tr("الحالة", "Status")}>
+            <option value="all">{tr("كل الحالات", "Any status")}</option>
+            <option value="open">{tr("المتبقية", "Open")}</option>
+            <option value="done">{tr("المنجزة", "Done")}</option>
+          </select>
+          <select className="tk-chip" value={pri} onChange={(e) => setPri(e.target.value as typeof pri)} aria-label={tr("الأولوية", "Priority")}>
+            <option value="all">{tr("كل الأولويات", "Any priority")}</option>
+            {(["URGENT", "HIGH", "NORMAL"] as const).map((p) => (
+              <option key={p} value={p}>
+                {isRtl ? PRIORITIES[p].ar : PRIORITIES[p].en}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={cn("tk-layout", view === "week" && "wide")}>
+          <div className="tk-col" key={`${view}-${range.from}`}>
+            {rangeQuery.isLoading ? (
+              <div className="tk-card tk-load">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {tr("جاري التحميل...", "Loading...")}
+              </div>
+            ) : view === "days" ? (
+              daysView
+            ) : view === "week" ? (
+              weekView
+            ) : (
+              monthView
             )}
           </div>
 
-          {dayQuery.isLoading ? (
-            <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {tr("جاري التحميل...", "Loading...")}
-            </div>
-          ) : shown.length === 0 ? (
-            <div className="lu-task" style={{ cursor: "default" }}>
-              <span className="box" />
-              <span className="tt">{tasks.length ? tr("لا توجد مهام بهذا التصنيف", "No tasks match this filter") : tr("لا توجد مهام لهذا اليوم — اكتب مهمة بالأعلى", "No tasks for this day — write one above")}</span>
-            </div>
-          ) : (
-            shown.map((t) => {
-              const cat = CATEGORIES[t.category] ?? CATEGORIES.general;
-              const pri = PRIORITIES[t.priority];
-              const on = animating[t.id] ? animating[t.id] === "done" : t.done;
-              return (
-                <div
-                  key={t.id}
-                  ref={(el) => {
-                    if (el) rowRefs.current.set(t.id, el);
-                    else rowRefs.current.delete(t.id);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <button
-                    type="button"
-                    className={cn("lu-task", on && "on")}
-                    aria-pressed={t.done}
-                    disabled={!can.edit}
-                    onClick={(e) => {
-                      if (!t.done) luluPop(e.currentTarget.querySelector(".box"));
-                      toggle.mutate({ task: t });
-                    }}
-                  >
-                    <span className="box">
-                      <Check strokeWidth={3.2} />
+          {view !== "week" && (
+            <div className="tk-col">
+              <div className="tk-card tk-sc tk-rise" style={{ ["--i" as string]: 3 }}>
+                <h3>
+                  <Sparkles /> {tr("اقتراحات من النظام", "Suggested by SanaD")}
+                </h3>
+                <p>{tr("من الوثائق المنتهية أو التي تنتهي خلال أسبوع.", "From documents that ended or end within a week.")}</p>
+                {suggestions.length === 0 && (
+                  <div className="tk-sug">
+                    <span className="si" style={tone("var(--l-green)", "var(--l-green-t)")}>
+                      <Check />
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="tt block">{t.title}</span>
-                      <span className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11.5px] text-muted-foreground">
-                        {t.priority !== "NORMAL" && <span className={cn("lu-chip", pri.tone)} style={{ padding: "1px 8px", fontSize: 11 }}>{isRtl ? pri.ar : pri.en}</span>}
-                        <span className={cat.tone} style={{ color: "var(--c)" }}>{isRtl ? cat.ar : cat.en}</span>
-                        {t.time && (
-                          <span className="inline-flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {t.time}
-                          </span>
-                        )}
-                        {t.assignee && (
-                          <span className="inline-flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {t.assignee.fullName}
-                          </span>
-                        )}
-                        {t.carriedFrom && <span>{tr(`مرحّلة من ${dmy(t.carriedFrom)}`, `Moved from ${dmy(t.carriedFrom)}`)}</span>}
+                    <div>
+                      <b>{tr("لا توجد اقتراحات الآن", "Nothing to suggest right now")}</b>
+                      <small>{tr("كل الوثائق بعيدة عن الانتهاء", "No document is close to ending")}</small>
+                    </div>
+                    <span />
+                  </div>
+                )}
+                {suggestions.map((s) => {
+                  const cat = CATEGORIES[s.category] ?? CATEGORIES.general;
+                  const pc = s.priority === "URGENT" ? PRIORITIES.URGENT : cat;
+                  return (
+                    <div key={s.key} className="tk-sug">
+                      <span className="si" style={tone(pc.c, pc.t)}>
+                        <cat.Icon />
                       </span>
-                    </span>
-                  </button>
-                  {can.del && (
-                    <button type="button" className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-[var(--l-surface)] hover:text-destructive" onClick={() => remove.mutate(t.id)} aria-label={tr("حذف المهمة", "Delete task")}>
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
+                      <div>
+                        <b>{s.title}</b>
+                        <small>{s.reason}</small>
+                      </div>
+                      {can.create ? (
+                        <button
+                          type="button"
+                          className={cn("add", s.added && "ok")}
+                          disabled={s.added || create.isPending}
+                          onClick={(e) => {
+                            luluPop(e.currentTarget);
+                            addSuggestion(s);
+                          }}
+                        >
+                          {s.added ? (
+                            <>
+                              <Check /> {tr("أضيفت", "Added")}
+                            </>
+                          ) : (
+                            <>
+                              <Plus /> {tr("أضف", "Add")}
+                            </>
+                          )}
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="tk-card tk-sc tk-rise" style={{ ["--i" as string]: 4 }}>
+                <h3>
+                  <Users /> {tr(`توزيع مهام ${scopeWord}`, `Who has what this ${scopeWord}`)}
+                </h3>
+                <p>{tr("المسؤول عن كل مهمة، وكم أنجز.", "Who each task is with, and how much is done.")}</p>
+                <div className="tk-who">
+                  {people.length === 0 && <div className="tk-empty" style={{ padding: 6 }}>{tr("لا توجد مهام بعد", "No tasks yet")}</div>}
+                  {people.map((p) => (
+                    <div key={p.person?.id ?? "none"}>
+                      <Avatar person={p.person} />
+                      <span>{p.person?.fullName ?? tr("بدون مسؤول", "Unassigned")}</span>
+                      <b>
+                        {p.done}/{p.total}
+                      </b>
+                      <span className="tk-bar">
+                        <i className={cn(p.done === p.total && "full")} style={{ width: `${(p.done / p.total) * 100}%` }} />
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              );
-            })
-          )}
-        </section>
+              </div>
 
-        {/* Coming up: what the system suggests */}
-        <section className="lu-cc lu-rise lt-amber lu-s4" style={{ ["--i" as string]: 1 }}>
-          <div className="lu-hd">
-            <h2>{tr("القادمة", "Coming up")}</h2>
-            <span className="lu-note">{suggestions.length ? tr(`${suggestions.length} مقترحة`, `${suggestions.length} suggested`) : tr("لا شيء", "Nothing")}</span>
-          </div>
-          {suggestions.length === 0 && (
-            <div className="lu-prow lt-green" style={{ ["--j" as string]: 0 }}>
-              <span className="lu-pi">
-                <Check />
-              </span>
-              <span className="lu-cell">
-                <b>{tr("لا توجد اقتراحات الآن", "Nothing to suggest right now")}</b>
-                <small>{tr("كل الوثائق بعيدة عن الانتهاء", "No document is close to ending")}</small>
-              </span>
+              <div className="tk-card tk-sc tk-rise" style={{ ["--i" as string]: 5 }}>
+                <h3>
+                  <List /> {tr("حسب التصنيف", "By category")}
+                </h3>
+                <p>{tr(`مهام ${scopeWord} موزعة على التصنيفات.`, `This ${scopeWord}'s tasks by category.`)}</p>
+                <div className="tk-who">
+                  {(Object.keys(CATEGORIES) as TaskCategory[]).map((k) => {
+                    const v = CATEGORIES[k];
+                    const n = scoped.filter((t) => t.category === k).length;
+                    return (
+                      <div key={k}>
+                        <span className="tk-av" style={{ background: v.t, color: v.c }}>
+                          <v.Icon />
+                        </span>
+                        <span>{catName(k)}</span>
+                        <b>{n}</b>
+                        <span className="tk-bar">
+                          <i style={{ width: `${scoped.length ? (n / scoped.length) * 100 : 0}%`, background: v.c }} />
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
-          {suggestions.map((s, j) => (
-            <div key={s.key} className={cn("lu-prow", s.priority === "URGENT" ? "lt-rose" : "lt-amber")} style={{ ["--j" as string]: j }}>
-              <span className="lu-pi">
-                <Clock />
-              </span>
-              <span className="lu-cell">
-                <b>{s.title}</b>
-                <small>{s.reason}</small>
-              </span>
-              {can.create && (
-                <button type="button" className={cn("lu-do", s.added && "done")} disabled={s.added || create.isPending} onClick={(e) => { luluPop(e.currentTarget); addSuggestion(s); }}>
-                  {s.added ? <><Check /> {tr("أضيفت", "Added")}</> : tr("أضف", "Add")}
-                </button>
-              )}
-            </div>
-          ))}
-        </section>
-
-        {/* The week: pick a day */}
-        <section className="lu-cc lu-rise lt-sky lu-s12" style={{ ["--i" as string]: 2 }}>
-          <div className="lu-hd">
-            <h2>{tr("هذا الأسبوع", "This week")}</h2>
-            <div className="flex items-center gap-1.5">
-              <span className="lu-note">{weekNote}</span>
-              <button type="button" className="lu-btn" style={{ height: 36, minWidth: 36, padding: 0 }} onClick={() => setDay(addDays(day, -7))} aria-label={tr("الأسبوع السابق", "Previous week")}>
-                <Prev />
-              </button>
-              <button type="button" className="lu-btn" style={{ height: 36, padding: "0 12px", fontSize: 13 }} onClick={() => setDay(today)}>
-                {tr("اليوم", "Today")}
-              </button>
-              <button type="button" className="lu-btn" style={{ height: 36, minWidth: 36, padding: 0 }} onClick={() => setDay(addDays(day, 7))} aria-label={tr("الأسبوع التالي", "Next week")}>
-                <Next />
-              </button>
-            </div>
-          </div>
-          <div className="lu-week">
-            {week.map((w) => (
-              <button
-                key={w.date}
-                type="button"
-                onClick={() => setDay(w.date)}
-                aria-pressed={w.date === day}
-                className={cn("lu-day", w.date === today && "today")}
-                style={w.date === day && w.date !== today ? { boxShadow: "inset 0 0 0 2px var(--c)" } : undefined}
-              >
-                <small>{fmt(w.date, { weekday: "long" }, locale)}</small>
-                <b className="lu-num">{fromKey(w.date).getDate()}</b>
-                <span className="dots">
-                  {Array.from({ length: Math.min(3, w.done) }).map((_, j) => (
-                    <i key={`d${j}`} style={{ background: "var(--l-green)" }} />
-                  ))}
-                  {Array.from({ length: Math.min(3 - Math.min(3, w.done), w.total - w.done) }).map((_, j) => (
-                    <i key={`o${j}`} style={{ background: "var(--l-amber)" }} />
-                  ))}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
+        </div>
       </div>
     </>
   );

@@ -5,13 +5,14 @@ import { requirePermission } from "@/middleware/rbac";
 import { validate } from "@/middleware/validate";
 import { auditLog } from "@/middleware/audit";
 import * as controller from "@/modules/tasks/tasks.controller";
-import { carrySchema, createTaskSchema, dayQuerySchema, exportQuerySchema, idParamSchema, updateTaskSchema } from "@/modules/tasks/tasks.schemas";
+import { carrySchema, createTaskSchema, dayQuerySchema, exportQuerySchema, idParamSchema, rangeQuerySchema, updateTaskSchema } from "@/modules/tasks/tasks.schemas";
 
 const router = Router();
 router.use(requireAuth);
 
 router.get("/", requirePermission("tasks.view"), validate({ query: dayQuerySchema }), controller.listDay);
 router.get("/week", requirePermission("tasks.view"), validate({ query: dayQuerySchema }), controller.week);
+router.get("/range", requirePermission("tasks.view"), validate({ query: rangeQuerySchema }), controller.range);
 router.get("/assignees", requirePermission("tasks.view"), controller.assignees);
 router.get("/suggestions", requirePermission("tasks.view"), controller.suggestions);
 router.get("/export", requirePermission("tasks.export"), validate({ query: exportQuerySchema }), controller.exportTasks);
