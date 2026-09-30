@@ -57,18 +57,15 @@ export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
     title: t.title,
     category: CATEGORY_AR[t.category] ?? t.category,
     priority: PRIORITY_AR[t.priority] ?? t.priority,
-    assignee: t.assignee?.fullName ?? "—",
-    time: t.time ?? "—",
     status: t.done ? "منجزة" : "متبقية",
   }));
+  // The PDF template numbers its rows itself; only the Excel sheet needs its own "#".
   const columns: ColumnDef<Row>[] = [
-    { header: "#", subHeader: "No.", key: "n" },
+    ...(format === "xlsx" ? [{ header: "#", subHeader: "No.", key: "n" }] : []),
     ...(oneDay ? [] : [{ header: "التاريخ", subHeader: "Date", key: "date" }]),
     { header: "المهمة", subHeader: "Task", key: "title" },
     { header: "التصنيف", subHeader: "Category", key: "category" },
     { header: "الأولوية", subHeader: "Priority", key: "priority" },
-    { header: "المسؤول", subHeader: "Assignee", key: "assignee" },
-    { header: "الوقت", subHeader: "Time", key: "time" },
     { header: "الحالة", subHeader: "Status", key: "status" },
   ];
   const done = tasks.filter((t) => t.done).length;
@@ -96,7 +93,12 @@ export const exportTasks = asyncHandler(async (req: Request, res: Response) => {
     columns.map((c) => ({
       header: c.header,
       subHeader: c.subHeader,
-      render: (r: Row) => (c.key === "status" ? `<b style="color:${r.status === "منجزة" ? "#15803d" : "#b45309"}">${esc(r.status)}</b>` : esc(r[c.key])),
+      render: (r: Row) =>
+        c.key === "status"
+          ? `<b style="color:${r.status === "منجزة" ? "#15803d" : "#b45309"};white-space:nowrap">${esc(r.status)}</b>`
+          : c.key === "date"
+            ? `<span style="white-space:nowrap">${esc(r.date)}</span>`
+            : esc(r[c.key]),
     })),
     rows,
     branding,
