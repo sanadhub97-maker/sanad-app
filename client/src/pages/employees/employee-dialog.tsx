@@ -328,7 +328,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                     },
                   })}
                   dir="rtl"
-                  placeholder="مثال: محمد عبدالله سالم الغامدي"
+                  placeholder={`${tr("مثال", "e.g.")}: محمد عبدالله سالم الغامدي`}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-blue-500/30 focus-visible:border-blue-500/60"
                 />
               </FormField>

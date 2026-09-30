@@ -93,6 +93,24 @@ const EXACT: Record<string, string> = {
   "Automatic translation is unavailable right now. Please type the English text.":
     "الترجمة التلقائية غير متاحة حالياً، يرجى كتابة النص بالإنجليزي.",
   "You cannot delete your own account.": "لا يمكنك حذف حسابك الشخصي.",
+  "No image was uploaded.": "لم يتم رفع أي صورة.",
+  "The photo must be a JPG or PNG image.": "يجب أن تكون الصورة بصيغة JPG أو PNG.",
+  "The photo must be under 2 MB.": "يجب أن يكون حجم الصورة أقل من 2 ميجابايت.",
+  "WhatsApp card design saved.": "تم حفظ تصميم بطاقة واتساب.",
+  "WhatsApp message design saved.": "تم حفظ تصميم رسالة واتساب.",
+  "Task not found": "المهمة غير موجودة.",
+  "Could not get a pairing code. Check the number and try again, or scan the QR code instead.": "تعذر طلب كود الربط — تأكد من الرقم وحاول مرة أخرى، أو استخدم مسح QR.",
+  "The number was unlinked from the phone. Link it again.": "تم فك الربط من الجوال — اربط الرقم مرة أخرى.",
+  "The pairing code expired. Ask for a new one.": "انتهت مهلة كود الربط — اطلب كودًا جديدًا.",
+  "The QR code expired. Press link a number again.": "انتهت مهلة مسح الكود — اضغط ربط رقم مرة أخرى.",
+  "No WhatsApp number is linked. Link one in Settings by scanning the QR code.": "رقم الواتساب غير مربوط — اربطه من الإعدادات بمسح كود QR.",
+  "Document added.": "تمت إضافة الوثيقة بنجاح.",
+  "Document updated.": "تم تحديث بيانات الوثيقة بنجاح.",
+  "Document deleted.": "تم حذف الوثيقة بنجاح.",
+  "Alert delivery and daily schedule saved.": "تم حفظ طريقة إرسال التنبيهات والجدولة اليومية بنجاح.",
+  "The uploaded file has no valid worksheets.": "الملف المرفوع لا يحتوي على أوراق عمل صالحة.",
+  "The table's columns were not recognised. Please use the employee import template from the system.":
+    "لم يتم التعرف على أعمدة الجدول. يرجى استخدام قالب استيراد الموظفين المعتمد من النظام.",
 };
 
 /** Messages with a variable tail: [English prefix, Arabic prefix]. */
@@ -103,6 +121,7 @@ const PREFIXES: [string, string][] = [
   ["Test email sent to ", "تم إرسال بريد تجريبي إلى "],
   ["WhatsApp send failed: ", "تعذر إرسال رسالة واتساب: "],
   ["Unsupported file type: ", "نوع الملف غير مدعوم: "],
+  ["Document scan finished. Documents due for an alert: ", "تم تشغيل فحص الوثائق بنجاح. الوثائق المستحقة للتنبيه: "],
 ];
 
 export function localizeServerMessage(message: string): string;
@@ -110,8 +129,15 @@ export function localizeServerMessage(message: string | undefined): string | und
 export function localizeServerMessage(message: string | undefined): string | undefined {
   if (!message || !isRtlLanguage(i18n.language)) return message;
   if (EXACT[message]) return EXACT[message];
+  const notOnWhatsapp = /^The number (.+) is not on WhatsApp$/.exec(message);
+  if (notOnWhatsapp) return `الرقم ${notOnWhatsapp[1]} غير مسجل على واتساب`;
   for (const [en, ar] of PREFIXES) {
-    if (message.startsWith(en)) return ar + message.slice(en.length).replace(". Allowed:", "، المسموح:").replace(/\.$/, "");
+    if (message.startsWith(en)) {
+      // The tail can itself be a known message ("WhatsApp send failed: <reason>").
+      const tail = message.slice(en.length);
+      const known = tail === message ? undefined : localizeServerMessage(tail);
+      return ar + (known !== tail ? known : tail.replace(". Allowed:", "، المسموح:").replace(/\.$/, ""));
+    }
   }
   return message;
 }

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { computeStatus, ExpirationRules } from "@/services/expiration";
+import { establishmentNameEn, loadBranchNames } from "@/services/establishmentNames";
 
 // Normalizes every expiry-tracked record in the system into one shape, so
 // the dashboard, reports, and the daily cron scan (§21/§41) share a single
@@ -25,6 +26,7 @@ export interface TrackableItem {
   documentEn?: string;
   documentNumber?: string | null;
   branchName?: string | null;
+  branchNameEn?: string | null;
   /** EmployeeDocument.type, for employee documents. */
   docType?: string;
   /** What kind of document this is — إقامة, جواز سفر, شهادة صحية, سجل تجاري… */
@@ -73,7 +75,7 @@ const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
 };
 
 export async function getTrackableItems(): Promise<TrackableItem[]> {
-  const [employees, employeeDocuments, companyDocuments] = await Promise.all([
+  const [employees, employeeDocuments, companyDocuments, branchNames] = await Promise.all([
     prisma.employee.findMany({
       where: { deletedAt: null, OR: [{ iqamaExpiryDate: { not: null } }, { passportExpiryDate: { not: null } }] },
       select: {
@@ -84,17 +86,18 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         passportExpiryDate: true,
         iqamaNumber: true,
         passportNumber: true,
-        branch: { select: { name: true } },
+        branch: { select: { name: true, nameEn: true } },
       },
     }),
     prisma.employeeDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null }, type: { notIn: ["IQAMA", "PASSPORT"] } },
-      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, branch: { select: { name: true } } } } },
+      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, branch: { select: { name: true, nameEn: true } } } } },
     }),
     prisma.companyDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null } },
-      include: { branch: { select: { name: true } } },
+      include: { branch: { select: { name: true, nameEn: true } } },
     }),
+    loadBranchNames(),
   ]);
 
   const items: TrackableItem[] = [];
@@ -117,6 +120,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         documentEn: "Iqama",
         documentNumber: emp.iqamaNumber,
         branchName: emp.branch?.name,
+        branchNameEn: emp.branch?.nameEn,
         ...kindOf("IQAMA", "إقامة", "Iqama"),
       });
     }
@@ -135,6 +139,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         documentEn: "Passport",
         documentNumber: emp.passportNumber,
         branchName: emp.branch?.name,
+        branchNameEn: emp.branch?.nameEn,
         ...kindOf("PASSPORT", "جواز سفر", "Passport"),
       });
     }
@@ -158,6 +163,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       documentEn: doc.name || EMPLOYEE_DOCUMENT_NAMES[doc.type]?.[1],
       documentNumber: doc.documentNumber,
       branchName: doc.employee.branch?.name,
+      branchNameEn: doc.employee.branch?.nameEn,
       docType: doc.type,
       ...kindOf(doc.type, doc.name || "مستند", doc.name || "Document"),
     });
@@ -168,7 +174,8 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
     items.push({
       key: `company-document-${doc.id}`,
       sourceType: "COMPANY_DOCUMENT",
-      label: doc.name,
+      // A document named after its establishment reads in English as the establishment's English name.
+      label: establishmentNameEn(doc.name, branchNames) ?? doc.name,
       labelAr: doc.name,
       expiryDate: doc.expiryDate,
       recordId: doc.id,
@@ -176,6 +183,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       documentEn: doc.name,
       documentNumber: doc.documentNumber || doc.licenseNumber,
       branchName: doc.branch?.name,
+      branchNameEn: doc.branch?.nameEn,
       ...kindOf(doc.category, "وثيقة منشأة", "Company document"),
     });
   }

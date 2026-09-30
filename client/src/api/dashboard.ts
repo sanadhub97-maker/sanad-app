@@ -28,7 +28,7 @@ export interface DashboardCharts {
   employeesByDepartment: { department: string; count: number }[];
   documentsByStatus: { status: string; count: number }[];
   paymentsByCategory: { category: string; total: number }[];
-  paymentsByBranch: { branch: string; total: number }[];
+  paymentsByBranch: { branch: string; branchEn?: string; total: number }[];
   monthlyPayments: { month: string; total: number }[];
   /** The last six months split by payment category. */
   monthlyByCategory?: { month: string; category: string; total: number }[];
@@ -53,6 +53,7 @@ export interface DashboardAttentionItem {
   documentEn: string;
   documentNumber: string | null;
   branchName: string | null;
+  branchNameEn?: string | null;
   /** Days until expiry; negative once expired. */
   days: number;
   /** A daily task was already made from this item. */

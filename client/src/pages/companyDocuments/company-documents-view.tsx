@@ -196,7 +196,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
                 <section key={d.id} className={cn("lu-cc lu-rise lu-tilt", `lt-${tone}`)} style={{ ["--i" as string]: Math.min(j, 10) }}>
                   <div className="lu-hd" style={{ alignItems: "flex-start" }}>
                     <button type="button" className="lu-cell" onClick={() => setDetailsDoc(d)}>
-                      <b style={{ fontSize: 16 }}>{d.name}</b>
+                      <b style={{ fontSize: 16 }}>{localized(d.name, d.nameEn)}</b>
                       <small>{[t(`documentCategories.${d.category}`), branch].filter(Boolean).join(" · ")}</small>
                     </button>
                     <LuMini days={days} isAr={isAr} />

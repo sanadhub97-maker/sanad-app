@@ -330,9 +330,9 @@ export default function DailyTasksPage() {
     titleRef.current?.focus({ preventScroll: true });
   };
 
-  const addSuggestion = (s: { key: string; title: string; category: TaskCategory; priority: TaskPriority }) =>
+  const addSuggestion = (s: { key: string; title: string; titleEn?: string; category: TaskCategory; priority: TaskPriority }) =>
     create.mutate(
-      { date: today, title: s.title, category: s.category, priority: s.priority, assigneeId: me ?? null, sourceKey: s.key },
+      { date: today, title: isRtl ? s.title : (s.titleEn ?? s.title), category: s.category, priority: s.priority, assigneeId: me ?? null, sourceKey: s.key },
       { onSuccess: () => toast.success(tr("أضيفت لمهام اليوم", "Added to today")) }
     );
 
@@ -831,8 +831,8 @@ export default function DailyTasksPage() {
                         <cat.Icon />
                       </span>
                       <div>
-                        <b>{s.title}</b>
-                        <small>{s.reason}</small>
+                        <b>{isRtl ? s.title : (s.titleEn ?? s.title)}</b>
+                        <small>{isRtl ? s.reason : (s.reasonEn ?? s.reason)}</small>
                       </div>
                       {can.create ? (
                         <button

@@ -6,6 +6,7 @@ export interface ImportRowError {
   rowNumber: number;
   field?: string;
   message: string;
+  messageEn?: string;
 }
 
 export interface ImportSummary {

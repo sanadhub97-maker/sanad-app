@@ -279,14 +279,14 @@ export const getWhatsappSchedule = asyncHandler(async (_req: Request, res: Respo
 export const updateWhatsappSchedule = asyncHandler(async (req: Request, res: Response) => {
   const updated = await setWhatsappScheduleSetting(req.body);
   await rescheduleExpirationScan(updated.sendTime, updated.timezone);
-  res.json({ data: updated, message: "تم حفظ خيارات وطريقة إرسال التنبيهات والجدولة اليومية بنجاح." });
+  res.json({ data: updated, message: "Alert delivery and daily schedule saved." });
 });
 
 export const runWhatsappScanNow = asyncHandler(async (_req: Request, res: Response) => {
   const result = await runExpirationScan();
   res.json({
     data: { dueCount: result.dueCount },
-    message: `تم تشغيل فحص الوثائق بنجاح (${result.dueCount} وثيقة مستحقة للتنبيه).`,
+    message: `Document scan finished. Documents due for an alert: ${result.dueCount}`,
   });
 });
 

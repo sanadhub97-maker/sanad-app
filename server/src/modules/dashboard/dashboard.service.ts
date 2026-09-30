@@ -67,8 +67,8 @@ export async function getCharts() {
     `,
   ]);
 
-  const branches = await prisma.branch.findMany({ select: { id: true, name: true } });
-  const branchNameById = new Map(branches.map((b) => [b.id, b.name]));
+  const branches = await prisma.branch.findMany({ select: { id: true, name: true, nameEn: true } });
+  const branchById = new Map(branches.map((b) => [b.id, b]));
 
   return {
     employeesByStatus: employeesByStatus.map((r) => ({ status: r.employmentStatus, count: r._count._all })),
@@ -76,7 +76,8 @@ export async function getCharts() {
     documentsByStatus: bucketByStatusChart(items, rules),
     paymentsByCategory: paymentsByCategory.map((r) => ({ category: r.category, total: Number(r._sum.total ?? 0) })),
     paymentsByBranch: paymentsByBranch.map((r) => ({
-      branch: r.branchId ? branchNameById.get(r.branchId) ?? "Unknown" : "Unassigned",
+      branch: r.branchId ? branchById.get(r.branchId)?.name ?? "Unknown" : "Unassigned",
+      branchEn: r.branchId ? branchById.get(r.branchId)?.nameEn || branchById.get(r.branchId)?.name || "Unknown" : "Unassigned",
       total: Number(r._sum.total ?? 0),
     })),
     monthlyPayments: monthlyPaymentsRaw.map((r) => ({ month: r.month, total: Number(r.total) })),
@@ -166,10 +167,12 @@ export async function getOverview() {
       employeeId: item.employeeId ?? null,
       nameAr: item.employeeNameAr ?? item.labelAr,
       nameEn: item.employeeName ?? item.label,
-      documentAr: item.documentAr ?? item.labelAr,
-      documentEn: item.documentEn ?? item.label,
+      // A company document's own name is the establishment's; its kind says what it is.
+      documentAr: item.sourceType === "COMPANY_DOCUMENT" ? item.kindAr : (item.documentAr ?? item.labelAr),
+      documentEn: item.sourceType === "COMPANY_DOCUMENT" ? item.kindEn : (item.documentEn ?? item.label),
       documentNumber: item.documentNumber ?? null,
       branchName: item.branchName ?? null,
+      branchNameEn: item.branchNameEn || item.branchName || null,
       days,
       taskAdded: taken.has(item.key),
     })),

@@ -175,7 +175,8 @@ async function openSocket(pairPhone?: string) {
             state.status = "pairing";
           } catch (err) {
             logger.error({ err }, "WhatsApp pairing code request failed");
-            state.lastError = "تعذر طلب كود الربط — تأكد من الرقم وحاول تاني، أو استخدم مسح QR";
+            // English like the rest of the API; the client shows it in Arabic (lib/server-messages).
+            state.lastError = "Could not get a pairing code. Check the number and try again, or scan the QR code instead.";
             state.status = "disconnected";
             sock = null;
             socket.end(undefined);
@@ -209,7 +210,7 @@ async function openSocket(pairPhone?: string) {
         state.status = "disconnected";
         state.phone = null;
         state.pairingCode = null;
-        state.lastError = "تم فك الربط من الموبايل — اربط الرقم تاني";
+        state.lastError = "The number was unlinked from the phone. Link it again.";
         await clearSession();
       } else if (code === baileys.DisconnectReason.connectionReplaced) {
         // Another server instance (e.g. a fresh deploy) took over the session — let it.
@@ -226,7 +227,7 @@ async function openSocket(pairPhone?: string) {
         // generating codes nobody is looking at.
         state.status = "disconnected";
         state.pairingCode = null;
-        state.lastError = pairPhone ? "انتهت مهلة كود الربط — اطلب كود جديد" : "انتهت مهلة مسح الكود — اضغط ربط رقم تاني";
+        state.lastError = pairPhone ? "The pairing code expired. Ask for a new one." : "The QR code expired. Press link a number again.";
         await clearSession();
       }
     }
@@ -291,12 +292,12 @@ export async function sendViaWhatsappWeb(
 ): Promise<{ sent: boolean; reason?: string }> {
   if (!sock && (await hasStoredSession())) await startWhatsappWeb().catch(() => undefined);
   const socket = await waitForConnection(45_000);
-  if (!socket) return { sent: false, reason: "رقم الواتساب مش مربوط — اربطه من الإعدادات بمسح كود QR" };
+  if (!socket) return { sent: false, reason: "No WhatsApp number is linked. Link one in Settings by scanning the QR code." };
 
   const jid = `${toPhone.replace(/\D/g, "")}@s.whatsapp.net`;
   try {
     const [check] = (await socket.onWhatsApp(jid)) ?? [];
-    if (check && !check.exists) return { sent: false, reason: `الرقم ${toPhone} مش عليه واتساب` };
+    if (check && !check.exists) return { sent: false, reason: `The number ${toPhone} is not on WhatsApp` };
     // With a picture the message travels as its caption.
     rememberSent(await socket.sendMessage(jid, image ? { image, caption: message, mimetype: "image/png" } : { text: message }));
     return { sent: true };

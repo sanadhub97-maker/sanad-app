@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { localized } from "@/lib/names";
+import { localized, localizedCity } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Edit, Eye, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -85,7 +85,7 @@ export default function BranchesPage() {
 
   const branches = data?.data ?? [];
   const total = data?.meta.total ?? branches.length;
-  const cities = new Set(branches.map((b) => localized(b.city, b.cityEn)).filter(Boolean));
+  const cities = new Set(branches.map((b) => localizedCity(b.city, b.cityEn)).filter(Boolean));
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const description = isAr
     ? `${total} ${total === 1 ? "مؤسسة" : "مؤسسات"}${cities.size ? ` في ${Array.from(cities).slice(0, 3).join(" و")}` : ""}`
@@ -146,7 +146,7 @@ export default function BranchesPage() {
               const tone = TONES[j % TONES.length];
               const x = tally.get(b.id) ?? { valid: 0, soon: 0, expired: 0 };
               const docs = x.valid + x.soon + x.expired;
-              const city = localized(b.city, b.cityEn);
+              const city = localizedCity(b.city, b.cityEn);
               return (
                 <section key={b.id} className={cn("lu-cc lu-rise lu-tilt", `lt-${tone}`)} style={{ ["--i" as string]: Math.min(j, 10) }}>
                   <div className="flex items-center gap-3">

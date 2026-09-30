@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { localized } from "@/lib/names";
+import { localized, localizedCity } from "@/lib/names";
 import {
   FileText,
   Calendar,
@@ -56,7 +56,7 @@ export function CompanyDocumentDetailsDialog({ open, onOpenChange, document, onE
             <AppleIcon icon={Icon} tone="blue" size="md" />
             <div className="min-w-0 flex-1">
               <DialogTitle className="text-xl font-bold tracking-tight text-foreground truncate">
-                {document.name}
+                {localized(document.name, document.nameEn)}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-muted text-muted-foreground border border-border/60">
@@ -164,7 +164,7 @@ export function CompanyDocumentDetailsDialog({ open, onOpenChange, document, onE
                 {t("companyDocuments.fields.city")}
               </span>
               <p className="text-sm font-semibold text-foreground truncate">
-                {document.city || "—"}
+                {localizedCity(document.city, null) || "—"}
               </p>
             </div>
 

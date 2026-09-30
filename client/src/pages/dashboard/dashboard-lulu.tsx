@@ -600,7 +600,7 @@ export default function DashboardLulu() {
                             <span className={cn("ry-av", `lt-${tone}`, item.sourceType === "COMPANY_DOCUMENT" && "b")}>{item.sourceType === "COMPANY_DOCUMENT" ? <Icon /> : name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}</span>
                             <div>
                               <b>{name}</b>
-                              <small>{item.branchName ?? (isAr ? "—" : "—")}</small>
+                              <small>{(isAr ? item.branchName : item.branchNameEn ?? item.branchName) ?? "—"}</small>
                             </div>
                           </div>
                         </td>
@@ -684,7 +684,7 @@ export default function DashboardLulu() {
             <div className="ry-hb">
               {branchPays.map((b, i) => (
                 <div key={b.branch}>
-                  <span>{b.branch === "Unassigned" ? (isAr ? "بدون فرع" : "No branch") : b.branch}</span>
+                  <span>{b.branch === "Unassigned" ? (isAr ? "بدون فرع" : "No branch") : isAr ? b.branch : b.branchEn ?? b.branch}</span>
                   <b>
                     {fmt(b.total)} {isAr ? "ر.س" : "SAR"}
                   </b>

@@ -40,7 +40,7 @@ import type { CompanyDocumentInput } from "@/api/companyDocuments";
 
 const schema = z.object({
   category: z.string().min(1),
-  name: z.string().min(2, "Required"),
+  name: z.string().min(2), // the message comes from the shared error map, in the interface language
   documentNumber: z.string().optional(),
   licenseNumber: z.string().optional(),
   issuingAuthority: z.string().optional(),

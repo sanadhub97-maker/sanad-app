@@ -29,9 +29,14 @@ function severityFor(threshold: string): "CRITICAL" | "WARNING" | "INFO" {
   return "INFO";
 }
 
-function messageFor(item: TrackableItem, threshold: string): string {
-  if (threshold === "expired") return `${item.label} has expired.`;
-  return `${item.label} will expire in ${threshold} day${threshold === "1" ? "" : "s"}.`;
+/** What the English message is about: the employee's document, or a company document's kind and establishment. */
+export function subjectEn(item: Pick<TrackableItem, "label" | "sourceType" | "kindEn">): string {
+  return item.sourceType === "COMPANY_DOCUMENT" && item.kindEn ? `${item.kindEn} of ${item.label}` : item.label;
+}
+
+export function messageFor(item: Pick<TrackableItem, "label" | "sourceType" | "kindEn">, threshold: string): string {
+  if (threshold === "expired") return `${subjectEn(item)} has expired.`;
+  return `${subjectEn(item)} will expire in ${threshold} day${threshold === "1" ? "" : "s"}.`;
 }
 
 export const NOTIFICATION_TITLE = { en: "Document Expiration Alert", ar: "تنبيه انتهاء وثيقة" };
@@ -39,8 +44,9 @@ export const NOTIFICATION_TITLE = { en: "Document Expiration Alert", ar: "تنب
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
 
 /** What the Arabic message is about: "الإقامة للموظف فلان", or the document's own name. */
-export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr">): string {
-  return item.documentAr && item.employeeNameAr ? `${item.documentAr} للموظف ${item.employeeNameAr.trim()}` : item.labelAr;
+export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr"> & { sourceType?: string; kindAr?: string }): string {
+  if (item.documentAr && item.employeeNameAr) return `${item.documentAr} للموظف ${item.employeeNameAr.trim()}`;
+  return item.sourceType === "COMPANY_DOCUMENT" && item.kindAr ? `${item.kindAr} لـ${item.labelAr}` : item.labelAr;
 }
 
 /** The Arabic twin of messageFor. */

@@ -91,6 +91,8 @@ export interface CompanyDocument {
   id: string;
   category: string;
   name: string;
+  /** The establishment's English name, when the document is named after one. */
+  nameEn?: string | null;
   documentNumber?: string | null;
   licenseNumber?: string | null;
   issuingAuthority?: string | null;

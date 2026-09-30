@@ -1,3 +1,4 @@
+import { tr } from "@/i18n";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText, Loader2, Upload, X } from "lucide-react";
@@ -25,7 +26,7 @@ export function FileUpload({ fileId, fileName, module, onUploaded, onRemoved }: 
     try {
       const uploaded = await filesApi.upload(file, module);
       onUploaded(uploaded.id, uploaded.originalName);
-      toast.success("File uploaded successfully.");
+      toast.success(tr("تم رفع الملف", "File uploaded"));
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {

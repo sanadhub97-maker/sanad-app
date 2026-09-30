@@ -1,3 +1,4 @@
+import { fileTypeLabel } from "@/lib/names";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,7 +59,7 @@ export default function FileManagerPage() {
         </span>
       ),
     }),
-    columnHelper.accessor("mimeType", { header: t("files.table.type") }),
+    columnHelper.accessor("mimeType", { header: t("files.table.type"), cell: (c) => fileTypeLabel(c.getValue()) }),
     columnHelper.accessor("size", { header: t("files.table.size"), cell: (c) => formatSize(c.getValue()) }),
     columnHelper.accessor((row) => row.uploadedBy?.fullName, { id: "uploadedBy", header: t("files.table.uploadedBy"), cell: (c) => c.getValue() ?? "—" }),
     columnHelper.accessor("createdAt", { header: t("files.table.uploadDate"), cell: (c) => formatDateTime(c.getValue()) }),

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { localized } from "@/lib/names";
+import { localized, localizedCity } from "@/lib/names";
 import { useNavigate } from "react-router-dom";
 import {
   Building2,
@@ -67,7 +67,7 @@ export function BranchDetailsDialog({ open, onOpenChange, branch, onEdit }: Prop
                 <span>{t("branches.fields.city")}</span>
               </div>
               <p className="text-sm font-semibold text-foreground">
-                {localized(branch.city, branch.cityEn) || "—"}
+                {localizedCity(branch.city, branch.cityEn) || "—"}
               </p>
             </div>
 

@@ -10,6 +10,24 @@ import { PageHeader } from "@/components/common/page-header";
 import { importExportApi, type ImportSummary } from "@/api/importExport";
 import { getErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
+import { tr } from "@/i18n";
+
+// Import columns and job states, in the interface language.
+const FIELDS: Record<string, [string, string]> = {
+  employeeNumber: ["رقم الموظف", "Employee number"], fullNameAr: ["الاسم بالعربي", "Arabic name"], fullNameEn: ["الاسم بالإنجليزي", "English name"],
+  nationality: ["الجنسية", "Nationality"], gender: ["الجنس", "Gender"], dateOfBirth: ["تاريخ الميلاد", "Date of birth"], mobile: ["الجوال", "Mobile"],
+  email: ["البريد الإلكتروني", "Email"], jobTitle: ["المسمى الوظيفي", "Job title"], department: ["القسم", "Department"], branchCode: ["رمز الفرع", "Branch code"],
+  joiningDate: ["تاريخ الالتحاق", "Joining date"], employmentStatus: ["الحالة الوظيفية", "Employment status"], iqamaNumber: ["رقم الإقامة", "Iqama number"],
+  iqamaIssueDate: ["إصدار الإقامة", "Iqama issue date"], iqamaExpiryDate: ["انتهاء الإقامة", "Iqama expiry"], passportNumber: ["رقم الجواز", "Passport number"],
+  passportCountry: ["دولة الجواز", "Passport country"], passportIssueDate: ["إصدار الجواز", "Passport issue date"], passportExpiryDate: ["انتهاء الجواز", "Passport expiry"],
+  notes: ["ملاحظات", "Notes"],
+};
+const fieldLabel = (f?: string) => (f ? (FIELDS[f] ? tr(FIELDS[f][0], FIELDS[f][1]) : f) : "—");
+const JOB_STATUS: Record<string, [string, string]> = {
+  PENDING: ["في الانتظار", "Pending"], PROCESSING: ["جارٍ المعالجة", "Processing"], COMPLETED: ["مكتمل", "Completed"],
+  COMPLETED_WITH_ERRORS: ["مكتمل مع أخطاء", "Completed with errors"], FAILED: ["فشل", "Failed"],
+};
+const jobStatus = (s: string) => (JOB_STATUS[s] ? tr(JOB_STATUS[s][0], JOB_STATUS[s][1]) : s);
 
 export default function ImportExportPage() {
   const { t } = useTranslation();
@@ -96,17 +114,17 @@ export default function ImportExportPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Row</TableHead>
-                          <TableHead>Field</TableHead>
-                          <TableHead>Message</TableHead>
+                          <TableHead>{tr("الصف", "Row")}</TableHead>
+                          <TableHead>{tr("الحقل", "Field")}</TableHead>
+                          <TableHead>{tr("المشكلة", "Problem")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {preview.errors.slice(0, 50).map((e, i) => (
                           <TableRow key={i}>
                             <TableCell>{e.rowNumber}</TableCell>
-                            <TableCell>{e.field ?? "—"}</TableCell>
-                            <TableCell>{e.message}</TableCell>
+                            <TableCell>{fieldLabel(e.field)}</TableCell>
+                            <TableCell>{tr(e.message, e.messageEn ?? e.message)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -150,7 +168,7 @@ export default function ImportExportPage() {
                 {jobs.data.map((job) => (
                   <TableRow key={job.id}>
                     <TableCell>{job.fileName}</TableCell>
-                    <TableCell>{job.status}</TableCell>
+                    <TableCell>{jobStatus(job.status)}</TableCell>
                     <TableCell>{job.importedCount}</TableCell>
                     <TableCell>{job.updatedCount}</TableCell>
                     <TableCell>{job.failedCount}</TableCell>

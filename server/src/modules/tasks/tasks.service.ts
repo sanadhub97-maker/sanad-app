@@ -141,13 +141,21 @@ export async function suggestions() {
   const taken = new Set(
     (await prisma.dailyTask.findMany({ where: { sourceKey: { in: items.map((x) => x.item.key) }, deletedAt: null }, select: { sourceKey: true } })).map((t) => t.sourceKey)
   );
+  const daysEn = (n: number) => (n === 1 ? "1 day" : `${n} days`);
   return items.map(({ item, days }) => {
-    const doc = item.documentAr ?? item.labelAr;
-    const who = item.employeeNameAr?.trim();
+    const company = item.sourceType === "COMPANY_DOCUMENT";
+    // A company document's own name is its establishment's: renew "<kind> — <establishment>".
+    const docAr = company ? item.kindAr : (item.documentAr ?? item.kindAr);
+    const docEn = company ? item.kindEn : (item.documentEn ?? item.kindEn);
+    const whoAr = company ? item.labelAr : item.employeeNameAr?.trim();
+    const whoEn = company ? item.label : item.employeeName?.trim();
+    const no = item.documentNumber;
     return {
       key: item.key,
-      title: who ? `تجديد ${doc} — ${who}` : `تجديد ${doc}`,
-      reason: `${days < 0 ? `منتهية منذ ${daysAr(-days)}` : days === 0 ? "تنتهي اليوم" : `تنتهي خلال ${daysAr(days)}`}${item.documentNumber ? ` · رقم ${item.documentNumber}` : ""}`,
+      title: whoAr ? `تجديد ${docAr} — ${whoAr}` : `تجديد ${docAr}`,
+      titleEn: whoEn ? `Renew ${docEn} — ${whoEn}` : `Renew ${docEn}`,
+      reason: `${days < 0 ? `منتهية منذ ${daysAr(-days)}` : days === 0 ? "تنتهي اليوم" : `تنتهي خلال ${daysAr(days)}`}${no ? ` · رقم ${no}` : ""}`,
+      reasonEn: `${days < 0 ? `Expired ${daysEn(-days)} ago` : days === 0 ? "Ends today" : `Ends in ${daysEn(days)}`}${no ? ` · No. ${no}` : ""}`,
       category: "documents" as const,
       priority: days <= 0 ? ("URGENT" as const) : ("HIGH" as const),
       added: taken.has(item.key),

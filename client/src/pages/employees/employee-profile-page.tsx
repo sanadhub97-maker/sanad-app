@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { localized } from "@/lib/names";
+import { localized, localizedCity } from "@/lib/names";
 import { namePair } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useParams } from "react-router-dom";
@@ -220,7 +220,7 @@ export default function EmployeeProfilePage() {
                 <InfoRow icon={Phone} tone="emerald" label={t("employees.fields.mobile")} value={employee.mobile} />
                 <InfoRow icon={Mail} tone="blue" label={t("employees.fields.email")} value={employee.email} />
                 <InfoRow icon={Calendar} tone="amber" label={t("employees.fields.joiningDate")} value={formatDate(employee.joiningDate)} />
-                <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={localized(employee.city, employee.cityEn)} />
+                <InfoRow icon={MapPin} tone="rose" label={t("employees.fields.city")} value={localizedCity(employee.city, employee.cityEn)} />
                 <InfoRow
                   icon={ShieldCheck}
                   tone="teal"

@@ -1,3 +1,4 @@
+import { fileTypeLabel } from "@/lib/names";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -108,7 +109,7 @@ export function FileDetailsDialog({ open, onOpenChange, file, onDelete }: Props)
                   {formatSize(file.size)}
                 </span>
                 <span className="text-xs text-muted-foreground truncate">
-                  {file.mimeType}
+                  {fileTypeLabel(file.mimeType)}
                 </span>
               </div>
             </div>
@@ -177,7 +178,7 @@ export function FileDetailsDialog({ open, onOpenChange, file, onDelete }: Props)
                 {t("files.table.type")}
               </span>
               <p className="font-mono text-xs font-semibold text-foreground truncate">
-                {file.mimeType}
+                {fileTypeLabel(file.mimeType)}
               </p>
             </div>
 

@@ -129,6 +129,8 @@ export interface RowError {
   rowNumber: number;
   field?: string;
   message: string;
+  /** The same message in English, for the English interface. */
+  messageEn?: string;
   rawData?: Record<string, unknown>;
 }
 
@@ -154,7 +156,8 @@ export async function parseWorkbook(buffer: Buffer): Promise<{ rows: ParsedRow[]
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as never);
   const sheet = workbook.worksheets[0];
-  if (!sheet) throw ApiError.badRequest("الملف المرفوع لا يحتوي على أوراق عمل صالحة.");
+  // The API speaks English; the client shows these in Arabic (lib/server-messages).
+  if (!sheet) throw ApiError.badRequest("The uploaded file has no valid worksheets.");
 
   let headerRowNumber = 1;
   const fieldByColumn = new Map<number, string>();
@@ -179,9 +182,7 @@ export async function parseWorkbook(buffer: Buffer): Promise<{ rows: ParsedRow[]
   }
 
   if (fieldByColumn.size === 0) {
-    throw ApiError.badRequest(
-      "لم يتم التعرف على أعمدة الجدول. يرجى استخدام قالب استيراد الموظفين المعتمد من النظام."
-    );
+    throw ApiError.badRequest("The table's columns were not recognised. Please use the employee import template from the system.");
   }
 
   const rows: ParsedRow[] = [];
@@ -256,10 +257,12 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
   for (const field of REQUIRED_FIELDS) {
     if (!data[field]) {
       const fieldAr = field === "employeeNumber" ? "رقم الموظف" : "الاسم الكامل (عربي)";
+      const fieldEn = field === "employeeNumber" ? "Employee number" : "Full name (Arabic)";
       errors.push({
         rowNumber,
         field,
         message: `حقل (${fieldAr}) مطلوب ولا يمكن تركه فارغاً`,
+        messageEn: `${fieldEn} is required and cannot be left empty`,
         rawData: data,
       });
     }
@@ -272,6 +275,7 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
         rowNumber,
         field: "employeeNumber",
         message: `رقم الموظف "${employeeNumber}" مكرر داخل هذا الملف`,
+        messageEn: `Employee number "${employeeNumber}" appears more than once in this file`,
         rawData: data,
       });
     }
@@ -283,6 +287,7 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
       rowNumber,
       field: "gender",
       message: `قيمة الجنس غير صحيحة "${data.gender}" (المقبول: MALE أو FEMALE أو ذكر / أنثى)`,
+      messageEn: `Invalid gender "${data.gender}" (use MALE or FEMALE)`,
       rawData: data,
     });
   }
@@ -292,6 +297,7 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
       rowNumber,
       field: "employmentStatus",
       message: `الحالة الوظيفية غير صحيحة "${data.employmentStatus}"`,
+      messageEn: `Invalid employment status "${data.employmentStatus}"`,
       rawData: data,
     });
   }
@@ -301,6 +307,7 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
       rowNumber,
       field: "email",
       message: `صيغة البريد الإلكتروني غير صحيحة "${data.email}"`,
+      messageEn: `Invalid email address "${data.email}"`,
       rawData: data,
     });
   }
@@ -311,6 +318,7 @@ export function validateRow(row: ParsedRow, seenEmployeeNumbers: Set<string>): R
         rowNumber,
         field,
         message: `صيغة التاريخ غير صحيحة في ${field}: "${data[field]}" (المطلوب YYYY-MM-DD)`,
+        messageEn: `Invalid date in ${field}: "${data[field]}" (use YYYY-MM-DD)`,
         rawData: data,
       });
     }
@@ -388,6 +396,7 @@ export async function importEmployees(
           rowNumber: row.rowNumber,
           field: "branchCode",
           message: `كود الفرع "${data.branchCode}" غير موجود بالنظام`,
+          messageEn: `Branch code "${data.branchCode}" does not exist in the system`,
           rawData: data,
         });
         continue;

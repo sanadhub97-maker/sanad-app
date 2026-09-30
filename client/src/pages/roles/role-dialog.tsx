@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { tr } from "@/i18n";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -28,6 +29,14 @@ interface FormValues {
   description?: string;
   permissionKeys: string[];
 }
+
+// The permission's action in the interface's language.
+const ACTIONS: Record<string, [string, string]> = {
+  view: ["عرض", "View"], create: ["إضافة", "Create"], edit: ["تعديل", "Edit"], delete: ["حذف", "Delete"],
+  export: ["تصدير", "Export"], import: ["استيراد", "Import"], download: ["تنزيل", "Download"], upload: ["رفع", "Upload"],
+  manage: ["إدارة", "Manage"], print: ["طباعة", "Print"], send: ["إرسال", "Send"], approve: ["اعتماد", "Approve"],
+};
+const actionLabel = (a: string) => (ACTIONS[a] ? tr(ACTIONS[a][0], ACTIONS[a][1]) : a);
 
 export function RoleDialog({
   open,
@@ -218,7 +227,7 @@ export function RoleDialog({
                                   >
                                     {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
                                   </div>
-                                  <span className="truncate text-[11px]">{perm.action}</span>
+                                  <span className="truncate text-[11px]">{actionLabel(perm.action)}</span>
                                 </div>
                               );
                             })}

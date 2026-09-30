@@ -17,10 +17,15 @@ import { openAvatarEditor } from "@/components/lulu/avatar-editor";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { translateRoleName } from "@/lib/role-display";
+import { tr } from "@/i18n";
 
+// Messages are picked when the error shows, so they follow a language switch.
 const schema = z
-  .object({ currentPassword: z.string().min(1), newPassword: z.string().min(8, "At least 8 characters"), confirmPassword: z.string() })
-  .refine((d) => d.newPassword === d.confirmPassword, { message: "Passwords do not match", path: ["confirmPassword"] });
+  .object({ currentPassword: z.string().min(1), newPassword: z.string().min(8), confirmPassword: z.string() })
+  .superRefine((d, ctx) => {
+    if (d.newPassword !== d.confirmPassword)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["confirmPassword"], message: tr("كلمتا المرور غير متطابقتين", "Passwords do not match") });
+  });
 type FormValues = z.infer<typeof schema>;
 
 export default function ProfilePage() {

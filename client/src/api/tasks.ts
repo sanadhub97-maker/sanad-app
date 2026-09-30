@@ -29,7 +29,9 @@ export interface WeekDay {
 export interface TaskSuggestion {
   key: string;
   title: string;
+  titleEn?: string;
   reason: string;
+  reasonEn?: string;
   category: TaskCategory;
   priority: TaskPriority;
   added: boolean;

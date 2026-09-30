@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { localizeServerMessage } from "@/lib/server-messages";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -1842,7 +1843,7 @@ function WhatsappWebLinkCard({ canEdit, isRtl, saved }: { canEdit: boolean; isRt
                   ? "يرجى حفظ إعدادات المزود بالأعلى أولاً بالضغط على «حفظ التغييرات»، ثم بدء الربط."
                   : "Please save provider settings above first before initiating device pairing."
                 : status?.lastError
-                ? status.lastError
+                ? localizeServerMessage(status.lastError)
                 : isRtl
                 ? "اختر وسيلة المصادقة والربط السحابي المفضلة لديك:"
                 : "Select your preferred cloud authentication method:"}

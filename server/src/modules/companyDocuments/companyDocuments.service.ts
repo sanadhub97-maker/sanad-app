@@ -4,6 +4,7 @@ import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { computeStatus } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
+import { establishmentNameEn, loadBranchNames } from "@/services/establishmentNames";
 import type { z } from "zod";
 import type {
   createCompanyDocumentSchema,
@@ -50,12 +51,14 @@ export async function list(query: ListQuery) {
 
   const orderBy = sortBy ? { [sortBy]: sortDir } : { expiryDate: "asc" as const };
 
-  const [rows, total] = await Promise.all([
+  const [rows, total, branches] = await Promise.all([
     prisma.companyDocument.findMany({ where, orderBy, ...skipTake(page, pageSize), include: includeBranch }),
     prisma.companyDocument.count({ where }),
+    loadBranchNames(),
   ]);
 
-  const data = rows.map((doc) => ({ ...doc, status: computeStatus(doc.expiryDate, rules) }));
+  // nameEn: the establishment's English name, for the English interface.
+  const data = rows.map((doc) => ({ ...doc, nameEn: establishmentNameEn(doc.name, branches), status: computeStatus(doc.expiryDate, rules) }));
   return { data, meta: paginationMeta(page, pageSize, total) };
 }
 
@@ -73,8 +76,8 @@ export async function categoryCounts() {
 export async function getById(id: string) {
   const doc = await prisma.companyDocument.findFirst({ where: { id, deletedAt: null }, include: includeBranch });
   if (!doc) throw ApiError.notFound("Document not found");
-  const rules = await getExpirationRules();
-  return { ...doc, status: computeStatus(doc.expiryDate, rules) };
+  const [rules, branches] = await Promise.all([getExpirationRules(), loadBranchNames()]);
+  return { ...doc, nameEn: establishmentNameEn(doc.name, branches), status: computeStatus(doc.expiryDate, rules) };
 }
 
 export async function create(input: CreateInput) {
