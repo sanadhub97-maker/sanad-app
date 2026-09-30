@@ -19,6 +19,9 @@ const iqama = (days: number, overrides: Partial<TrackableItem> = {}): TrackableI
   recordId: "1",
   documentAr: "الإقامة",
   documentEn: "Iqama",
+  kind: "IQAMA",
+  kindAr: "إقامة",
+  kindEn: "Iqama",
   ...overrides,
 });
 

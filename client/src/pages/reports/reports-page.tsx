@@ -16,7 +16,23 @@ import { localized } from "@/lib/names";
    in its own colour with PDF, Excel and print; a tile opens its data below. */
 
 type EmployeeRow = { employeeNumber: string; fullName: string; fullNameEn: string; department: string | null; departmentEn: string | null; branch: string | null; branchEn: string | null; employmentStatus: string; iqamaExpiryDate: string | null; iqamaStatus: string | null };
-type DocumentRow = { label: string; labelEn: string; sourceType: string; employeeName: string | null; employeeNameEn: string | null; expiryDate: string; status: string };
+type DocumentRow = {
+  label: string;
+  labelEn: string;
+  sourceType: string;
+  kindAr?: string;
+  kindEn?: string;
+  owner?: string;
+  ownerEn?: string;
+  ownerType?: string;
+  ownerTypeEn?: string;
+  documentNumber?: string | null;
+  branch?: string | null;
+  employeeName: string | null;
+  employeeNameEn: string | null;
+  expiryDate: string;
+  status: string;
+};
 type PaymentRow = { paymentNumber: string; paymentDate: string; category: string; branch: string | null; branchEn: string | null; total: number };
 type ActivityRow = { date: string; user: string; action: string; module: string; description: string | null };
 
@@ -146,9 +162,10 @@ export default function ReportsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{tr("الوثيقة", "Document")}</TableHead>
-                    <TableHead>{tr("المصدر", "Source")}</TableHead>
-                    <TableHead>{tr("الموظف", "Employee")}</TableHead>
+                    <TableHead>{tr("نوع الوثيقة", "Document type")}</TableHead>
+                    <TableHead>{tr("صاحب الوثيقة", "Belongs to")}</TableHead>
+                    <TableHead>{tr("رقم الوثيقة", "Number")}</TableHead>
+                    <TableHead>{tr("الفرع", "Branch")}</TableHead>
                     <TableHead>{tr("تاريخ الانتهاء", "Expiry")}</TableHead>
                     <TableHead>{tr("الحالة", "Status")}</TableHead>
                   </TableRow>
@@ -156,9 +173,13 @@ export default function ReportsPage() {
                 <TableBody>
                   {(rows as DocumentRow[]).map((r, i) => (
                     <TableRow key={i}>
-                      <TableCell className="font-semibold">{isAr ? r.label : r.labelEn}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{t(`reportSourceTypes.${r.sourceType}`, { defaultValue: r.sourceType })}</TableCell>
-                      <TableCell className="text-xs">{(isAr ? r.employeeName : r.employeeNameEn) ?? "—"}</TableCell>
+                      <TableCell className="font-semibold">{(isAr ? r.kindAr : r.kindEn) ?? t(`reportSourceTypes.${r.sourceType}`, { defaultValue: r.sourceType })}</TableCell>
+                      <TableCell className="text-xs">
+                        {(isAr ? r.owner : r.ownerEn) ?? (isAr ? r.employeeName : r.employeeNameEn) ?? "—"}
+                        {r.ownerType && <span className="block text-[11px] text-muted-foreground">{isAr ? r.ownerType : r.ownerTypeEn}</span>}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{r.documentNumber ?? "—"}</TableCell>
+                      <TableCell className="text-xs">{r.branch ?? "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{formatDate(r.expiryDate)}</TableCell>
                       <TableCell>
                         <StatusBadge status={r.status as never} />

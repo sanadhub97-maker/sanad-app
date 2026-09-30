@@ -55,6 +55,7 @@ async function respond(
         if (c.key === "status" || c.key === "iqamaStatus" || c.key === "passportStatus" || c.key === "employmentStatus") {
           return statusBadge(value as string);
         }
+        if (c.key === "kindAr") return `<b>${String(value ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b>`;
         if (value instanceof Date) {
           const d = new Date(value);
           return `<span class="nowrap">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>`;
@@ -109,9 +110,11 @@ export const documents = asyncHandler(async (req: Request, res: Response) => {
     format: query.format,
     rows: rows as Row[],
     columns: [
-      { header: "الوثيقة الرسمية", subHeader: "Document", key: "label" },
-      { header: "نوع المصدر", subHeader: "Source", key: "sourceType" },
-      { header: "الموظف المرتبط", subHeader: "Employee", key: "employeeName" },
+      { header: "نوع الوثيقة", subHeader: "Document type", key: "kindAr" },
+      { header: "صاحب الوثيقة", subHeader: "Belongs to", key: "owner" },
+      { header: "التبعية", subHeader: "Employee / Establishment", key: "ownerType" },
+      { header: "رقم الوثيقة", subHeader: "Number", key: "documentNumber" },
+      { header: "الفرع", subHeader: "Branch", key: "branch" },
       { header: "تاريخ الانتهاء", subHeader: "Expiry Date", key: "expiryDate" },
       { header: "حالة الصلاحية", subHeader: "Status", key: "status" },
     ],

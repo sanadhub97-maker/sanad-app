@@ -27,7 +27,38 @@ export interface TrackableItem {
   branchName?: string | null;
   /** EmployeeDocument.type, for employee documents. */
   docType?: string;
+  /** What kind of document this is — إقامة, جواز سفر, شهادة صحية, سجل تجاري… */
+  kind: string; // IQAMA, PASSPORT, an EmployeeDocument type or a CompanyDocument category
+  kindAr: string;
+  kindEn: string;
 }
+
+/** The kind of every document, as the reports and exports name it. */
+export const DOCUMENT_KINDS: Record<string, [string, string]> = {
+  IQAMA: ["إقامة", "Iqama"],
+  PASSPORT: ["جواز سفر", "Passport"],
+  HEALTH_CERTIFICATE: ["شهادة صحية", "Health certificate"],
+  MEDICAL_INSURANCE: ["تأمين طبي", "Medical insurance"],
+  EMPLOYMENT_CONTRACT: ["عقد عمل", "Employment contract"],
+  VISA: ["تأشيرة", "Visa"],
+  EXIT_REENTRY_VISA: ["تأشيرة خروج وعودة", "Exit/re-entry visa"],
+  FINAL_EXIT_VISA: ["تأشيرة خروج نهائي", "Final exit visa"],
+  FLIGHT_TICKET: ["تذكرة طيران", "Flight ticket"],
+  DRIVING_LICENSE: ["رخصة قيادة", "Driving license"],
+  COMMERCIAL_REGISTRATION: ["سجل تجاري", "Commercial registration"],
+  MUNICIPAL_LICENSE: ["رخصة بلدية", "Municipal license"],
+  CIVIL_DEFENSE_LICENSE: ["ترخيص الدفاع المدني", "Civil defense license"],
+  CIVIL_DEFENSE_REPORT: ["تقرير الدفاع المدني", "Civil defense report"],
+  CLEANING_CONTRACT: ["عقد نظافة", "Cleaning contract"],
+  LEASE_CONTRACT: ["عقد إيجار", "Lease contract"],
+  TWENTY_FOUR_HOUR_PERMIT: ["تصريح 24 ساعة", "24-hour permit"],
+  ENTERTAINMENT_AUTHORITY_PERMIT: ["تصريح هيئة الترفيه", "Entertainment authority permit"],
+  TOBACCO_LICENSE: ["ترخيص تبغ", "Tobacco license"],
+};
+const kindOf = (code: string, fallbackAr: string, fallbackEn: string) => {
+  const k = DOCUMENT_KINDS[code];
+  return { kind: code, kindAr: k?.[0] ?? fallbackAr, kindEn: k?.[1] ?? fallbackEn };
+};
 
 const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
   HEALTH_CERTIFICATE: ["الشهادة الصحية", "Health certificate"],
@@ -86,6 +117,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         documentEn: "Iqama",
         documentNumber: emp.iqamaNumber,
         branchName: emp.branch?.name,
+        ...kindOf("IQAMA", "إقامة", "Iqama"),
       });
     }
     if (emp.passportExpiryDate) {
@@ -103,6 +135,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         documentEn: "Passport",
         documentNumber: emp.passportNumber,
         branchName: emp.branch?.name,
+        ...kindOf("PASSPORT", "جواز سفر", "Passport"),
       });
     }
   }
@@ -126,6 +159,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       documentNumber: doc.documentNumber,
       branchName: doc.employee.branch?.name,
       docType: doc.type,
+      ...kindOf(doc.type, doc.name || "مستند", doc.name || "Document"),
     });
   }
 
@@ -142,6 +176,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       documentEn: doc.name,
       documentNumber: doc.documentNumber || doc.licenseNumber,
       branchName: doc.branch?.name,
+      ...kindOf(doc.category, "وثيقة منشأة", "Company document"),
     });
   }
 

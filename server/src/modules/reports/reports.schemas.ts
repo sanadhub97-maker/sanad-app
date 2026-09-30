@@ -11,6 +11,8 @@ export const employeeReportQuerySchema = formatQuerySchema.extend({
 export const documentsReportQuerySchema = formatQuerySchema.extend({
   status: z.enum(["VALID", "EXPIRING_SOON", "EXPIRED"]).optional(),
   sourceType: z.enum(["EMPLOYEE_IQAMA", "EMPLOYEE_PASSPORT", "EMPLOYEE_DOCUMENT", "COMPANY_DOCUMENT"]).optional(),
+  /** One kind of document: IQAMA, PASSPORT, HEALTH_CERTIFICATE, COMMERCIAL_REGISTRATION… */
+  category: z.string().max(60).optional(),
 });
 
 export const paymentsReportQuerySchema = formatQuerySchema.extend({

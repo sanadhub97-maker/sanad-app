@@ -56,22 +56,40 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
   const rules = await getExpirationRules();
   let items = await getTrackableItems();
 
-  if (query.sourceType) items = items.filter((i) => i.sourceType === query.sourceType);
+  if (query.sourceType) {
+    // The employee documents page asks for EMPLOYEE_DOCUMENT with an iqama or passport category.
+    const iqamaOrPassport = query.sourceType === "EMPLOYEE_DOCUMENT" && (query.category === "IQAMA" || query.category === "PASSPORT");
+    items = items.filter((i) => i.sourceType === query.sourceType || (iqamaOrPassport && i.kind === query.category));
+  }
+  if (query.category) items = items.filter((i) => i.kind === query.category);
   const withStatus = items.map((i) => ({ ...i, status: computeStatus(i.expiryDate, rules) }));
   const filtered = query.status ? withStatus.filter((i) => i.status === query.status) : withStatus;
 
   return filtered
     .sort((a, b) => a.expiryDate.getTime() - b.expiryDate.getTime())
     .slice(0, REPORT_ROW_CAP)
-    .map((i) => ({
-      label: i.labelAr,
-      labelEn: i.label,
-      sourceType: i.sourceType,
-      employeeName: i.employeeNameAr ?? null,
-      employeeNameEn: i.employeeName ?? null,
-      expiryDate: i.expiryDate,
-      status: i.status,
-    }));
+    .map((i) => {
+      const company = i.sourceType === "COMPANY_DOCUMENT";
+      return {
+        label: i.labelAr,
+        labelEn: i.label,
+        sourceType: i.sourceType,
+        kind: i.kind,
+        kindAr: i.kindAr,
+        kindEn: i.kindEn,
+        // Whose document it is: the employee's name, or the establishment's.
+        owner: company ? i.labelAr : (i.employeeNameAr ?? "—"),
+        ownerEn: company ? i.label : (i.employeeName ?? "—"),
+        ownerType: company ? "منشأة" : "موظف",
+        ownerTypeEn: company ? "Establishment" : "Employee",
+        documentNumber: i.documentNumber ?? null,
+        branch: i.branchName ?? null,
+        employeeName: i.employeeNameAr ?? null,
+        employeeNameEn: i.employeeName ?? null,
+        expiryDate: i.expiryDate,
+        status: i.status,
+      };
+    });
 }
 
 export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySchema>) {
