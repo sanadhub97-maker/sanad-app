@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Building2, ChevronLeft, ChevronRight, Eye, FileDown, FileUp, MoreHorizontal, Plus, Printer, Search, Trash2, X } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, Eye, FileDown, FileUp, LayoutGrid, List, MoreHorizontal, Plus, Printer, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -28,6 +28,7 @@ import type { Employee } from "@/types/models";
 import { useAuthStore } from "@/stores/authStore";
 import { DESK_QUERY } from "@/lib/use-desk";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
+import { Kpis, LeftPill, dmy, daysFromToday } from "@/components/royal/rp";
 
 const columnHelper = createColumnHelper<Employee>();
 
@@ -52,38 +53,44 @@ function docState(days: number | null, isAr: boolean): { tone: string; text: str
   return { tone: days <= 30 ? "amber" : "green", text: isAr ? `باقي ${daysAr(days)}` : `${days}d left` };
 }
 
-/** One employee as a Pearl card in its own colour: avatar, name, job and
- * nationality, branch, and the iqama box with its status. */
-function PersonCard({ employee, tone, index, isAr, onOpen }: { employee: Employee; tone: string; index: number; isAr: boolean; onOpen: () => void }) {
+/** One employee as a Royal card: avatar, name, job and nationality, the
+ * iqama and passport with their dates and time left, and the establishment. */
+function PersonCard({ employee, index, isAr, onOpen }: { employee: Employee; index: number; isAr: boolean; onOpen: () => void }) {
   const { primary: name } = namePair(employee.fullNameAr, employee.fullNameEn, isAr);
   const job = localized(employee.jobTitle, employee.jobTitleEn);
   const nat = isAr ? employee.nationality || employee.nationalityEn : employee.nationalityEn || employee.nationality;
   const branch = localized(employee.branch?.name, employee.branch?.nameEn);
-  const st = docState(daysUntil(employee.iqamaExpiryDate), isAr);
-
+  const docs = [
+    { label: isAr ? "الإقامة" : "Iqama", date: employee.iqamaExpiryDate },
+    { label: isAr ? "الجواز" : "Passport", date: employee.passportExpiryDate },
+  ];
   return (
-    <button type="button" onClick={onOpen} className={cn("lu-cc lu-rise lu-tilt lu-person", `lt-${tone}`)} style={{ ["--i" as string]: index }}>
-      <span className="who">
-        <span className="lu-sq av">
+    <button type="button" onClick={onOpen} className="rp-card rp-emp rp-lift rp-rise" style={{ ["--i" as string]: Math.min(index, 10) }}>
+      <span className="hd">
+        <span className="rp-av">
           <SaudiAvatar gender={employee.gender} size="md" className="h-full w-full" />
         </span>
-        <span className="min-w-0">
-          <b>{name}</b>
+        <span className="min-w-0 flex-1">
+          <h3>{name}</h3>
           <small>{[job, nat].filter(Boolean).join(" · ") || employee.employeeNumber}</small>
         </span>
+        <EmploymentStatusBadge status={employee.employmentStatus} />
       </span>
-      <span className="br">
-        <Building2 />
-        <span>{branch ?? "—"}</span>
+      <span className="docs">
+        {docs.map((d) => (
+          <span key={d.label} className="doc">
+            {d.label}
+            <b className="rp-num">{d.date ? dmy(d.date) : "—"}</b>
+            <LeftPill days={daysFromToday(d.date)} />
+          </span>
+        ))}
       </span>
-      <span className={cn("lu-iq", `lt-${st.tone}`)}>
+      <span className="ft">
         <span>
-          <small>{isAr ? "الإقامة" : "Iqama"}</small>
-          <b dir="ltr" className="lu-num">
-            {employee.iqamaNumber || "—"}
-          </b>
+          <Building2 />
+          {branch ?? "—"}
         </span>
-        <span className="lu-chip">{st.text}</span>
+        <span className="rp-mono">{employee.employeeNumber}</span>
       </span>
     </button>
   );
@@ -205,6 +212,7 @@ function PersonDrawer({ employee, tone, isAr, onClose, onOpenProfile, onEdit }: 
 }
 
 type Chip = "all" | "active" | "soon" | "expired";
+const CHIP_TONE: Record<Chip, string> = { all: "rp-pri", active: "rp-ok", soon: "rp-warn", expired: "rp-bad" };
 
 export default function EmployeesListPage() {
   const { t, i18n } = useTranslation();
@@ -404,7 +412,7 @@ export default function EmployeesListPage() {
     : `${total} employees in ${branchCount} branches${attention ? ` · ${attention} iqamas need your attention` : ""}`;
 
   return (
-    <div className="space-y-[22px]">
+    <div className="rp">
       <PageHeader
         title={t("employees.title")}
         description={description}
@@ -447,9 +455,18 @@ export default function EmployeesListPage() {
         }
       />
 
+      <Kpis
+        items={[
+          { label: tr("إجمالي الموظفين", "All employees"), value: summary?.totalEmployees ?? "—", sub: tr(`على رأس العمل ${summary?.activeEmployees ?? 0}`, `${summary?.activeEmployees ?? 0} on duty`), hero: true, onClick: () => pickChip("all"), active: chip === "all" },
+          { label: tr("على رأس العمل", "On duty"), value: summary?.activeEmployees ?? "—", sub: tr("موظفون نشطون", "Active employees"), tone: "ok", onClick: () => pickChip("active"), active: chip === "active" },
+          { label: tr("إقامات تنتهي خلال 30 يوم", "Iqamas ending in 30 days"), value: soonCount?.meta.total ?? "—", sub: tr("تحتاج تجديد قريب", "Renew soon"), tone: "warn", onClick: () => pickChip("soon"), active: chip === "soon" },
+          { label: tr("إقامات منتهية", "Expired iqamas"), value: expiredCount?.meta.total ?? "—", sub: tr("راجعها اليوم", "Review today"), tone: "bad", onClick: () => pickChip("expired"), active: chip === "expired" },
+        ]}
+      />
+
       {/* Search, quick filters and the cards/table switch */}
-      <div className="lu-tools no-print">
-        <label className="lu-field">
+      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 2 }}>
+        <label className="rp-search">
           <Search />
           <input
             type="search"
@@ -463,9 +480,9 @@ export default function EmployeesListPage() {
           />
         </label>
         {chips.map((c) => (
-          <button key={c.key} type="button" onClick={() => pickChip(c.key)} aria-pressed={chip === c.key} className={cn("lu-fchip", `lt-${c.tone}`, chip === c.key && "on")}>
+          <button key={c.key} type="button" onClick={() => pickChip(c.key)} aria-pressed={chip === c.key} className={cn("rp-chip", CHIP_TONE[c.key])}>
             <i />
-            {c.label} {c.n !== undefined && <span className="n">{c.n}</span>}
+            {c.label} {c.n !== undefined && <span>{c.n}</span>}
           </button>
         ))}
         <Select
@@ -475,7 +492,7 @@ export default function EmployeesListPage() {
             setPage(1);
           }}
         >
-          <SelectTrigger className="h-11 w-44 shrink-0 rounded-[14px] border-transparent bg-[var(--l-surface)] shadow-[var(--l-shadow)]">
+          <SelectTrigger className="h-[38px] w-48 shrink-0 rounded-[11px] border-[var(--l-line)] bg-[var(--l-surface)] text-[13px] font-semibold">
             <SelectValue placeholder={t("common.branch")} />
           </SelectTrigger>
           <SelectContent>
@@ -487,18 +504,11 @@ export default function EmployeesListPage() {
             ))}
           </SelectContent>
         </Select>
-        <div role="group" aria-label={tr("طريقة العرض", "View")} className="ms-auto flex shrink-0 rounded-[14px] bg-[var(--l-surface)] p-1 shadow-[var(--l-shadow)]">
+        <span className="sp" />
+        <div role="group" aria-label={tr("طريقة العرض", "View")} className="rp-views">
           {(["cards", "table"] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={view === v}
-              onClick={() => changeView(v)}
-              className={cn(
-                "h-9 rounded-[11px] px-4 text-[13.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
+            <button key={v} type="button" aria-pressed={view === v} onClick={() => changeView(v)}>
+              {v === "cards" ? <LayoutGrid /> : <List />}
               {v === "cards" ? tr("بطاقات", "Cards") : tr("جدول", "Table")}
             </button>
           ))}
@@ -508,30 +518,30 @@ export default function EmployeesListPage() {
       {view === "cards" ? (
         <>
           {isLoading ? (
-            <div className="lu-people">
+            <div className="rp-cards">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-[178px] animate-pulse rounded-[22px] bg-card" />
+                <div key={i} className="h-[200px] animate-pulse rounded-[20px] bg-[var(--l-surface)]" />
               ))}
             </div>
           ) : (data?.data ?? []).length === 0 ? (
-            <div className="lu-cc lu-rise lt-sky px-6 py-14 text-center">
-              <p className="font-head text-lg font-semibold">{t("employees.emptyTitle")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("employees.emptyDescription")}</p>
+            <div className="rp-card rp-empty rp-rise">
+              <b>{t("employees.emptyTitle")}</b>
+              {t("employees.emptyDescription")}
             </div>
           ) : (
-            <div className="lu-people">
+            <div className="rp-cards">
               {(data?.data ?? []).map((emp, i) => {
                 const tone = TONES[i % TONES.length];
-                return <PersonCard key={emp.id} employee={emp} tone={tone} index={i} isAr={isAr} onOpen={() => setQuick({ employee: emp, tone })} />;
+                return <PersonCard key={emp.id} employee={emp} index={i} isAr={isAr} onOpen={() => setQuick({ employee: emp, tone })} />;
               })}
             </div>
           )}
           {pages > 1 && (
-            <div className="no-print flex items-center justify-center gap-2">
+            <div className="rp-pager no-print">
               <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label={tr("السابق", "Previous")}>
                 <ChevronRight className="h-4 w-4 ltr:rotate-180" />
               </Button>
-              <span className="rounded-full bg-card px-4 py-2 text-xs font-semibold shadow-[var(--glass-shadow)]">
+              <span>
                 {page} / {pages}
               </span>
               <Button variant="outline" size="icon" disabled={page >= pages} onClick={() => setPage(page + 1)} aria-label={tr("التالي", "Next")}>

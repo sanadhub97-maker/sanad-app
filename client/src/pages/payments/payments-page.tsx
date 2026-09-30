@@ -1,30 +1,30 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, Clock, Edit, FileDown, MoreHorizontal, Plus, Printer, Search, Trash2, Wallet } from "lucide-react";
+import { BarChart3, Edit, FileDown, MoreHorizontal, Plus, Printer, Receipt, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LuEmpty, LuPager, useArmed } from "@/components/lulu/lulu-ui";
+import { LuPager } from "@/components/lulu/lulu-ui";
+import { DayHeader, Kpis, Pill, groupByDay, type Tone } from "@/components/royal/rp";
 import { paymentsApi, paymentReceiptUrl, PAYMENT_SUBTYPES } from "@/api/payments";
 import { dashboardApi } from "@/api/dashboard";
 import { reportsApi } from "@/api/reports";
 import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { PaymentDialog } from "@/pages/payments/payment-dialog";
 import type { Payment } from "@/types/models";
 
-/* Payments in the Pearl design, as in the approved preview: three colour
-   cards, six months of spending, spending by category, and the latest
-   payments as rows. */
+/* Payments in the Royal design, as in the approved preview: the summary
+   band, six months of spending, spending by category (which also filters),
+   and the vouchers by day with each day's total. */
 
-const v = (o: Record<string, string | number>) => o as CSSProperties;
-const CAT_TONES = ["violet", "rose", "amber", "teal", "sky", "indigo", "green"];
+const CAT_TONES: Tone[] = ["vio", "bad", "gold", "teal", "sky", "pri", "ok"];
 const money = (n: number) => Math.round(n).toLocaleString("en-US");
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
@@ -41,15 +41,15 @@ export default function PaymentsPage() {
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
   const [dialog, setDialog] = useState<{ open: boolean; payment?: Payment }>({ open: false });
   const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null);
-  const pageSize = 20;
-  const armed = useArmed();
+  const pageSize = 30;
   const narrow = useNarrow();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["payments", { page, search }],
-    queryFn: () => paymentsApi.list({ page, pageSize, q: search || undefined }),
+    queryKey: ["payments", { page, search, category }],
+    queryFn: () => paymentsApi.list({ page, pageSize, q: search || undefined, category: category || undefined, sortBy: "paymentDate", sortDir: "desc" }),
   });
   const { data: charts } = useQuery({ queryKey: ["dashboard", "charts"], queryFn: dashboardApi.charts });
 
@@ -81,25 +81,15 @@ export default function PaymentsPage() {
   const catSum = cats.reduce((a, c) => a + c.total, 0) || 1;
   const catTone = (c: string) => CAT_TONES[Math.abs([...c].reduce((a, ch) => a + ch.charCodeAt(0), 0)) % CAT_TONES.length];
 
-  const W = narrow ? 360 : 620;
-  const H = 210;
-  const pl = 16;
-  const bot = 34;
-  const top = 30;
-  const cw = narrow ? 34 : 46;
   const max = Math.max(1, ...months.map((m) => m.total));
-  const step = (W - pl * 2) / months.length;
 
   const rows = data?.data ?? [];
   const pages = Math.max(1, Math.ceil((data?.meta.total ?? 0) / pageSize));
-  const kpis = [
-    { tone: "violet", label: isAr ? "مدفوعات هذا الشهر" : "This month", value: thisMonth, icon: Wallet, note: change !== null ? `${change >= 0 ? "+" : ""}${change}% ${isAr ? "عن الشهر الماضي" : "vs last month"}` : isAr ? "هذا الشهر" : "This month", pay: true },
-    { tone: "sky", label: months[4]?.label ?? "", value: lastMonth, icon: BarChart3, note: isAr ? "الشهر الماضي" : "Last month", pay: false },
-    { tone: "amber", label: isAr ? "إجمالي المسجّل" : "All recorded", value: data?.summary?.grandTotal ?? 0, icon: Clock, note: isAr ? `منها ضريبة ${money(data?.summary?.totalVat ?? 0)} ر.س` : `incl. ${money(data?.summary?.totalVat ?? 0)} SAR VAT`, pay: false },
-  ];
+  const byDay = groupByDay(rows, (p) => p.paymentDate);
+  const sar = isAr ? "ر.س" : "SAR";
 
   return (
-    <>
+    <div className="rp">
       <PageHeader
         title={t("payments.title")}
         description={new Date().toLocaleDateString(locale, { month: "long", year: "numeric" })}
@@ -132,155 +122,206 @@ export default function PaymentsPage() {
         }
       />
 
-      <div className="lu-grid">
-        <div className="lu-kpis">
-          {kpis.map((k, i) => {
-            const Icon = k.icon;
-            return (
-              <section key={i} className={cn("lu-cc lu-rise lu-tilt lu-kpi", `lt-${k.tone}`)} style={v({ "--i": i })}>
-                <span className="lu-hd">
-                  <span className="lbl">{k.label}</span>
-                  <span className="lu-sq ic">
-                    <Icon />
-                  </span>
-                </span>
-                <span className="val lu-num">
-                  <span>{money(k.value)}</span>
-                  <small>{isAr ? "ر.س" : "SAR"}</small>
-                </span>
-                <span className="lu-note">{k.note}</span>
-                {k.pay && (
-                  <span className="fx" aria-hidden="true">
-                    <span className="lu-pay" style={{ display: "block" }}>
-                      <svg width="96" height="46" viewBox="0 0 96 46" style={{ direction: "ltr" }}>
-                        <path d="M2 40 L18 30 L32 34 L48 20 L62 24 L80 8" fill="none" stroke="var(--c)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <span className="coin" />
-                    </span>
-                  </span>
-                )}
-              </section>
-            );
-          })}
-        </div>
+      <Kpis
+        items={[
+          {
+            label: isAr ? "مدفوعات هذا الشهر" : "This month",
+            value: (
+              <>
+                {money(thisMonth)} <small>{sar}</small>
+              </>
+            ),
+            sub: change !== null ? `${change >= 0 ? "+" : ""}${change}% ${isAr ? "عن الشهر الماضي" : "vs last month"}` : isAr ? "هذا الشهر" : "This month",
+            hero: true,
+          },
+          {
+            label: months[4]?.label ?? (isAr ? "الشهر الماضي" : "Last month"),
+            value: (
+              <>
+                {money(lastMonth)} <small>{sar}</small>
+              </>
+            ),
+            sub: isAr ? "الشهر الماضي" : "Last month",
+            tone: "sky",
+          },
+          {
+            label: isAr ? "إجمالي المسجّل" : "All recorded",
+            value: (
+              <>
+                {money(data?.summary?.grandTotal ?? 0)} <small>{sar}</small>
+              </>
+            ),
+            sub: isAr ? `${data?.meta.total ?? 0} سند` : `${data?.meta.total ?? 0} vouchers`,
+            tone: "pri",
+          },
+          {
+            label: isAr ? "الضريبة" : "VAT",
+            value: (
+              <>
+                {money(data?.summary?.totalVat ?? 0)} <small>{sar}</small>
+              </>
+            ),
+            sub: isAr ? "ضمن الإجمالي" : "Included in the total",
+            tone: "gold",
+          },
+        ]}
+      />
 
-        <section className="lu-cc lu-rise lt-violet lu-s8" style={v({ "--i": 3 })}>
-          <div className="lu-hd">
-            <h2>{isAr ? "المصروفات آخر 6 أشهر" : "Spending, last 6 months"}</h2>
-            <span className="lu-note">{`${money(months.reduce((a, m) => a + m.total, 0))} ${isAr ? "ر.س" : "SAR"}`}</span>
+      <div className="rp-pay2">
+        <section className="rp-card rp-rise p-[18px]" style={{ ["--i" as string]: 2 }}>
+          <div className="rp-sec">
+            <h2>
+              <BarChart3 />
+              {isAr ? "آخر 6 شهور" : "Last 6 months"}
+            </h2>
+            <p>{`${money(months.reduce((a, m) => a + m.total, 0))} ${sar}`}</p>
           </div>
-          <svg className="lu-chart" viewBox={`0 0 ${W} ${H}`} width="100%" style={{ direction: "ltr", marginTop: 8 }} role="img" aria-label={isAr ? "المصروفات في كل شهر" : "Spending each month"}>
-            <line x1={pl} x2={W - pl} y1={H - bot} y2={H - bot} stroke="var(--l-line)" />
-            {months.map((m, i) => {
-              const x = isAr ? W - pl - (i + 0.5) * step : pl + (i + 0.5) * step;
-              const hg = m.total ? (m.total / max) * (H - top - bot) : 4;
-              const y = H - bot - hg;
-              const last = i === months.length - 1;
-              const label = m.total >= 1000 ? `${(Math.round(m.total / 100) / 10).toLocaleString("en-US")}${narrow ? "k" : isAr ? " ألف" : "k"}` : money(m.total);
-              return (
-                <g key={m.key}>
-                  <rect className="col" style={{ animationDelay: `${0.3 + i * 0.08}s` }} x={x - cw / 2} y={y} width={cw} height={hg} rx="12" fill={last ? "var(--c)" : "var(--d)"} />
-                  <text x={x} y={y - 9} textAnchor="middle" style={{ fill: "var(--l-ink)", fontWeight: 600 }}>
-                    {label}
-                  </text>
-                  <text x={x} y={H - 10} textAnchor="middle">
-                    {m.label}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </section>
-
-        <section className="lu-cc lu-rise lt-amber lu-s4" style={v({ "--i": 4 })}>
-          <div className="lu-hd">
-            <h2>{isAr ? "حسب البند" : "By category"}</h2>
-            <span className="lu-note">{isAr ? "كل المدفوعات" : "All payments"}</span>
-          </div>
-          <div className="lu-types">
-            {cats.length === 0 && <span className="text-sm text-muted-foreground">{isAr ? "لا توجد مدفوعات بعد" : "No payments yet"}</span>}
-            {cats.slice(0, 6).map((c) => (
-              <div key={c.category} className={`lt-${catTone(c.category)}`}>
-                <span>{t(`paymentCategories.${c.category}`, { defaultValue: c.category })}</span>
-                <b className="lu-num">{money(c.total)}</b>
-                <em>
-                  <i style={{ width: armed ? `${(c.total / catSum) * 100}%` : 0 }} />
-                </em>
+          <div className="rp-bars" role="img" aria-label={isAr ? "المصروفات في كل شهر" : "Spending each month"}>
+            {months.map((m, i) => (
+              <div key={m.key} className={cn("b", i === months.length - 1 && "now")} style={{ ["--k" as string]: i }}>
+                <em>{m.total >= 1000 ? `${(Math.round(m.total / 100) / 10).toLocaleString("en-US")}${isAr ? " ألف" : "k"}` : money(m.total)}</em>
+                <i style={{ height: `${(m.total / max) * 110}px` }} />
+                <small>{m.label}</small>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="lu-cc lu-rise lt-sky lu-s12" style={v({ "--i": 5 })}>
-          <div className="lu-hd">
-            <h2>{isAr ? "آخر المدفوعات" : "Latest payments"}</h2>
-            <span className="lu-note">{isAr ? `${data?.meta.total ?? 0} دفعة` : `${data?.meta.total ?? 0} payments`}</span>
+        <section className="rp-card rp-rise p-[18px]" style={{ ["--i" as string]: 3 }}>
+          <div className="rp-sec mb-3">
+            <h2>
+              <Receipt />
+              {isAr ? "حسب البند" : "By category"}
+            </h2>
+            <p>{isAr ? "اضغط على بند للتصفية" : "Tap one to filter"}</p>
           </div>
-          <div className="lu-tools no-print" style={{ marginTop: 12 }}>
-            <label className="lu-field">
-              <Search />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
+          <div className="grid gap-3">
+            {cats.length === 0 && <span className="text-sm text-muted-foreground">{isAr ? "لا توجد مدفوعات بعد" : "No payments yet"}</span>}
+            {cats.slice(0, 6).map((c) => (
+              <button
+                key={c.category}
+                type="button"
+                className={cn("grid gap-1.5 rounded-xl p-1 text-start transition-colors hover:bg-[var(--l-ground)]", `rp-${catTone(c.category)}`, category === c.category && "bg-[var(--l-ground)]")}
+                aria-pressed={category === c.category}
+                onClick={() => {
+                  setCategory(category === c.category ? "" : c.category);
                   setPage(1);
                 }}
-                placeholder={isAr ? "رقم الدفعة أو الوصف" : "Payment number or description"}
-                aria-label={isAr ? "بحث" : "Search"}
-              />
-            </label>
+              >
+                <span className="flex items-center justify-between gap-2 text-[13px]">
+                  <Pill tone={catTone(c.category)} dot={false}>
+                    {t(`paymentCategories.${c.category}`, { defaultValue: c.category })}
+                  </Pill>
+                  <b className="rp-num">{money(c.total)}</b>
+                </span>
+                <span className="rp-bar">
+                  <i style={{ width: `${(c.total / catSum) * 100}%` }} />
+                </span>
+              </button>
+            ))}
           </div>
-          {isLoading ? (
-            <div className="lu-list mt-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-[68px] animate-pulse rounded-[18px] bg-card" />
-              ))}
+        </section>
+      </div>
+
+      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 4 }}>
+        <label className="rp-search">
+          <Search />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder={isAr ? "رقم السند أو الوصف" : "Voucher number or description"}
+            aria-label={isAr ? "بحث" : "Search"}
+          />
+        </label>
+        <button
+          type="button"
+          className="rp-chip rp-pri"
+          aria-pressed={!category}
+          onClick={() => {
+            setCategory("");
+            setPage(1);
+          }}
+        >
+          <i />
+          {isAr ? "كل البنود" : "All categories"}
+        </button>
+        {cats.slice(0, 6).map((c) => (
+          <button
+            key={c.category}
+            type="button"
+            className={cn("rp-chip", `rp-${catTone(c.category)}`)}
+            aria-pressed={category === c.category}
+            onClick={() => {
+              setCategory(c.category);
+              setPage(1);
+            }}
+          >
+            <i />
+            {t(`paymentCategories.${c.category}`, { defaultValue: c.category })}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="rp-card">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rp-item">
+              <div className="h-10 w-full animate-pulse rounded-xl bg-[var(--l-ground)]" />
             </div>
-          ) : rows.length === 0 ? (
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="rp-card rp-empty rp-rise">
+          <b>{t("payments.emptyTitle")}</b>
+          {hasPermission("payments.create") && (
             <div className="mt-3">
-              <LuEmpty
-                tone="violet"
-                title={t("payments.emptyTitle")}
-                action={
-                  hasPermission("payments.create") ? (
-                    <Button onClick={() => setDialog({ open: true })}>
-                      <Plus className="h-4 w-4" /> {t("payments.addPayment")}
-                    </Button>
-                  ) : undefined
+              <Button onClick={() => setDialog({ open: true })}>
+                <Plus className="h-4 w-4" /> {t("payments.addPayment")}
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rp-card rp-rise overflow-hidden" style={{ ["--i" as string]: 5 }}>
+          {byDay.map((g) => (
+            <div key={g.day.toISOString()}>
+              <DayHeader
+                day={g.day}
+                right={
+                  <>
+                    <b>{money(g.items.reduce((n, p) => n + (Number(p.total) || 0), 0))}</b>
+                    {sar} · {isAr ? `${g.items.length} سند` : `${g.items.length} voucher${g.items.length === 1 ? "" : "s"}`}
+                  </>
                 }
               />
-            </div>
-          ) : (
-            <div className="lu-list mt-3">
-              {rows.map((p, j) => {
+              {g.items.map((p) => {
                 const sub = p.type && PAYMENT_SUBTYPES[p.category]?.includes(p.type) ? ` — ${t(`paymentSubtypes.${p.type}`)}` : "";
                 const who = p.employee ? (isAr ? p.employee.fullNameAr : p.employee.fullNameEn || p.employee.fullNameAr) : p.supplierName;
                 const branch = localized(p.branch?.name, p.branch?.nameEn);
                 const edit = () => hasPermission("payments.edit") && setDialog({ open: true, payment: p });
                 return (
-                  <div key={p.id} role="button" tabIndex={0} className={cn("lu-row", `lt-${catTone(p.category)}`)} style={v({ "--j": Math.min(j, 12) })} onClick={edit} onKeyDown={(e) => e.key === "Enter" && edit()}>
-                    <span className="lu-pi">
-                      <Wallet />
+                  <div key={p.id} role="button" tabIndex={0} className="rp-item cursor-pointer hover:bg-[var(--l-ground)]" onClick={edit} onKeyDown={(e) => e.key === "Enter" && edit()}>
+                    <span className={cn("rp-ico sm", `rp-${catTone(p.category)}`)}>
+                      <Receipt />
                     </span>
-                    <span className="lu-cell">
+                    <span className="t">
                       <b>
                         {t(`paymentCategories.${p.category}`)}
                         {sub}
+                        {branch ? ` — ${branch}` : ""}
                       </b>
-                      <small>{[who, branch, p.paymentNumber].filter(Boolean).join(" · ")}</small>
+                      <small>
+                        <span className="rp-mono">{p.paymentNumber}</span>
+                        {who ? ` · ${who}` : ""} · {t(`paymentMethods.${p.method}`, { defaultValue: p.method })}
+                      </small>
                     </span>
-                    <span className="lu-cell lu-hide-s">
-                      <small>{isAr ? "التاريخ" : "Date"}</small>
-                      <b className="lu-num">{formatDate(p.paymentDate)}</b>
-                    </span>
-                    <span className="lu-cell lu-hide-m">
-                      <small>{isAr ? "طريقة الدفع" : "Method"}</small>
-                      <b>{t(`paymentMethods.${p.method}`, { defaultValue: p.method })}</b>
-                    </span>
-                    <span className="lu-amt lu-num">
-                      {money(Number(p.total) || 0)}
-                      <small>{isAr ? "ر.س" : "SAR"}</small>
+                    <span className="end">
+                      <b>{money(Number(p.total) || 0)}</b>
+                      <small>{sar}</small>
                     </span>
                     <span onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                       <DropdownMenu>
@@ -310,15 +351,13 @@ export default function PaymentsPage() {
                 );
               })}
             </div>
-          )}
-          <div className="mt-3">
-            <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
-          </div>
-        </section>
-      </div>
+          ))}
+        </div>
+      )}
+      <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
 
       <PaymentDialog open={dialog.open} payment={dialog.payment} onOpenChange={(open) => setDialog({ open })} />
       <ConfirmDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)} title={t("payments.deleteConfirmTitle")} onConfirm={handleDelete} />
-    </>
+    </div>
   );
 }

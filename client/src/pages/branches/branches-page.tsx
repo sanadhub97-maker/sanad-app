@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { localized, localizedCity } from "@/lib/names";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Edit, Eye, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
+import { Building2, Edit, Eye, MapPin, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LuEmpty, LuPager } from "@/components/lulu/lulu-ui";
+import { LuPager } from "@/components/lulu/lulu-ui";
+import { Kpis, Pill, Ring, type Tone } from "@/components/royal/rp";
 import { branchesApi } from "@/api/branches";
 import { workforceDocumentsApi } from "@/api/workforceDocuments";
 import { companyDocumentsApi } from "@/api/companyDocuments";
@@ -19,11 +20,11 @@ import { BranchDialog } from "@/pages/branches/branch-dialog";
 import { BranchDetailsDialog } from "@/pages/branches/branch-details-dialog";
 import type { Branch } from "@/types/models";
 
-/* Establishments in the Pearl design, as in the approved preview: a card per
-   establishment in its own colour, with its employees, documents and how
-   many have expired, and a bar of its documents' status. */
+/* Establishments in the Royal design, as in the approved preview: a card per
+   establishment with its English name, a ring of its valid documents, the
+   city and code, and its employees, documents and what needs follow-up. */
 
-const TONES = ["indigo", "rose", "amber", "teal", "violet", "sky", "green"];
+const TONES: Tone[] = ["pri", "teal", "gold", "vio", "sky", "ok", "bad"];
 type Tally = { valid: number; soon: number; expired: number };
 
 export default function BranchesPage() {
@@ -91,8 +92,11 @@ export default function BranchesPage() {
     ? `${total} ${total === 1 ? "مؤسسة" : "مؤسسات"}${cities.size ? ` في ${Array.from(cities).slice(0, 3).join(" و")}` : ""}`
     : `${total} establishments${cities.size ? ` in ${Array.from(cities).slice(0, 3).join(", ")}` : ""}`;
 
+  const staff = branches.reduce((n, b) => n + (b._count?.employees ?? 0), 0);
+  const follow = [...tally.values()].reduce((n, x) => n + x.soon + x.expired, 0);
+
   return (
-    <>
+    <div className="rp">
       <PageHeader
         title={t("branches.title")}
         description={description}
@@ -105,61 +109,93 @@ export default function BranchesPage() {
         }
       />
 
-      <div className="flex flex-col gap-3">
-        <div className="lu-tools no-print">
-          <label className="lu-field">
-            <Search />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder={isAr ? "اسم المؤسسة أو رمزها" : "Establishment name or code"}
-              aria-label={isAr ? "بحث" : "Search"}
-            />
-          </label>
-        </div>
+      <Kpis
+        items={[
+          { label: isAr ? "المؤسسات" : "Establishments", value: total, sub: isAr ? `${branches.filter((b) => b.status !== "INACTIVE").length} نشطة` : `${branches.filter((b) => b.status !== "INACTIVE").length} active`, hero: true },
+          { label: isAr ? "المدن" : "Cities", value: cities.size, sub: Array.from(cities).slice(0, 4).join(isAr ? "، " : ", ") || "—", tone: "sky" },
+          { label: isAr ? "الموظفون" : "Employees", value: staff, sub: isAr ? "موزعون على المؤسسات" : "Across the establishments", tone: "vio" },
+          { label: isAr ? "وثائق تحتاج متابعة" : "Documents to follow up", value: follow, sub: isAr ? "منتهية أو تنتهي قريبًا" : "Expired or ending soon", tone: "warn" },
+        ]}
+      />
 
-        {isLoading ? (
-          <div className="lu-cards">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-[190px] animate-pulse rounded-[22px] bg-card" />
-            ))}
-          </div>
-        ) : branches.length === 0 ? (
-          <LuEmpty
-            tone="teal"
-            title={t("branches.emptyTitle")}
-            action={
-              hasPermission("branches.create") ? (
-                <Button onClick={() => setDialog({ open: true })}>
-                  <Plus className="h-4 w-4" /> {t("branches.addBranch")}
-                </Button>
-              ) : undefined
-            }
+      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 2 }}>
+        <label className="rp-search">
+          <Search />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder={isAr ? "اسم المؤسسة أو رمزها" : "Establishment name or code"}
+            aria-label={isAr ? "بحث" : "Search"}
           />
-        ) : (
-          <div className="lu-cards">
-            {branches.map((b, j) => {
-              const tone = TONES[j % TONES.length];
-              const x = tally.get(b.id) ?? { valid: 0, soon: 0, expired: 0 };
-              const docs = x.valid + x.soon + x.expired;
-              const city = localizedCity(b.city, b.cityEn);
-              return (
-                <section key={b.id} className={cn("lu-cc lu-rise lu-tilt", `lt-${tone}`)} style={{ ["--i" as string]: Math.min(j, 10) }}>
-                  <div className="flex items-center gap-3">
-                    <span className="lu-sq lu-big" style={{ width: 48, height: 48, borderRadius: 16 }}>
-                      <Building2 />
-                    </span>
-                    <button type="button" className="lu-cell" onClick={() => setDetailsTarget(b)}>
-                      <b style={{ fontSize: 15 }}>{localized(b.name, b.nameEn)}</b>
-                      <small>
-                        {[city, b.code].filter(Boolean).join(" · ")}
-                        {b.status === "INACTIVE" && ` · ${isAr ? "غير نشطة" : "inactive"}`}
-                      </small>
-                    </button>
+        </label>
+      </div>
+
+      {isLoading ? (
+        <div className="rp-cards">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-[210px] animate-pulse rounded-[20px] bg-[var(--l-surface)]" />
+          ))}
+        </div>
+      ) : branches.length === 0 ? (
+        <div className="rp-card rp-empty rp-rise">
+          <b>{t("branches.emptyTitle")}</b>
+          {hasPermission("branches.create") && (
+            <div className="mt-3">
+              <Button onClick={() => setDialog({ open: true })}>
+                <Plus className="h-4 w-4" /> {t("branches.addBranch")}
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rp-cards">
+          {branches.map((b, j) => {
+            const tone = TONES[j % TONES.length];
+            const x = tally.get(b.id) ?? { valid: 0, soon: 0, expired: 0 };
+            const docs = x.valid + x.soon + x.expired;
+            const city = localizedCity(b.city, b.cityEn);
+            const other = isAr ? b.nameEn : b.name;
+            return (
+              <article key={b.id} className={cn("rp-card rp-br rp-lift rp-rise", `rp-${tone}`)} style={{ ["--i" as string]: Math.min(j, 10) }}>
+                <div className="hd">
+                  <span className="rp-ico" style={{ background: "var(--l-surface)" }}>
+                    <Building2 />
+                  </span>
+                  <button type="button" className="min-w-0 flex-1 text-start" onClick={() => setDetailsTarget(b)}>
+                    <h3>{localized(b.name, b.nameEn)}</h3>
+                    {other && other !== localized(b.name, b.nameEn) && <div className="en">{other}</div>}
+                  </button>
+                  {docs > 0 ? <Ring pct={Math.round((x.valid / docs) * 100)} /> : null}
+                </div>
+                <div className="meta">
+                  <MapPin />
+                  {city ?? "—"}
+                  <span className="rp-mono ms-auto">{b.code}</span>
+                  {b.status === "INACTIVE" && <Pill tone="mut">{isAr ? "غير نشطة" : "Inactive"}</Pill>}
+                </div>
+                <div className="stats">
+                  <div>
+                    <b>{b._count?.employees ?? 0}</b>
+                    <small>{isAr ? "موظف" : "employees"}</small>
+                  </div>
+                  <div>
+                    <b>{docs}</b>
+                    <small>{isAr ? "وثيقة" : "documents"}</small>
+                  </div>
+                  <div>
+                    <b style={{ color: x.expired ? "var(--l-rose)" : x.soon ? "var(--l-amber)" : undefined }}>{x.expired + x.soon}</b>
+                    <small>{isAr ? "تحتاج متابعة" : "to follow up"}</small>
+                  </div>
+                </div>
+                <div className="acts">
+                  <button type="button" className="rp-chip" onClick={() => setDetailsTarget(b)}>
+                    <Eye className="h-4 w-4" /> {t("common.viewDetails")}
+                  </button>
+                  {(hasPermission("branches.edit") || hasPermission("branches.delete")) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button type="button" className="lu-kebab" aria-label={t("common.actions")}>
@@ -167,9 +203,6 @@ export default function BranchesPage() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
-                        <DropdownMenuItem className="rounded-2xl" onSelect={() => setDetailsTarget(b)}>
-                          <Eye className="me-2 h-4 w-4" /> {t("common.viewDetails")}
-                        </DropdownMenuItem>
                         {hasPermission("branches.edit") && (
                           <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, branch: b })}>
                             <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
@@ -182,40 +215,18 @@ export default function BranchesPage() {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-                  <div className="lu-stats" style={{ marginTop: 14 }}>
-                    <div>
-                      <b className="lu-num">{b._count?.employees ?? 0}</b>
-                      <small>{isAr ? "موظف" : "employees"}</small>
-                    </div>
-                    <div>
-                      <b className="lu-num">{docs}</b>
-                      <small>{isAr ? "وثيقة" : "documents"}</small>
-                    </div>
-                    <div>
-                      <b className="lu-num" style={{ color: "var(--l-rose)" }}>
-                        {x.expired}
-                      </b>
-                      <small>{isAr ? "منتهية" : "expired"}</small>
-                    </div>
-                  </div>
-                  <div className="lu-split" style={{ marginTop: 12 }}>
-                    {x.valid > 0 && <i style={{ flex: x.valid, background: "var(--l-green)" }} />}
-                    {x.soon > 0 && <i style={{ flex: x.soon, background: "var(--l-amber)" }} />}
-                    {x.expired > 0 && <i style={{ flex: x.expired, background: "var(--l-rose)" }} />}
-                    {docs === 0 && <i style={{ flex: 1, background: "var(--l-surface)" }} />}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        )}
-        <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
-      </div>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+      <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
 
       <BranchDetailsDialog open={Boolean(detailsTarget)} branch={detailsTarget} onOpenChange={(open) => !open && setDetailsTarget(null)} onEdit={(b) => setDialog({ open: true, branch: b })} />
       <BranchDialog open={dialog.open} branch={dialog.branch} onOpenChange={(open) => setDialog({ open })} />
       <ConfirmDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)} title={t("branches.deleteConfirmTitle")} onConfirm={handleDelete} />
-    </>
+    </div>
   );
 }

@@ -44,12 +44,15 @@ import {
   Zap,
   Copy,
   Smartphone,
+  Printer,
+  Hourglass,
+  MessageCircle,
 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/common/page-header";
@@ -67,91 +70,58 @@ import { WhatsappTemplateCard } from "./whatsapp-template-card";
 import { WhatsappCardPicker } from "./whatsapp-card-picker";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
+/* The settings in the Royal design, as in the approved preview: the sections
+   as a list at the side (across the top on narrow screens) and the chosen one
+   beside it; the section is in the address (/settings/print) so it can be linked. */
+const SECTIONS = [
+  { key: "company", icon: Building2, Tab: CompanyTab },
+  { key: "appearance", icon: Palette, Tab: AppearanceTab },
+  { key: "print", icon: Printer, Tab: PrintDesignsTab },
+  { key: "expiration", icon: Hourglass, Tab: ExpirationTab },
+  { key: "email", icon: Mail, Tab: EmailTab },
+  { key: "whatsapp", icon: MessageCircle, Tab: WhatsappTab },
+] as const;
+
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const canEdit = hasPermission("settings.edit");
   const isRtl = (i18n.language || "ar").startsWith("ar");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const asked = location.pathname.replace(/^\/settings\/?/, "").split("/")[0];
+  const current = SECTIONS.find((x) => x.key === asked) ?? SECTIONS[0];
+  const Current = current.Tab;
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in-50 duration-300">
-      {/* Executive Page Header */}
+    <div className="rp pb-12">
       <PageHeader
         title={t("settings.title")}
         description={t("settings.subtitle")}
         actions={
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card/80 dark:bg-card/40 border border-border/80 shadow-sm backdrop-blur-md">
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--l-line)] bg-[var(--l-surface)] px-3 py-1.5">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:animate-none"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "النظام متزامن ومحدّث" : "System Synchronized & Active"}
-            </span>
+            <span className="text-xs font-semibold text-muted-foreground">{isRtl ? "النظام متزامن ومحدّث" : "System synchronized"}</span>
           </div>
         }
       />
 
-      {/* Tabs Navigation & Panels */}
-      <Tabs defaultValue="company" dir={isRtl ? "rtl" : "ltr"} className="space-y-6">
-        {/* The sections as colour chips (Pearl) */}
-        <TabsList className="lu-tools h-auto w-full justify-start rounded-none bg-transparent p-0 no-print" style={{ backdropFilter: "none", WebkitBackdropFilter: "none" }}>
-          <TabsTrigger value="company" className="lu-fchip lt-violet">
-            <i />
-            <span>{t("settings.tabs.company")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="appearance" className="lu-fchip lt-indigo">
-            <i />
-            <span>{t("settings.tabs.appearance")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="print" className="lu-fchip lt-sky">
-            <i />
-            <span>{t("settings.tabs.print")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="expiration" className="lu-fchip lt-amber">
-            <i />
-            <span>{t("settings.tabs.expiration")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="email" className="lu-fchip lt-rose">
-            <i />
-            <span>{t("settings.tabs.email")}</span>
-          </TabsTrigger>
-          <TabsTrigger value="whatsapp" className="lu-fchip lt-green">
-            <i />
-            <span>{t("settings.tabs.whatsapp")}</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Tab 1: Company Profile */}
-        <TabsContent value="company" className="lt-violet focus-visible:outline-none">
-          <CompanyTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-
-        {/* Tab 2: Appearance & Brand */}
-        <TabsContent value="appearance" className="lt-indigo focus-visible:outline-none">
-          <AppearanceTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-
-        {/* Print designs */}
-        <TabsContent value="print" className="lt-sky focus-visible:outline-none">
-          <PrintDesignsTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-
-        {/* Tab 3: Expiration Rules */}
-        <TabsContent value="expiration" className="lt-amber focus-visible:outline-none">
-          <ExpirationTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-
-        {/* Tab 4: Email SMTP */}
-        <TabsContent value="email" className="lt-rose focus-visible:outline-none">
-          <EmailTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-
-        {/* Tab 5: WhatsApp API */}
-        <TabsContent value="whatsapp" className="lt-green focus-visible:outline-none">
-          <WhatsappTab canEdit={canEdit} isRtl={isRtl} />
-        </TabsContent>
-      </Tabs>
+      <div className="rp-set">
+        <nav className="rp-card rp-sn rp-rise no-print" style={{ ["--i" as string]: 1 }} aria-label={t("settings.title")}>
+          {SECTIONS.map((x) => (
+            <button key={x.key} type="button" aria-pressed={x.key === current.key} aria-current={x.key === current.key ? "page" : undefined} onClick={() => navigate(`/settings/${x.key}`, { replace: true })}>
+              <x.icon />
+              {t(`settings.tabs.${x.key}`)}
+            </button>
+          ))}
+        </nav>
+        <section key={current.key} className="min-w-0 rp-rise" style={{ ["--i" as string]: 2 }}>
+          <Current canEdit={canEdit} isRtl={isRtl} />
+        </section>
+      </div>
     </div>
   );
 }
