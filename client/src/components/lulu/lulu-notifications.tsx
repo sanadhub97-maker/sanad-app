@@ -66,6 +66,8 @@ export function LuluNotifications({ open, anchor, onClose }: { open: boolean; an
         <h2>{isAr ? "الإشعارات" : "Notifications"}</h2>
         {unread > 0 && <span className="lu-note">{isAr ? `${unread} جديدة` : `${unread} new`}</span>}
       </div>
+      {/* Only the list scrolls; the title and the buttons stay in place. */}
+      <div className="lu-nlist">
       {!data || data.data.length === 0 ? (
         <div className="lu-cmd-e">
           <Bell className="mx-auto mb-2 h-8 w-8 opacity-40" />
@@ -89,7 +91,8 @@ export function LuluNotifications({ open, anchor, onClose }: { open: boolean; an
           );
         })
       )}
-      <div className="mt-2.5 flex gap-2">
+      </div>
+      <div className="lu-nfoot">
         {unread > 0 && (
           <button type="button" className="lu-sbtn lt-green" style={{ color: "var(--c)" }} onClick={markAllRead}>
             <Check className="h-4 w-4" /> {isAr ? "تحديد الكل كمقروء" : "Mark all read"}
