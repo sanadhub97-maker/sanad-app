@@ -76,6 +76,22 @@ export function createApp() {
 
   app.use("/api", routes);
 
+  // The Android app (android/, a Trusted Web Activity) opens this site full
+  // screen only when the site vouches for the app's signing key here.
+  app.get("/.well-known/assetlinks.json", (_req, res) => {
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.json([
+      {
+        relation: ["delegate_permission/common.handle_all_urls"],
+        target: {
+          namespace: "android_app",
+          package_name: "com.sanad.hr",
+          sha256_cert_fingerprints: ["10:EE:A3:8A:1C:05:B0:45:38:C7:09:EB:B3:01:CC:38:04:69:DC:E5:2E:F3:64:22:AD:9B:BF:83:9C:A7:32:00"],
+        },
+      },
+    ]);
+  });
+
   if (hasClientBuild) {
     // Vite's build output in /assets has content hashes in its filenames, so a
     // changed file always gets a new URL — safe to cache for a year. index.html
@@ -92,6 +108,13 @@ export function createApp() {
         index: false,
         setHeaders: (res, file) => {
           if (file.endsWith("sw.js") || file.endsWith(".webmanifest")) res.setHeader("Cache-Control", "no-cache");
+          // The Android app: always the newest build, saved under its own name.
+          if (file.endsWith(".apk")) {
+            res.setHeader("Cache-Control", "no-cache");
+            res.setHeader("Content-Type", "application/vnd.android.package-archive");
+            res.setHeader("Content-Disposition", 'attachment; filename="SanaD.apk"');
+          }
+          if (file.endsWith("android.json")) res.setHeader("Cache-Control", "no-cache");
         },
       })
     );

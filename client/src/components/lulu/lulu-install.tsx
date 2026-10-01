@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -185,6 +186,9 @@ function isNever(): boolean {
 }
 
 export function LuluInstall() {
+  // The Android app page has its own download button.
+  const { pathname } = useLocation();
+  if (pathname === "/android") return null;
   return <AppleInstallPrompt />;
 }
 
@@ -473,6 +477,16 @@ export function AppleInstallPrompt() {
             {isAr ? "لاحقاً" : "Later"}
           </button>
         </div>
+
+        {isAndroid && (
+          <a
+            href="/android"
+            className="mt-2 flex h-10 items-center justify-center gap-2 rounded-xl border border-[#d4a843]/40 bg-[#d4a843]/15 text-[12.5px] font-bold text-[#f3d27a] transition hover:bg-[#d4a843]/25"
+          >
+            <Smartphone className="h-4 w-4" />
+            {isAr ? "أو حمّل تطبيق SanaD لأندرويد" : "Or get the SanaD Android app"}
+          </a>
+        )}
 
         <button type="button" onClick={handleNever} className="mt-2 block w-full text-center text-[11px] text-slate-400 transition-colors hover:text-slate-200">
           {isAr ? "عدم الإظهار مجدداً — التثبيت متاح دائماً من قائمة الحساب" : "Don't show again — install anytime from your account menu"}

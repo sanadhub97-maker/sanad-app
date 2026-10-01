@@ -36,6 +36,7 @@ const RolesPage = lazy(() => import("@/pages/roles/roles-page"));
 const AuditLogsPage = lazy(() => import("@/pages/auditLogs/audit-logs-page"));
 const SettingsPage = lazy(() => import("@/pages/settings/settings-page"));
 const ProfilePage = lazy(() => import("@/pages/profile/profile-page"));
+const AndroidAppPage = lazy(() => import("@/pages/android/android-app-page"));
 
 function PageFallback() {
   return (
@@ -57,6 +58,9 @@ export default function App() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
             </Route>
+
+            {/* The Android app: open to anyone, so the link can be shared. */}
+            <Route path="/android" element={<AndroidAppPage />} />
 
             <Route element={<RequireAuth />}>
               <Route element={<LuluShell />}>

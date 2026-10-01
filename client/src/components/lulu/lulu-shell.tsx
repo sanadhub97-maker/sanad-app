@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellRing, ChevronDown, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -98,6 +98,9 @@ function AccountMenu({ children }: { children: ReactNode }) {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setTimeout(openPushSettings, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <BellRing className="h-4 w-4 text-muted-foreground" /> {isAr ? "إشعارات الجهاز" : "Device notifications"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate("/android")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+          <Smartphone className="h-4 w-4 text-muted-foreground" /> {isAr ? "تطبيق أندرويد" : "Android app"}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}

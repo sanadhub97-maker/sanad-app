@@ -1,0 +1,70 @@
+{
+  "packageId": "com.sanad.hr",
+  "host": "sanad-app-t7ja.onrender.com",
+  "name": "SanaD",
+  "launcherName": "SanaD",
+  "display": "standalone",
+  "themeColor": "#F2F4F9",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#F2F4F9",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-512.png",
+  "maskableIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/maskable-512.png",
+  "monochromeIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/badge-96.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "D:\\VibCodeing\\HR\\android\\signing\\sanad-release.keystore",
+    "alias": "sanad"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "المهام اليومية",
+      "shortName": "المهام",
+      "url": "https://sanad-app-t7ja.onrender.com/daily-tasks",
+      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+    },
+    {
+      "name": "الموظفون",
+      "shortName": "الموظفون",
+      "url": "https://sanad-app-t7ja.onrender.com/employees",
+      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+    },
+    {
+      "name": "مستندات الموظفين",
+      "shortName": "المستندات",
+      "url": "https://sanad-app-t7ja.onrender.com/employee-documents",
+      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+    }
+  ],
+  "generatorApp": "unknown",
+  "webManifestUrl": "https://sanad-app-t7ja.onrender.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://sanad-app-t7ja.onrender.com/",
+  "minSdkVersion": 24,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "appVersion": "1.0.0"
+}
