@@ -161,6 +161,9 @@ html.dark .lu-nav.on { background: color-mix(in srgb, var(--nc, #1f45c4) 22%, va
 
 /* Phones: the island in white */
 .lu-island { background: var(--l-surface); color: var(--l-ink); border: 1px solid var(--l-line); box-shadow: 0 20px 40px -18px rgba(15, 27, 61, 0.4); }
+/* The phone menu's dim layer sits under the menu (the shared scrim is above everything at 60),
+   so a tap on a section reaches it and the page opens. */
+.lu-phone-scrim { z-index: 44; }
 .lu-il-t { background: var(--l-ground); color: var(--l-ink); }
 .lu-il-t.on { background: var(--l-indigo-t); }
 .lu-il-cur { color: var(--l-ink); }
