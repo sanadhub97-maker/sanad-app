@@ -52,10 +52,56 @@ if (typeof window !== "undefined") {
   });
 }
 
+/* Opened inside a frame (sanad-hr.sept.cloud shows the system in one), the
+   browser installs the outer page, not this one. The outer page says when it
+   can be installed, shows the prompt when asked, and says when it already
+   runs as an installed app. */
+const PARENTS = ["https://sanad-hr.sept.cloud", "https://sept.cloud"];
+const framed = typeof window !== "undefined" && window.top !== window.self;
+let parentOrigin: string | null = null;
+let parentReady = false;
+let parentStandalone = false;
+let parentChoice: ((outcome: string) => void) | null = null;
+if (framed) {
+  window.addEventListener("message", (e) => {
+    if (!PARENTS.includes(e.origin) || !e.data || typeof e.data.type !== "string") return;
+    parentOrigin = e.origin;
+    if (e.data.type === "sanad:install-ready") {
+      parentReady = true;
+      window.dispatchEvent(new Event("sanad:install-ready"));
+    } else if (e.data.type === "sanad:installed") {
+      parentReady = false;
+      window.dispatchEvent(new Event("appinstalled"));
+    } else if (e.data.type === "sanad:standalone") {
+      parentStandalone = true;
+      window.dispatchEvent(new Event("sanad:standalone"));
+    } else if (e.data.type === "sanad:choice") {
+      parentChoice?.(String(e.data.outcome));
+      parentChoice = null;
+    }
+  });
+  // A message to an origin the parent isn't on is simply not delivered.
+  for (const origin of PARENTS) window.parent.postMessage({ type: "sanad:hello" }, origin);
+}
+
+/** Asks the outer page to show the browser's install prompt; resolves with the choice. */
+function promptThroughParent(): Promise<string> {
+  if (!parentOrigin) return Promise.resolve("unavailable");
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => resolve("dismissed"), 120_000);
+    parentChoice = (o) => {
+      window.clearTimeout(timer);
+      resolve(o);
+    };
+    window.parent.postMessage({ type: "sanad:prompt" }, parentOrigin!);
+  });
+}
+
 /** Check if site is already running in standalone / installed PWA mode */
 export const isStandalone = (): boolean => {
   if (typeof window === "undefined") return false;
   return (
+    parentStandalone ||
     window.matchMedia?.("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true ||
     document.referrer.includes("android-app://")
@@ -100,7 +146,11 @@ export function useCanInstall() {
   useEffect(() => {
     const onInstalled = () => setCan(false);
     window.addEventListener("appinstalled", onInstalled);
-    return () => window.removeEventListener("appinstalled", onInstalled);
+    window.addEventListener("sanad:standalone", onInstalled);
+    return () => {
+      window.removeEventListener("appinstalled", onInstalled);
+      window.removeEventListener("sanad:standalone", onInstalled);
+    };
   }, []);
   return can;
 }
@@ -144,7 +194,8 @@ export function AppleInstallPrompt() {
 
   const [open, setOpen] = useState(false);
   const [platform, setPlatform] = useState<PlatformType>(() => detectPlatform());
-  const [hasPrompt, setHasPrompt] = useState(() => Boolean(deferredPrompt));
+  const [hasPrompt, setHasPrompt] = useState(() => Boolean(deferredPrompt) || parentReady);
+  const [, setStandalone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
 
@@ -171,12 +222,19 @@ export function AppleInstallPrompt() {
       setOpen(true);
     };
 
+    // Already the installed app (the outer page says so): never show the card.
+    const onStandalone = () => {
+      setOpen(false);
+      setStandalone(true);
+    };
+
     window.addEventListener("sanad:install-ready", onReady);
     window.addEventListener("appinstalled", onInstalled);
+    window.addEventListener("sanad:standalone", onStandalone);
     window.addEventListener(OPEN_EVENT, onManualOpen);
 
     const autoTimer = window.setTimeout(() => {
-      if (!isSnoozed() && !isNever()) {
+      if (!isStandalone() && !isSnoozed() && !isNever()) {
         setPlatform(detectPlatform());
         setOpen(true);
       }
@@ -186,6 +244,7 @@ export function AppleInstallPrompt() {
       window.clearTimeout(autoTimer);
       window.removeEventListener("sanad:install-ready", onReady);
       window.removeEventListener("appinstalled", onInstalled);
+      window.removeEventListener("sanad:standalone", onStandalone);
       window.removeEventListener(OPEN_EVENT, onManualOpen);
     };
   }, [isAr]);
@@ -216,6 +275,24 @@ export function AppleInstallPrompt() {
   }, [isAr]);
 
   const handleInstallClick = async () => {
+    if (!deferredPrompt && parentReady) {
+      setBusy(true);
+      const outcome = await promptThroughParent();
+      setBusy(false);
+      if (outcome === "accepted") {
+        parentReady = false;
+        setHasPrompt(false);
+        setOpen(false);
+        toast.success(isAr ? "جاري تثبيت نظام SanaD على جهازك..." : "Installing SanaD on your device...");
+      } else if (outcome === "unavailable") {
+        parentReady = false;
+        setHasPrompt(false);
+        setShowSteps(true);
+      } else {
+        handleLater();
+      }
+      return;
+    }
     if (deferredPrompt) {
       setBusy(true);
       try {
