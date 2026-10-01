@@ -30,6 +30,7 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
   });
 
   return rows.map((e) => ({
+    id: e.id,
     employeeNumber: e.employeeNumber,
     // Arabic first: the PDF/Excel reports are Arabic. The screen picks by language.
     fullName: e.fullNameAr || e.fullNameEn,
@@ -73,6 +74,9 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
     .map((i) => {
       const company = i.sourceType === "COMPANY_DOCUMENT";
       return {
+        // For the screen to open the record; the exports pick their own columns.
+        recordId: i.recordId,
+        employeeId: i.employeeId ?? null,
         label: i.labelAr,
         labelEn: i.label,
         sourceType: i.sourceType,
