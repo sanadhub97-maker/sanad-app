@@ -72,10 +72,14 @@ html:root body { background: hsl(var(--background)); }
 .lu-grp-h .ln { background: transparent; }
 .lu-grp + .lu-grp { margin-top: 8px; }
 .lu-nav { min-height: 46px; gap: 12px; padding: 0 10px; border-radius: 13px; color: var(--l-ink2); font-weight: 500; transition: background 0.2s, color 0.2s, box-shadow 0.25s; }
-.lu-nav .i, .lu-nav:not(.on) .i { width: 32px; height: 32px; border-radius: 10px; background: var(--l-ground); color: var(--l-muted); transition: color 0.2s, background 0.2s; }
-.lu-nav:hover { background: var(--l-ground); color: var(--l-ink); }
-.lu-nav:hover .i { transform: none; color: hsl(var(--primary)); }
-.lu-nav.on { background: linear-gradient(180deg, #2f5fe0, #1f45c4); color: #fff; font-weight: 600; box-shadow: 0 12px 22px -14px rgba(31, 69, 196, 0.85); }
+/* Each page in its own colour (--nc, from the menu): a tinted icon, and the
+   whole row in that colour when it is the page you are on. */
+.lu-nav .i, .lu-nav:not(.on) .i { width: 32px; height: 32px; border-radius: 10px; background: color-mix(in srgb, var(--nc, var(--l-muted)) 12%, var(--l-surface)); color: var(--nc, var(--l-muted)); transition: color 0.2s, background 0.2s, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+html.dark .lu-nav:not(.on) .i { background: color-mix(in srgb, var(--nc, var(--l-muted)) 22%, var(--l-surface)); color: color-mix(in oklab, var(--nc, var(--l-muted)) 72%, white); }
+.lu-nav:hover { background: color-mix(in srgb, var(--nc, var(--l-muted)) 7%, var(--l-ground)); color: var(--l-ink); }
+.lu-nav:hover .i { transform: scale(1.08) rotate(-6deg); color: var(--nc, hsl(var(--primary))); }
+.lu-nav.on { background: linear-gradient(180deg, color-mix(in srgb, var(--nc, #1f45c4) 82%, #fff), var(--nc, #1f45c4)); color: #fff; font-weight: 600; box-shadow: 0 12px 22px -14px var(--nc, rgba(31, 69, 196, 0.85)); }
+.lu-nav.on:hover .i { transform: none; color: #fff; }
 .lu-nav.on .i { background: rgba(255, 255, 255, 0.16); color: #fff; box-shadow: none; }
 .lu-nav.on::before { display: none; }
 .lu-nav .lu-badge { background: color-mix(in srgb, var(--bc, var(--l-rose)) 13%, var(--l-surface)); color: var(--bc, var(--l-rose)); box-shadow: none; }
@@ -472,3 +476,41 @@ html.dark .ry-sheen { --ry-sheen: rgba(255, 255, 255, 0.06); }
 
 .ry-form.shake { animation: ry-shake 0.45s; }
 @keyframes ry-shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+
+/* ---------- The page's own colour ---------- */
+.lu-progress { box-shadow: 0 0 12px var(--page-c, rgba(37, 99, 235, 0.7)); }
+.rp-kpis .hero { background: linear-gradient(120deg, color-mix(in srgb, var(--page-c, hsl(var(--primary))) 58%, #0d1a52), var(--page-c, hsl(var(--primary)))); }
+
+/* ---------- Moving between pages: a cascade ----------
+   The title and the actions settle first, then each part of the page rises
+   in turn; cards that already rise on their own (rp-rise) keep their timing. */
+@keyframes lu-casc { from { opacity: 0; transform: translateY(16px) scale(0.985); } }
+.lu-page { animation: none; }
+.ry-head [data-slot=title] > *, .ry-head .acts > * { animation: lu-casc 0.62s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ry-head .acts > * { animation-delay: 70ms; }
+.lu-page > * > :not(.rp-rise) { animation: lu-casc 0.62s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.lu-page > * > :nth-child(1):not(.rp-rise) { animation-delay: 60ms; }
+.lu-page > * > :nth-child(2):not(.rp-rise) { animation-delay: 115ms; }
+.lu-page > * > :nth-child(3):not(.rp-rise) { animation-delay: 170ms; }
+.lu-page > * > :nth-child(4):not(.rp-rise) { animation-delay: 225ms; }
+.lu-page > * > :nth-child(n + 5):not(.rp-rise) { animation-delay: 280ms; }
+/* the page's own fixed or floating parts (dialogs, drawers, toasts) never move */
+.lu-page > * > :is([role=dialog], [data-radix-portal], .fixed) { animation: none; }
+.lu-still .lu-page > * > *, .lu-still .ry-head [data-slot=title] > *, .lu-still .ry-head .acts > * { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lu-page > * > *, .ry-head [data-slot=title] > *, .ry-head .acts > * { animation: none !important; }
+}
+@media print {
+  .lu-page > * > *, .ry-head [data-slot=title] > * { animation: none !important; }
+}
+
+/* A page loading for the first time: its outline in the page's colour, the shell stays. */
+.lu-loading { display: grid; gap: 16px; }
+.lu-loading i { display: block; border-radius: 20px; background: linear-gradient(90deg, color-mix(in srgb, var(--page-c, #2563eb) 7%, var(--l-surface)) 25%, color-mix(in srgb, var(--page-c, #2563eb) 15%, var(--l-surface)) 50%, color-mix(in srgb, var(--page-c, #2563eb) 7%, var(--l-surface)) 75%); background-size: 200% 100%; animation: lu-shimmer 1.2s linear infinite; }
+.lu-loading .band { height: 104px; }
+.lu-loading .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.lu-loading .row i { height: 190px; }
+.lu-loading .wide { height: 140px; }
+@keyframes lu-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .lu-loading i { animation: none; } }
+@media (max-width: 760px) { .lu-loading .row { grid-template-columns: minmax(0, 1fr); } .lu-loading .row i:nth-child(n + 2) { display: none; } }

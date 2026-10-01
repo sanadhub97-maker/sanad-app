@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, Suspense } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +17,7 @@ import { LuluCommand } from "@/components/lulu/lulu-command";
 import { LuluNotifications, useNotificationsBell } from "@/components/lulu/lulu-notifications";
 import { useLuluEffects, luluSwapTheme, lastPointer } from "@/components/lulu/lulu-effects";
 import { openInstall, useCanInstall } from "@/components/lulu/lulu-install";
-import { isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
+import { colorOf, isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
 import { settingsApi } from "@/api/settings";
 import { tasksApi } from "@/api/tasks";
 import { dashboardApi } from "@/api/dashboard";
@@ -246,7 +246,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
                     const on = isOnPath(path, item.href);
                     const b = badges[item.href];
                     return (
-                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} aria-current={on ? "page" : undefined}>
+                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} style={{ ["--nc" as string]: item.color }} aria-current={on ? "page" : undefined}>
                         <span className="i">
                           <Icon />
                         </span>
@@ -407,7 +407,7 @@ function Island({ items, current }: { items: LuluNavItem[]; current?: LuluNavIte
                 key={n.href + k}
                 type="button"
                 className={cn("lu-il-t", `lt-${n.tone}`, mode === "menu" && isOnPath(path, n.href) && "on")}
-                style={{ ["--k" as string]: k }}
+                style={{ ["--k" as string]: k, ...("color" in n ? { ["--c" as string]: n.color } : {}) }}
                 onClick={() => {
                   setMode("closed");
                   navigate(n.href);
@@ -422,7 +422,7 @@ function Island({ items, current }: { items: LuluNavItem[]; current?: LuluNavIte
           })}
         </div>
         <div className="lu-il-row">
-          <button type="button" className={cn("lu-il-cur", `lt-${cur?.tone ?? toneOf(path)}`)} onClick={() => setMode((m) => (m === "menu" ? "closed" : "menu"))} aria-label={isAr ? "كل الأقسام" : "All sections"}>
+          <button type="button" className={cn("lu-il-cur", `lt-${cur?.tone ?? toneOf(path)}`)} style={{ ["--c" as string]: colorOf(path) }} onClick={() => setMode((m) => (m === "menu" ? "closed" : "menu"))} aria-label={isAr ? "كل الأقسام" : "All sections"}>
             <span className="i" key={cur?.href}>
               {CurIcon && <CurIcon />}
             </span>
@@ -442,6 +442,21 @@ function Island({ items, current }: { items: LuluNavItem[]; current?: LuluNavIte
         </div>
       </div>
     </>
+  );
+}
+
+/** While a page loads for the first time: its outline in the page's colour, inside the shell. */
+function PageLoading() {
+  return (
+    <div className="lu-loading" aria-busy="true" aria-live="polite">
+      <i className="band" />
+      <div className="row">
+        <i />
+        <i />
+        <i />
+      </div>
+      <i className="wide" />
+    </div>
   );
 }
 
@@ -471,7 +486,7 @@ export function LuluShell() {
 
   return (
     <PageHeaderSlotProvider>
-      <div className={cn("lu-app font-sans", !animationsEnabled && "lu-still")}>
+      <div className={cn("lu-app font-sans", !animationsEnabled && "lu-still")} style={{ ["--page-c" as string]: colorOf(location.pathname) }}>
         <div className="lu-mesh" aria-hidden="true">
           <i className="m1" />
           <i className="m2" />
@@ -483,9 +498,11 @@ export function LuluShell() {
         <main ref={main} className="lu-main">
           <div className="lu-wrap">
             <Header onSearch={() => setCmd(true)} current={current} />
-            {/* The new page fades in at once (CSS), without waiting for the old one to leave. */}
+            {/* The new page comes in as a cascade: its parts rise in turn (CSS, in royal.css). */}
             <div key={location.pathname} className="lu-page relative space-y-[22px]">
-              <Outlet />
+              <Suspense fallback={<PageLoading />}>
+                <Outlet />
+              </Suspense>
             </div>
           </div>
         </main>
