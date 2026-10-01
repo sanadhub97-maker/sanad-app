@@ -148,7 +148,7 @@ export function payloadOf(m: PushMessage) {
  * Sends to every device of a user, unless they turned this kind off or it's
  * their quiet time. Devices the push service no longer knows are dropped.
  */
-export async function sendToUser(userId: string, m: PushMessage, opts: { force?: boolean } = {}): Promise<{ sent: number; skipped?: string }> {
+export async function sendToUser(userId: string, m: PushMessage, opts: { force?: boolean } = {}): Promise<{ sent: number; skipped?: string; failures?: string[] }> {
   const subs = await prisma.pushSubscription.findMany({ where: { userId } });
   if (subs.length === 0) return { sent: 0, skipped: "no-devices" };
   if (!opts.force && m.kind !== "test") {
@@ -160,6 +160,7 @@ export async function sendToUser(userId: string, m: PushMessage, opts: { force?:
   const { publicKey, privateKey } = await vapidKeys();
   const body = JSON.stringify(payloadOf(m));
   let sent = 0;
+  const failures: string[] = [];
   await Promise.all(
     subs.map(async (s) => {
       try {
@@ -173,6 +174,7 @@ export async function sendToUser(userId: string, m: PushMessage, opts: { force?:
         await prisma.pushSubscription.update({ where: { id: s.id }, data: { lastSentAt: new Date() } }).catch(() => undefined);
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
+        failures.push(`${status ?? ""} ${(err as { body?: string }).body ?? (err as Error).message}`.trim().slice(0, 200));
         if (status === 404 || status === 410) {
           await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => undefined);
         } else {
@@ -181,7 +183,7 @@ export async function sendToUser(userId: string, m: PushMessage, opts: { force?:
       }
     })
   );
-  return { sent };
+  return { sent, failures };
 }
 
 /** Users who have at least one device subscribed, of those given. */

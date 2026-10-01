@@ -142,7 +142,7 @@ router.post(
       },
       { force: true }
     );
-    if (result.sent === 0) throw ApiError.badRequest(result.skipped === "no-devices" ? "No device is subscribed yet." : "The notification could not be sent.");
+    if (result.sent === 0) throw ApiError.badRequest(result.skipped === "no-devices" ? "No device is subscribed yet." : `The notification could not be sent: ${result.failures?.join(" | ") || result.skipped || "unknown"}`);
     res.json({ data: result });
   })
 );
