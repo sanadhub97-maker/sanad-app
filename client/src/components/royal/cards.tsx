@@ -133,6 +133,8 @@ export const compColor = (pct: number) => (pct >= 70 ? "var(--ok)" : pct >= 40 ?
 
 export function BigRing({ pct, color, value, sub }: { pct: number; color: string; value: ReactNode; sub: ReactNode }) {
   const C = 2 * Math.PI * 40;
+  // Long figures ("1627", "100%") get a smaller size so they stay inside the ring.
+  const len = String(value ?? "").length;
   return (
     <div className="rc-big" style={css({ "--sc": color })}>
       <svg viewBox="0 0 100 100" aria-hidden="true">
@@ -140,7 +142,7 @@ export function BigRing({ pct, color, value, sub }: { pct: number; color: string
         <circle className="arc" cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(C * pct) / 100} ${C}`} />
       </svg>
       <div>
-        <b>{value}</b>
+        <b className={len >= 5 ? "xl" : len >= 4 ? "lg" : undefined}>{value}</b>
         <small>{sub}</small>
       </div>
     </div>
@@ -195,7 +197,7 @@ export function DocCard({ i, kind, kindCode, icon: Icon, owner, ownerIcon: Owner
             {days !== null && <circle className="arc" cx="50" cy="50" r="40" fill="none" stroke="var(--sc)" strokeWidth="9" strokeLinecap="round" strokeDasharray={`${(C * left) / 100} ${C}`} />}
           </svg>
           <div>
-            <b>{days === null ? "—" : Math.abs(days)}</b>
+            <b className={days !== null && Math.abs(days) >= 1000 ? "lg" : undefined}>{days === null ? "—" : Math.abs(days)}</b>
             <small>{days === null ? L("بدون انتهاء", "No expiry") : days < 0 ? L("يوم منتهي", "days over") : L("يوم متبقي", "days left")}</small>
           </div>
         </div>

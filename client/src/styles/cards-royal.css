@@ -73,6 +73,7 @@
 .rc-ring .arc { transition: stroke-dasharray 1s; animation: rc-draw 1.1s cubic-bezier(.16,1,.3,1) backwards .15s; }
 .rc-ring > div { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
 .rc-ring b { font: 700 28px/1 var(--head); color: var(--sc); font-variant-numeric: tabular-nums; }
+.rc-ring b.lg { font-size: 22px; }
 .rc-ring small { font-size: 10.5px; color: var(--muted); margin-top: 3px; }
 .rc-dc.exp .rc-ring, .rc-hero.exp .rc-big { animation: rc-alarm 2.4s ease-in-out infinite; }
 @keyframes rc-alarm { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--bad) 45%, transparent)); } }
@@ -267,6 +268,8 @@
 .rc-big .arc { animation: rc-draw 1.2s cubic-bezier(.16,1,.3,1) backwards .15s; }
 .rc-big > div { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
 .rc-big b { font: 700 40px/1 var(--head); color: var(--sc); font-variant-numeric: tabular-nums; }
+.rc-big b.lg { font-size: 30px; } .rc-big b.xl { font-size: 25px; }
+.rc-cmp .rc-big b.lg, .rc-cmp .rc-big b.xl { font-size: 18px; }
 .rc-big small { font-size: 12px; color: var(--muted); margin-top: 4px; }
 .rc-cover { height: 110px; background: linear-gradient(125deg, var(--kc) 0%, color-mix(in srgb, var(--kc) 55%, #0b1740) 100%); position: relative; overflow: hidden; }
 .rc-cover::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,.07) 0 2px, transparent 2px 14px); }
@@ -387,11 +390,13 @@
   .rc-dc-main { grid-template-columns: 92px minmax(0, 1fr); }
   .rc-ring { width: 92px; height: 92px; }
   .rc-ring b { font-size: 22px; }
+  .rc-ring b.lg { font-size: 18px; }
   .rc-tl { padding-inline: 12px; }
   .rc-tl::before { inset-inline-start: 32px; }
   .rc-hero-in { grid-template-columns: minmax(0, 1fr); padding: 18px; }
   .rc-big { width: 120px; height: 120px; justify-self: center; }
   .rc-big b { font-size: 32px; }
+  .rc-big b.lg { font-size: 25px; } .rc-big b.xl { font-size: 21px; }
   .rc-life { padding: 0 12px 34px; }
   .rc-step { min-width: 70px; }
   .rc-facts { grid-template-columns: minmax(0, 1fr); }
