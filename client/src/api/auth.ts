@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api, keepRefreshToken, keptRefreshToken } from "@/lib/api";
 import type { AuthUser } from "@/stores/authStore";
 
 /** The user as the server sends it, with the avatar: an uploaded photo (file
@@ -12,12 +12,16 @@ export interface LoginPayload {
 }
 
 export async function login(payload: LoginPayload) {
-  const res = await api.post<{ data: { accessToken: string; user: AuthUser } }>("/auth/login", payload);
+  const res = await api.post<{ data: { accessToken: string; user: AuthUser; refreshToken?: string } }>("/auth/login", payload);
+  // Inside a frame without cookies, the app keeps the refresh token itself.
+  keepRefreshToken(res.data.data.refreshToken);
   return res.data.data;
 }
 
 export async function logout() {
-  await api.post("/auth/logout");
+  const refreshToken = keptRefreshToken();
+  keepRefreshToken(undefined);
+  await api.post("/auth/logout", refreshToken ? { refreshToken } : {});
 }
 
 export async function fetchMe() {

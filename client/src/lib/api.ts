@@ -3,6 +3,37 @@ import { useAuthStore } from "@/stores/authStore";
 import i18n, { tr, isRtlLanguage } from "@/i18n";
 import { localizeServerMessage } from "@/lib/server-messages";
 
+/* Shown inside another site's frame (sanad-hr.sept.cloud), some browsers keep
+   no cookie for the app (Safari, above all on iPhone and iPad), so a reload
+   would sign the user out. There the app says so (X-Embedded) and keeps the
+   refresh token itself, in this frame's own storage. */
+const framed = (() => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+})();
+const RT_KEY = "sanad.rt";
+export function keepRefreshToken(token?: unknown) {
+  if (!framed) return;
+  try {
+    if (typeof token === "string" && token) localStorage.setItem(RT_KEY, token);
+    else localStorage.removeItem(RT_KEY);
+  } catch {
+    /* storage blocked: the cookie is all there is */
+  }
+}
+export function keptRefreshToken(): string | undefined {
+  if (!framed) return undefined;
+  try {
+    return localStorage.getItem(RT_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+const embeddedHeaders = framed ? { "X-Embedded": "1" } : {};
+
 export const api = axios.create({
   baseURL: "/api",
   withCredentials: true, // send the httpOnly refresh_token cookie
@@ -13,6 +44,7 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   // PDFs and exports come back in the interface language.
   config.headers["X-UI-Lang"] = isRtlLanguage(i18n.language) ? "ar" : "en";
+  if (framed) config.headers["X-Embedded"] = "1";
   return config;
 });
 
@@ -21,13 +53,15 @@ let refreshPromise: Promise<string | null> | null = null;
 async function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = axios
-      .post("/api/auth/refresh", {}, { withCredentials: true })
+      .post("/api/auth/refresh", framed ? { refreshToken: keptRefreshToken() } : {}, { withCredentials: true, headers: embeddedHeaders })
       .then((res) => {
-        const { accessToken, user } = res.data.data;
+        const { accessToken, user, refreshToken } = res.data.data;
+        keepRefreshToken(refreshToken);
         useAuthStore.getState().setAuth(accessToken, user);
         return accessToken as string;
       })
       .catch(() => {
+        keepRefreshToken(undefined);
         useAuthStore.getState().clearAuth();
         return null;
       })

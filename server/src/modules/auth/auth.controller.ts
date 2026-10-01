@@ -11,6 +11,10 @@ import type { AuthContext } from "@/types/express";
 const REFRESH_COOKIE = "refresh_token";
 
 function setRefreshCookie(res: Response, token: string, ttlMs: number) {
+  // A cookie set before partitioning is a separate cookie with the same name;
+  // left in place it would come first and carry a token that was already
+  // rotated, so it is cleared each time the partitioned one is set.
+  if (isProduction) res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", secure: true, sameSite: "none" });
   res.cookie(REFRESH_COOKIE, token, {
     httpOnly: true,
     secure: isProduction,
@@ -18,10 +22,23 @@ function setRefreshCookie(res: Response, token: string, ttlMs: number) {
     // so the cookie must survive cross-site fetches in production —
     // SameSite=None requires Secure, which is only set once isProduction.
     sameSite: isProduction ? "none" : "lax",
+    // Partitioned (CHIPS): when the app is shown inside another site's frame
+    // (sanad-hr.sept.cloud), browsers keep this cookie for that site only
+    // instead of dropping it as a third-party cookie.
+    partitioned: isProduction,
     path: "/api/auth",
     maxAge: ttlMs,
   });
 }
+
+/* Inside a frame some browsers (Safari above all) keep no cookie at all, so
+   the app there says so (X-Embedded) and keeps the refresh token itself: it
+   comes back in the body, and is accepted from the body when no cookie came. */
+const embedded = (req: Request) => req.get("X-Embedded") === "1";
+const bodyToken = (req: Request): string | undefined => {
+  const t = (req.body as { refreshToken?: unknown } | undefined)?.refreshToken;
+  return typeof t === "string" && t.length > 10 && t.length < 500 ? t : undefined;
+};
 
 function clientMeta(req: Request) {
   return { ipAddress: req.ip, userAgent: req.headers["user-agent"] };
@@ -43,7 +60,7 @@ function serializeAuth(auth: AuthContext) {
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.login(req.body, clientMeta(req));
   setRefreshCookie(res, result.refreshToken, msFromTtl(result.refreshTtl));
-  res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth) } });
+  res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth), ...(embedded(req) ? { refreshToken: result.refreshToken } : {}) } });
 });
 
 function msFromTtl(ttl: string): number {
@@ -58,18 +75,19 @@ function msFromTtl(ttl: string): number {
 }
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-  const rawToken = req.cookies?.[REFRESH_COOKIE];
+  const rawToken = req.cookies?.[REFRESH_COOKIE] ?? bodyToken(req);
   if (!rawToken) throw ApiError.unauthorized("No refresh token provided");
 
   const result = await authService.refreshSession(rawToken, clientMeta(req));
   setRefreshCookie(res, result.refreshToken, result.remainingMs);
-  res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth) } });
+  res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth), ...(embedded(req) ? { refreshToken: result.refreshToken } : {}) } });
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const rawToken = req.cookies?.[REFRESH_COOKIE];
+  const rawToken = req.cookies?.[REFRESH_COOKIE] ?? bodyToken(req);
   await authService.logout(rawToken);
-  res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", secure: isProduction, sameSite: isProduction ? "none" : "lax" });
+  res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", secure: isProduction, sameSite: isProduction ? "none" : "lax", partitioned: isProduction });
+  if (isProduction) res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", secure: true, sameSite: "none" });
   res.json({ message: "Logged out" });
 });
 
