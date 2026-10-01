@@ -71,20 +71,34 @@ html:root body { background: hsl(var(--background)); }
 .lu-grp-h { height: 30px; color: var(--l-muted); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
 .lu-grp-h .ln { background: transparent; }
 .lu-grp + .lu-grp { margin-top: 8px; }
-.lu-nav { min-height: 46px; gap: 12px; padding: 0 10px; border-radius: 13px; color: var(--l-ink2); font-weight: 500; transition: background 0.2s, color 0.2s, box-shadow 0.25s; }
-/* Each page in its own colour (--nc, from the menu): a tinted icon, and the
-   whole row in that colour when it is the page you are on. */
-.lu-nav .i, .lu-nav:not(.on) .i { width: 32px; height: 32px; border-radius: 10px; background: color-mix(in srgb, var(--nc, var(--l-muted)) 12%, var(--l-surface)); color: var(--nc, var(--l-muted)); transition: color 0.2s, background 0.2s, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
-html.dark .lu-nav:not(.on) .i { background: color-mix(in srgb, var(--nc, var(--l-muted)) 22%, var(--l-surface)); color: color-mix(in oklab, var(--nc, var(--l-muted)) 72%, white); }
+.lu-nav { min-height: 56px; gap: 12px; padding: 0 8px; border-radius: 14px; color: var(--l-ink2); font-weight: 500; transition: background 0.25s, color 0.2s; }
+/* Each page in its own colour (--nc, from the menu), with an icon like an
+   iPhone app's (as in the approved preview): a squircle in a colour gradient,
+   a white glyph, a light from above and a soft shadow in the same colour. */
+.lu-app { --sq: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 0C10 0 0 10 0 50s10 50 50 50 50-10 50-50S90 0 50 0z'/%3E%3C/svg%3E"); }
+.lu-nav .i, .lu-nav:not(.on) .i, .lu-nav.on .i,
+.lu-il-t > span, .lu-il-cur .i { position: relative; width: 44px; height: 44px; border-radius: 0; background: none; color: #fff; box-shadow: none; display: grid; place-items: center; flex: none; filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--nc, var(--c, #2563eb)) 38%, transparent)); transition: transform 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.lu-nav .i::before, .lu-nav .i::after, .lu-il-t > span::before, .lu-il-t > span::after, .lu-il-cur .i::before, .lu-il-cur .i::after { content: ""; position: absolute; inset: 0; -webkit-mask: var(--sq) center / 100% 100% no-repeat; mask: var(--sq) center / 100% 100% no-repeat; }
+.lu-nav .i::before, .lu-il-t > span::before, .lu-il-cur .i::before { background: linear-gradient(180deg, color-mix(in srgb, var(--nc, var(--c, #2563eb)) 62%, #fff) 0%, var(--nc, var(--c, #2563eb)) 55%, color-mix(in srgb, var(--nc, var(--c, #2563eb)) 82%, #000) 100%); }
+.lu-nav .i::after, .lu-il-t > span::after, .lu-il-cur .i::after { background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 48%); }
+.lu-nav .i svg, .lu-il-t > span svg, .lu-il-cur .i svg { position: relative; z-index: 1; width: 22px; height: 22px; stroke-width: 2.2; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18)); }
 .lu-nav:hover { background: color-mix(in srgb, var(--nc, var(--l-muted)) 7%, var(--l-ground)); color: var(--l-ink); }
-.lu-nav:hover .i { transform: scale(1.08) rotate(-6deg); color: var(--nc, hsl(var(--primary))); }
-.lu-nav.on { background: linear-gradient(180deg, color-mix(in srgb, var(--nc, #1f45c4) 82%, #fff), var(--nc, #1f45c4)); color: #fff; font-weight: 600; box-shadow: 0 12px 22px -14px var(--nc, rgba(31, 69, 196, 0.85)); }
-.lu-nav.on:hover .i { transform: none; color: #fff; }
-.lu-nav.on .i { background: rgba(255, 255, 255, 0.16); color: #fff; box-shadow: none; }
+.lu-nav:hover .i { transform: scale(1.06); }
+.lu-nav.on { background: color-mix(in srgb, var(--nc, #1f45c4) 12%, var(--l-surface)); color: var(--l-ink); font-weight: 700; }
+html.dark .lu-nav.on { background: color-mix(in srgb, var(--nc, #1f45c4) 22%, var(--l-surface)); }
+.lu-nav.on .i { animation: lu-icon-pop 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes lu-icon-pop { 40% { transform: scale(1.14); } }
 .lu-nav.on::before { display: none; }
-.lu-nav .lu-badge { background: color-mix(in srgb, var(--bc, var(--l-rose)) 13%, var(--l-surface)); color: var(--bc, var(--l-rose)); box-shadow: none; }
-.lu-nav.on .lu-badge { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.lu-side.rail .lu-nav { min-height: 60px; }
+.lu-nav .lu-badge { background: #ff3b30; color: #fff; box-shadow: none; }
+.lu-side.rail .lu-nav { min-height: 72px; gap: 5px; }
+.lu-side.rail .lu-nav .i { width: 40px; height: 40px; }
+.lu-side.rail .lu-nav .i svg { width: 20px; height: 20px; }
+/* the phone bar: bigger squircles */
+.lu-il-t > span { width: 52px; height: 52px; }
+.lu-il-t > span svg { width: 25px; height: 25px; }
+.lu-il-t { min-height: 96px; }
+.lu-il-cur .i { width: 42px; height: 42px; }
+@media (prefers-reduced-motion: reduce) { .lu-nav .i, .lu-nav.on .i { transition: none; animation: none; } }
 
 /* The promo card at the bottom of the sidebar */
 .ry-promo { position: relative; overflow: hidden; margin-top: 10px; flex: none; border-radius: 18px; padding: 16px; background: linear-gradient(150deg, #1a3288, #2f5fe0); color: #fff; text-align: start; }
