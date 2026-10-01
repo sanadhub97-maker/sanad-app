@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, ChevronDown, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, BellRing, ChevronDown, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +23,8 @@ import { tasksApi } from "@/api/tasks";
 import { dashboardApi } from "@/api/dashboard";
 import { UserAvatar } from "@/components/lulu/user-avatar";
 import { AvatarEditor, openAvatarEditor } from "@/components/lulu/avatar-editor";
+import { PushSettings, openPushSettings } from "@/components/lulu/push-settings";
+import { syncPush } from "@/lib/push";
 import { logout as logoutRequest, type AvatarUser } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
@@ -93,6 +95,9 @@ function AccountMenu({ children }: { children: ReactNode }) {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setTimeout(openAvatarEditor, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <ImageUp className="h-4 w-4 text-muted-foreground" /> {isAr ? "تغيير الصورة الشخصية" : "Change picture"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setTimeout(openPushSettings, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+          <BellRing className="h-4 w-4 text-muted-foreground" /> {isAr ? "إشعارات الجهاز" : "Device notifications"}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}
@@ -477,6 +482,16 @@ export function LuluShell() {
 
   useLuluEffects(main, animationsEnabled);
 
+  // A tap on a push notification opens its page here (lib/push.ts), and a
+  // device that already receives them is tied to whoever is signed in now.
+  const navigate = useNavigate();
+  useEffect(() => {
+    const go = (e: Event) => navigate((e as CustomEvent<string>).detail);
+    window.addEventListener("sanad:go", go);
+    syncPush();
+    return () => window.removeEventListener("sanad:go", go);
+  }, [navigate]);
+
   useEffect(() => {
     main.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.pathname]);
@@ -517,6 +532,7 @@ export function LuluShell() {
         <Island items={items} current={current} />
         <LuluCommand open={cmd} onClose={() => setCmd(false)} pages={items} />
         <AvatarEditor />
+        <PushSettings />
       </div>
     </PageHeaderSlotProvider>
   );

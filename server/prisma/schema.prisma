@@ -186,6 +186,7 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
   auditLogs                AuditLog[]
   uploadedFiles            File[]
   createdPayments          Payment[]        @relation("PaymentCreatedBy")
@@ -667,4 +668,23 @@ model DailyTask {
 
   @@index([date])
   @@index([sourceKey])
+}
+
+// A device that receives SanaD alerts as push notifications, even with the
+// site closed. `via` is the page that holds the subscription: the app itself
+// ("app") or the sanad-hr.sept.cloud page that shows it in a frame ("sept").
+model PushSubscription {
+  id         String    @id @default(cuid())
+  userId     String
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  via        String    @default("app")
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSentAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

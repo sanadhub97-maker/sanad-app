@@ -235,3 +235,7 @@ export function getPrintSignatures(): Promise<PrintSignatures> {
 export function setPrintSignatures(value: PrintSignatures) {
   return setSetting(PRINT_SIGNATURES_KEY, value);
 }
+
+/** Any stored setting by key (for modules that keep their own, e.g. push). */
+export const readSetting = getSetting;
+export const writeSetting = setSetting;

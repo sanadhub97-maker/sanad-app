@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 import { runExpirationScan } from "@/jobs/expirationScan";
 import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/services/settingsStore";
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
+import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
 
 let scheduledScanTask: cron.ScheduledTask | null = null;
 
@@ -47,6 +48,10 @@ export async function rescheduleExpirationScan(timeStr?: string, timezone = "Asi
 
 export async function startScheduledJobs() {
   resumeWhatsappWebOnBoot().catch((err) => logger.error({ err }, "Resume WhatsApp Web on boot failed"));
+
+  // Push: the morning brief at 08:00, and each task at its own time.
+  cron.schedule("0 8 * * *", () => void pushMorningBrief().catch((err) => logger.error({ err }, "Morning brief push failed")), { timezone: "Asia/Riyadh" });
+  cron.schedule("* * * * *", () => void pushTaskReminders().catch((err) => logger.error({ err }, "Task reminder push failed")));
 
   await rescheduleExpirationScan().catch((err) => logger.error({ err }, "Failed to initialize scheduled scan"));
 

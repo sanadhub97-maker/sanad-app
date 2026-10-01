@@ -10,6 +10,7 @@ import { getActiveRecipients } from "@/services/whatsappRecipients";
 import { alertContext } from "@/services/whatsappTemplates";
 import { getAlertStyle, prepareAlert, type PreparedAlert } from "@/services/whatsappAlert";
 import { withLang } from "@/services/lang";
+import { pushDueItems } from "@/services/pushAlerts";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -112,6 +113,7 @@ export async function runExpirationScan() {
   const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
 
   let dueCount = 0;
+  const due: Parameters<typeof pushDueItems>[0] = [];
 
   for (const item of items) {
     const threshold = matchedThreshold(item, rules.notifyDaysBefore);
@@ -122,6 +124,7 @@ export async function runExpirationScan() {
     const message = messageFor(item, threshold);
     const messageAr = messageArFor(subjectAr(item), threshold);
     const dedupeBase = `${item.key}:${threshold}`;
+    due.push({ item, threshold, dedupeBase });
 
     // In-app notifications (one row per recipient) — always attempted.
     await logOnce(`${dedupeBase}:SYSTEM`, "SYSTEM", async () => {
@@ -194,6 +197,9 @@ export async function runExpirationScan() {
       }
     }
   }
+
+  // On the devices of the responsible users (Web Push).
+  await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));
 
   await markExpirationScanRun();
   await setWhatsappScheduleSetting({ lastRunAt: new Date().toISOString() }).catch(() => undefined);

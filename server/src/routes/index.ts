@@ -17,6 +17,7 @@ import searchRoutes from "@/modules/search/search.routes";
 import translateRoutes from "@/modules/translate/translate.routes";
 import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocuments.routes";
 import tasksRoutes from "@/modules/tasks/tasks.routes";
+import pushRoutes from "@/modules/push/push.routes";
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.use("/import-export", importExportRoutes);
 router.use("/search", searchRoutes);
 router.use("/translate", translateRoutes);
 router.use("/tasks", tasksRoutes);
+router.use("/push", pushRoutes);
 
 export default router;

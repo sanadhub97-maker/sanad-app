@@ -6,6 +6,8 @@ import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext } from "@/services/branding";
 import { paymentReceiptPdf } from "@/modules/pdf/templates";
 import { L } from "@/services/lang";
+import { logger } from "@/lib/logger";
+import { pushPaymentCreated } from "@/services/pushAlerts";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
   res.json(await service.list(req.query as never));
@@ -18,6 +20,7 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 export const create = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
   const payment = await service.create(req.body, req.auth.userId);
+  pushPaymentCreated(payment.id, req.auth.userId).catch((err) => logger.warn({ err }, "Payment push failed"));
   res.status(201).json({ data: payment, message: "Payment saved successfully." });
 });
 
