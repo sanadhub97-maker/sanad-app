@@ -136,7 +136,8 @@ html.dark .lu-nav.on { background: color-mix(in srgb, var(--nc, #1f45c4) 22%, va
 .ry-head p { margin: 2px 0 0; color: var(--l-muted); font-size: 13px; }
 
 /* Primary buttons: the royal gradient, a sheen only on hover */
-.lux-cta, .lu-go { border-radius: 12px !important; background: linear-gradient(180deg, #2f5fe0, #1f45c4) !important; box-shadow: 0 12px 22px -14px rgba(31, 69, 196, 0.9); }
+/* the main button takes the page's colour (the shell sets --primary from it) */
+.lux-cta, .lu-go { border-radius: 12px !important; background: linear-gradient(180deg, color-mix(in srgb, hsl(var(--primary)) 82%, #fff), hsl(var(--primary))) !important; box-shadow: 0 12px 22px -14px hsl(var(--primary) / 0.9); }
 .lux-cta::after, .lu-go::after { animation: none; }
 .lux-cta:hover::after, .lu-go:hover::after { animation: ry-sweep 0.9s ease; }
 @keyframes ry-sweep { from { transform: translateX(120%); } to { transform: translateX(-120%); } }
@@ -164,7 +165,7 @@ html.dark .lu-nav.on { background: color-mix(in srgb, var(--nc, #1f45c4) 22%, va
 .lu-il-t.on { background: var(--l-indigo-t); }
 .lu-il-cur { color: var(--l-ink); }
 .lu-il-btn { background: var(--l-ground); color: var(--l-ink); }
-.lu-il-btn.add { background: linear-gradient(180deg, #2f5fe0, #1f45c4); color: #fff; }
+.lu-il-btn.add { background: linear-gradient(180deg, color-mix(in srgb, hsl(var(--primary)) 82%, #fff), hsl(var(--primary))); color: #fff; }
 
 @media (max-width: 1179px) {
   .lu-wrap { padding: 0 22px 30px; }
@@ -493,7 +494,20 @@ html.dark .ry-sheen { --ry-sheen: rgba(255, 255, 255, 0.06); }
 
 /* ---------- The page's own colour ---------- */
 .lu-progress { box-shadow: 0 0 12px var(--page-c, rgba(37, 99, 235, 0.7)); }
-.rp-kpis .hero { background: linear-gradient(120deg, color-mix(in srgb, var(--page-c, hsl(var(--primary))) 58%, #0d1a52), var(--page-c, hsl(var(--primary)))); }
+/* (.lu-app first: pages-royal.css loads after this file and would win otherwise) */
+.lu-app .rp-kpis .hero { background: linear-gradient(120deg, color-mix(in srgb, var(--page-c, hsl(var(--primary))) 58%, #0d1a52), var(--page-c, hsl(var(--primary)))); }
+.lu-app .rp-kpis .hero .l, .lu-app .rp-kpis .hero .s, .lu-app .rp-kpis .hero .v small { color: rgba(255, 255, 255, 0.82); }
+/* the page's icon beside its title, as in the menu */
+.ry-head .t { display: flex; align-items: center; gap: 14px; }
+.ry-head .t > div { min-width: 0; }
+.ry-title-ico { position: relative; width: 52px; height: 52px; flex: none; display: grid; place-items: center; color: #fff; filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--nc) 40%, transparent)); animation: lu-icon-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.ry-title-ico::before, .ry-title-ico::after { content: ""; position: absolute; inset: 0; -webkit-mask: var(--sq) center / 100% 100% no-repeat; mask: var(--sq) center / 100% 100% no-repeat; }
+.ry-title-ico::before { background: linear-gradient(180deg, color-mix(in srgb, var(--nc) 62%, #fff) 0%, var(--nc) 55%, color-mix(in srgb, var(--nc) 82%, #000) 100%); }
+.ry-title-ico::after { background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 48%); }
+.ry-title-ico svg { position: relative; z-index: 1; width: 25px; height: 25px; stroke-width: 2.2; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18)); }
+@media (max-width: 599px) { .ry-title-ico { width: 44px; height: 44px; } .ry-title-ico svg { width: 21px; height: 21px; } }
+@media print { .ry-title-ico { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ry-title-ico { animation: none; } }
 
 /* ---------- Moving between pages: a cascade ----------
    The title and the actions settle first, then each part of the page rises

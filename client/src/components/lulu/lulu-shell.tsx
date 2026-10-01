@@ -17,7 +17,7 @@ import { LuluCommand } from "@/components/lulu/lulu-command";
 import { LuluNotifications, useNotificationsBell } from "@/components/lulu/lulu-notifications";
 import { useLuluEffects, luluSwapTheme, lastPointer } from "@/components/lulu/lulu-effects";
 import { openInstall, useCanInstall } from "@/components/lulu/lulu-install";
-import { colorOf, isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
+import { colorAsPrimary, colorOf, isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
 import { settingsApi } from "@/api/settings";
 import { tasksApi } from "@/api/tasks";
 import { dashboardApi } from "@/api/dashboard";
@@ -363,6 +363,11 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
       </header>
       <div className="ry-head no-print">
         <div className="t">
+          {current && (
+            <span className="ry-title-ico" key={current.href} aria-hidden="true" style={{ ["--nc" as string]: current.color }}>
+              <current.icon />
+            </span>
+          )}
           <div ref={slots?.setTitle} data-slot="title" className="peer min-w-0" />
           <div className="hidden min-w-0 peer-empty:block">
             <h1>{current?.label ?? brand.name}</h1>
@@ -464,7 +469,10 @@ export function LuluShell() {
   const location = useLocation();
   const main = useRef<HTMLElement>(null);
   const animationsEnabled = useUiStore((s) => s.animationsEnabled);
+  useUiStore((s) => s.themeMode);
   const { items, current } = useLuluNav();
+  const pageColor = colorOf(location.pathname);
+  const dark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
   const [cmd, setCmd] = useState(false);
 
   useLuluEffects(main, animationsEnabled);
@@ -486,7 +494,7 @@ export function LuluShell() {
 
   return (
     <PageHeaderSlotProvider>
-      <div className={cn("lu-app font-sans", !animationsEnabled && "lu-still")} style={{ ["--page-c" as string]: colorOf(location.pathname) }}>
+      <div className={cn("lu-app font-sans", !animationsEnabled && "lu-still")} style={{ ["--page-c" as string]: pageColor, ["--primary" as string]: colorAsPrimary(pageColor, dark), ["--ring" as string]: colorAsPrimary(pageColor, dark) }}>
         <div className="lu-mesh" aria-hidden="true">
           <i className="m1" />
           <i className="m2" />

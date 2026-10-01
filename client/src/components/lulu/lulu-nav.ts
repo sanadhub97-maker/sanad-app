@@ -79,3 +79,20 @@ export function useLuluNav() {
   const current = items.find((i) => i.href !== "/" && isOnPath(path, i.href)) ?? (path === "/" ? items[0] : undefined);
   return { items, current, path };
 }
+
+/** A page colour as the "h s% l%" the theme's --primary takes; on dark, lifted so it reads on navy. */
+export function colorAsPrimary(hex: string, dark: boolean): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.slice(0, 2), 16) / 255, g = parseInt(c.slice(2, 4), 16) / 255, b = parseInt(c.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  let l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h /= 6;
+  }
+  l = dark ? Math.min(0.68, Math.max(0.56, l + 0.12)) : l;
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
