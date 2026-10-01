@@ -680,6 +680,7 @@ model PushSubscription {
   p256dh     String
   auth       String
   via        String    @default("app")
+  device     String    @default("desktop") // "desktop" (computers) or "mobile" (phones, tablets, iPads)
   userAgent  String?
   createdAt  DateTime  @default(now())
   lastSentAt DateTime?

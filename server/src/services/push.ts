@@ -16,15 +16,24 @@ import { drawCard, sealToken, type PushCard } from "@/services/pushCard";
 
 export type PushKind = "exp" | "soon" | "brief" | "task" | "pay" | "test";
 
-export interface PushPrefs {
+/** Computers, and phones/tablets/iPads: each has its own settings. */
+export type DeviceGroup = "desktop" | "mobile";
+
+export interface GroupPrefs {
   kinds: Record<Exclude<PushKind, "test">, boolean>;
   quiet: { on: boolean; from: string; to: string };
 }
+export type PushPrefs = Record<DeviceGroup, GroupPrefs>;
 
-export const DEFAULT_PUSH_PREFS: PushPrefs = {
+const DEFAULT_GROUP_PREFS: GroupPrefs = {
   kinds: { exp: true, soon: true, brief: true, task: true, pay: true },
   quiet: { on: true, from: "23:00", to: "07:00" },
 };
+
+/** A device's group from its browser's description, for devices that didn't say. */
+export function groupOfAgent(userAgent?: string | null): DeviceGroup {
+  return /iPhone|iPad|iPod|Android|Mobile|Tablet/i.test(userAgent || "") ? "mobile" : "desktop";
+}
 
 export interface PushMessage {
   kind: PushKind;
@@ -64,11 +73,14 @@ export function vapidKeys() {
 }
 
 export async function getPushPrefs(userId: string): Promise<PushPrefs> {
-  const p = await readSetting<Partial<PushPrefs> | null>(`push.prefs.${userId}`, null);
-  return {
-    kinds: { ...DEFAULT_PUSH_PREFS.kinds, ...(p?.kinds ?? {}) },
-    quiet: { ...DEFAULT_PUSH_PREFS.quiet, ...(p?.quiet ?? {}) },
-  };
+  const p = await readSetting<(Partial<PushPrefs> & Partial<GroupPrefs>) | null>(`push.prefs.${userId}`, null);
+  const groupOf = (g?: Partial<GroupPrefs>): GroupPrefs => ({
+    kinds: { ...DEFAULT_GROUP_PREFS.kinds, ...(g?.kinds ?? {}) },
+    quiet: { ...DEFAULT_GROUP_PREFS.quiet, ...(g?.quiet ?? {}) },
+  });
+  // Saved before devices were split in two: one set of settings for both.
+  const shared = p?.kinds || p?.quiet ? { kinds: p.kinds, quiet: p.quiet } : undefined;
+  return { desktop: groupOf(p?.desktop ?? shared), mobile: groupOf(p?.mobile ?? shared) };
 }
 
 export function setPushPrefs(userId: string, prefs: PushPrefs) {
@@ -83,7 +95,7 @@ export function riyadhNow(at = new Date()) {
   return { date: d.toISOString().slice(0, 10), hm, weekday: d.getUTCDay() };
 }
 
-function inQuietHours(q: PushPrefs["quiet"], hm: string) {
+function inQuietHours(q: GroupPrefs["quiet"], hm: string) {
   if (!q.on || q.from === q.to) return false;
   return q.from < q.to ? hm >= q.from && hm < q.to : hm >= q.from || hm < q.to;
 }
@@ -95,13 +107,11 @@ export interface SubscriptionInput {
   keys: { p256dh: string; auth: string };
 }
 
-export async function subscribe(userId: string, sub: SubscriptionInput, via: "app" | "sept", userAgent?: string) {
-  // A device belongs to whoever signed in on it last.
-  return prisma.pushSubscription.upsert({
-    where: { endpoint: sub.endpoint },
-    update: { userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth, via, userAgent: userAgent?.slice(0, 300) },
-    create: { userId, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth, via, userAgent: userAgent?.slice(0, 300) },
-  });
+export async function subscribe(userId: string, sub: SubscriptionInput, via: "app" | "sept", userAgent?: string, device?: DeviceGroup) {
+  // A device belongs to whoever signed in on it last. An iPad's browser calls
+  // itself a Mac, so the page says which kind of device it is.
+  const data = { userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth, via, userAgent: userAgent?.slice(0, 300), device: device ?? groupOfAgent(userAgent) };
+  return prisma.pushSubscription.upsert({ where: { endpoint: sub.endpoint }, update: data, create: { ...data, endpoint: sub.endpoint } });
 }
 
 export function unsubscribe(userId: string, endpoint: string) {
@@ -111,7 +121,7 @@ export function unsubscribe(userId: string, endpoint: string) {
 export function devicesOf(userId: string) {
   return prisma.pushSubscription.findMany({
     where: { userId },
-    select: { id: true, endpoint: true, via: true, userAgent: true, createdAt: true, lastSentAt: true },
+    select: { id: true, endpoint: true, via: true, device: true, userAgent: true, createdAt: true, lastSentAt: true },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -145,16 +155,25 @@ export function payloadOf(m: PushMessage) {
 }
 
 /**
- * Sends to every device of a user, unless they turned this kind off or it's
- * their quiet time. Devices the push service no longer knows are dropped.
+ * Sends to every device of a user. Computers and phones/tablets each follow
+ * their own settings: a kind turned off there, or its quiet time, skips that
+ * group only. Devices the push service no longer knows are dropped.
  */
-export async function sendToUser(userId: string, m: PushMessage, opts: { force?: boolean } = {}): Promise<{ sent: number; skipped?: string; failures?: string[] }> {
-  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
-  if (subs.length === 0) return { sent: 0, skipped: "no-devices" };
+export async function sendToUser(
+  userId: string,
+  m: PushMessage,
+  opts: { force?: boolean; group?: DeviceGroup } = {}
+): Promise<{ sent: number; skipped?: string; failures?: string[] }> {
+  const all = await prisma.pushSubscription.findMany({ where: { userId, ...(opts.group ? { device: opts.group } : {}) } });
+  if (all.length === 0) return { sent: 0, skipped: "no-devices" };
+  let subs = all;
   if (!opts.force && m.kind !== "test") {
     const prefs = await getPushPrefs(userId);
-    if (!prefs.kinds[m.kind]) return { sent: 0, skipped: "kind-off" };
-    if (!m.urgent && inQuietHours(prefs.quiet, riyadhNow().hm)) return { sent: 0, skipped: "quiet" };
+    const hm = riyadhNow().hm;
+    const kind = m.kind;
+    const open = (g: DeviceGroup) => prefs[g].kinds[kind] && (m.urgent || !inQuietHours(prefs[g].quiet, hm));
+    subs = all.filter((s) => open(s.device === "mobile" ? "mobile" : "desktop"));
+    if (subs.length === 0) return { sent: 0, skipped: "off-or-quiet" };
   }
 
   const { publicKey, privateKey } = await vapidKeys();

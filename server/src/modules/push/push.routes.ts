@@ -15,12 +15,15 @@ const subscriptionSchema = z.object({
     keys: z.object({ p256dh: z.string().min(10).max(200), auth: z.string().min(8).max(100) }),
   }),
   via: z.enum(["app", "sept"]).default("app"),
+  device: z.enum(["desktop", "mobile"]).optional(),
 });
 const hm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
-const prefsSchema = z.object({
+const groupSchema = z.object({
   kinds: z.object({ exp: z.boolean(), soon: z.boolean(), brief: z.boolean(), task: z.boolean(), pay: z.boolean() }),
   quiet: z.object({ on: z.boolean(), from: hm, to: hm }),
 });
+// Computers, and phones/tablets/iPads, each with their own settings.
+const prefsSchema = z.object({ desktop: groupSchema, mobile: groupSchema });
 
 const userId = (req: Request) => {
   if (!req.auth) throw ApiError.unauthorized();
@@ -72,7 +75,7 @@ router.get(
     res.json({
       data: {
         prefs,
-        devices: devices.map((d) => ({ id: d.id, via: d.via, userAgent: d.userAgent, createdAt: d.createdAt, lastSentAt: d.lastSentAt, endpointTail: d.endpoint.slice(-16) })),
+        devices: devices.map((d) => ({ id: d.id, via: d.via, device: d.device, userAgent: d.userAgent, createdAt: d.createdAt, lastSentAt: d.lastSentAt, endpointTail: d.endpoint.slice(-16) })),
       },
     });
   })
@@ -82,8 +85,8 @@ router.post(
   "/subscribe",
   validate({ body: subscriptionSchema }),
   asyncHandler(async (req: Request, res: Response) => {
-    const { subscription, via } = req.body as z.infer<typeof subscriptionSchema>;
-    await subscribe(userId(req), subscription, via, req.get("user-agent"));
+    const { subscription, via, device } = req.body as z.infer<typeof subscriptionSchema>;
+    await subscribe(userId(req), subscription, via, req.get("user-agent"), device);
     res.status(201).json({ message: "Device subscribed." });
   })
 );
@@ -114,10 +117,10 @@ router.put(
   })
 );
 
-// "جرّب إشعار" — one of the real designs, to every device of the user.
+// "جرّب إشعار" — one of the real designs, to the user's computers or to their phones and tablets.
 router.post(
   "/test",
-  validate({ body: z.object({ kind: z.enum(["exp", "soon", "brief", "task", "pay"]).default("soon") }) }),
+  validate({ body: z.object({ kind: z.enum(["exp", "soon", "brief", "task", "pay"]).default("soon"), group: z.enum(["desktop", "mobile"]).optional() }) }),
   asyncHandler(async (req: Request, res: Response) => {
     const first = (req.auth?.fullName || "").trim().split(/\s+/)[0];
     const samples = {
@@ -140,7 +143,7 @@ router.post(
         card: { k: s.k, ic: s.ic, kind: "إشعارات SanaD", who: "إشعار تجريبي", tag: s.tag, no: "SanaD", date: "الآن", ring: [...s.ring], pct: s.pct, used: s.used, life: s.life },
         actions: [{ action: "open", title: "فتح SanaD", url: "/dashboard" }],
       },
-      { force: true }
+      { force: true, group: req.body.group }
     );
     if (result.sent === 0) throw ApiError.badRequest(result.skipped === "no-devices" ? "No device is subscribed yet." : `The notification could not be sent: ${result.failures?.join(" | ") || result.skipped || "unknown"}`);
     res.json({ data: result });

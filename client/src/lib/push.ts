@@ -8,13 +8,17 @@ import { api } from "@/lib/api";
    and hands the subscription over by postMessage. */
 
 export type PushKindKey = "exp" | "soon" | "brief" | "task" | "pay";
-export interface PushPrefs {
+/** Computers, and phones/tablets/iPads: each has its own settings. */
+export type DeviceGroup = "desktop" | "mobile";
+export interface GroupPrefs {
   kinds: Record<PushKindKey, boolean>;
   quiet: { on: boolean; from: string; to: string };
 }
+export type PushPrefs = Record<DeviceGroup, GroupPrefs>;
 export interface PushDevice {
   id: string;
   via: "app" | "sept";
+  device: DeviceGroup;
   userAgent: string | null;
   createdAt: string;
   lastSentAt: string | null;
@@ -40,6 +44,12 @@ const framed = typeof window !== "undefined" && window.top !== window.self;
 const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
 const standaloneHere = () =>
   window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+/** Which group this device is in. An iPad's Safari calls itself a Mac, but has a touch screen. */
+export function deviceGroup(): DeviceGroup {
+  if (typeof navigator === "undefined") return "desktop";
+  return isIos() || /Android|Mobile|Tablet/i.test(navigator.userAgent) ? "mobile" : "desktop";
+}
 
 /* ---------- the outer page (sept.cloud) ---------- */
 
@@ -137,7 +147,7 @@ export async function enablePush(): Promise<PushState> {
     const r = await askParent("sanad:push-subscribe", "sanad:push-sub", { key }, 120_000);
     if (r) {
       if (!r.ok || !r.subscription) throw new Error(String(r.error || "denied"));
-      await api.post("/push/subscribe", { subscription: r.subscription, via: "sept" });
+      await api.post("/push/subscribe", { subscription: r.subscription, via: "sept", device: deviceGroup() });
       return pushState();
     }
   }
@@ -155,7 +165,7 @@ export async function enablePush(): Promise<PushState> {
     sub = null;
   }
   sub ??= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(key) });
-  await api.post("/push/subscribe", { subscription: sub.toJSON(), via: "app" });
+  await api.post("/push/subscribe", { subscription: sub.toJSON(), via: "app", device: deviceGroup() });
   return pushState();
 }
 
@@ -184,12 +194,12 @@ export async function syncPush() {
   try {
     if (framed) {
       const r = await askParent("sanad:push-state", "sanad:push-state");
-      if (r?.subscription && r.permission === "granted") await api.post("/push/subscribe", { subscription: r.subscription, via: "sept" });
+      if (r?.subscription && r.permission === "granted") await api.post("/push/subscribe", { subscription: r.subscription, via: "sept", device: deviceGroup() });
       return;
     }
     if (!ownSupported() || Notification.permission !== "granted") return;
     const sub = await (await navigator.serviceWorker.getRegistration())?.pushManager.getSubscription();
-    if (sub) await api.post("/push/subscribe", { subscription: sub.toJSON(), via: "app" });
+    if (sub) await api.post("/push/subscribe", { subscription: sub.toJSON(), via: "app", device: deviceGroup() });
   } catch {
     // best effort
   }
@@ -198,6 +208,6 @@ export async function syncPush() {
 export const pushApi = {
   status: async () => (await api.get<{ data: { prefs: PushPrefs; devices: PushDevice[] } }>("/push/status")).data.data,
   savePrefs: async (prefs: PushPrefs) => (await api.put<{ data: PushPrefs }>("/push/prefs", prefs)).data.data,
-  test: async (kind: PushKindKey) => (await api.post<{ data: { sent: number } }>("/push/test", { kind })).data.data,
+  test: async (kind: PushKindKey, group: DeviceGroup) => (await api.post<{ data: { sent: number } }>("/push/test", { kind, group })).data.data,
   removeDevice: async (id: string) => api.delete(`/push/devices/${id}`),
 };
