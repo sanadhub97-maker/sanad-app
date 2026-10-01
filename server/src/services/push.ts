@@ -163,12 +163,21 @@ export async function sendToUser(userId: string, m: PushMessage, opts: { force?:
   const failures: string[] = [];
   await Promise.all(
     subs.map(async (s) => {
-      try {
-        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body, {
+      const send = () =>
+        webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body, {
           vapidDetails: { subject: "https://sanad-hr.sept.cloud", publicKey, privateKey },
           TTL: m.urgent ? 3 * 24 * 3600 : 24 * 3600,
           urgency: m.urgent ? "high" : "normal",
           topic: m.tag.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32) || undefined,
+        });
+      try {
+        // A push service sometimes refuses for a moment (a brand-new device,
+        // a busy server): try once more before giving up on it.
+        await send().catch(async (err) => {
+          const status = (err as { statusCode?: number }).statusCode;
+          if (status === 404 || status === 410) throw err;
+          await new Promise((r) => setTimeout(r, 2500));
+          return send();
         });
         sent++;
         await prisma.pushSubscription.update({ where: { id: s.id }, data: { lastSentAt: new Date() } }).catch(() => undefined);
