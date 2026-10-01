@@ -110,6 +110,26 @@ html:root body { background: hsl(var(--background)); }
 
 .lu-num { font-variant-numeric: tabular-nums; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+/* Light/dark: the new page grows over the old one, which sinks back under it. */
+::view-transition-old(root) { z-index: 1; transform-origin: center; }
+::view-transition-new(root) { z-index: 2; }
+html[data-theme-swap] { background: #070a12; }
+html[data-theme-swap="light"] { background: #f4f6fb; }
+/* Browsers without view transitions: every colour fades instead. */
+.lu-theme-fade, .lu-theme-fade *, .lu-theme-fade *::before, .lu-theme-fade *::after {
+  transition: background-color 0.55s ease, color 0.55s ease, border-color 0.55s ease, fill 0.55s ease, stroke 0.55s ease, box-shadow 0.55s ease !important;
+}
+/* The top-bar switch: the sun turns and sets, the moon turns and rises. */
+.lu-btn.lu-theme { padding: 0; width: 44px; }
+.lu-theme svg { position: absolute; width: 19px; height: 19px; transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.45s ease; }
+.lu-theme .sun { color: #f5a524; }
+.lu-theme .moon { color: #a5b4fc; }
+.lu-theme[data-dark="false"] .moon { transform: rotate(-120deg) scale(0.3) translateY(10px); opacity: 0; }
+.lu-theme[data-dark="true"] .sun { transform: rotate(120deg) scale(0.3) translateY(10px); opacity: 0; }
+.lu-theme:hover .sun { transform: rotate(45deg); }
+.lu-theme[data-dark="true"]:hover .moon { transform: rotate(-18deg) scale(1.08); }
+.lu-theme[data-dark="true"]:hover .sun { transform: rotate(120deg) scale(0.3) translateY(10px); }
+@media (prefers-reduced-motion: reduce) { .lu-theme svg { transition: none; } }
 
 /* ---------------- Shell ---------------- */
 .lu-app { position: relative; display: flex; height: 100vh; height: 100dvh; overflow: hidden; background: hsl(var(--background)); color: hsl(var(--foreground)); }

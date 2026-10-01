@@ -22,30 +22,56 @@ export function luluPop(el: Element | null, color = "var(--l-green)") {
   }
 }
 
-/** Light and dark: the new colours grow in a circle from where you tapped. */
+/* Where the last press was, so a switch from a menu grows from the menu item. */
+let pointer: { clientX: number; clientY: number } | undefined;
+if (typeof window !== "undefined") window.addEventListener("pointerdown", (e) => (pointer = { clientX: e.clientX, clientY: e.clientY }), { capture: true, passive: true });
+export const lastPointer = () => pointer;
+
+const EASE = "cubic-bezier(0.65, 0, 0.35, 1)";
+let swapping = false;
+
+/** Light and dark: the new colours grow in a circle from where you pressed,
+ * while the old page sinks back and dims under it. Without view transitions
+ * the colours fade instead; with reduced motion they simply change. */
 export function luluSwapTheme(e?: { clientX: number; clientY: number }) {
+  if (swapping) return;
+  const html = document.documentElement;
+  const toDark = !html.classList.contains("dark");
   const apply = () => {
-    const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
-    document.documentElement.classList.toggle("dark", next === "dark");
-    flushSync(() => useUiStore.getState().setThemeMode(next));
+    html.classList.toggle("dark", toDark);
+    flushSync(() => useUiStore.getState().setThemeMode(toDark ? "dark" : "light"));
   };
-  const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void> } };
-  if (!doc.startViewTransition || reduced()) {
+  if (reduced()) return apply();
+
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } };
+  if (!doc.startViewTransition) {
+    // A soft cross-fade of every colour, then back to normal transitions.
+    html.classList.add("lu-theme-fade");
     apply();
+    window.setTimeout(() => html.classList.remove("lu-theme-fade"), 650);
     return;
   }
+
   const x = e?.clientX || window.innerWidth / 2;
   const y = e?.clientY || 40;
+  const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  swapping = true;
+  html.dataset.themeSwap = toDark ? "dark" : "light";
   const t = doc.startViewTransition(apply);
   t.ready
     .then(() => {
-      const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-      document.documentElement.animate(
-        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
-        { duration: 700, easing: "cubic-bezier(.2,.9,.2,1)", pseudoElement: "::view-transition-new(root)" }
+      const duration = 900;
+      html.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] }, { duration, easing: EASE, pseudoElement: "::view-transition-new(root)" });
+      html.animate(
+        { transform: ["scale(1)", "scale(0.97)"], filter: ["brightness(1) blur(0px)", `brightness(${toDark ? 0.7 : 1.15}) blur(1.5px)`] },
+        { duration, easing: EASE, pseudoElement: "::view-transition-old(root)" }
       );
     })
     .catch(() => undefined);
+  t.finished.finally(() => {
+    swapping = false;
+    delete html.dataset.themeSwap;
+  });
 }
 
 /** Ripples on buttons, the light that follows the pointer over cards, the tilt
