@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, Loader2, Minus, Plus, RotateCw } from "lucide-react";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { api } from "@/lib/api";
@@ -23,8 +24,9 @@ function loadPdfJs() {
 }
 
 export function usePreviewPdf(theme: PrintThemeId | null, doc: PreviewDoc) {
+  const { i18n } = useTranslation();
   return useQuery({
-    queryKey: ["print-preview", theme, doc],
+    queryKey: ["print-preview", theme, doc, i18n.language],
     // Kept as a Blob: pdf.js takes over the bytes it is given, so each draw reads a fresh copy.
     queryFn: async () => (await api.get<Blob>("/settings/print-theme/preview", { params: { theme, doc, live: 1 }, responseType: "blob" })).data,
     enabled: Boolean(theme),
@@ -42,6 +44,8 @@ export function PrintLivePreview({ theme, doc, isAr }: { theme: PrintThemeId | n
   const [zoom, setZoom] = useState(1);
   const [pages, setPages] = useState(0);
   const [drawing, setDrawing] = useState(false);
+  const [renderError, setRenderError] = useState(false);
+  const [renderAttempt, setRenderAttempt] = useState(0);
 
   // Follow the panel's width so pages always fit.
   useEffect(() => {
@@ -57,18 +61,22 @@ export function PrintLivePreview({ theme, doc, isAr }: { theme: PrintThemeId | n
   useEffect(() => {
     if (!data || !width || !pagesRef.current) return;
     let cancelled = false;
+    let task: import("pdfjs-dist").PDFDocumentLoadingTask | undefined;
+    let renderTask: { cancel(): void } | undefined;
     const host = pagesRef.current;
+    setRenderError(false);
+    setPages(0);
     setDrawing(true);
     (async () => {
       const pdfjs = await loadPdfJs();
       const bytes = new Uint8Array(await data.arrayBuffer());
       if (cancelled) return;
-      const pdf = await pdfjs.getDocument({ data: bytes }).promise;
+      task = pdfjs.getDocument({ data: bytes });
+      const pdf = await task.promise;
       if (cancelled) return;
       setPages(pdf.numPages);
       const cssWidth = Math.max(240, (width - 28) * zoom);
       const dpr = Math.min(2.5, window.devicePixelRatio || 1);
-      const canvases: HTMLCanvasElement[] = [];
       for (let n = 1; n <= pdf.numPages; n++) {
         const page = await pdf.getPage(n);
         if (cancelled) return;
@@ -81,19 +89,22 @@ export function PrintLivePreview({ theme, doc, isAr }: { theme: PrintThemeId | n
         canvas.style.height = `${(viewport.height / dpr).toFixed(1)}px`;
         canvas.className = "lu-pv-page";
         canvas.style.setProperty("--k", String(n - 1));
-        await page.render({ canvasContext: canvas.getContext("2d")!, viewport }).promise;
-        canvases.push(canvas);
+        const rendering = page.render({ canvasContext: canvas.getContext("2d")!, viewport });
+        renderTask = rendering;
+        await rendering.promise;
+        renderTask = undefined;
         if (n === 1 && !cancelled) host.replaceChildren(canvas);
         else if (!cancelled) host.appendChild(canvas);
       }
-      void pdf.destroy();
     })()
-      .catch(() => undefined)
-      .finally(() => !cancelled && setDrawing(false));
+      .catch(() => { if (!cancelled) { host.replaceChildren(); setPages(0); setRenderError(true); } })
+      .finally(() => { void task?.destroy().catch(() => undefined); if (!cancelled) setDrawing(false); });
     return () => {
       cancelled = true;
+      renderTask?.cancel();
+      void task?.destroy().catch(() => undefined);
     };
-  }, [data, width, zoom]);
+  }, [data, width, zoom, renderAttempt]);
 
   // A different design or document starts at the top.
   useEffect(() => {
@@ -127,15 +138,16 @@ export function PrintLivePreview({ theme, doc, isAr }: { theme: PrintThemeId | n
         </span>
       </div>
       <div ref={box} className={cn("lu-pv-scroll", zoom > 1 && "zoomed")}>
-        {isError ? (
+        {(isError || renderError) && (
           <div className="lu-pv-empty">
             <AlertTriangle className="h-6 w-6 text-destructive" />
             <b>{isAr ? "تعذّر تجهيز المعاينة" : "Couldn't prepare the preview"}</b>
-            <button type="button" className="lu-sbtn lt-sky" style={{ flex: "none", padding: "0 16px", color: "var(--c)" }} onClick={() => refetch()}>
+            <button type="button" className="lu-sbtn lt-sky" style={{ flex: "none", padding: "0 16px", color: "var(--c)" }} onClick={() => { setRenderError(false); setRenderAttempt(n => n + 1); void refetch(); }}>
               <RotateCw className="h-4 w-4" /> {isAr ? "إعادة المحاولة" : "Try again"}
             </button>
           </div>
-        ) : (
+        )}
+        {!isError && !renderError && (
           <>
             {loading && (
               <div className="lu-pv-skel" aria-hidden="true">
@@ -148,9 +160,9 @@ export function PrintLivePreview({ theme, doc, isAr }: { theme: PrintThemeId | n
                 <i className="s" />
               </div>
             )}
-            <div ref={pagesRef} className={cn("lu-pv-pages", loading && "hidden", (isFetching || drawing) && "busy")} />
           </>
         )}
+        <div ref={pagesRef} className={cn("lu-pv-pages", (loading || isError || renderError) && "hidden", (isFetching || drawing) && "busy")} />
       </div>
     </div>
   );

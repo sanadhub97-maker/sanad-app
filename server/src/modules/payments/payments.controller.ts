@@ -6,6 +6,7 @@ import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext } from "@/services/branding";
 import { paymentReceiptPdf } from "@/modules/pdf/templates";
 import { L } from "@/services/lang";
+import { pdfContentDisposition } from "@/utils/pdfHeaders";
 import { logger } from "@/lib/logger";
 import { pushPaymentCreated } from "@/services/pushAlerts";
 
@@ -40,6 +41,6 @@ export const receiptPdf = asyncHandler(async (req: Request, res: Response) => {
   const html = paymentReceiptPdf(payment as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: L("سند صرف", "Payment Receipt") });
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `inline; filename="receipt-${payment.paymentNumber}.pdf"`);
+  res.setHeader("Content-Disposition", pdfContentDisposition(`receipt-${payment.paymentNumber}.pdf`));
   res.send(pdf);
 });

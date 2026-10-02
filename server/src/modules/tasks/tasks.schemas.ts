@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date");
+const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date").refine(value => {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}, "Use a valid calendar date");
 export const TASK_CATEGORIES = ["employees", "documents", "branches", "payments", "general"] as const;
 
 export const idParamSchema = z.object({ id: z.string().min(1) });
@@ -9,7 +12,9 @@ export const rangeQuerySchema = z
   .object({ from: day, to: day, today: day.optional() })
   .refine((v) => v.from <= v.to, "from must not be after to")
   .refine((v) => (Date.parse(v.to) - Date.parse(v.from)) / 86_400_000 <= 62, "Ask for 62 days at most");
-export const exportQuerySchema = z.object({ from: day, to: day, format: z.enum(["pdf", "xlsx"]) });
+export const exportQuerySchema = z.object({ from: day, to: day, format: z.enum(["pdf", "xlsx"]) })
+  .refine(v => v.from <= v.to, "from must not be after to")
+  .refine(v => (Date.parse(v.to) - Date.parse(v.from)) / 86_400_000 <= 62, "Ask for 62 days at most");
 
 const fields = {
   title: z.string().trim().min(1).max(200),

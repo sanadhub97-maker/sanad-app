@@ -17,5 +17,6 @@ jobs:
       - run: npm audit --audit-level=low
       - run: npx prisma generate --config=server/prisma.config.ts
       - run: npm test --workspace server
+      - run: npm test --workspace client
       - run: npm run build:server
       - run: npm run build:client

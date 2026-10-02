@@ -49,14 +49,15 @@ function launchBrowser(): Promise<Browser> {
 }
 
 async function getBrowser(): Promise<Browser> {
-  if (browserPromise) {
-    const existing = await browserPromise.catch(() => null);
+  const cached = browserPromise;
+  if (cached) {
+    const existing = await cached.catch(() => null);
     if (existing?.connected) return existing;
     // The cached browser process died (crash/OOM) — relaunch instead of
     // staying stuck returning a dead browser to every request until restart.
-    browserPromise = null;
+    if (browserPromise === cached) browserPromise = null;
   }
-  browserPromise = launchBrowser();
+  browserPromise ??= launchBrowser();
   return browserPromise;
 }
 
@@ -145,12 +146,10 @@ async function renderPdfWithRetry(html: string, options: RenderPdfOptions = {}):
   try {
     return await renderOnce(await getBrowser(), html, options);
   } catch (err) {
-    // The cached browser may have died between the health check in getBrowser()
-    // and this request (e.g. crashed mid-render under load) — force a fresh
-    // launch and retry once before giving up, instead of failing every request
-    // until someone manually restarts the server.
-    logger.warn({ err }, "PDF generation failed, relaunching browser and retrying once");
-    browserPromise = null;
+    // getBrowser relaunches a disconnected browser. A page-only failure can
+    // retry on the healthy browser without abandoning a process or disturbing
+    // the other in-flight render.
+    logger.warn({ err }, "PDF generation failed, retrying once");
     try {
       return await renderOnce(await getBrowser(), html, options);
     } catch (retryErr) {
@@ -180,8 +179,7 @@ async function renderPngWithRetry(html: string, width: number, height: number): 
   try {
     return await screenshotOnce(await getBrowser(), html, width, height);
   } catch (err) {
-    logger.warn({ err }, "Image render failed, relaunching browser and retrying once");
-    browserPromise = null;
+    logger.warn({ err }, "Image render failed, retrying once");
     return screenshotOnce(await getBrowser(), html, width, height);
   }
 }

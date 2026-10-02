@@ -64,7 +64,7 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
   if (query.sourceType) {
     // The employee documents page asks for EMPLOYEE_DOCUMENT with an iqama or passport category.
     const iqamaOrPassport = query.sourceType === "EMPLOYEE_DOCUMENT" && (query.category === "IQAMA" || query.category === "PASSPORT");
-    items = items.filter((i) => i.sourceType === query.sourceType || (iqamaOrPassport && i.kind === query.category));
+    items = items.filter((i) => query.sourceType === "EMPLOYEE" ? i.sourceType.startsWith("EMPLOYEE_") : i.sourceType === query.sourceType || (iqamaOrPassport && i.kind === query.category));
   }
   if (query.category) items = items.filter((i) => i.kind === query.category);
   const withStatus = items.map((i) => ({ ...i, status: computeStatus(i.expiryDate, rules) }));

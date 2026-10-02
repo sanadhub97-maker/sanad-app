@@ -12,6 +12,22 @@ function triggerDownload(blobUrl: string, filename: string) {
   link.remove();
 }
 
+function responseFilename(disposition: string | undefined, fallback: string) {
+  let name = disposition?.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)?.[1];
+  if (name) { try { name = decodeURIComponent(name.trim()); } catch { name = undefined; } }
+  name ??= disposition?.match(/filename\s*=\s*(?:"([^"]+)"|([^;]+))/i)?.slice(1).find(Boolean)?.trim();
+  return (name ?? fallback).split(/[\\/]/).pop()?.replace(/[\x00-\x1f\x7f]/g, "") || fallback;
+}
+
+async function prepareBlob(blob: Blob, pdf: boolean) {
+  if (!blob.size || (pdf && await blob.slice(0, 5).text() !== "%PDF-")) throw new Error(tr("الملف المستلم غير صالح. يرجى إعادة المحاولة.", "The received file is invalid. Please try again."));
+  return pdf && blob.type !== "application/pdf" ? new Blob([blob], { type: "application/pdf" }) : blob;
+}
+
+function releasePreviewUrl(url: string, tab: Window) {
+  const poll = setInterval(() => { if (tab.closed) { clearInterval(poll); window.URL.revokeObjectURL(url); } }, 1000);
+}
+
 /** Downloads a binary response (xlsx/pdf/csv) as a real file save — every
  * Export/Template/Print-download button goes through this, never a fake
  * client-only "export". */
@@ -24,12 +40,12 @@ export async function downloadFile(
   try {
     const res = await api.get(url, { params, responseType: "blob" });
     const disposition = res.headers["content-disposition"] as string | undefined;
-    const match = disposition?.match(/filename="?([^"]+)"?/);
-    const filename = match?.[1] ?? filenameFallback;
+    const filename = responseFilename(disposition, filenameFallback);
+    const blob = await prepareBlob(res.data as Blob, params.format === "pdf" || /\.pdf$/i.test(filename));
 
-    const blobUrl = window.URL.createObjectURL(res.data as Blob);
+    const blobUrl = window.URL.createObjectURL(blob);
     triggerDownload(blobUrl, filename);
-    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
     toast.success(tr("تم تصدير الملف بنجاح", "File exported"), { id: toastId });
   } catch (err) {
     const errorMsg = await extractErrorMessage(err, tr("تعذر تصدير الملف. يرجى المحاولة مرة أخرى.", "Could not export the file. Please try again."));
@@ -102,6 +118,7 @@ export async function openPdfInNewTab(
   <div class="sub">${tr("سيتم عرض مستند الـ PDF للطباعة والمعاينة مباشرة", "The PDF will open here for preview and printing")}</div>
 </body>
 </html>`);
+      newTab.document.close();
     }
   } catch {
     // If opening new window failed directly, continue to fetch and download
@@ -110,10 +127,10 @@ export async function openPdfInNewTab(
   try {
     const res = await api.get(url, { params, responseType: "blob" });
     const disposition = res.headers["content-disposition"] as string | undefined;
-    const match = disposition?.match(/filename="?([^"]+)"?/);
-    const filename = match?.[1] ?? fallbackName;
+    const filename = responseFilename(disposition, fallbackName);
+    const blob = await prepareBlob(res.data as Blob, true);
 
-    const blobUrl = window.URL.createObjectURL(res.data as Blob);
+    const blobUrl = window.URL.createObjectURL(blob);
 
     let opened = false;
     if (newTab && !newTab.closed) {
@@ -128,6 +145,10 @@ export async function openPdfInNewTab(
     if (!opened) {
       // Fallback: If new tab was closed or popup was blocked, download directly
       triggerDownload(blobUrl, filename);
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60_000);
+      if (newTab && !newTab.closed) { try { newTab.close(); } catch {} }
+    } else if (newTab) {
+      releasePreviewUrl(blobUrl, newTab);
     }
 
     toast.success(tr("تم تجهيز مستند الـ PDF بنجاح", "PDF ready"), { id: toastId });

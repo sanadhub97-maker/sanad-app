@@ -103,7 +103,7 @@ export default function ReportsPage() {
   const look = open ? TILE_LOOK[open] : null;
   const report = look?.report;
   const query = useMemo(() => {
-    if (report === "documents") return { ...(docStatus ? { status: docStatus } : {}), ...(docSource === "COMPANY_DOCUMENT" ? { sourceType: "COMPANY_DOCUMENT" } : {}) };
+    if (report === "documents") return { ...(docStatus ? { status: docStatus } : {}), ...(docSource ? { sourceType: docSource } : {}) };
     if (report === "employees") return { ...(branchId ? { branchId } : {}), ...(empStatus ? { employmentStatus: empStatus } : {}) };
     const range = { dateFrom: dayOf(from).toISOString(), dateTo: new Date(dayOf(to).getTime() + 86_399_999).toISOString() };
     if (report === "payments") return { ...range, ...(branchId ? { branchId } : {}) };
@@ -113,12 +113,12 @@ export default function ReportsPage() {
   let rows = (rowsRaw as unknown[]) ?? [];
   if (report === "documents" && docSource === "EMPLOYEE") rows = (rows as DocumentRow[]).filter((r) => r.sourceType !== "COMPANY_DOCUMENT");
 
-  const pdf = () => report && void reportsApi[report].export(query, "pdf");
-  const excel = () => report && void reportsApi[report].export(query, "xlsx");
+  const pdf = () => report && void reportsApi[report].export(query, "pdf").catch(() => undefined);
+  const excel = () => report && void reportsApi[report].export(query, "xlsx").catch(() => undefined);
   const print = () => report && void openPdfInNewTab(`/reports/${report}`, { ...query, format: "pdf" }, `${report}-report.pdf`).catch(() => undefined);
   const tileExport = (id: TileId, format: "pdf" | "xlsx") => {
     const p = id === "expired" ? { status: "EXPIRED" } : id === "soon" ? { status: "EXPIRING_SOON" } : {};
-    void reportsApi[TILE_LOOK[id].report].export(p, format);
+    void reportsApi[TILE_LOOK[id].report].export(p, format).catch(() => undefined);
   };
 
   const figure: Record<TileId, { value: string | number; sub: string; parts?: [number, string][] }> = {
