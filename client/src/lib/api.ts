@@ -39,9 +39,15 @@ const embeddedHeaders = framed ? { "X-Embedded": "1" } : {};
 export const api = axios.create({
   baseURL: "/api",
   withCredentials: true, // send the httpOnly refresh_token cookie
+  timeout: 60_000,
 });
 
 api.interceptors.request.use((config) => {
+  // Long exports and maintenance operations need more time than ordinary page requests.
+  if (config.timeout === 60_000) {
+    if (config.url?.startsWith("/maintenance/backups")) config.timeout = 600_000;
+    else if (config.responseType === "blob" || config.data instanceof FormData) config.timeout = 180_000;
+  }
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   // PDFs and exports come back in the interface language.
@@ -55,17 +61,21 @@ let refreshPromise: Promise<string | null> | null = null;
 async function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = axios
-      .post("/api/auth/refresh", framed ? { refreshToken: keptRefreshToken() } : {}, { withCredentials: true, headers: embeddedHeaders })
+      .post("/api/auth/refresh", framed ? { refreshToken: keptRefreshToken() } : {}, { withCredentials: true, headers: embeddedHeaders, timeout: 60_000 })
       .then((res) => {
         const { accessToken, user, refreshToken } = res.data.data;
         keepRefreshToken(refreshToken);
         useAuthStore.getState().setAuth(accessToken, user);
         return accessToken as string;
       })
-      .catch(() => {
-        keepRefreshToken(undefined);
-        useAuthStore.getState().clearAuth();
-        return null;
+      .catch((error: unknown) => {
+        if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
+          keepRefreshToken(undefined);
+          useAuthStore.getState().clearAuth();
+          return null;
+        }
+        // Temporary connection/server failures do not revoke a valid session.
+        throw error;
       })
       .finally(() => {
         refreshPromise = null;
@@ -107,6 +117,8 @@ export function getErrorMessage(
   fallback = tr("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.", "Something went wrong. Please try again.")
 ): string {
   if (axios.isAxiosError(err)) {
+    if (err.code === "ECONNABORTED" || err.code === "ETIMEDOUT") return tr("استغرق الطلب وقتًا أطول من المتوقع. لو كنت تحفظ بيانات، تحقق من السجل قبل إعادة الحفظ.", "The request took too long. If saving data, check the record before saving again.");
+    if (!err.response) return tr("تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مرة أخرى.", "Could not connect to the server. Check your connection and try again.");
     const data = err.response?.data as ApiErrorShape | undefined;
     if (data?.error?.message) return localizeServerMessage(data.error.message);
     if (err.response?.status === 401) return tr("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.", "Your session has expired. Please sign in again.");

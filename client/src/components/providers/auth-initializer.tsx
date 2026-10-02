@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { refreshAccessToken } from "@/lib/api";
-import { fetchMe } from "@/api/auth";
+import { getErrorMessage, refreshAccessToken } from "@/lib/api";
+import { toast } from "sonner";
 
 /** On first load, tries to silently re-authenticate from the httpOnly
  * refresh cookie (if the user has one from a previous session) before
@@ -9,22 +9,18 @@ import { fetchMe } from "@/api/auth";
 export function AuthInitializer({ children }: { children: React.ReactNode }) {
   const isInitializing = useAuthStore((s) => s.isInitializing);
   const setInitializing = useAuthStore((s) => s.setInitializing);
-  const setAuth = useAuthStore((s) => s.setAuth);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = await refreshAccessToken();
-      if (cancelled) return;
-      if (token) {
-        try {
-          const user = await fetchMe();
-          if (!cancelled) setAuth(token, user);
-        } catch {
-          // ignore — user stays logged out
-        }
+      try {
+        // Refresh already returns current user permissions and stores them.
+        await refreshAccessToken();
+      } catch (error) {
+        if (!cancelled) toast.error(getErrorMessage(error));
+      } finally {
+        if (!cancelled) setInitializing(false);
       }
-      if (!cancelled) setInitializing(false);
     })();
     return () => {
       cancelled = true;
