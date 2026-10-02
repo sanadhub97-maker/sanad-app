@@ -69,7 +69,6 @@ import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 import { WhatsappTemplateCard } from "./whatsapp-template-card";
 import { WhatsappCardPicker } from "./whatsapp-card-picker";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
-import MaintenancePage from "@/pages/maintenance/maintenance-page";
 
 /* The settings in the Royal design, as in the approved preview: the sections
    as a list at the side (across the top on narrow screens) and the chosen one
@@ -81,7 +80,6 @@ const SECTIONS = [
   { key: "expiration", icon: Hourglass, Tab: ExpirationTab },
   { key: "email", icon: Mail, Tab: EmailTab },
   { key: "whatsapp", icon: MessageCircle, Tab: WhatsappTab },
-  { key: "maintenance", icon: ShieldCheck, Tab: MaintenancePage },
 ] as const;
 
 export default function SettingsPage() {
@@ -116,7 +114,7 @@ export default function SettingsPage() {
           {SECTIONS.map((x) => (
             <button key={x.key} type="button" aria-pressed={x.key === current.key} aria-current={x.key === current.key ? "page" : undefined} onClick={() => navigate(`/settings/${x.key}`, { replace: true })}>
               <x.icon />
-              {x.key === "maintenance" ? (isRtl ? "إدارة وصيانة النظام" : "System maintenance") : t(`settings.tabs.${x.key}`)}
+              {t(`settings.tabs.${x.key}`)}
             </button>
           ))}
         </nav>
