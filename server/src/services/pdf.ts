@@ -116,6 +116,9 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // header/footer come from that design.
     const theme = getPrintTheme(html.match(/<meta name="print-theme" content="(\w+)"/)?.[1]);
     const english = /<html[^>]*\blang="en"/.test(html);
+    // The letterhead some designs repeat on every page (see pdfDocumentShell).
+    const rh = /<template id="sanad-running-header" data-height="([^"]+)">([\s\S]*?)<\/template>/.exec(html);
+    const running = rh ? { height: rh[1], html: rh[2] } : null;
     const footerLabel = options.footerLabel ?? (english ? "Official administrative document — valid for archiving and audit" : "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق");
     // A4 at 96dpi: fixed-position page decoration is laid out against the
     // viewport, so it must match the paper or the first page comes out wrong.
@@ -140,11 +143,11 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // extra font wait otherwise turns a slow font provider into a failed PDF.
       waitForFonts: false,
       displayHeaderFooter: true,
-      headerTemplate: english ? englishLabels(theme.headerTemplate) : theme.headerTemplate,
+      headerTemplate: running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate,
       footerTemplate: english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel),
       // No side margins: designs draw full-bleed side columns and the body's
       // own padding keeps the content in.
-      margin: { top: theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
+      margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
     });
     return Buffer.from(pdf);
   } finally {
@@ -608,6 +611,7 @@ export function pdfDocumentShell(opts: {
   .sig-date { font-family: 'IBM Plex Mono', monospace; font-size: 9pt; font-weight: 700; letter-spacing: .06em; }
   .stamp-img { width: 30mm; height: 30mm; object-fit: contain; }
   .signature-matrix.seal-only { justify-content: center; }
+  .report-stats { display: none; }
   .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
 ${theme.css}
 </style>
@@ -615,7 +619,10 @@ ${theme.css}
 <body class="${isClassic ? "" : "lux"}">
 ${(() => {
   const top = isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx);
-  return en ? englishLabels(top) : top;
+  // A design whose letterhead repeats on every page hands it to renderOnce here.
+  const running = theme.runningHeader?.(ctx);
+  const head = running ? `<template id="sanad-running-header" data-height="${running.height}">${running.html}</template>` : "";
+  return en ? englishLabels(top + head) : top + head;
 })()}
 
   ${opts.bodyHtml}

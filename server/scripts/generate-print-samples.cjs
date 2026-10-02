@@ -23,7 +23,10 @@ const output = path.resolve(__dirname, '../../client/public/print-samples');
     for (const [kind, original] of Object.entries(samples)) {
       // The PDF renderer supplies the vertical paper margins; emulate them on screen.
       const css = `<style>html{background:white}body{min-height:297mm;padding-top:${margins.top};padding-bottom:${margins.bottom}}@media print{@page{size:A4;margin:0}}</style>`;
-      await fs.writeFile(path.join(output, `${theme}-${kind}.html`), original.replace('</head>', `${css}</head>`).replace(/[ \t]+$/gm, '').trimEnd() + '\n');
+      // A letterhead that repeats on every page is a page header in the PDF; draw it at the top here.
+      const shown = original.replace(/<template id="sanad-running-header" data-height="([^"]+)">([\s\S]*?)<\/template>/, (_, height, header) =>
+        `<div style="position:absolute;top:0;left:0;right:0;height:${height}">${header.replace(/<style>[\s\S]*?<\/style>/, '')}</div>`);
+      await fs.writeFile(path.join(output, `${theme}-${kind}.html`), shown.replace('</head>', `${css}</head>`).replace(/[ \t]+$/gm, '').trimEnd() + '\n');
     }
   }
   console.log(`Generated ${PRINT_THEME_IDS.length * 3} fictional print samples.`);

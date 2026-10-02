@@ -397,8 +397,36 @@ export function tableReportPdf(
   // (smaller type, tighter cells) so all columns still fit the page width.
   const density = columns.length >= 9 ? "dense" : columns.length >= 6 ? "compact" : "";
 
+  const rowHtml = rows.map(
+    (row, idx) =>
+      `<tr>
+                    <td style="text-align:center; font-family:monospace; color:#64748b; font-size:8pt;">${idx + 1}</td>
+                    ${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}
+                  </tr>`
+  );
+
+  // How many rows are expired, ending soon and valid. Hidden in most designs;
+  // some show it as tiles, readouts or a distribution bar (--n is the count).
+  const tally = { red: 0, amber: 0, green: 0 };
+  for (const r of rowHtml) {
+    if (/status-(EXPIRED|TERMINATED|INACTIVE)\b/.test(r)) tally.red++;
+    else if (/status-(EXPIRING_SOON|ON_LEAVE)\b/.test(r)) tally.amber++;
+    else if (/status-(VALID|ACTIVE)\b/.test(r)) tally.green++;
+  }
+  const stat = (cls: string, n: number, label: string) => `<div class="rs ${cls}" style="--n:${n}"><b>${n}</b><span>${label}</span></div>`;
+  const statsHtml =
+    tally.red + tally.amber + tally.green > 0
+      ? `<div class="report-stats">
+      ${stat("rs-red", tally.red, L("منتهية", "Expired"))}
+      ${stat("rs-amber", tally.amber, L("قريبة من الانتهاء", "Ending soon"))}
+      ${stat("rs-green", tally.green, L("سارية", "Valid"))}
+      ${stat("rs-total", rows.length, L("إجمالي السجلات", "Total records"))}
+    </div>`
+      : "";
+
   const contentHtml = rows.length > 0
     ? `
+    ${statsHtml}
     <div class="section-card">
       <div class="section-header">
         <span>${L(`جدول البيانات والنتائج (${rows.length} سجل مطابق)`, `Results (${rows.length} records)`)}</span>
@@ -419,15 +447,7 @@ export function tableReportPdf(
             </tr>
           </thead>
           <tbody>
-            ${rows
-              .map(
-                (row, idx) =>
-                  `<tr>
-                    <td style="text-align:center; font-family:monospace; color:#64748b; font-size:8pt;">${idx + 1}</td>
-                    ${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}
-                  </tr>`
-              )
-              .join("")}
+            ${rowHtml.join("")}
           </tbody>
         </table>
       </div>
