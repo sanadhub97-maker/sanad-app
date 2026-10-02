@@ -13,6 +13,7 @@ import { errorHandler, notFoundHandler } from "@/middleware/errorHandler";
 import { ApiError } from "@/utils/apiError";
 import routes from "@/routes";
 import { langMiddleware } from "@/services/lang";
+import { privateResponse, trustedOrigin } from "@/middleware/security";
 
 // When the client's production build sits alongside this repo (single
 // combined deploy, e.g. on Render), serve it from the same origin — avoids
@@ -26,14 +27,18 @@ export function createApp() {
   // Express 5 defaults to the "simple" query parser; keep the qs-based one the API was built on.
   app.set("query parser", "extended");
 
-  app.set("trust proxy", 1);
+  app.disable("x-powered-by");
+  app.set("trust proxy", env.TRUST_PROXY_HOPS);
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
           ...helmet.contentSecurityPolicy.getDefaultDirectives(),
           "img-src": ["'self'", "data:", "blob:", "https:"],
-          "connect-src": ["'self'", "https:", "blob:"],
+          "connect-src": ["'self'", "https://sept.cloud", "https://sanad-hr.sept.cloud", "blob:"],
+          "object-src": ["'none'"],
+          "base-uri": ["'self'"],
+          "form-action": ["'self'"],
           // Allow embedding only inside the sept.cloud subdomain that mirrors this app —
           // not left wide open to arbitrary third-party sites.
           "frame-ancestors": ["'self'", "https://sept.cloud", "https://sanad-hr.sept.cloud"],
@@ -47,7 +52,7 @@ export function createApp() {
   );
   app.use(
     cors({
-      origin: env.CLIENT_URL,
+      origin: [new URL(env.CLIENT_URL).origin, ...env.TRUSTED_ORIGINS.split(",").filter(Boolean).map((value) => new URL(value.trim()).origin)],
       credentials: true,
     })
   );
@@ -56,8 +61,10 @@ export function createApp() {
   app.use(express.json({ limit: "2mb" }));
   // What PDFs and exports print in: the interface language the client sends.
   app.use(langMiddleware);
-  app.use(express.urlencoded({ extended: true }));
-  app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/api/health" } }));
+  app.use(express.urlencoded({ extended: false, limit: "32kb", parameterLimit: 50 }));
+  app.use("/api", privateResponse);
+  app.use(trustedOrigin);
+  app.use(pinoHttp({ logger, serializers: { req: (req) => ({ id: req.id, method: req.method, url: req.url?.split("?")[0]?.replace(/(\/push\/(?:act|card)\/).*/, "$1[REDACTED]") }) }, autoLogging: { ignore: (req) => req.url === "/api/health" } }));
 
   // General API rate limit — auth-specific routes apply a tighter limit of
   // their own on top of this (§43).

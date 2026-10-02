@@ -1,5 +1,6 @@
 import { api, keepRefreshToken, keptRefreshToken } from "@/lib/api";
 import type { AuthUser } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 
 /** The user as the server sends it, with the avatar: an uploaded photo (file
  * id) or a ready-made avatar key; neither means initials. */
@@ -46,6 +47,8 @@ export async function verifyEmail(token: string) {
 
 export async function changePassword(currentPassword: string, newPassword: string) {
   const res = await api.post("/auth/change-password", { currentPassword, newPassword });
+  keepRefreshToken(undefined);
+  useAuthStore.getState().clearAuth();
   return res.data as { message: string };
 }
 

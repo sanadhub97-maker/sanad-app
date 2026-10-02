@@ -9,7 +9,7 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   const printLogoId = company?.printLogoFileId || company?.logoFileId;
   if (!printLogoId) return null;
   const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
-  if (!logoFile) return null;
+  if (!logoFile || logoFile.module !== "company-logo" || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
   return { buffer: await storage.read(logoFile.storedName), mimeType: logoFile.mimeType };
 }
 
@@ -22,7 +22,7 @@ async function fileDataUrl(fileId: string | null | undefined) {
   const cached = printAssetCache.get(fileId);
   if (cached) return cached;
   const file = await prisma.file.findUnique({ where: { id: fileId } });
-  if (!file) return null;
+  if (!file || !["company-stamp", "company-signature"].includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
   try {
     const raw = await storage.read(file.storedName);
     let url = `data:${file.mimeType};base64,${raw.toString("base64")}`;
@@ -30,6 +30,7 @@ async function fileDataUrl(fileId: string | null | undefined) {
       const png = await sharp(raw).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true }).png().toBuffer();
       url = `data:image/png;base64,${png.toString("base64")}`;
     }
+    if (printAssetCache.size >= 128) printAssetCache.clear();
     printAssetCache.set(fileId, url);
     return url;
   } catch (err) {

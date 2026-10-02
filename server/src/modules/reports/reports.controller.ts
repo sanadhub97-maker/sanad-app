@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/security";
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
@@ -80,7 +81,7 @@ async function respond(
           const d = new Date(value);
           return `<span class="nowrap">${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}</span>`;
         }
-        return value === null || value === undefined ? "—" : String(value);
+        return value === null || value === undefined ? "—" : escapeHtml(value);
       },
     }));
     const html = tableReportPdf(opts.title, pdfColumns, rows, branding, { titleEn: opts.titleEn });
@@ -120,7 +121,7 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
 
 export const documents = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
-  const rows = await service.documentsReport(req.query as never);
+  const rows = await service.documentsReport(req.query as never, req.auth!);
   await respond(res, {
     title: "تقرير متابعة الوثائق الرسمية والامتثال",
     titleEn: "Documents & Expiry Report",

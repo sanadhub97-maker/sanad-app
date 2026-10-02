@@ -23,9 +23,9 @@ export function AppShell() {
     mainRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname]);
 
-  // Spotlight and tilt: one pointer listener for the whole page.
+  // Spotlight and tilt: pointer listener for the whole page.
   useEffect(() => {
-    if (!desk || !animationsEnabled) return;
+    if (!animationsEnabled) return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     function move(e: PointerEvent) {
       const target = e.target as HTMLElement | null;
@@ -53,18 +53,17 @@ export function AppShell() {
       document.removeEventListener("pointermove", move);
       document.removeEventListener("pointerout", out);
     };
-  }, [desk, animationsEnabled]);
+  }, [animationsEnabled]);
 
   return (
     <PageHeaderSlotProvider>
       <div className="relative flex h-screen overflow-hidden bg-background font-sans text-foreground">
-        {desk && (
-          <div className="lux-aurora" aria-hidden="true">
-            <i className="b1" />
-            <i className="b2" />
-            <i className="b3" />
-          </div>
-        )}
+        <div className="lux-aurora" aria-hidden="true">
+          <i className="b1" />
+          <i className="b2" />
+          <i className="b3" />
+          <i className="b4" />
+        </div>
         <RouteProgressBar />
         {desk && <DeskSidebar />}
         <main ref={mainRef} className="relative z-10 flex-1 overflow-y-auto">

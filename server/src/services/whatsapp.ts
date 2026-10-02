@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
+import { assertMetaApiUrl } from "@/lib/security";
 import { getRecipientApiKey, normalizePhone } from "@/services/whatsappRecipients";
 import { sendViaWhatsappWeb, WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
 
@@ -68,8 +69,12 @@ async function sendViaMetaCloud(config: WhatsappConfig, to: string, message: str
     return { sent: false, reason: "WHATSAPP_NOT_CONFIGURED" };
   }
 
+  assertMetaApiUrl(config.apiUrl);
+  if (!/^\d{1,100}$/.test(config.phoneNumberId)) return { sent: false, reason: "INVALID_PHONE_NUMBER_ID" };
   const url = `${config.apiUrl.replace(/\/$/, "")}/${config.phoneNumberId}/messages`;
   const response = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
+    redirect: "error",
     method: "POST",
     headers: {
       Authorization: `Bearer ${config.apiKey}`,
@@ -103,7 +108,7 @@ async function sendViaCallMeBot(config: WhatsappConfig, to: string, message: str
   }
 
   const url = `${CALLMEBOT_API_URL}?${new URLSearchParams({ phone: normalizePhone(to), text: message, apikey: apiKey })}`;
-  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+  const response = await fetch(url, { signal: AbortSignal.timeout(30_000), redirect: "error" });
   const flatten = (s: string) => s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   // The response echoes the message back; drop it so words inside an alert
   // can't be mistaken for an error below.

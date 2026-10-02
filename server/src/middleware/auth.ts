@@ -5,6 +5,13 @@ import { ApiError } from "@/utils/apiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { AuthContext } from "@/types/express";
 
+export async function authenticateAccessToken(token: string) {
+  const { sub, sid } = verifyAccessToken(token);
+  const session = await prisma.session.findFirst({ where: { id: sid, userId: sub, revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } });
+  if (!session) throw ApiError.unauthorized("Session has been revoked or expired");
+  return loadAuthContext(sub);
+}
+
 export async function loadAuthContext(userId: string): Promise<AuthContext | null> {
   const user = await prisma.user.findFirst({
     where: { id: userId, deletedAt: null },
@@ -35,14 +42,13 @@ export const requireAuth = asyncHandler(async (req: Request, _res: Response, nex
   }
   const token = header.slice("Bearer ".length);
 
-  let userId: string;
+  let auth: AuthContext | null;
   try {
-    userId = verifyAccessToken(token).sub;
+    auth = await authenticateAccessToken(token);
   } catch {
     throw ApiError.unauthorized("Invalid or expired access token");
   }
 
-  const auth = await loadAuthContext(userId);
   if (!auth) throw ApiError.unauthorized("Account is inactive or no longer exists");
 
   req.auth = auth;
@@ -54,8 +60,7 @@ export const optionalAuth = asyncHandler(async (req: Request, _res: Response, ne
   const header = req.headers.authorization;
   if (header?.startsWith("Bearer ")) {
     try {
-      const userId = verifyAccessToken(header.slice("Bearer ".length)).sub;
-      req.auth = (await loadAuthContext(userId)) ?? undefined;
+      req.auth = (await authenticateAccessToken(header.slice("Bearer ".length))) ?? undefined;
     } catch {
       // ignore — request proceeds unauthenticated
     }

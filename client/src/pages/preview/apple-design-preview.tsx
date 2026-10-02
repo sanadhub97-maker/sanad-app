@@ -25,15 +25,23 @@ import {
   Eye,
   Layers,
   Zap,
+  Download,
+  Laptop,
+  SquarePlus,
+  Share,
+  CheckCircle2,
+  WifiOff,
+  Maximize2,
 } from "lucide-react";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
+import { openInstall } from "@/components/lulu/lulu-install";
 
 export default function AppleDesignPreviewPage() {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [theme, setTheme] = useState<"dark" | "light" | "aurora">("dark");
   const [glow, setGlow] = useState<"high" | "subtle" | "off">("high");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "employees" | "documents" | "whatsapp">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "employees" | "documents" | "whatsapp" | "install">("dashboard");
   const [isDynamicIslandExpanded, setIsDynamicIslandExpanded] = useState(false);
   const [dispatchMode, setDispatchMode] = useState<"text_only" | "card_only" | "both">("both");
   const [currentTime, setCurrentTime] = useState("09:41 ص");
@@ -455,6 +463,17 @@ export default function AppleDesignPreviewPage() {
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     <span>إرسال وتنبيهات الواتساب</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("install")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                      activeTab === "install"
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.4)]"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>إشعار التثبيت الذكي (PWA)</span>
                   </button>
                 </div>
               </div>
@@ -1056,6 +1075,262 @@ export default function AppleDesignPreviewPage() {
                       <Send className="w-3.5 h-3.5" />
                       <span>فحص وإرسال تجريبي الآن</span>
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 5: SMART INSTALL NOTIFICATION SIMULATOR */}
+              {activeTab === "install" && (
+                <div className="space-y-6">
+                  {/* Hero Intro */}
+                  <div className={`rounded-3xl p-6 border ${glassCard} ${glowShadow}`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                            <Download className="w-5 h-5" />
+                          </span>
+                          <h2 className="text-xl font-bold">إشعار التثبيت الذكي الفاخر (Apple PWA Experience)</h2>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 max-w-2xl leading-relaxed">
+                          عند فتح الموقع، يظهر تلقائياً إشعار تثبيت زجاجي راقٍ يتكيف فورياً مع نوع الجهاز المستخدم (كمبيوتر، آيفون، آيباد، أو أندرويد) مع إرشادات التثبيت الأصلية وزر تثبيت فوري بنقرة واحدة.
+                        </p>
+                      </div>
+
+                      {/* Interactive Test Triggers */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => openInstall("desktop-chrome")}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-[0_4px_16px_rgba(37,99,235,0.35)] flex items-center gap-1.5 transition-all"
+                        >
+                          <Laptop className="w-3.5 h-3.5" />
+                          <span>تجربة للكمبيوتر</span>
+                        </button>
+                        <button
+                          onClick={() => openInstall("iphone")}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_4px_16px_rgba(79,70,229,0.35)] flex items-center gap-1.5 transition-all"
+                        >
+                          <Smartphone className="w-3.5 h-3.5" />
+                          <span>تجربة للآيفون</span>
+                        </button>
+                        <button
+                          onClick={() => openInstall("ipad")}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-[0_4px_16px_rgba(147,51,234,0.35)] flex items-center gap-1.5 transition-all"
+                        >
+                          <Tablet className="w-3.5 h-3.5" />
+                          <span>تجربة للآيباد</span>
+                        </button>
+                        <button
+                          onClick={() => openInstall("android-phone")}
+                          className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.35)] flex items-center gap-1.5 transition-all"
+                        >
+                          <Smartphone className="w-3.5 h-3.5" />
+                          <span>تجربة للأندرويد</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Visual Demonstration of the Card in Light & Dark */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Dark Mode Card Presentation */}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-bold text-slate-300">تصميم الزجاج الليلي (Obsidian Space Black)</span>
+                        <span className="text-[11px] text-blue-400 font-mono">Mobile & Desktop Ready</span>
+                      </div>
+
+                      <div className="relative overflow-hidden rounded-[28px] p-5 bg-[#0e1628]/95 border border-white/20 shadow-[0_25px_65px_-12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-2xl text-white">
+                        {/* Glow orbs */}
+                        <div className="absolute -top-10 -start-10 h-32 w-32 rounded-full bg-blue-500/30 blur-2xl pointer-events-none" />
+                        <div className="absolute -bottom-8 -end-8 h-28 w-28 rounded-full bg-indigo-500/25 blur-2xl pointer-events-none" />
+
+                        {/* Card Header */}
+                        <div className="relative flex items-start gap-3.5 mb-4">
+                          <div className="relative h-14 w-14 rounded-2xl overflow-hidden p-0.5 bg-gradient-to-br from-amber-400/40 via-blue-500/30 to-indigo-600/40 shadow-lg shrink-0">
+                            <img src="/pwa/icon-192.png" alt="SanaD" className="h-full w-full object-cover rounded-[14px]" />
+                            <div className="absolute -bottom-1 -end-1 h-5 w-5 rounded-full bg-[#0a1020] border border-white/30 flex items-center justify-center text-blue-400 shadow-sm">
+                              <Laptop className="h-3 w-3" />
+                            </div>
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                PWA معتمد
+                              </span>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 border border-blue-500/30 px-2 py-0.5 text-[10px] text-blue-300">
+                                <Sparkles className="h-2.5 w-2.5 text-blue-400" />
+                                تجربة أبل
+                              </span>
+                            </div>
+                            <h4 className="font-head text-base font-bold text-white leading-snug">
+                              ثبّت SanaD على جهازك
+                            </h4>
+                            <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">
+                              يعمل كبرنامج مستقل دون الحاجة لمتجر تطبيقات أو استهلاك ذاكرة
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Perks */}
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 p-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                              <Zap className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-white">إقلاع فوري</p>
+                              <p className="text-[10px] text-slate-400">أقل من ثانية</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 p-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                              <WifiOff className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-white">دون إنترنت</p>
+                              <p className="text-[10px] text-slate-400">تصفح مستمر</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 p-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-blue-500/15 text-blue-400 border border-blue-500/25">
+                              <Maximize2 className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-white">شاشة كاملة</p>
+                              <p className="text-[10px] text-slate-400">بدون متصفح</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 p-2">
+                            <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
+                              <Bell className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-white">تنبيهات فورية</p>
+                              <p className="text-[10px] text-slate-400">قبل الانتهاء</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* CTA Buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openInstall("desktop-chrome")}
+                            className="flex-1 h-10 px-4 rounded-xl font-head font-bold text-xs text-white bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 shadow-[0_4px_16px_rgba(37,99,235,0.4)] flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-95 transition-all"
+                          >
+                            <Download className="h-3.5 w-3.5 animate-bounce" />
+                            <span>تثبيت الآن بنقرة واحدة</span>
+                          </button>
+                          <button
+                            onClick={() => openInstall("desktop-chrome")}
+                            className="h-10 px-3.5 rounded-xl font-medium text-xs text-slate-300 bg-white/10 hover:bg-white/15 border border-white/10 transition-all"
+                          >
+                            تذكيري لاحقاً
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step Guide Preview for iPhone / iPad */}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-xs font-bold text-slate-300">إرشادات أبل التلقائية (iOS / iPadOS)</span>
+                        <span className="text-[11px] text-emerald-400 font-mono">Safari Native Flow</span>
+                      </div>
+
+                      <div className="relative overflow-hidden rounded-[28px] p-5 bg-[#0e1628]/95 border border-white/20 shadow-[0_25px_65px_-12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.3)] backdrop-blur-2xl text-white">
+                        <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <Smartphone className="h-4 w-4 text-blue-400" />
+                            <span className="font-bold text-xs text-white">خطوات التثبيت السلسة على الآيفون والآيباد</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400">3 خطوات سهلة</span>
+                        </div>
+
+                        <div className="space-y-2.5 mb-4 text-xs text-slate-200">
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-blue-500/20 text-blue-400 text-[11px] font-bold">1</span>
+                            <span>انقر على زر المشاركة <span className="inline-flex items-center gap-1 rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-300 font-semibold"><Share className="h-3 w-3" /></span> في أسفل شاشة سفاري</span>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-blue-500/20 text-blue-400 text-[11px] font-bold">2</span>
+                            <span>اختر <span className="inline-flex items-center gap-1 rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-300 font-semibold"><SquarePlus className="h-3 w-3" /> إضافة إلى الشاشة الرئيسية</span></span>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.04] border border-white/[0.06]">
+                            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-blue-500/20 text-blue-400 text-[11px] font-bold">3</span>
+                            <span>اضغط على «إضافة» (Add) في الزاوية العلوية ليظهر كتطبيق فوري</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                          <span className="flex items-center gap-1">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                            <span>لا يتطلب متجر برامج ولا حساب مطور</span>
+                          </span>
+                          <button
+                            onClick={() => openInstall("iphone")}
+                            className="text-blue-400 hover:text-blue-300 font-bold underline"
+                          >
+                            عرض الإشعار الحي الآن
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compatibility & Platform Highlights */}
+                  <div className={`rounded-3xl p-5 border ${glassCard} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`}>
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400">
+                        <Laptop className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold">الكمبيوتر الشخصي</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          تثبيت كبرنامج مكتبي مستقل عبر Chrome أو Edge مع تشغيل مباشر من شريط المهام.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400">
+                        <Smartphone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold">أجهزة الآيفون (iOS)</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          إضافة سريعة للشاشة الرئيسية مع دعم كامل لتجربة الشاشة الكاملة وإشعارات سفاري.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
+                        <Tablet className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold">أجهزة الآيباد والتابلت</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          مساحة عمل لوحية واسعة تعمل بملء الشاشة مع استجابة تامة للمس واللوحة الجانبية.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                        <Smartphone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold">أجهزة الأندرويد</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          تثبيت فوري بنقرة واحدة عبر متصفح كروم مع دعم العمل دون اتصال وتحديثات تلقائية.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

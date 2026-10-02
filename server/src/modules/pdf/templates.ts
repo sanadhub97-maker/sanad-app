@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/security";
 import { pdfDocumentShell } from "@/services/pdf";
 import { DEFAULT_PRINT_SIGNATURES, type PrintSignatures, type SignatureDocument } from "@/services/settingsStore";
 import { daysRemainingLabel } from "@/services/expiration";
@@ -6,7 +7,7 @@ import { DOCUMENT_KINDS } from "@/services/expiringItems";
 import { L, isEn } from "@/services/lang";
 
 /** A value with an optional English version, for the current language. */
-const pick = (ar: string | null | undefined, en: string | null | undefined) => (isEn() ? en || ar : ar || en) || "—";
+const pick = (ar: string | null | undefined, en: string | null | undefined) => escapeHtml((isEn() ? en || ar : ar || en) || "—");
 
 type Branding = {
   company: { nameAr?: string | null; nameEn?: string | null } | null;
@@ -123,7 +124,7 @@ export function employeeProfilePdf(
     <div class="section-card">
       <div class="section-header">
         <span>${L("البيانات الشخصية والوظيفية الأساسية", "Personal & Employment Information")}</span>
-        <span class="ref-code">#${employee.employeeNumber}</span>
+        <span class="ref-code">#${escapeHtml(employee.employeeNumber)}</span>
       </div>
       <div class="section-body">
         <table>
@@ -131,7 +132,7 @@ export function employeeProfilePdf(
             <th style="width:20%;">${L("الاسم الكامل", "Full name")}</th>
             <td style="width:30%; font-weight:700;">${pick(employee.fullNameAr, employee.fullNameEn)}</td>
             <th style="width:20%;">${L("الرقم الوظيفي", "Employee no.")}</th>
-            <td style="width:30%; font-family:monospace; font-weight:700;">${employee.employeeNumber}</td>
+            <td style="width:30%; font-family:monospace; font-weight:700;">${escapeHtml(employee.employeeNumber)}</td>
           </tr>
           <tr>
             <th>${L("الجنسية", "Nationality")}</th>
@@ -147,9 +148,9 @@ export function employeeProfilePdf(
           </tr>
           <tr>
             <th>${L("رقم الجوال", "Mobile")}</th>
-            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${employee.mobile ?? "—"}</td>
+            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${escapeHtml(employee.mobile ?? "—")}</td>
             <th>${L("البريد الإلكتروني", "Email")}</th>
-            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${employee.email ?? "—"}</td>
+            <td dir="ltr" style="text-align:${isEn() ? "left" : "right"};">${escapeHtml(employee.email ?? "—")}</td>
           </tr>
           <tr>
             <th>${L("تاريخ الالتحاق", "Joining date")}</th>
@@ -177,13 +178,13 @@ export function employeeProfilePdf(
           <tbody>
             <tr>
               <td style="font-weight:700;">${L("الإقامة", "Iqama")}</td>
-              <td style="font-family:monospace; font-weight:700;">${employee.iqamaNumber ?? "—"}</td>
+              <td style="font-family:monospace; font-weight:700;">${escapeHtml(employee.iqamaNumber ?? "—")}</td>
               <td>${fmtDate(employee.iqamaExpiryDate)}</td>
               <td>${statusBadge(employee.iqamaStatus)}</td>
             </tr>
             <tr>
               <td style="font-weight:700;">${L("جواز السفر", "Passport")}</td>
-              <td style="font-family:monospace; font-weight:700;">${employee.passportNumber ?? "—"}</td>
+              <td style="font-family:monospace; font-weight:700;">${escapeHtml(employee.passportNumber ?? "—")}</td>
               <td>${fmtDate(employee.passportExpiryDate)}</td>
               <td>${statusBadge(employee.passportStatus)}</td>
             </tr>
@@ -216,8 +217,8 @@ export function employeeProfilePdf(
                       (d) =>
                         `<tr>
                           <td style="font-weight:700;">${DOCUMENT_KINDS[d.type] ? L(DOCUMENT_KINDS[d.type][0], DOCUMENT_KINDS[d.type][1]) : d.type}</td>
-                          <td>${d.name ?? "—"}</td>
-                          <td style="font-family:monospace;">${d.documentNumber ?? "—"}</td>
+                          <td>${escapeHtml(d.name ?? "—")}</td>
+                          <td style="font-family:monospace;">${escapeHtml(d.documentNumber ?? "—")}</td>
                           <td>${fmtDate(d.expiryDate)}</td>
                           <td>${statusBadge(d.status)}</td>
                         </tr>`
@@ -288,13 +289,13 @@ export function paymentReceiptPdf(
     <div class="section-card">
       <div class="section-header">
         <span>${L("بيانات قيد الصرف والمؤسسة", "Voucher & Establishment Details")}</span>
-        <span class="ref-code">#${payment.paymentNumber}</span>
+        <span class="ref-code">#${escapeHtml(payment.paymentNumber)}</span>
       </div>
       <div class="section-body">
         <table>
           <tr>
             <th style="width:20%;">${L("رقم سند الصرف", "Voucher no.")}</th>
-            <td style="width:30%; font-family:monospace; font-weight:700;">${payment.paymentNumber}</td>
+            <td style="width:30%; font-family:monospace; font-weight:700;">${escapeHtml(payment.paymentNumber)}</td>
             <th style="width:20%;">${L("تاريخ السند", "Voucher date")}</th>
             <td style="width:30%; font-weight:700;">${fmtDate(payment.paymentDate)}</td>
           </tr>
@@ -308,17 +309,17 @@ export function paymentReceiptPdf(
             <th>${L("المؤسسة / الفرع", "Establishment")}</th>
             <td>${pick(payment.branch?.name, payment.branch?.nameEn)}</td>
             <th>${L("القائم بالصرف", "Paid by")}</th>
-            <td>${payment.paidBy ?? "—"}</td>
+            <td>${escapeHtml(payment.paidBy ?? "—")}</td>
           </tr>
           <tr>
             <th>${L("الموظف المستفيد", "Employee")}</th>
             <td>${payment.employee ? pick(payment.employee.fullNameAr, payment.employee.fullNameEn) : "—"}</td>
             <th>${L("المورد / الجهة المستفيدة", "Supplier / payee")}</th>
-            <td style="font-weight:700;">${payment.supplierName ?? "—"}</td>
+            <td style="font-weight:700;">${escapeHtml(payment.supplierName ?? "—")}</td>
           </tr>
           <tr>
             <th>${L("رقم المرجع / الفاتورة", "Reference / invoice no.")}</th>
-            <td colspan="3" style="font-family:monospace;">${payment.referenceNumber ?? "—"}</td>
+            <td colspan="3" style="font-family:monospace;">${escapeHtml(payment.referenceNumber ?? "—")}</td>
           </tr>
         </table>
       </div>
@@ -331,7 +332,7 @@ export function paymentReceiptPdf(
       </div>
       <div class="section-body">
         <p class="desc-box">
-          <strong>${L("البيان:", "Description:")} </strong>${payment.description ?? L("لا يوجد بيان مسجل لهذا السند.", "No description on this voucher.")}
+          <strong>${L("البيان:", "Description:")} </strong>${escapeHtml(payment.description ?? L("لا يوجد بيان مسجل لهذا السند.", "No description on this voucher."))}
         </p>
 
         <table>
@@ -412,7 +413,7 @@ export function tableReportPdf(
                 .map(
                   (c) =>
                     // One language: the English column name on English documents.
-                    `<th><div>${isEn() ? c.subHeader || c.header : c.header}</div></th>`
+                    `<th><div>${escapeHtml(isEn() ? c.subHeader || c.header : c.header)}</div></th>`
                 )
                 .join("")}
             </tr>

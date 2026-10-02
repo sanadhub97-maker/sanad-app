@@ -36,3 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return user.isSuperAdmin || user.permissions.includes("*") || user.permissions.includes(key);
   },
 }));
+
+if (typeof window !== "undefined") {
+  (window as unknown as { __authStore?: typeof useAuthStore }).__authStore = useAuthStore;
+}

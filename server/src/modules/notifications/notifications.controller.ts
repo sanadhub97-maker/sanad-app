@@ -5,12 +5,12 @@ import * as service from "@/modules/notifications/notifications.service";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  res.json(await service.list(req.auth.userId, req.query as never));
+  res.json(await service.list(req.auth.userId, req.query as never, req.auth));
 });
 
 export const markRead = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  res.json({ data: await service.markRead(req.auth.userId, String(req.params.id)) });
+  res.json({ data: await service.markRead(req.auth.userId, String(req.params.id), req.auth) });
 });
 
 export const markAllRead = asyncHandler(async (req: Request, res: Response) => {

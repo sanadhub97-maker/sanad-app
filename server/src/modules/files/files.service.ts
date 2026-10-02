@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
+import { FILE_MODULE_PERMISSIONS } from "./files.access";
+import { hasPermission } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
+import { validateFileContent } from "./files.validation";
+import sharp from "sharp";
 
 export interface SaveFileInput {
   buffer: Buffer;
@@ -14,6 +19,12 @@ export interface SaveFileInput {
 }
 
 export async function saveFile(input: SaveFileInput) {
+  await validateFileContent(input.buffer, input.mimeType, input.originalName);
+  // Decode/re-encode raster uploads to reject malformed files and remove metadata.
+  if (input.mimeType === "image/png" || input.mimeType === "image/jpeg") {
+    const image = sharp(input.buffer, { limitInputPixels: 25_000_000 }).rotate();
+    input.buffer = await (input.mimeType === "image/png" ? image.png() : image.jpeg()).toBuffer().catch(() => { throw ApiError.badRequest("Invalid image."); });
+  }
   const { storedName, size } = await storage.save(input.buffer, input.originalName);
   return prisma.file.create({
     data: {
@@ -37,9 +48,11 @@ export interface ListFilesQuery {
 
 // Powers the File Manager screen (§36) — every uploaded file across every
 // module, browsable independent of the record it's attached to.
-export async function list(query: ListFilesQuery) {
+export async function list(query: ListFilesQuery, auth: AuthContext | undefined) {
+  if (!auth) throw ApiError.unauthorized();
   const { page, pageSize, q, module } = query;
   const where: Prisma.FileWhereInput = {
+    ...(!auth.isSuperAdmin ? { OR: [{ module: { in: Object.keys(FILE_MODULE_PERMISSIONS).filter((key) => hasPermission(auth, FILE_MODULE_PERMISSIONS[key])) } }, { module: "user-avatar", relatedId: auth.userId }] } : {}),
     ...(module ? { module } : {}),
     ...(q ? { originalName: { contains: q, mode: "insensitive" } } : {}),
   };

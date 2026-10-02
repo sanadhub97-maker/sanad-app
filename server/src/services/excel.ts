@@ -240,8 +240,9 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
 
 function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const str = value instanceof Date ? value.toISOString() : String(value);
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  const raw = value instanceof Date ? value.toISOString() : String(value);
+  const str = /^[\s\u0000-\u001f]*[=+@-]/.test(raw) ? "'" + raw : raw;
+  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
 }
 
 export function buildCsv<T extends Record<string, unknown>>(columns: ColumnDef<T>[], rows: T[]): string {

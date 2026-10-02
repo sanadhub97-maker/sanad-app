@@ -343,14 +343,14 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
 
       <div className="grid grid-cols-12 gap-5">
         {/* Hero: clock, day summary, week, quick actions */}
-        <section className={cn(glass, "lux-rise col-span-8 grid grid-cols-[1.1fr_1fr] items-center gap-6 px-[26px] py-6")} style={{ ["--i" as string]: 0 }}>
+        <section className={cn(glass, "lux-rise col-span-12 xl:col-span-8 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] items-center gap-6 px-5 sm:px-[26px] py-6")} style={{ ["--i" as string]: 0 }}>
           <div className="relative z-[1]">
-            <div className="font-head text-[54px] font-light leading-none tracking-tight tabular-nums" dir="ltr" style={{ textAlign: isAr ? "right" : "left" }}>
+            <div className="font-head text-4xl sm:text-5xl lg:text-[54px] font-light leading-none tracking-tight tabular-nums" dir="ltr" style={{ textAlign: isAr ? "right" : "left" }}>
               {clock}
-              <small className="ms-1.5 text-lg font-normal text-muted-foreground">{ampm}</small>
+              <small className="ms-1.5 text-base sm:text-lg font-normal text-muted-foreground">{ampm}</small>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">{dateLine}</p>
-            <div className="mt-[18px] flex flex-wrap gap-2 text-[13px]">
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground">{dateLine}</p>
+            <div className="mt-[18px] flex flex-wrap gap-2 text-[12.5px] sm:text-[13px]">
               <span className={cn("inline-flex items-center gap-2 rounded-[13px] px-3 py-2", soft)}>
                 <i className="h-2 w-2 rounded-full bg-destructive shadow-[0_0_10px_hsl(var(--destructive))]" />
                 <b className="tabular-nums">{overview?.expired ?? 0}</b> {isAr ? "وثائق منتهية" : "expired"}
@@ -367,7 +367,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
               )}
             </div>
           </div>
-          <div className="relative z-[1] grid grid-cols-7 gap-2">
+          <div className="relative z-[1] grid grid-cols-7 gap-1 sm:gap-2">
             {days.map((d) => {
               const key = localIso(d);
               const isToday = key === today;
@@ -379,12 +379,12 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
                   type="button"
                   onClick={() => navigate(`/daily-tasks?date=${key}`)}
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-[18px] px-1 pb-2.5 pt-3 transition-transform duration-300 [transition-timing-function:cubic-bezier(.3,1.6,.5,1)] hover:-translate-y-1",
+                    "flex flex-col items-center gap-1 rounded-[16px] sm:rounded-[18px] px-1 pb-2 pt-2.5 sm:pb-2.5 sm:pt-3 transition-transform duration-300 [transition-timing-function:cubic-bezier(.3,1.6,.5,1)] hover:-translate-y-1",
                     isToday ? "bg-gradient-to-b from-sky-400 to-[hsl(var(--primary))] text-white shadow-[0_14px_30px_-12px_hsl(var(--primary))]" : soft
                   )}
                 >
-                  <small className={cn("text-[11.5px]", isToday ? "text-white/85" : "text-muted-foreground")}>{d.toLocaleDateString(locale, { weekday: "long" })}</small>
-                  <b className="font-head text-xl font-medium tabular-nums">{d.getDate()}</b>
+                  <small className={cn("text-[10px] sm:text-[11.5px] truncate max-w-full", isToday ? "text-white/85" : "text-muted-foreground")}>{d.toLocaleDateString(locale, { weekday: "short" })}</small>
+                  <b className="font-head text-base sm:text-xl font-medium tabular-nums">{d.getDate()}</b>
                   <span className="flex h-1.5 gap-[3px]">
                     {Array.from({ length: dots }).map((_, j) => (
                       <i key={j} className={cn("h-1.5 w-1.5 rounded-full", isToday ? "bg-white" : "bg-sky-400")} />
@@ -395,13 +395,13 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
               );
             })}
           </div>
-          <div className="relative z-[1] col-span-2 flex flex-wrap gap-2.5">
+          <div className="relative z-[1] col-span-1 md:col-span-2 flex flex-wrap gap-2.5">
             {actions.map(([label, Icon, tone, href]) => (
               <button
                 key={href}
                 type="button"
                 onClick={() => navigate(href)}
-                className={cn("inline-flex items-center gap-2.5 rounded-2xl py-[7px] pe-4 ps-2 text-[13.5px] font-semibold transition-transform duration-300 [transition-timing-function:cubic-bezier(.3,1.6,.5,1)] hover:-translate-y-[3px]", soft)}
+                className={cn("inline-flex items-center gap-2.5 rounded-2xl py-[7px] pe-4 ps-2 text-[13px] sm:text-[13.5px] font-semibold transition-transform duration-300 [transition-timing-function:cubic-bezier(.3,1.6,.5,1)] hover:-translate-y-[3px]", soft)}
               >
                 <Squircle tone={tone} size={30}>
                   <Icon className="h-[15px] w-[15px]" />
@@ -413,7 +413,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
         </section>
 
         {/* Compliance ring */}
-        <section className={cn(glass, "lux-rise col-span-4 p-[22px]")} style={{ ["--i" as string]: 1 }}>
+        <section className={cn(glass, "lux-rise col-span-12 xl:col-span-4 p-5 sm:p-[22px]")} style={{ ["--i" as string]: 1 }}>
           <Head title={isAr ? "صحة الامتثال" : "Compliance"}>
             <Chip tone={score >= 0.9 ? "ok" : score >= 0.6 ? "warn" : "bad"}>
               {isAr ? (score >= 0.9 ? "ممتاز" : score >= 0.6 ? "جيد" : "يحتاج متابعة") : score >= 0.9 ? "Excellent" : score >= 0.6 ? "Good" : "Needs follow-up"}
@@ -475,7 +475,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
               key={k.label}
               type="button"
               onClick={() => navigate(k.href)}
-              className={cn(glass, "lux-tilt lux-rise col-span-3 flex min-h-[170px] flex-col gap-3.5 p-5 text-start")}
+              className={cn(glass, "lux-tilt lux-rise col-span-12 sm:col-span-6 xl:col-span-3 flex min-h-[170px] flex-col gap-3.5 p-5 text-start")}
               style={{ ["--i" as string]: 2 + i }}
             >
               <span className="relative z-[1] flex w-full items-center justify-between gap-3">
@@ -497,7 +497,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
         })}
 
         {/* Today's priorities */}
-        <section className={cn(glass, "lux-rise col-span-7 isolate p-[22px]")} style={{ ["--i" as string]: 6 }}>
+        <section className={cn(glass, "lux-rise col-span-12 xl:col-span-7 isolate p-5 sm:p-[22px]")} style={{ ["--i" as string]: 6 }}>
           <span className="lux-flow" aria-hidden="true" />
           <Head title={isAr ? "أولويات اليوم" : "Today's priorities"} note={overview?.attentionTotal ? (isAr ? `${overview.attentionTotal} تحتاج قرارك` : `${overview.attentionTotal} need a decision`) : undefined} />
           {overview && overview.attention.length === 0 && (
@@ -561,7 +561,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
 
         {/* Today's tasks */}
         {canTasks && (
-          <section className={cn(glass, "lux-rise col-span-5 p-[22px]")} style={{ ["--i" as string]: 7 }}>
+          <section className={cn(glass, "lux-rise col-span-12 xl:col-span-5 p-5 sm:p-[22px]")} style={{ ["--i" as string]: 7 }}>
             <Head title={isAr ? "مهام اليوم" : "Today's tasks"} note={isAr ? "اضغط لتعليم المهمة" : "Tap to tick"} />
             <div className="relative z-[1] mb-2.5 flex items-center gap-3.5">
               <b className="font-head text-[22px] font-medium tabular-nums">
@@ -604,7 +604,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
         )}
 
         {/* Expiries over the coming months */}
-        <section className={cn(glass, "lux-rise col-span-8 p-[22px]")} style={{ ["--i" as string]: 8 }}>
+        <section className={cn(glass, "lux-rise col-span-12 xl:col-span-8 p-5 sm:p-[22px]")} style={{ ["--i" as string]: 8 }}>
           <Head title={isAr ? "الوثائق التي تنتهي في الأشهر القادمة" : "Documents ending in the coming months"} note={isAr ? "6 أشهر" : "6 months"} />
           {chart && (
             <svg viewBox={`0 0 ${chart.w} ${chart.h}`} width="100%" className="relative z-[1] text-foreground" style={{ direction: "ltr" }} role="img" aria-label={isAr ? "الوثائق التي تنتهي في كل شهر" : "Documents ending each month"}>
@@ -651,7 +651,7 @@ export function DashboardLuxe({ summary, charts }: { summary?: DashboardSummary;
         </section>
 
         {/* By type */}
-        <section className={cn(glass, "lux-rise col-span-4 p-[22px]")} style={{ ["--i" as string]: 9 }}>
+        <section className={cn(glass, "lux-rise col-span-12 xl:col-span-4 p-5 sm:p-[22px]")} style={{ ["--i" as string]: 9 }}>
           <Head title={isAr ? "حسب النوع" : "By type"} note={`${tracked} ${isAr ? "وثيقة" : "documents"}`} />
           <div className="relative z-[1] grid gap-4">
             {types

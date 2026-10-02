@@ -11,105 +11,131 @@
     --font-sans: "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", -apple-system, BlinkMacSystemFont, sans-serif;
     --font-head: "Alexandria", var(--font-sans);
 
-    --background: 150 14% 94%; /* #EFF3F1 */
-    --foreground: 191 47% 12%; /* #10272C */
+    --background: 210 20% 98%; /* Apple Pure Light ground */
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 191 47% 12%;
+    --card-alpha: 0.78;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 191 47% 12%;
+    --popover-alpha: 0.95;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 199 90% 37%; /* #0A7FB5 */
+    --primary: 217 91% 60%; /* Apple System Blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 17% 97%; /* #F5F8F7 */
-    --secondary-foreground: 191 47% 12%;
+    --secondary: 210 20% 94%;
+    --secondary-alpha: 0.72;
+    --secondary-foreground: 222 47% 11%;
 
-    --accent: 200 64% 92%; /* #E0F0F8, hover wash */
-    --accent-foreground: 199 90% 28%;
+    --accent: 214 95% 93%;
+    --accent-foreground: 217 91% 40%;
 
-    --muted: 154 15% 92%; /* #E7EEEB */
-    --muted-foreground: 193 11% 39%; /* #58696D */
+    --muted: 210 20% 92%;
+    --muted-alpha: 0.6;
+    --muted-foreground: 215 16% 47%;
 
-    --border: 153 13% 89%; /* #E1E8E5 */
-    --input: 153 13% 86%;
-    --ring: 199 90% 37%;
+    --border: 214 20% 88%;
+    --input: 214 20% 85%;
+    --ring: 217 91% 60%;
 
-    --destructive: 0 53% 49%; /* #BF3A3A */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 151 46% 34%; /* #2E7D57 */
+    --success: 151 55% 42%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 35 89% 38%; /* #B86E0B */
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 199 90% 37%;
+    --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --ink: 191 47% 12%; /* the dark dock and ink buttons */
+    --ink: 222 47% 11%;
     --ink-foreground: 0 0% 100%;
-    --sand: 38 50% 91%; /* #F3EBDD */
+    --sand: 38 45% 92%;
     --sand-foreground: 36 28% 33%;
-    --dock-muted: 169 11% 75%; /* #B7C6C3 */
+    --dock-muted: 215 16% 65%;
 
     --radius: 1.25rem;
 
-    --aurora: #eff3f1;
-    --glass-edge: transparent;
-    --glass-shadow: 0 1px 2px rgba(16, 39, 44, 0.05), 0 1px 1px rgba(16, 39, 44, 0.03);
+    --aurora: #f8fafc;
+    --glass-edge: rgba(255, 255, 255, 0.85);
+    --glass-shadow: 0 1px 1px rgba(15, 23, 42, 0.04), 0 16px 36px -20px rgba(15, 23, 42, 0.15);
+    --lux-hair: rgba(15, 23, 42, 0.07);
+    --lux-hair-2: rgba(255, 255, 255, 0.95);
+    --lux-glass-hi: rgba(255, 255, 255, 0.95);
+    --lux-spot: rgba(37, 99, 235, 0.08);
+    --lux-spot-edge: rgba(37, 99, 235, 0.45);
+    --lux-a1: rgba(56, 189, 248, 0.35);
+    --lux-a2: rgba(45, 212, 176, 0.28);
+    --lux-a3: rgba(246, 196, 120, 0.28);
+    --lux-a4: rgba(168, 85, 247, 0.2);
   }
 
   .dark,
   :root.dark,
   html.dark {
-    --background: 190 38% 8%; /* #0C1A1D */
-    --foreground: 170 20% 92%;
+    --background: 222 47% 6%; /* #080C14 Apple Obsidian Space Black */
+    --foreground: 210 40% 98%;
 
-    --card: 190 33% 12%; /* #14282C */
-    --card-foreground: 170 20% 92%;
+    --card: 222 35% 10%; /* #101626 */
+    --card-alpha: 0.65;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 190 33% 13%;
-    --popover-foreground: 170 20% 92%;
+    --popover: 222 35% 10%;
+    --popover-alpha: 0.92;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 199 75% 55%;
-    --primary-foreground: 191 60% 8%;
+    --primary: 217 91% 60%; /* Apple System Blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 190 28% 16%;
-    --secondary-foreground: 170 20% 92%;
+    --secondary: 222 30% 14%;
+    --secondary-alpha: 0.55;
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 199 50% 20%;
-    --accent-foreground: 199 80% 80%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 190 26% 17%;
-    --muted-foreground: 185 10% 64%;
+    --muted: 222 25% 16%;
+    --muted-alpha: 0.45;
+    --muted-foreground: 215 20% 65%;
 
-    --border: 190 24% 20%;
-    --input: 190 24% 24%;
-    --ring: 199 75% 55%;
+    --border: 222 25% 18%;
+    --input: 222 25% 20%;
+    --ring: 217 91% 60%;
 
-    --destructive: 0 70% 64%;
-    --destructive-foreground: 191 60% 8%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 151 45% 52%;
-    --success-foreground: 191 60% 8%;
+    --success: 151 55% 45%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 36 80% 58%;
-    --warning-foreground: 191 60% 8%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --info: 199 75% 55%;
-    --info-foreground: 191 60% 8%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
 
-    --ink: 190 40% 5%;
-    --ink-foreground: 170 20% 92%;
-    --sand: 36 22% 17%;
+    --ink: 222 47% 4%;
+    --ink-foreground: 210 40% 98%;
+    --sand: 222 25% 16%;
     --sand-foreground: 38 40% 78%;
-    --dock-muted: 180 8% 62%;
+    --dock-muted: 215 20% 65%;
 
-    --aurora: #0c1a1d;
-    --glass-edge: transparent;
-    --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --aurora: #080c14;
+    --glass-edge: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 50px -30px rgba(0, 0, 0, 0.9);
+    --lux-hair: rgba(255, 255, 255, 0.07);
+    --lux-hair-2: rgba(255, 255, 255, 0.16);
+    --lux-glass-hi: rgba(255, 255, 255, 0.1);
+    --lux-spot: rgba(56, 189, 248, 0.12);
+    --lux-spot-edge: rgba(125, 211, 252, 0.7);
+    --lux-a1: rgba(56, 189, 248, 0.24);
+    --lux-a2: rgba(45, 212, 176, 0.18);
+    --lux-a3: rgba(232, 197, 138, 0.14);
+    --lux-a4: rgba(168, 85, 247, 0.2);
   }
 
   h1,
@@ -604,88 +630,185 @@ html[dir="ltr"] .task-title { background-position: left 58%; }
 }
 
 /* =========================================================================
-   "Luxe" on computers (a wide screen with a mouse): glass surfaces over a
-   slowly moving light, a spotlight that follows the pointer, tilting stat
-   cards and a glowing call-to-action. Phones and tablets keep Oasis as is.
+   Universal Apple Vision & Liquid Glass Design System
+   Applies across Mobile, Tablet, and Desktop with glowing aurora,
+   frosted liquid glass surfaces, specular rim highlights, and smooth micro-interactions.
    ========================================================================= */
-@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
-  :root {
-    --background: 157 17% 93%;
-    --card: 0 0% 100%;
-    --card-alpha: 0.62;
-    --popover-alpha: 0.9;
-    --secondary: 0 0% 100%;
-    --secondary-alpha: 0.72;
-    --muted: 0 0% 100%;
-    --muted-alpha: 0.6;
-    --input: 190 20% 80%;
-    --glass-shadow: 0 1px 1px rgba(15, 42, 47, 0.04), 0 18px 40px -26px rgba(15, 42, 47, 0.35);
-    --lux-hair: rgba(15, 42, 47, 0.08);
-    --lux-hair-2: rgba(255, 255, 255, 0.95);
-    --lux-glass-hi: rgba(255, 255, 255, 0.95);
-    --lux-spot: rgba(10, 127, 181, 0.1);
-    --lux-spot-edge: rgba(10, 127, 181, 0.55);
-    --lux-a1: rgba(56, 189, 248, 0.55);
-    --lux-a2: rgba(45, 212, 176, 0.45);
-    --lux-a3: rgba(246, 196, 120, 0.45);
-  }
-  .dark {
-    --background: 189 53% 4%;
-    --card: 0 0% 100%;
-    --card-alpha: 0.045;
-    --popover: 190 40% 8%;
-    --popover-alpha: 0.92;
-    --secondary: 0 0% 100%;
-    --secondary-alpha: 0.07;
-    --muted: 0 0% 100%;
-    --muted-alpha: 0.06;
-    --input: 0 0% 100%;
-    --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 50px -30px rgba(0, 0, 0, 0.9);
-    --lux-hair: rgba(255, 255, 255, 0.08);
-    --lux-hair-2: rgba(255, 255, 255, 0.16);
-    --lux-glass-hi: rgba(255, 255, 255, 0.12);
-    --lux-spot: rgba(56, 189, 248, 0.1);
-    --lux-spot-edge: rgba(125, 211, 252, 0.7);
-    --lux-a1: rgba(56, 189, 248, 0.3);
-    --lux-a2: rgba(45, 212, 176, 0.22);
-    --lux-a3: rgba(232, 197, 138, 0.16);
-  }
 
-  /* Living light behind the glass */
-  .lux-aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .lux-aurora i { position: absolute; border-radius: 50%; filter: blur(70px); }
-  .lux-aurora .b1 { width: 620px; height: 620px; top: -220px; right: 12%; background: var(--lux-a1); animation: lux-f1 26s ease-in-out infinite alternate; }
-  .lux-aurora .b2 { width: 560px; height: 560px; bottom: -240px; right: 40%; background: var(--lux-a2); animation: lux-f2 32s ease-in-out infinite alternate; }
-  .lux-aurora .b3 { width: 460px; height: 460px; top: 30%; left: -160px; background: var(--lux-a3); animation: lux-f3 28s ease-in-out infinite alternate; }
+/* Living Aurora Light behind the glass (Hardware Accelerated) */
+.lux-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lux-aurora i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+.lux-aurora .b1 {
+  width: min(650px, 90vw);
+  height: min(650px, 90vw);
+  top: -180px;
+  right: 5%;
+  background: var(--lux-a1);
+  animation: lux-f1 24s ease-in-out infinite alternate;
+}
+.lux-aurora .b2 {
+  width: min(580px, 85vw);
+  height: min(580px, 85vw);
+  bottom: -220px;
+  right: 35%;
+  background: var(--lux-a2);
+  animation: lux-f2 28s ease-in-out infinite alternate;
+}
+.lux-aurora .b3 {
+  width: min(480px, 75vw);
+  height: min(480px, 75vw);
+  top: 30%;
+  left: -120px;
+  background: var(--lux-a3);
+  animation: lux-f3 26s ease-in-out infinite alternate;
+}
+.lux-aurora .b4 {
+  width: min(420px, 70vw);
+  height: min(420px, 70vw);
+  bottom: 8%;
+  left: 30%;
+  background: var(--lux-a4);
+  animation: lux-f2 32s ease-in-out infinite alternate-reverse;
+}
 
-  /* Glass: blur, a hairline gradient edge */
-  .lux-glass { backdrop-filter: blur(22px) saturate(160%); -webkit-backdrop-filter: blur(22px) saturate(160%); }
-  .lux-glass::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; background: linear-gradient(160deg, var(--lux-hair-2), var(--lux-hair) 40%, var(--lux-hair) 70%, var(--lux-hair-2)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+/* Apple Liquid Glass: blur + specular rim highlight */
+.lux-glass {
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  position: relative;
+}
+.lux-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(160deg, var(--lux-hair-2), var(--lux-hair) 40%, var(--lux-hair) 70%, var(--lux-hair-2));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 2;
+}
 
-  /* Spotlight following the pointer (the shell sets --mx / --my) */
-  .lux-spot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.35s ease; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), var(--lux-spot), transparent 45%); }
-  .lux-spot:hover::after { opacity: 1; }
+/* Spotlight following the pointer */
+.lux-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), var(--lux-spot), transparent 45%);
+  z-index: 3;
+}
+.lux-spot:hover::after {
+  opacity: 1;
+}
 
-  .lux-tilt { transition: transform 0.25s ease-out; will-change: transform; }
+.lux-tilt {
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+}
 
-  /* Call-to-action: gradient with a passing sheen */
-  .lux-cta { position: relative; overflow: hidden; background-image: linear-gradient(135deg, #38bdf8, hsl(var(--primary)) 55%, #0f9d86); box-shadow: 0 14px 30px -14px hsl(var(--primary)), inset 0 1px 0 rgba(255, 255, 255, 0.35); color: #fff; }
-  .lux-cta::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%); transform: translateX(-130%); animation: lux-sweep 4.5s ease-in-out infinite 1.5s; pointer-events: none; }
+/* Call-to-action: Apple vibrant gradient with passing sheen */
+.lux-cta {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(135deg, #38bdf8, hsl(var(--primary)) 55%, #0f9d86);
+  box-shadow: 0 14px 30px -14px hsl(var(--primary)), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+.lux-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  transform: translateX(-130%);
+  animation: lux-sweep 4.5s ease-in-out infinite 1.5s;
+  pointer-events: none;
+}
 
-  /* Page title with a slow shine */
-  .lux-title { background: linear-gradient(90deg, hsl(var(--foreground)) 0%, hsl(var(--foreground)) 40%, #38bdf8 50%, hsl(var(--foreground)) 60%, hsl(var(--foreground)) 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: lux-shine 6s ease-in-out infinite; }
+/* Page title with slow luxury shine */
+.lux-title {
+  background: linear-gradient(90deg, hsl(var(--foreground)) 0%, hsl(var(--foreground)) 40%, #38bdf8 50%, hsl(var(--foreground)) 60%, hsl(var(--foreground)) 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lux-shine 6s ease-in-out infinite;
+}
 
-  /* Tables: each row a rounded glass strip */
-  .lux-rows table { border-collapse: separate; border-spacing: 0 6px; }
-  .lux-rows thead tr { border: 0; }
-  .lux-rows tbody tr { border: 0; }
-  .lux-rows tbody td { background: hsl(var(--card) / var(--card-alpha)); transition: background 0.25s; }
-  .lux-rows tbody tr:hover td { background: var(--lux-glass-hi); }
-  .lux-rows tbody td:first-child { border-start-start-radius: 18px; border-end-start-radius: 18px; }
-  .lux-rows tbody td:last-child { border-start-end-radius: 18px; border-end-end-radius: 18px; }
+/* Tables: each row a rounded glass strip */
+.lux-rows table {
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+.lux-rows thead tr {
+  border: 0;
+}
+.lux-rows tbody tr {
+  border: 0;
+}
+.lux-rows tbody td {
+  background: hsl(var(--card) / var(--card-alpha, 0.8));
+  transition: background 0.25s;
+}
+.lux-rows tbody tr:hover td {
+  background: var(--lux-glass-hi);
+}
+.lux-rows tbody td:first-child {
+  border-start-start-radius: 18px;
+  border-end-start-radius: 18px;
+}
+.lux-rows tbody td:last-child {
+  border-start-end-radius: 18px;
+  border-end-end-radius: 18px;
+}
 
-  /* Priorities: a gradient light running around the border */
-  .lux-flow { position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; background: conic-gradient(from var(--lux-ang), transparent 0 60%, #e8c58a 75%, hsl(var(--destructive)) 85%, transparent 95%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: lux-spin 6s linear infinite; }
+/* Priorities: a gradient light running around the border */
+.lux-flow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: conic-gradient(from var(--lux-ang), transparent 0 60%, #e8c58a 75%, hsl(var(--destructive)) 85%, transparent 95%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: lux-spin 6s linear infinite;
+  z-index: 2;
+}
+
+/* Apple Glow Aura Utility Classes */
+.glow-aura-blue {
+  box-shadow: 0 0 25px -4px rgba(37, 99, 235, 0.35);
+}
+.glow-aura-emerald {
+  box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.35);
+}
+.glow-aura-amber {
+  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.35);
+}
+.glow-aura-rose {
+  box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.35);
+}
+.glow-aura-purple {
+  box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.35);
 }
 @property --lux-ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
 @keyframes lux-spin { to { --lux-ang: 360deg; } }

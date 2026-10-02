@@ -1,14 +1,44 @@
 import { isEn } from "@/services/lang";
-import puppeteer, { Browser } from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer";
+import { env } from "@/config/env";
+import { escapeHtml } from "@/lib/security";
 import { logger } from "@/lib/logger";
+import { ApiError } from "@/utils/apiError";
 import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
 
 let browserPromise: Promise<Browser> | null = null;
+let activeRenders = 0;
+async function withRenderBudget<T>(html: string, render: () => Promise<T>): Promise<T> {
+  if (Buffer.byteLength(html) > 8 * 1024 * 1024) throw ApiError.badRequest("Print document is too large.");
+  if (activeRenders >= 2) throw ApiError.tooMany("Print service is busy. Retry shortly.");
+  activeRenders++;
+  try { return await render(); } finally { activeRenders--; }
+}
+
+export function allowedRenderUrl(raw: string): boolean {
+  if (/^data:(image\/(png|jpeg|webp)|font\/)/i.test(raw)) return true;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.username || url.password || (url.port && url.port !== "443")) return false;
+    if (url.hostname === "fonts.googleapis.com") return /^\/css2?$/.test(url.pathname);
+    if (url.hostname === "fonts.gstatic.com") return url.pathname.startsWith("/s/");
+    return url.origin === new URL(env.CLIENT_URL).origin && /^\/(pwa|brand)\/[a-zA-Z0-9._-]+\.(png|webp|jpg)$/.test(url.pathname) && !url.search;
+  } catch { return false; }
+}
+
+export async function secureRenderPage(page: Page) {
+  await page.setJavaScriptEnabled(false);
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    const permitted = request.method() === "GET" && allowedRenderUrl(request.url());
+    void (permitted ? request.continue() : request.abort("blockedbyclient")).catch(() => undefined);
+  });
+}
 
 function launchBrowser(): Promise<Browser> {
   const promise = puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=medium"],
+    args: [...(env.PDF_DISABLE_SANDBOX ? ["--no-sandbox", "--disable-setuid-sandbox"] : []), "--font-render-hinting=medium"],
   });
   // A launch failure must not wedge every future PDF request behind the same
   // rejected promise forever — clear it so the next call retries a fresh launch.
@@ -80,6 +110,7 @@ export interface RenderPdfOptions {
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
   const page = await browser.newPage();
   try {
+    await secureRenderPage(page);
     // The shell stamps its design into the page; margins and the per-page
     // header/footer come from that design.
     const theme = getPrintTheme(html.match(/<meta name="print-theme" content="(\w+)"/)?.[1]);
@@ -110,7 +141,7 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
   }
 }
 
-export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
+async function renderPdfWithRetry(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
   try {
     return await renderOnce(await getBrowser(), html, options);
   } catch (err) {
@@ -132,8 +163,10 @@ export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = 
 async function screenshotOnce(browser: Browser, html: string, width: number, height: number): Promise<Buffer> {
   const page = await browser.newPage();
   try {
+    await secureRenderPage(page);
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
-    await page.setContent(html, { waitUntil: "networkidle0", timeout: 20_000 });
+    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    await page.waitForNetworkIdle({ timeout: 5000 }).catch(() => undefined);
     // Web fonts decide the Arabic shaping; don't shoot before they're in (5s cap).
     await Promise.race([page.evaluate("document.fonts.ready.then(() => true)"), new Promise((r) => setTimeout(r, 5000))]);
     return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height } }));
@@ -143,7 +176,7 @@ async function screenshotOnce(browser: Browser, html: string, width: number, hei
 }
 
 /** An HTML page as a PNG — the WhatsApp alert cards. Shares the PDF browser. */
-export async function renderHtmlToPng(html: string, width: number, height: number): Promise<Buffer> {
+async function renderPngWithRetry(html: string, width: number, height: number): Promise<Buffer> {
   try {
     return await screenshotOnce(await getBrowser(), html, width, height);
   } catch (err) {
@@ -151,6 +184,14 @@ export async function renderHtmlToPng(html: string, width: number, height: numbe
     browserPromise = null;
     return screenshotOnce(await getBrowser(), html, width, height);
   }
+}
+
+export function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
+  return withRenderBudget(html, () => renderPdfWithRetry(html, options));
+}
+export function renderHtmlToPng(html: string, width: number, height: number): Promise<Buffer> {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width * height > 4_000_000) throw ApiError.badRequest("Invalid print image dimensions.");
+  return withRenderBudget(html, () => renderPngWithRetry(html, width, height));
 }
 
 export function pdfDocumentShell(opts: {
@@ -205,7 +246,7 @@ export function pdfDocumentShell(opts: {
 <html dir="${dir}" lang="${dir === "rtl" ? "ar" : "en"}">
 <head>
 <meta charset="utf-8" />
-<title>${docTitle}</title>
+<title>${escapeHtml(docTitle)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta name="print-theme" content="${theme.id}">
@@ -582,24 +623,24 @@ ${(() => {
     <div class="company-brand-box">
       ${opts.logoDataUrl ? `<img src="${opts.logoDataUrl}" class="company-logo-img" alt="Logo" />` : ""}
       <div class="company-names">
-        <h2>${companyNameAr}</h2>
+        <h2>${escapeHtml(companyNameAr)}</h2>
         ${companyNameEn ? `<p>${companyNameEn}</p>` : ""}
       </div>
     </div>
     <div class="doc-meta-card">
       <div class="meta-item"><span>تاريخ الإصدار: </span><strong>${dateStr}</strong></div>
       <div class="meta-item"><span>وقت الطباعة: </span><strong dir="ltr">${timeStr}</strong></div>
-      ${opts.referenceNumber ? `<div class="meta-item"><span>الرقم المرجعي: </span><span class="meta-code">${opts.referenceNumber}</span></div>` : ""}
+      ${opts.referenceNumber ? `<div class="meta-item"><span>الرقم المرجعي: </span><span class="meta-code">${escapeHtml(opts.referenceNumber)}</span></div>` : ""}
     </div>
   </div>
 
   <!-- 🏷️ Document Title Banner -->
   <div class="doc-title-banner">
     <div class="title-content">
-      <h1>${docTitle}</h1>
+      <h1>${escapeHtml(docTitle)}</h1>
       ${docTitleEn ? `<div class="title-subtitle-en">${docTitleEn}</div>` : ""}
     </div>
-    <span class="title-badge">${classification}</span>
+    <span class="title-badge">${escapeHtml(classification)}</span>
   </div>`;
   }
 }

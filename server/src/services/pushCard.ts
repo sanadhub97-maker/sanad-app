@@ -87,21 +87,26 @@ body{font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;color:#121a2e;padding:
 
 /* ---------- signed links ---------- */
 
-const sign = (data: string) => crypto.createHmac("sha256", env.JWT_ACCESS_SECRET).update("push:" + data).digest("base64url").slice(0, 22);
+const capabilityKey = () => crypto.createHash("sha256").update(`sanad-push-v2:${env.JWT_ACCESS_SECRET}`).digest();
 
 /** A short token that carries `value` and can't be forged or altered. */
 export function sealToken(value: unknown): string {
-  const data = Buffer.from(JSON.stringify(value)).toString("base64url");
-  return `${data}.${sign(data)}`;
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", capabilityKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify({ value, expiresAt: Date.now() + 7 * 86400_000 }), "utf8"), cipher.final()]);
+  return `v2.${Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString("base64url")}`;
 }
 
 export function openToken<T>(token: string): T | null {
-  const [data, sig] = String(token).split(".");
-  if (!data || !sig) return null;
-  const expected = sign(data);
-  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
   try {
-    return JSON.parse(Buffer.from(data, "base64url").toString("utf8")) as T;
+    if (!/^v2\.[A-Za-z0-9_-]+$/.test(token) || token.length > 4096) return null;
+    const bytes = Buffer.from(token.slice(3), "base64url");
+    if (bytes.length < 29) return null;
+    const decipher = crypto.createDecipheriv("aes-256-gcm", capabilityKey(), bytes.subarray(0, 12));
+    decipher.setAuthTag(bytes.subarray(12, 28));
+    const envelope = JSON.parse(Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString("utf8"));
+    if (!Number.isFinite(envelope.expiresAt) || Date.now() >= envelope.expiresAt) return null;
+    return envelope.value as T;
   } catch {
     return null;
   }

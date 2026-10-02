@@ -4,6 +4,7 @@ import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
 import { auditLog } from "@/middleware/audit";
 import { upload } from "@/modules/files/files.upload";
+import { uploadBudget, uploadLimiter } from "@/middleware/resourceLimits";
 import * as controller from "@/modules/files/files.controller";
 
 const router = Router();
@@ -16,6 +17,8 @@ router.use(requireAuth);
 router.post(
   "/",
   requirePermission("files.upload"),
+  uploadLimiter,
+  uploadBudget,
   upload.single("file"),
   auditLog(AuditAction.CREATE, "files"),
   controller.uploadFile

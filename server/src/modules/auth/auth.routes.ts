@@ -1,10 +1,12 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
+import { createHash } from "node:crypto";
 import { validate } from "@/middleware/validate";
 import { requireAuth } from "@/middleware/auth";
 import { ApiError } from "@/utils/apiError";
 import * as controller from "@/modules/auth/auth.controller";
 import { upload } from "@/modules/files/files.upload";
+import { uploadBudget, uploadLimiter } from "@/middleware/resourceLimits";
 import { z } from "zod";
 import {
   changePasswordSchema,
@@ -33,20 +35,29 @@ const authLimiter = rateLimit({
 
 // No public self-registration — accounts are created by an admin via
 // Users & Roles, matching this app's internal-system access model.
-router.post("/login", authLimiter, validate({ body: loginSchema }), controller.login);
+const accountLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  keyGenerator: (req) => createHash("sha256").update(String(req.body.email).trim().toLowerCase()).digest("hex"),
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, _res, next) => next(ApiError.tooMany("Too many attempts. Please wait a few minutes and try again.")),
+});
+router.post("/login", authLimiter, validate({ body: loginSchema }), accountLimiter, controller.login);
 router.post("/refresh", controller.refresh);
 router.post("/logout", controller.logout);
 router.get("/me", requireAuth, controller.me);
 router.post("/forgot-password", authLimiter, validate({ body: forgotPasswordSchema }), controller.forgotPassword);
 router.post("/reset-password", authLimiter, validate({ body: resetPasswordSchema }), controller.resetPassword);
-router.post("/verify-email", validate({ body: verifyEmailSchema }), controller.verifyEmail);
-router.post("/change-password", requireAuth, validate({ body: changePasswordSchema }), controller.changePassword);
+router.post("/verify-email", authLimiter, validate({ body: verifyEmailSchema }), controller.verifyEmail);
+router.post("/change-password", authLimiter, requireAuth, validate({ body: changePasswordSchema }), controller.changePassword);
 router.put(
   "/avatar",
   requireAuth,
   validate({ body: z.object({ avatarKey: z.string().regex(/^[a-z0-9-]{2,60}$/).nullable() }) }),
   controller.setAvatar
 );
-router.post("/avatar/photo", requireAuth, upload.single("file"), controller.uploadAvatarPhoto);
+router.post("/avatar/photo", requireAuth, uploadLimiter, uploadBudget, upload.single("file"), controller.uploadAvatarPhoto);
 
 export default router;

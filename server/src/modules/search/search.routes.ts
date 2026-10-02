@@ -10,9 +10,9 @@ router.use(requireAuth);
 
 router.get(
   "/",
-  validate({ query: z.object({ q: z.string().min(1) }) }),
+  validate({ query: z.object({ q: z.string().trim().min(1).max(100) }) }),
   asyncHandler(async (req, res) => {
-    res.json({ data: await globalSearch((req.query as { q: string }).q) });
+    res.json({ data: await globalSearch((req.query as { q: string }).q, req.auth!) });
   })
 );
 

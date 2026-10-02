@@ -9,25 +9,25 @@ router.use(requireAuth);
 
 router.get(
   "/summary",
-  asyncHandler(async (_req, res) => res.json({ data: await service.getSummary() }))
+  asyncHandler(async (req, res) => res.json({ data: await service.getSummary(req.auth!) }))
 );
 router.get(
   "/expiration-widget",
-  asyncHandler(async (_req, res) => res.json({ data: await service.getExpirationWidget() }))
+  asyncHandler(async (req, res) => res.json({ data: await service.getExpirationWidget(req.auth!) }))
 );
 router.get(
   "/charts",
-  asyncHandler(async (_req, res) => res.json({ data: await service.getCharts() }))
+  asyncHandler(async (req, res) => res.json({ data: await service.getCharts(req.auth!) }))
 );
 router.get(
   "/overview",
-  asyncHandler(async (_req, res) => res.json({ data: await service.getOverview() }))
+  asyncHandler(async (req, res) => res.json({ data: await service.getOverview(req.auth!) }))
 );
 router.get(
   "/recent-activity",
   asyncHandler(async (req, res) => {
     if (!req.auth) throw ApiError.unauthorized();
-    res.json({ data: await service.getRecentActivity(req.auth.userId) });
+    res.json({ data: await service.getRecentActivity(req.auth) });
   })
 );
 

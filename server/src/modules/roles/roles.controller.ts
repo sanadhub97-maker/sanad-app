@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import * as service from "@/modules/roles/roles.service";
+import { requireSuperAdmin } from "@/lib/security";
 
 export const list = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.list() });
@@ -15,16 +16,19 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
+  requireSuperAdmin(req.auth);
   const role = await service.create(req.body);
   res.status(201).json({ data: role, message: "Role created successfully." });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
+  requireSuperAdmin(req.auth);
   const role = await service.update(String(req.params.id), req.body);
   res.json({ data: role, message: "Role updated successfully." });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
+  requireSuperAdmin(req.auth);
   await service.remove(String(req.params.id));
   res.json({ message: "Role deleted successfully." });
 });

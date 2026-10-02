@@ -16,7 +16,7 @@ export const getNextNumber = asyncHandler(async (_req: Request, res: Response) =
 });
 
 export const getById = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(String(req.params.id)) });
+  res.json({ data: await service.getById(String(req.params.id), req.auth) });
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -35,7 +35,7 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const exportPdf = asyncHandler(async (req: Request, res: Response) => {
-  const employee = await service.getById(String(req.params.id));
+  const employee = await service.getById(String(req.params.id), req.auth);
   const branding = await getBrandingContext();
   const html = employeeProfilePdf(employee as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: L("ملف الموظف", "Employee Profile") });

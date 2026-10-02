@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Globe, LogOut, Moon, Sun, User as UserIcon } from "lucide-react";
+import { Download, Globe, LogOut, Moon, Sparkles, Sun, User as UserIcon } from "lucide-react";
+import { openInstall } from "@/components/lulu/lulu-install";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +68,7 @@ export function AppHeader() {
   }
 
   const circle =
-    "grid h-11 w-11 shrink-0 place-items-center rounded-full bg-card text-foreground shadow-[var(--glass-shadow)] transition-colors hover:bg-accent sm:h-12 sm:w-12";
+    "grid h-11 w-11 shrink-0 place-items-center rounded-full bg-card/85 dark:bg-[#101626]/85 backdrop-blur-xl border border-border/50 text-foreground shadow-[var(--glass-shadow)] transition-all duration-200 hover:bg-accent sm:h-12 sm:w-12";
 
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-3 sm:gap-x-[18px]">
@@ -89,7 +90,25 @@ export function AppHeader() {
 
       <div ref={slots?.setActions} className="order-last flex w-full flex-wrap items-center gap-2.5 empty:hidden lg:order-none lg:w-auto" />
 
-      <div className="flex items-center gap-2.5 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        <button
+          type="button"
+          onClick={() => openInstall()}
+          title={isAr ? "تثبيت SanaD كتطبيق أصيل على جهازك" : "Install SanaD app"}
+          className="relative inline-flex h-11 items-center gap-1.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 px-3 text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-500/25 shadow-sm backdrop-blur-md hover:scale-105 active:scale-95 transition-all duration-200 sm:h-12 sm:px-3.5"
+        >
+          <Download className="h-4 w-4 text-blue-500" />
+          <span className="hidden md:inline">{isAr ? "تثبيت التطبيق" : "Install App"}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/preview")}
+          title={isAr ? "معاينة تصميم أبل التفاعلي على الهاتف والتابلت والكمبيوتر" : "Apple Design Live Simulator"}
+          className="relative inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-purple-500/15 px-3.5 text-xs font-semibold text-blue-600 dark:text-blue-400 border border-blue-500/30 shadow-sm backdrop-blur-md hover:scale-105 active:scale-95 transition-all duration-200 sm:h-12 sm:px-4"
+        >
+          <Sparkles className="h-4 w-4 text-blue-500 animate-pulse" />
+          <span className="hidden sm:inline">{isAr ? "محاكي أبل" : "Apple Mode"}</span>
+        </button>
         <GlobalSearch variant={path === "/" ? "pill" : "icon"} />
         <NotificationBell className={circle} />
         <DropdownMenu>
@@ -97,7 +116,7 @@ export function AppHeader() {
             <button
               type="button"
               aria-label={isAr ? "الحساب" : "Account"}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-12 sm:w-12"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(37,99,235,0.4),inset_0_1px_0_rgba(255,255,255,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-12 sm:w-12 transition-transform duration-200 hover:scale-105"
             >
               {initials}
             </button>
@@ -111,6 +130,9 @@ export function AppHeader() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => navigate("/profile")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
               <UserIcon className="h-4 w-4 text-muted-foreground" /> {t("common.profile")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setTimeout(() => openInstall(), 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+              <Download className="h-4 w-4 text-muted-foreground" /> {isAr ? "تثبيت التطبيق على جهازك" : "Install app on device"}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
               <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}

@@ -241,6 +241,7 @@ model RolePermission {
 
 model Session {
   id         String    @id @default(cuid())
+  familyId   String    @default(uuid())
   userId     String
   tokenHash  String    @unique
   userAgent  String?
@@ -252,6 +253,7 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([familyId])
 }
 
 model PasswordResetToken {

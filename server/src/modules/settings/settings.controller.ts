@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
+import { escapeHtml, hasPermission } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
+import { assertBrandFile } from "@/modules/files/files.access";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp, getWhatsappProvider, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
@@ -29,8 +32,9 @@ import {
 /** A real document to fill the WhatsApp alert preview and test message — the
  * next one to expire, preferring an employee's — or a labelled example when
  * the system has none yet. */
-async function sampleAlertContext(companyName: string | null | undefined, companyEn?: string | null): Promise<{ context: AlertContext; real: boolean }> {
+async function sampleAlertContext(companyName: string | null | undefined, companyEn?: string | null, auth?: AuthContext): Promise<{ context: AlertContext; real: boolean }> {
   const ranked = (await getTrackableItems())
+    .filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : item.sourceType === "EMPLOYEE_DOCUMENT" ? "employeeDocuments.view" : "employees.view"))
     .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
     .sort(
       (a, b) =>
@@ -57,9 +61,9 @@ async function sampleAlertContext(companyName: string | null | undefined, compan
 // The same document in each state, so the designs can be compared as it nears expiry.
 const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
 
-export const getWhatsappTemplate = asyncHandler(async (_req: Request, res: Response) => {
+export const getWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
   const [{ company }, template, { language }] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting(), getWhatsappScheduleSetting()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
   // Shown in the language the alerts go out in (Settings → WhatsApp).
   const previews = withLang(language, () => Object.fromEntries(
     WHATSAPP_TEMPLATE_IDS.map((id) => [
@@ -81,7 +85,7 @@ export const getWhatsappCards = asyncHandler(async (req: Request, res: Response)
   const state = String(req.query.state ?? "week") as keyof typeof PREVIEW_STATES;
   const days = PREVIEW_STATES[state] ?? PREVIEW_STATES.week;
   const [{ company }, card, provider, assets, { language }] = await Promise.all([getBrandingContext(), getWhatsappCardSetting(), getWhatsappProvider(), getCardAssets(), getWhatsappScheduleSetting()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
+  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
   const shown = { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) };
   const cards = withLang(language, () => Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)])));
   res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards, language } });
@@ -115,6 +119,11 @@ export const getPrintSignaturesSettings = asyncHandler(async (_req: Request, res
 
 export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, res: Response) => {
   const body = req.body as { signatures: PrintSignatures; stampFileId: string | null; signatureFileId: string | null };
+  await Promise.all([
+    assertBrandFile(body.stampFileId, ["company-stamp"]),
+    assertBrandFile(body.signatureFileId, ["company-signature", "company-stamp"]),
+    ...[body.signatures.report, body.signatures.voucher, body.signatures.profile].flatMap((doc) => doc.boxes.map((box) => assertBrandFile(box.nameFileId, ["company-stamp", "company-signature"]))),
+  ]);
   await setPrintSignatures(body.signatures);
   // The stamp and signature images live on the company record.
   await prisma.companySettings.updateMany({
@@ -157,6 +166,7 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
 
   // The latest real payment voucher, or the first employee's profile, in the design.
   if (doc === "voucher") {
+    if (!hasPermission(req.auth, "payments.view") || !hasPermission(req.auth, "payments.export")) throw ApiError.forbidden("Payment export permission is required.");
     const latest = await prisma.payment.findFirst({ where: { deletedAt: null }, orderBy: { paymentDate: "desc" }, select: { id: true } });
     if (latest) {
       const payment = await paymentsService.getById(latest.id);
@@ -164,25 +174,27 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
     }
   }
   if (doc === "profile") {
+    if (!hasPermission(req.auth, "employees.view") || !hasPermission(req.auth, "employees.export")) throw ApiError.forbidden("Employee export permission is required.");
     const first = await prisma.employee.findFirst({ where: { deletedAt: null }, orderBy: { employeeNumber: "asc" }, select: { id: true } });
     if (first) {
-      const employee = await employeesService.getById(first.id);
+      const employee = await employeesService.getById(first.id, req.auth);
       return send(await renderHtmlToPdf(employeeProfilePdf(employee as never, branding), { footerLabel: L("ملف الموظف", "Employee Profile") }), "profile");
     }
   }
 
-  const branches = await prisma.branch.findMany({
+  const canSeeStaff = hasPermission(req.auth, "employees.view");
+  const branches = hasPermission(req.auth, "branches.view") ? await prisma.branch.findMany({
     where: { deletedAt: null },
     orderBy: { code: "asc" },
     take: 60,
-    include: { _count: { select: { employees: { where: { deletedAt: null } } } } },
-  });
+    include: { _count: { select: { employees: { where: { deletedAt: null, ...(canSeeStaff ? {} : { id: { in: [] } }) } } } } },
+  }) : [];
   const html = tableReportPdf(
     "تقرير المؤسسات والمنشآت",
     [
-      { header: "اسم المؤسسة", subHeader: "Establishment", render: (r) => String((isEn() && r.nameEn) || r.name) },
-      { header: "الرمز", subHeader: "Code", render: (r) => `<span class="nowrap">${r.code}</span>` },
-      { header: "المدينة", subHeader: "City", render: (r) => String((isEn() && r.cityEn) || r.city || "—") },
+      { header: "اسم المؤسسة", subHeader: "Establishment", render: (r) => escapeHtml((isEn() && r.nameEn) || r.name) },
+      { header: "الرمز", subHeader: "Code", render: (r) => `<span class="nowrap">${escapeHtml(r.code)}</span>` },
+      { header: "المدينة", subHeader: "City", render: (r) => escapeHtml((isEn() && r.cityEn) || r.city || "—") },
       { header: "الموظفون", subHeader: "Staff", render: (r) => String(r.staff) },
       { header: "الحالة", subHeader: "Status", render: (r) => `<span class="badge-status status-${r.status}">${r.status === "ACTIVE" ? L("نشط", "Active") : L("غير نشط", "Inactive")}</span>` },
     ],
@@ -301,7 +313,7 @@ export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => 
     provider === WHATSAPP_WEB_PROVIDER ? (en ? "a number linked by QR code" : "رقم مربوط بكود QR") : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : en ? "official WhatsApp (Meta)" : "واتساب الرسمي (Meta)";
   // The test is the chosen design (card and text) on a real document, so it
   // looks exactly like the alerts this number will get.
-  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn);
+  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
   const style = await getAlertStyle(company?.nameEn);
   const alert = await withLang(language, () => prepareAlert(context, style));
   const header = (en

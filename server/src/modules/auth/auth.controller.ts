@@ -116,6 +116,7 @@ export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 export const changePassword = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
   await authService.changePassword(req.auth.userId, req.body.currentPassword, req.body.newPassword);
+  res.clearCookie(REFRESH_COOKIE, { path: "/api/auth", secure: isProduction, sameSite: isProduction ? "none" : "lax", partitioned: isProduction });
   res.json({ message: "Password changed successfully." });
 });
 

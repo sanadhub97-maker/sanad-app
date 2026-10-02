@@ -3,6 +3,12 @@ import path from "path";
 import crypto from "crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { env } from "@/config/env";
+import { ApiError } from "@/utils/apiError";
+
+export function validateStoredName(name: string) {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,199}$/.test(name) || name.includes("..")) throw ApiError.badRequest("Invalid storage key.");
+  return name;
+}
 
 // Storage abstraction so the driver can switch to an S3-compatible backend
 // (e.g. Neon Object Storage) via STORAGE_* env vars without touching call
@@ -35,11 +41,11 @@ class LocalStorageDriver implements StorageDriver {
   }
 
   async read(storedName: string): Promise<Buffer> {
-    return fs.promises.readFile(path.join(this.uploadDir, storedName));
+    return fs.promises.readFile(path.join(this.uploadDir, validateStoredName(storedName)));
   }
 
   async delete(storedName: string): Promise<void> {
-    const filePath = path.join(this.uploadDir, storedName);
+    const filePath = path.join(this.uploadDir, validateStoredName(storedName));
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
     }
@@ -74,7 +80,7 @@ class S3StorageDriver implements StorageDriver {
   }
 
   async read(storedName: string): Promise<Buffer> {
-    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: storedName }));
+    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: validateStoredName(storedName) }));
     const chunks: Uint8Array[] = [];
     for await (const chunk of res.Body as AsyncIterable<Uint8Array>) {
       chunks.push(chunk);
@@ -83,7 +89,7 @@ class S3StorageDriver implements StorageDriver {
   }
 
   async delete(storedName: string): Promise<void> {
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: storedName }));
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: validateStoredName(storedName) }));
   }
 }
 

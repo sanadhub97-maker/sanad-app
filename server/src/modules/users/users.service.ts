@@ -5,6 +5,24 @@ import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { issueEmailVerification } from "@/modules/auth/auth.service";
 import { logger } from "@/lib/logger";
+import type { AuthContext } from "@/types/express";
+
+async function assertAssignableRoles(ids: string[], actor: AuthContext | undefined) {
+  if (!actor) throw ApiError.unauthorized();
+  if (!ids.length) return;
+  const roles = await prisma.role.findMany({ where: { id: { in: ids } }, include: { rolePermissions: { include: { permission: true } } } });
+  if (roles.length !== ids.length) throw ApiError.badRequest("One or more roles are invalid.");
+  if (!actor.isSuperAdmin && roles.some((role) => role.name === "Super Admin" || role.rolePermissions.some((rp) => rp.permission.key === "*" || !actor.permissions.has(rp.permission.key)))) {
+    throw ApiError.forbidden("You cannot assign privileges above your own.");
+  }
+}
+
+async function assertManageableUser(id: string, actor: AuthContext | undefined) {
+  if (!actor) throw ApiError.unauthorized();
+  const target = await getById(id);
+  await assertAssignableRoles(target.roles.map((role) => role.id), actor);
+  return target;
+}
 import type { z } from "zod";
 import type { createUserSchema, listUsersQuerySchema, updateUserSchema } from "@/modules/users/users.schemas";
 
@@ -59,7 +77,8 @@ export async function getById(id: string) {
   return serialize(user);
 }
 
-export async function create(input: CreateInput) {
+export async function create(input: CreateInput, actor: AuthContext | undefined) {
+  await assertAssignableRoles(input.roleIds, actor);
   const existing = await prisma.user.findFirst({ where: { email: input.email, deletedAt: null } });
   if (existing) throw ApiError.badRequest("An account with this email already exists.");
 
@@ -88,8 +107,10 @@ export async function create(input: CreateInput) {
   return serialize(user);
 }
 
-export async function update(id: string, input: UpdateInput) {
-  await getById(id);
+export async function update(id: string, input: UpdateInput, actor: AuthContext | undefined) {
+  await assertManageableUser(id, actor);
+  if (input.roleIds) await assertAssignableRoles(input.roleIds, actor);
+  if (id === actor?.userId && (input.roleIds || input.isActive === false)) throw ApiError.forbidden("You cannot change your own roles or deactivate yourself.");
 
   if (input.roleIds) {
     const roles = await prisma.role.findMany({ where: { id: { in: input.roleIds } } });
@@ -101,19 +122,24 @@ export async function update(id: string, input: UpdateInput) {
       await tx.userRole.deleteMany({ where: { userId: id } });
       await tx.userRole.createMany({ data: input.roleIds.map((roleId) => ({ userId: id, roleId })) });
     }
-    return tx.user.update({
+    const updated = await tx.user.update({
       where: { id },
       data: { fullName: input.fullName, phone: input.phone, isActive: input.isActive },
       select: selectSafe,
     });
+    if (input.roleIds || input.isActive === false) {
+      await tx.session.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } });
+      await tx.passwordResetToken.updateMany({ where: { userId: id, usedAt: null }, data: { usedAt: new Date() } });
+    }
+    return updated;
   });
 
   return serialize(user);
 }
 
-export async function softDelete(id: string, requestingUserId: string) {
-  if (id === requestingUserId) throw ApiError.badRequest("You cannot delete your own account.");
-  const existing = await getById(id);
+export async function softDelete(id: string, actor: AuthContext | undefined) {
+  if (id === actor?.userId) throw ApiError.badRequest("You cannot delete your own account.");
+  const existing = await assertManageableUser(id, actor);
   await prisma.$transaction([
     // email has a hard DB-unique constraint, so a soft-deleted row would
     // otherwise permanently block that email from ever being reused —

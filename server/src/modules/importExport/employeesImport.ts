@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
+import { validateWorkbookArchive } from "@/modules/importExport/archiveLimits";
 import { isEn } from "@/services/lang";
 
 // Canonical header -> field mapping. Matching is case-insensitive and tries
@@ -156,11 +157,13 @@ function excelDateToJs(value: unknown): Date | undefined {
 }
 
 export async function parseWorkbook(buffer: Buffer): Promise<{ rows: ParsedRow[]; parseErrors: RowError[] }> {
+  await validateWorkbookArchive(buffer);
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer as never);
   const sheet = workbook.worksheets[0];
   // The API speaks English; the client shows these in Arabic (lib/server-messages).
   if (!sheet) throw ApiError.badRequest("The uploaded file has no valid worksheets.");
+  if (workbook.worksheets.length > 20 || sheet.rowCount > 10_000 || sheet.columnCount > 100) throw ApiError.badRequest("Workbook exceeds safe worksheet limits.");
 
   let headerRowNumber = 1;
   const fieldByColumn = new Map<number, string>();

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,11 +57,8 @@ export default function LoginPage() {
   const location = useLocation();
   const setAuth = useAuthStore((s) => s.setAuth);
   const queryClient = useQueryClient();
-  // The home page's code downloads while you type.
-  useEffect(() => {
-    const id = window.setTimeout(() => void import("@/pages/dashboard/dashboard-lulu"), 1200);
-    return () => window.clearTimeout(id);
-  }, []);
+  // Dashboard code/data are prefetched after successful authentication by
+  // prefetchHome, instead of competing with the public login page's loading.
   const root = useRef<HTMLDivElement>(null);
 
   const [show, setShow] = useState(false);

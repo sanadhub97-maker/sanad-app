@@ -1,11 +1,13 @@
+import type { AuthContext } from "@/types/express";
+import { canViewSource, hasPermission, notificationVisibility } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 import { getExpirationRules } from "@/services/settingsStore";
 import { getTrackableItems, bucketByStatus, bucketByWindow, type TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
 
-export async function getSummary() {
+export async function getSummary(auth: AuthContext) {
   const rules = await getExpirationRules();
-  const items = await getTrackableItems();
+  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
   const statusBuckets = bucketByStatus(items, rules);
   // The same counts split by owner, for the sidebar's two document sections.
   const companyBuckets = bucketByStatus(items.filter((i) => i.sourceType === "COMPANY_DOCUMENT"), rules);
@@ -16,11 +18,11 @@ export async function getSummary() {
   startOfMonth.setHours(0, 0, 0, 0);
 
   const [totalEmployees, activeEmployees, totalCompanyDocuments, totalPayments, monthlyPayments] = await Promise.all([
-    prisma.employee.count({ where: { deletedAt: null } }),
-    prisma.employee.count({ where: { deletedAt: null, employmentStatus: "ACTIVE" } }),
-    prisma.companyDocument.count({ where: { deletedAt: null } }),
-    prisma.payment.aggregate({ where: { deletedAt: null }, _sum: { total: true } }),
-    prisma.payment.aggregate({ where: { deletedAt: null, paymentDate: { gte: startOfMonth } }, _sum: { total: true } }),
+    hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null } }) : Promise.resolve(0),
+    hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null, employmentStatus: "ACTIVE" } }) : Promise.resolve(0),
+    hasPermission(auth, "companyDocuments.view") ? prisma.companyDocument.count({ where: { deletedAt: null } }) : Promise.resolve(0),
+    hasPermission(auth, "payments.view") ? prisma.payment.aggregate({ where: { deletedAt: null }, _sum: { total: true } }) : Promise.resolve({ _sum: { total: null } }),
+    hasPermission(auth, "payments.view") ? prisma.payment.aggregate({ where: { deletedAt: null, paymentDate: { gte: startOfMonth } }, _sum: { total: true } }) : Promise.resolve({ _sum: { total: null } }),
   ]);
 
   return {
@@ -38,36 +40,36 @@ export async function getSummary() {
   };
 }
 
-export async function getExpirationWidget() {
-  const items = await getTrackableItems();
+export async function getExpirationWidget(auth: AuthContext) {
+  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
   return bucketByWindow(items);
 }
 
-export async function getCharts() {
+export async function getCharts(auth: AuthContext) {
   const rules = await getExpirationRules();
-  const items = await getTrackableItems();
+  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
 
   const [employeesByStatus, employeesByDepartment, paymentsByCategory, paymentsByBranch, monthlyPaymentsRaw, monthlyByCategoryRaw] = await Promise.all([
-    prisma.employee.groupBy({ by: ["employmentStatus"], where: { deletedAt: null }, _count: { _all: true } }),
-    prisma.employee.groupBy({ by: ["department"], where: { deletedAt: null }, _count: { _all: true } }),
-    prisma.payment.groupBy({ by: ["category"], where: { deletedAt: null }, _sum: { total: true } }),
-    prisma.payment.groupBy({ by: ["branchId"], where: { deletedAt: null }, _sum: { total: true } }),
-    prisma.$queryRaw<{ month: Date; total: string }[]>`
+    hasPermission(auth, "employees.view") ? prisma.employee.groupBy({ by: ["employmentStatus"], where: { deletedAt: null }, _count: { _all: true } }) : Promise.resolve([]),
+    hasPermission(auth, "employees.view") ? prisma.employee.groupBy({ by: ["department"], where: { deletedAt: null }, _count: { _all: true } }) : Promise.resolve([]),
+    hasPermission(auth, "payments.view") ? prisma.payment.groupBy({ by: ["category"], where: { deletedAt: null }, _sum: { total: true } }) : Promise.resolve([]),
+    hasPermission(auth, "payments.view") ? prisma.payment.groupBy({ by: ["branchId"], where: { deletedAt: null }, _sum: { total: true } }) : Promise.resolve([]),
+    hasPermission(auth, "payments.view") ? prisma.$queryRaw<{ month: Date; total: string }[]>`
       SELECT date_trunc('month', "paymentDate") AS month, SUM(total) AS total
       FROM "Payment"
       WHERE "deletedAt" IS NULL AND "paymentDate" >= NOW() - INTERVAL '12 months'
       GROUP BY 1 ORDER BY 1
-    `,
+    ` : Promise.resolve([]),
     // The last six months (this one included), split by category.
-    prisma.$queryRaw<{ month: Date; category: string; total: string }[]>`
+    hasPermission(auth, "payments.view") ? prisma.$queryRaw<{ month: Date; category: string; total: string }[]>`
       SELECT date_trunc('month', "paymentDate") AS month, category::text AS category, SUM(total) AS total
       FROM "Payment"
       WHERE "deletedAt" IS NULL AND "paymentDate" >= date_trunc('month', NOW()) - INTERVAL '5 months'
       GROUP BY 1, 2 ORDER BY 1
-    `,
+    ` : Promise.resolve([]),
   ]);
 
-  const branches = await prisma.branch.findMany({ select: { id: true, name: true, nameEn: true } });
+  const branches = hasPermission(auth, "branches.view") ? await prisma.branch.findMany({ select: { id: true, name: true, nameEn: true } }) : [];
   const branchById = new Map(branches.map((b) => [b.id, b]));
 
   return {
@@ -94,12 +96,12 @@ function bucketByStatusChart(items: Awaited<ReturnType<typeof getTrackableItems>
   ];
 }
 
-export async function getRecentActivity(userId: string) {
+export async function getRecentActivity(auth: AuthContext) {
   const [recentEmployees, recentPayments, recentNotifications, recentActivities] = await Promise.all([
-    prisma.employee.findMany({ where: { deletedAt: null }, orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.payment.findMany({ where: { deletedAt: null }, orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { user: { select: { fullName: true } } } }),
+    hasPermission(auth, "employees.view") ? prisma.employee.findMany({ where: { deletedAt: null }, orderBy: { createdAt: "desc" }, take: 5 }) : Promise.resolve([]),
+    hasPermission(auth, "payments.view") ? prisma.payment.findMany({ where: { deletedAt: null }, orderBy: { createdAt: "desc" }, take: 5 }) : Promise.resolve([]),
+    prisma.notification.findMany({ where: { userId: auth.userId, ...notificationVisibility(auth) }, orderBy: { createdAt: "desc" }, take: 5 }),
+    hasPermission(auth, "auditLogs.view") ? prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { user: { select: { fullName: true } } } }) : Promise.resolve([]),
   ]);
 
   return { recentEmployees, recentPayments, recentNotifications, recentActivities };
@@ -118,8 +120,8 @@ function typeGroup(item: TrackableItem): string {
 /** The dashboard's overview cards: what needs attention (expired or ending
  * within 30 days, soonest first), expiries in each of the next six months,
  * documents by type, and the branches summary. */
-export async function getOverview() {
-  const items = await getTrackableItems();
+export async function getOverview(auth: AuthContext) {
+  const items = (await getTrackableItems()).filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
   const withDays = items.map((item) => ({ item, days: daysUntil(item.expiryDate) }));
 
   const due = withDays.filter((x) => x.days <= 30).sort((a, b) => a.days - b.days);
@@ -146,7 +148,7 @@ export async function getOverview() {
   const byType: Record<string, number> = {};
   for (const item of items) byType[typeGroup(item)] = (byType[typeGroup(item)] ?? 0) + 1;
 
-  const branches = await prisma.branch.findMany({ where: { deletedAt: null }, select: { status: true, city: true } });
+  const branches = hasPermission(auth, "branches.view") ? await prisma.branch.findMany({ where: { deletedAt: null }, select: { status: true, city: true } }) : [];
 
   // Expiries per day around today, for the dashboard's week strip.
   const expiriesByDate: Record<string, number> = {};

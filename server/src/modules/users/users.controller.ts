@@ -12,17 +12,17 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
-  const user = await service.create(req.body);
+  const user = await service.create(req.body, req.auth);
   res.status(201).json({ data: user, message: "User created successfully." });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const user = await service.update(String(req.params.id), req.body);
+  const user = await service.update(String(req.params.id), req.body, req.auth);
   res.json({ data: user, message: "User updated successfully." });
 });
 
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
-  await service.softDelete(String(req.params.id), req.auth.userId);
+  await service.softDelete(String(req.params.id), req.auth);
   res.json({ message: "User deleted successfully." });
 });

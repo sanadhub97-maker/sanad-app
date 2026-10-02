@@ -14,7 +14,7 @@ router.use(requireAuth);
 router.get("/", requirePermission("employees.view"), validate({ query: listEmployeesQuerySchema }), controller.list);
 router.get("/next-number", requirePermission("employees.view"), controller.getNextNumber);
 router.get("/:id", requirePermission("employees.view"), validate({ params: idParamSchema }), controller.getById);
-router.get("/:id/pdf", requirePermission("employees.view"), validate({ params: idParamSchema }), controller.exportPdf);
+router.get("/:id/pdf", requirePermission("employees.view"), requirePermission("employees.export"), validate({ params: idParamSchema }), controller.exportPdf);
 
 router.post(
   "/",

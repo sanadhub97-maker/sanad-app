@@ -6,6 +6,8 @@ import { listRecipients, normalizePhone } from "@/services/whatsappRecipients";
 // the system sends (expiration alerts and test messages) with its text,
 // recipient and delivery result, read from NotificationLog.
 
+const visibleMessage = { OR: [{ templateCode: null }, { templateCode: { not: "DIGEST_ITEM" } }] };
+
 export type WhatsappLogKind = "ALERT" | "TEST";
 
 /** Records a message that doesn't go through the expiration scan's dedupe
@@ -34,14 +36,14 @@ export async function recordWhatsappMessage(input: {
 export async function listWhatsappMessages(opts: { limit: number; status?: "SENT" | "FAILED" }) {
   const [rows, recipients, sentToday, failedToday, total] = await Promise.all([
     prisma.notificationLog.findMany({
-      where: { channel: "WHATSAPP", ...(opts.status ? { status: opts.status } : {}) },
+      where: { ...visibleMessage, channel: "WHATSAPP", ...(opts.status ? { status: opts.status } : {}) },
       orderBy: { createdAt: "desc" },
       take: opts.limit,
     }),
     listRecipients(),
     countSince("SENT"),
     countSince("FAILED"),
-    prisma.notificationLog.count({ where: { channel: "WHATSAPP" } }),
+    prisma.notificationLog.count({ where: { ...visibleMessage, channel: "WHATSAPP" } }),
   ]);
   const nameByPhone = new Map(recipients.map((r) => [normalizePhone(r.phone), r.name]));
 
@@ -66,5 +68,5 @@ export async function listWhatsappMessages(opts: { limit: number; status?: "SENT
 /** Messages with this status since midnight Riyadh time. */
 function countSince(status: "SENT" | "FAILED") {
   const riyadhMidnight = new Date(`${new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Riyadh" }).format(new Date())}T00:00:00+03:00`);
-  return prisma.notificationLog.count({ where: { channel: "WHATSAPP", status, createdAt: { gte: riyadhMidnight } } });
+  return prisma.notificationLog.count({ where: { ...visibleMessage, channel: "WHATSAPP", status, createdAt: { gte: riyadhMidnight } } });
 }

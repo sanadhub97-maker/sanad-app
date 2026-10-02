@@ -12,7 +12,7 @@ router.use(requireAuth);
 
 router.get("/", requirePermission("payments.view"), validate({ query: listPaymentsQuerySchema }), controller.list);
 router.get("/:id", requirePermission("payments.view"), validate({ params: idParamSchema }), controller.getById);
-router.get("/:id/receipt.pdf", requirePermission("payments.view"), validate({ params: idParamSchema }), controller.receiptPdf);
+router.get("/:id/receipt.pdf", requirePermission("payments.view"), requirePermission("payments.export"), validate({ params: idParamSchema }), controller.receiptPdf);
 
 router.post(
   "/",

@@ -12,6 +12,7 @@
 export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "burgundy", "sapphire", "bronze", "turquoise", "slate", "amethyst", "olive", "crimson",
   "ledger", "blueprint", "mono", "ribbon", "mosaic", "ocean", "sadu", "glass", "gazette", "prism",
   "pearl", "passport", "airmail", "bauhaus", "palm", "circuit", "topo", "marble", "ticket", "calligraphy",
+  "studio_executive", "studio_heritage", "studio_editorial", "studio_minimal", "studio_blueprint", "studio_royal", "studio_ledger", "studio_atelier", "studio_modern", "studio_archive",
 ] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
 export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
@@ -2093,7 +2094,51 @@ const calligraphy: PrintTheme = {
     tpl("16mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:4mm;display:flex;justify-content:space-between;font-size:7pt;color:#8a7d68;"><span>${label}</span><span style="color:${CL_R};font-weight:700;">${PAGE_NO}</span></div>`, "#fbf7ee"),
 };
 
-const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson, ledger, blueprint, mono, ribbon, mosaic, ocean, sadu, glass, gazette, prism, pearl, passport, airmail, bauhaus, palm, circuit, topo, marble, ticket, calligraphy };
+/** The ten approved preview concepts, adapted to flowing, multipage documents. */
+function studioTheme(id: PrintThemeId, ink: string, metal: string, variant: string): PrintTheme {
+  const variations: Record<string, string> = {
+    heritage: `.st-head{border-bottom-color:${metal}}.st-title{text-align:center;justify-content:center}.st-head:before{content:'';position:absolute;top:-4mm;left:0;right:0;height:2mm;background:repeating-linear-gradient(45deg,${ink} 0 2mm,#fff 2mm 4mm)}html{background:${doubleRules(metal, "#ffffff")}}`,
+    editorial: `.st-title{border-bottom:1.2mm solid ${ink};padding-bottom:5mm}.st-title h1{font-size:27pt!important}.st-logo{border-radius:0!important;background:${ink};color:white!important}.lux thead th{background:white;color:${ink};border-top:2px solid ${ink};border-bottom:1px solid ${ink}}`,
+    minimal: `.st-logo{border:0!important}.st-title h1{font-weight:400!important}.lux thead th{background:#f4f4f4;color:${ink};border-color:#ccc}.lux tbody tr:nth-child(even) td{background:white}.lux .section-header{background:white;border-bottom:1px solid #ddd}.st-head{border-bottom:1px solid #ddd!important}`,
+    blueprint: `.st-head{border:1px solid ${ink};padding:4mm}.st-logo{border-radius:0!important;border-width:2px!important}.lux th,.lux td{border:1px solid #b4c8da}.st-title{border-bottom:1px solid ${ink};padding-bottom:4mm}`,
+    royal: `html{background:${doubleRules(metal,"#ffffff")}}.st-head{justify-content:center;text-align:center;border-bottom-color:${metal}}.st-brand{flex-direction:column}.st-meta{display:none}.st-title{justify-content:center;text-align:center}.lux thead th{background:#f3eff7;color:${ink};border-color:${metal}}`,
+    ledger: `.st-head{border-bottom:1mm double ${ink}}.st-logo{border-radius:0!important}.lux th,.lux td{border:1px solid #bdccc5}.lux thead th{background:#e6eeea;color:${ink}}.lux .section-card{border-color:#bdccc5}`,
+    atelier: `html{background:linear-gradient(to left,${ink} 0 5mm,#fff 5mm 100%)}.st-logo{border-radius:50%!important;background:#f6f1ec}.st-title h1{font-weight:400!important}.lux thead th{background:#f2eae3;color:${ink}}.st-head{border-bottom:1px solid #d7c8bd}`,
+    modern: `.st-title{background:${ink};color:white;margin-inline:-16mm;padding:5mm 16mm}.st-title h1,.st-title .st-sub{color:white!important}.st-logo{border-radius:3mm!important;background:${ink};color:white!important}.st-head{border:0}`,
+    archive: `.st-head{border:1px solid ${ink};border-inline-start:4px solid ${ink};padding:4mm}.st-logo{display:none!important}.st-meta{border:1px solid #bac2cc;padding:2mm}.st-title{border-bottom:1px dashed #bac2cc;padding-bottom:4mm}.lux thead th{background:#e9edf2;color:${ink}}.lux .section-card{border-style:dashed}`,
+  };
+  return {
+    id, margin: { top: "13mm", bottom: "17mm" },
+    css: vars({ paper: "#ffffff", accent: ink, "accent-ink": "#ffffff", metal, "metal-deep": metal,
+      "metal-soft": "#f4f5f6", row: "#f6f7f8", line: "#dfe3e6", "line-strong": "#bbc3cb", radius: "0px",
+      heading: "'IBM Plex Sans Arabic',Tahoma,sans-serif", foil: `linear-gradient(${ink},${ink})`, "pad-r": "16mm", "pad-l": "16mm",
+      seal: `url("${dataUri(rosetteSvg(metal))}")`,
+    }) + LUX_BASE + `
+      .st-head{display:flex;align-items:center;justify-content:space-between;gap:5mm;border-bottom:2px solid ${ink};padding-bottom:5mm;position:relative;break-inside:avoid}
+      .st-brand{display:flex;align-items:center;gap:3mm;min-width:0}.st-logo{width:13mm;height:15mm;object-fit:contain;flex:none;border:1px solid ${ink};border-radius:7mm 7mm 1mm 1mm;color:${ink};font-size:23pt}
+      .st-company{font-size:14pt;color:${ink};font-weight:700;line-height:1.5;overflow-wrap:anywhere}.st-company-en{font-size:7pt;color:#77818a;direction:ltr}
+      .st-meta{font-size:7pt;color:#7a838b;display:flex;flex-direction:column;gap:1mm;flex-shrink:0}.st-meta b{color:${ink}}
+      .st-title{display:flex;justify-content:space-between;align-items:center;gap:4mm;margin:5mm 0;break-inside:avoid}.st-title h1{font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;font-size:21pt;color:${ink};margin:0;line-height:1.5;overflow-wrap:anywhere}.st-sub{font-size:7pt;color:${metal};letter-spacing:.5px;margin-top:1mm}
+      .lux .section-card,.lux .report-summary-bar{box-shadow:none}.lux .section-header{font-size:10pt}.lux .amount-val{color:${ink};background:none}.lux .kpi-total-card{background:#f4f5f6;color:${ink};border-bottom:2px solid ${metal}}.lux .amount-sub{color:#6b7680}
+    ` + (variations[variant] ?? ""),
+    letterhead: ctx => `<div class="st-head"><div class="st-brand">${logo(ctx,"st-logo")}<div><div class="st-company">${esc(ctx.companyNameAr)}</div><div class="st-company-en">${esc(ctx.companyNameEn)}</div></div></div><div class="st-meta">${refLines(ctx)}</div></div><div class="st-title"><div><h1>${esc(ctx.title)}</h1>${ctx.titleEn ? `<div class="st-sub">${esc(ctx.titleEn)}</div>` : ""}</div></div>`,
+    decor: "", headerTemplate: tpl("13mm", "", "#ffffff"),
+    footerTemplate: label => tpl("17mm", `<div dir="rtl" style="position:absolute;left:16mm;right:16mm;top:3mm;border-top:1px solid ${metal};padding-top:2mm;display:flex;justify-content:space-between;gap:4mm;font-size:7pt;color:${ink}"><span>${label}</span><span>${PAGE_NO}</span></div>`, "#ffffff"),
+  };
+}
+
+const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, executive, burgundy, sapphire, bronze, turquoise, slate, amethyst, olive, crimson, ledger, blueprint, mono, ribbon, mosaic, ocean, sadu, glass, gazette, prism, pearl, passport, airmail, bauhaus, palm, circuit, topo, marble, ticket, calligraphy,
+  studio_executive: studioTheme("studio_executive", "#183c55", "#af8751", "executive"),
+  studio_heritage: studioTheme("studio_heritage", "#225244", "#b49655", "heritage"),
+  studio_editorial: studioTheme("studio_editorial", "#262626", "#b65940", "editorial"),
+  studio_minimal: studioTheme("studio_minimal", "#343b44", "#8993a0", "minimal"),
+  studio_blueprint: studioTheme("studio_blueprint", "#245a8b", "#6596ae", "blueprint"),
+  studio_royal: studioTheme("studio_royal", "#45335b", "#b28d59", "royal"),
+  studio_ledger: studioTheme("studio_ledger", "#24564d", "#637c71", "ledger"),
+  studio_atelier: studioTheme("studio_atelier", "#735749", "#c19578", "atelier"),
+  studio_modern: studioTheme("studio_modern", "#145d69", "#c9914b", "modern"),
+  studio_archive: studioTheme("studio_archive", "#303d53", "#8994a7", "archive"),
+};
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {
   return isPrintThemeId(id) ? THEMES[id] : THEMES[DEFAULT_PRINT_THEME];

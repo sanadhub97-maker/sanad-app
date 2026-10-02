@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { loadAuthContext } from "@/middleware/auth";
+import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
 import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
-import { sendWhatsapp } from "@/services/whatsapp";
+import { sendWhatsappDigests, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
-import { alertContext } from "@/services/whatsappTemplates";
-import { getAlertStyle, prepareAlert, type PreparedAlert } from "@/services/whatsappAlert";
-import { withLang } from "@/services/lang";
 import { pushDueItems } from "@/services/pushAlerts";
 
 // Roles considered "responsible" for expiration alerts in this build — a
@@ -96,7 +95,12 @@ function assertSent(result: { sent: boolean; reason?: string }) {
   if (!result.sent) throw new Error(result.reason ?? "Send failed");
 }
 
-export async function runExpirationScan() {
+let activeScan: Promise<{ dueCount: number }> | null = null;
+export function runExpirationScan() {
+  return activeScan ??= performExpirationScan().finally(() => { activeScan = null; });
+}
+
+async function performExpirationScan() {
   logger.info("Starting daily expiration scan");
   const [items, rules, emailSettings, whatsappSettings, recipients, branding] = await Promise.all([
     getTrackableItems(),
@@ -107,11 +111,12 @@ export async function runExpirationScan() {
     getBrandingContext(),
   ]);
   const companyName = branding.company?.nameAr || branding.company?.nameEn;
-  const alertStyle = await getAlertStyle(branding.company?.nameEn);
   // WhatsApp and email go out in the language chosen in Settings → WhatsApp.
   const { language } = await getWhatsappScheduleSetting();
   const whatsappPhones = (await getActiveRecipients()).map((r) => r.phone);
+  const recipientAuth = new Map(await Promise.all(recipients.map(async (recipient) => [recipient.id, await loadAuthContext(recipient.id)] as const)));
 
+  const whatsappGroups = new Map<string, DigestEntry[]>();
   let dueCount = 0;
   const due: Parameters<typeof pushDueItems>[0] = [];
 
@@ -125,11 +130,12 @@ export async function runExpirationScan() {
     const messageAr = messageArFor(subjectAr(item), threshold);
     const dedupeBase = `${item.key}:${threshold}`;
     due.push({ item, threshold, dedupeBase });
+    const itemRecipients = recipients.filter((recipient) => canViewSource(recipientAuth.get(recipient.id), item.sourceType));
 
     // In-app notifications (one row per recipient) — always attempted.
     await logOnce(`${dedupeBase}:SYSTEM`, "SYSTEM", async () => {
       await prisma.notification.createMany({
-        data: recipients.map((r) => ({
+        data: itemRecipients.map((r) => ({
           userId: r.id,
           severity,
           title: NOTIFICATION_TITLE.en,
@@ -143,7 +149,7 @@ export async function runExpirationScan() {
     });
 
     if (emailSettings?.enabled) {
-      for (const recipient of recipients) {
+      for (const recipient of itemRecipients) {
         await logOnce(`${dedupeBase}:EMAIL:${recipient.id}`, "EMAIL", async () => {
           assertSent(
             await sendMail({
@@ -151,52 +157,28 @@ export async function runExpirationScan() {
               subject: language === "en" ? NOTIFICATION_TITLE.en : NOTIFICATION_TITLE.ar,
               html:
                 language === "en"
-                  ? `<p dir="ltr" style="font-family:Arial,sans-serif">${message}</p>`
-                  : `<p dir="rtl" style="font-family:Tahoma,sans-serif">${messageAr}</p>`,
+                  ? `<p dir="ltr" style="font-family:Arial,sans-serif">${escapeHtml(message)}</p>`
+                  : `<p dir="rtl" style="font-family:Tahoma,sans-serif">${escapeHtml(messageAr)}</p>`,
             })
           );
         });
       }
     }
 
-    if (whatsappSettings?.enabled) {
-      // In the designs chosen in Settings → WhatsApp (message above still backs
-      // the in-app and email channels). Prepared on first use, so a card is
-      // only drawn when some number still has this alert to receive.
-      let prepared: Promise<PreparedAlert> | null = null;
-      const whatsappAlert = () =>
-        (prepared ??= withLang(language, () => prepareAlert(alertContext(item, companyName, branding.company?.nameEn), alertStyle)));
-      // The numbers configured in Settings → WhatsApp decide who gets alerts.
-      // With Meta and no list configured, fall back to notify-role users' phones.
-      const phones =
-        whatsappPhones.length > 0 || ["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "")
-          ? whatsappPhones
-          : recipients.flatMap((r) => (r.phone ? [r.phone] : []));
-      for (const phone of phones) {
-        const meta: LogMeta = { recipient: phone, relatedType: item.sourceType, relatedId: item.recordId };
-        await logOnce(
-          `${dedupeBase}:WHATSAPP:${phone}`,
-          "WHATSAPP",
-          async () => {
-            const alert = await whatsappAlert();
-            meta.message = alert.logText;
-            if (alert.mode === "card_only") {
-              assertSent(await sendWhatsapp(phone, alert.cardCaption || "", alert.image));
-            } else if (alert.mode === "both") {
-              assertSent(await sendWhatsapp(phone, alert.text));
-              if (alert.image) {
-                await new Promise((r) => setTimeout(r, 1200));
-                assertSent(await sendWhatsapp(phone, alert.cardCaption || "", alert.image));
-              }
-            } else {
-              assertSent(await sendWhatsapp(phone, alert.text));
-            }
-          },
-          meta
-        );
+    if (whatsappSettings?.enabled && whatsappEligible(item)) {
+      const phones = whatsappPhones.length > 0 || ["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "")
+        ? whatsappPhones : itemRecipients.flatMap(r => r.phone ? [r.phone] : []);
+      const expiry = item.expiryDate.toISOString().slice(0, 10);
+      const text = language === "en" ? message : messageAr;
+      for (const phone of new Set(phones)) {
+        const group = whatsappGroups.get(phone) ?? [];
+        group.push({ item, dedupeBase, text: text + "\n" + (language === "en" ? "Expiry: " : "تاريخ الانتهاء: ") + expiry });
+        whatsappGroups.set(phone, group);
       }
     }
   }
+  const digestTitle = language === "en" ? "Document expiration summary" : "ملخص تنبيهات انتهاء الوثائق";
+  await sendWhatsappDigests(whatsappGroups, digestTitle + (companyName ? "\n" + companyName : ""));
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));

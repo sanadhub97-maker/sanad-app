@@ -8,6 +8,8 @@ import { getExpirationRules } from "@/services/settingsStore";
 import { paymentCategoryLabel } from "@/constants/paymentCategories";
 import { riyadhNow, sendToUser, withDevices, type PushMessage } from "@/services/push";
 import { sealToken } from "@/services/pushCard";
+import { loadAuthContext } from "@/middleware/auth";
+import { canViewSource, hasPermission } from "@/lib/security";
 
 /* What each event says on a lock screen — the designs approved in the push preview. */
 
@@ -106,9 +108,11 @@ export async function pushDueItems(due: { item: TrackableItem; threshold: string
   const users = await withDevices(recipientIds);
   const ordered = [...due].sort((a, b) => daysUntil(a.item.expiryDate) - daysUntil(b.item.expiryDate));
   for (const userId of users) {
+    const auth = await loadAuthContext(userId);
+    const visible = ordered.filter((d) => canViewSource(auth, d.item.sourceType));
     const keyOf = (d: (typeof due)[number]) => `${d.dedupeBase}:PUSH:${userId}`;
-    const fresh = await claim(ordered.map(keyOf), { message: "push" });
-    const pending = ordered.filter((d) => fresh.has(keyOf(d)));
+    const fresh = await claim(visible.map(keyOf), { message: "push" });
+    const pending = visible.filter((d) => fresh.has(keyOf(d)));
     for (const d of pending.slice(0, 3)) await sendToUser(userId, expiryMessage(d.item, d.threshold)).catch((err) => logger.warn({ err }, "Push (expiry) failed"));
     const rest = pending.slice(3);
     if (rest.length > 0) {
@@ -131,22 +135,20 @@ export async function pushMorningBrief() {
   if (withDev.size === 0) return;
   const { date } = riyadhNow();
   const [items, rules] = await Promise.all([getTrackableItems(), getExpirationRules()]);
-  let expired = 0;
-  let soon = 0;
-  for (const it of items) {
-    const s = computeStatus(it.expiryDate, rules);
-    if (s === DocumentStatus.EXPIRED) expired++;
-    else if (s === DocumentStatus.EXPIRING_SOON) soon++;
-  }
   const today = new Date(`${date}T00:00:00Z`);
   const label = dayName(today);
   for (const u of users.filter((x) => withDev.has(x.id))) {
+    const auth = await loadAuthContext(u.id);
+    if (!auth) continue;
+    const visible = items.filter((item) => canViewSource(auth, item.sourceType));
+    const expired = visible.filter((item) => computeStatus(item.expiryDate, rules) === DocumentStatus.EXPIRED).length;
+    const soon = visible.filter((item) => computeStatus(item.expiryDate, rules) === DocumentStatus.EXPIRING_SOON).length;
     const fresh = await claim([`brief:${date}:${u.id}`]);
     if (fresh.size === 0) continue;
-    const tasks = await prisma.dailyTask.count({ where: { date: today, deletedAt: null, done: false, OR: [{ assigneeId: u.id }, { assigneeId: null }] } });
+    const tasks = hasPermission(auth, "tasks.view") ? await prisma.dailyTask.count({ where: { date: today, deletedAt: null, done: false, OR: [{ assigneeId: u.id }, { assigneeId: null }] } }) : 0;
     const parts = [expired && `${expired} وثائق منتهية`, soon && `${soon} قريبين من الانتهاء`, tasks && `${tasks} مهام`].filter(Boolean) as string[];
     const total = expired + soon;
-    const share = items.length ? Math.round(((items.length - total) / items.length) * 100) : 100;
+    const share = visible.length ? Math.round(((visible.length - total) / visible.length) * 100) : 100;
     await sendToUser(u.id, {
       kind: "brief",
       tag: `brief-${date}`,
@@ -174,9 +176,12 @@ export async function pushTaskReminders() {
   for (const t of tasks) {
     const userId = t.assigneeId ?? t.createdById;
     if (!userId || !withDev.has(userId)) continue;
+    const auth = await loadAuthContext(userId);
+    if (!hasPermission(auth ?? undefined, "tasks.view")) continue;
     const fresh = await claim([`task:${t.id}:${date}:${hm}`], { relatedType: "DAILY_TASK", relatedId: t.id });
     if (fresh.size === 0) continue;
-    const exp = Date.now() + 2 * 24 * 3600_000;
+    const iat = Date.now();
+    const exp = iat + 2 * 24 * 3600_000;
     await sendToUser(userId, {
       kind: "task",
       tag: `task-${t.id}`,
@@ -184,9 +189,9 @@ export async function pushTaskReminders() {
       body: t.notes ? `${t.title} — ${t.notes}` : t.title,
       url: "/daily-tasks",
       card: { k: C.task, ic: "check", kind: "مهمة اليوم", who: t.title, tag: "مهمة", no: t.category === "general" ? "عامة" : t.category, date: hm, ring: [hm, "الساعة"], pct: 70, used: 45, life: "دلوقتي" },
-      actions: [
-        { action: "done", title: "تم", call: `/api/push/act/${sealToken({ a: "done", id: t.id, u: userId, exp })}` },
-        { action: "snooze", title: "تأجيل ساعة", call: `/api/push/act/${sealToken({ a: "snooze", id: t.id, u: userId, exp })}` },
+      actions: !hasPermission(auth ?? undefined, "tasks.edit") ? [] : [
+        { action: "done", title: "تم", call: `/api/push/act/${sealToken({ a: "done", id: t.id, u: userId, exp, iat })}` },
+        { action: "snooze", title: "تأجيل ساعة", call: `/api/push/act/${sealToken({ a: "snooze", id: t.id, u: userId, exp, iat })}` },
       ],
     }).catch((err) => logger.warn({ err }, "Push (task) failed"));
   }
@@ -214,12 +219,19 @@ export async function pushPaymentCreated(paymentId: string, createdById: string)
     card: { k: C.pay, ic: "receipt", kind: "سند صرف", who: where || what, tag: "جديد", no: p.paymentNumber, date: total, ring: ["✓", "مسجّل"], pct: 100, used: 100, life: `${what} · سُجّل النهارده` },
     actions: [{ action: "open", title: "عرض السندات", url: "/payments" }],
   };
-  for (const id of withDev) await sendToUser(id, msg).catch((err) => logger.warn({ err }, "Push (payment) failed"));
+  for (const id of withDev) {
+    if (!canViewSource(await loadAuthContext(id), "PAYMENT")) continue;
+    await sendToUser(id, msg).catch((err) => logger.warn({ err }, "Push (payment) failed"));
+  }
 }
 
 /** What a button on a task notification does: "done" or "snooze" for an hour. */
-export async function runTaskAction(token: { a: string; id: string; u: string; exp: number }) {
-  if (!token || Date.now() > token.exp) return false;
+export async function runTaskAction(token: { a: string; id: string; u: string; exp: number; iat: number }) {
+  if (!token || !Number.isFinite(token.exp) || !Number.isFinite(token.iat) || Date.now() >= token.exp || !["done", "snooze"].includes(token.a) || typeof token.u !== "string" || typeof token.id !== "string") return false;
+  const auth = await loadAuthContext(token.u);
+  if (!hasPermission(auth ?? undefined, "tasks.edit")) return false;
+  const session = await prisma.session.findFirst({ where: { userId: token.u, revokedAt: null, expiresAt: { gt: new Date() }, createdAt: { lte: new Date(token.iat) } }, select: { id: true } });
+  if (!session) return false;
   const task = await prisma.dailyTask.findFirst({ where: { id: token.id, deletedAt: null } });
   if (!task || (task.assigneeId ?? task.createdById) !== token.u) return false;
   if (token.a === "done") {

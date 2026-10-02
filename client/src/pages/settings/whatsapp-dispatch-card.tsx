@@ -127,8 +127,8 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
               </CardTitle>
               <CardDescription className="text-xs mt-0.5">
                 {isRtl
-                  ? "اختر ما إذا كان التنبيه يُرسل كنص فقط، أو كبطاقة فقط، أو كلاهما معاً، وحدد وقت الإرسال كل يوم."
-                  : "Choose whether alerts send as text only, card only, or both together, and set the daily dispatch time."}
+                  ? "تنبيهات الانتهاء تُرسل كملخص نصي مجمّع لكل رقم، للموظفين المسجلين على الكفالة فقط ومستندات الشركة. القوائم الطويلة تُقسّم إلى أجزاء في نفس الدفعة."
+                  : "Expiry alerts are sent as a text digest per number, for explicitly sponsored employees and company documents only. Long lists are split into parts in the same batch."}
               </CardDescription>
             </div>
           </div>
@@ -194,7 +194,7 @@ export function WhatsappDispatchCard({ canEdit, isRtl }: WhatsappDispatchCardPro
           <div className="flex items-center justify-between">
             <label className="text-xs font-black text-foreground flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-              <span>{isRtl ? "طريقة وشكل وصول التنبيه:" : "Alert Delivery Format:"}</span>
+              <span>{isRtl ? "شكل رسالة الاختبار والمعاينة (ملخص الانتهاء نصي):" : "Test and preview format (expiry digests are text):"}</span>
             </label>
             <span className="text-[11px] text-muted-foreground">
               {mode === "text_only" && (isRtl ? "رسالة تنبيه نصية فقط" : "Text Alert Only")}

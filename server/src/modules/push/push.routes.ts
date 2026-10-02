@@ -42,7 +42,7 @@ router.get(
     const card = openToken<PushCard>(token);
     if (!card) throw ApiError.notFound("Card not found");
     const png = await drawCard(token, card, `${appOrigin()}/pwa/icon-192.png`);
-    res.set("Cache-Control", "public, max-age=604800, immutable").type("png").send(png);
+    res.set("Cache-Control", "private, no-store").type("png").send(png);
   })
 );
 
@@ -50,7 +50,7 @@ router.get(
 router.post(
   "/act/:token",
   asyncHandler(async (req: Request, res: Response) => {
-    const token = openToken<{ a: string; id: string; u: string; exp: number }>(String(req.params.token));
+    const token = openToken<{ a: string; id: string; u: string; exp: number; iat: number }>(String(req.params.token));
     if (!token) throw ApiError.notFound("Unknown action");
     res.json({ ok: await runTaskAction(token) });
   })

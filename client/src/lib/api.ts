@@ -18,8 +18,9 @@ const RT_KEY = "sanad.rt";
 export function keepRefreshToken(token?: unknown) {
   if (!framed) return;
   try {
-    if (typeof token === "string" && token) localStorage.setItem(RT_KEY, token);
-    else localStorage.removeItem(RT_KEY);
+    localStorage.removeItem(RT_KEY);
+    if (typeof token === "string" && token) sessionStorage.setItem(RT_KEY, token);
+    else sessionStorage.removeItem(RT_KEY);
   } catch {
     /* storage blocked: the cookie is all there is */
   }
@@ -27,7 +28,8 @@ export function keepRefreshToken(token?: unknown) {
 export function keptRefreshToken(): string | undefined {
   if (!framed) return undefined;
   try {
-    return localStorage.getItem(RT_KEY) ?? undefined;
+    localStorage.removeItem(RT_KEY);
+    return sessionStorage.getItem(RT_KEY) ?? undefined;
   } catch {
     return undefined;
   }

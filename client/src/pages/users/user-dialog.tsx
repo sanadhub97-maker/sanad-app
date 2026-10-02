@@ -35,7 +35,7 @@ const makeCreateSchema = () =>
     fullName: z.string().min(2, tr("الاسم مطلوب", "Name is required")),
     email: z.string().email(tr("صيغة البريد الإلكتروني غير صحيحة", "Invalid email address")),
     phone: z.string().optional(),
-    password: z.string().min(8, tr("كلمة المرور يجب أن لا تقل عن 8 أحرف", "Password must be at least 8 characters")),
+    password: z.string().min(12, tr("كلمة المرور يجب أن لا تقل عن 12 حرفًا", "Password must be at least 12 characters")).max(72).regex(/[A-Z]/).regex(/[a-z]/).regex(/[0-9]/).refine((value) => new TextEncoder().encode(value).length <= 72),
     roleIds: z.array(z.string()).min(1, tr("يرجى تحديد دور وظيفي واحد على الأقل", "Select at least one role")),
   });
 const makeUpdateSchema = () =>

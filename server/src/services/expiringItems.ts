@@ -18,6 +18,7 @@ export interface TrackableItem {
   labelAr: string; // Arabic, for Arabic reports and the WhatsApp alert
   expiryDate: Date;
   employeeId?: string;
+  onSponsorship?: boolean | null;
   employeeName?: string; // English name, falling back to Arabic
   employeeNameAr?: string; // Arabic name, falling back to English
   recordId: string;
@@ -85,13 +86,14 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         iqamaExpiryDate: true,
         passportExpiryDate: true,
         iqamaNumber: true,
+        onSponsorship: true,
         passportNumber: true,
         branch: { select: { name: true, nameEn: true } },
       },
     }),
     prisma.employeeDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null }, type: { notIn: ["IQAMA", "PASSPORT"] } },
-      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, branch: { select: { name: true, nameEn: true } } } } },
+      include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, onSponsorship: true, branch: { select: { name: true, nameEn: true } } } } },
     }),
     prisma.companyDocument.findMany({
       where: { deletedAt: null, expiryDate: { not: null } },
@@ -113,6 +115,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         labelAr: `${nameAr} — إقامة`,
         expiryDate: emp.iqamaExpiryDate,
         employeeId: emp.id,
+        onSponsorship: emp.onSponsorship,
         employeeName: name,
         employeeNameAr: nameAr,
         recordId: emp.id,
@@ -132,6 +135,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         labelAr: `${nameAr} — جواز سفر`,
         expiryDate: emp.passportExpiryDate,
         employeeId: emp.id,
+        onSponsorship: emp.onSponsorship,
         employeeName: name,
         employeeNameAr: nameAr,
         recordId: emp.id,
@@ -156,6 +160,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       labelAr: `${nameAr} — ${doc.name || doc.type}`,
       expiryDate: doc.expiryDate,
       employeeId: doc.employeeId,
+      onSponsorship: doc.employee.onSponsorship,
       employeeName: name,
       employeeNameAr: nameAr,
       recordId: doc.id,

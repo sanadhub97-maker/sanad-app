@@ -14,7 +14,7 @@ const ALLOWED_MIME_TYPES = new Set([
 
 export const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.MAX_UPLOAD_SIZE_MB * 1024 * 1024 },
+  limits: { fileSize: env.MAX_UPLOAD_SIZE_MB * 1024 * 1024, files: 1, fields: 4, parts: 5, fieldSize: 1024, fieldNameSize: 100 },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       cb(ApiError.badRequest(`Unsupported file type: ${file.mimetype}. Allowed: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX.`));

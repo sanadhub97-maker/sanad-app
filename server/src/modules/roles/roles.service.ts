@@ -32,7 +32,7 @@ function serialize(role: {
 
 function validatePermissionKeys(keys: string[]) {
   const valid = new Set(ALL_PERMISSION_KEYS);
-  const invalid = keys.filter((k) => k !== "*" && !valid.has(k));
+  const invalid = keys.filter((k) => !valid.has(k));
   if (invalid.length > 0) throw ApiError.badRequest(`Unknown permission keys: ${invalid.join(", ")}`);
 }
 
@@ -48,6 +48,7 @@ export async function getById(id: string) {
 }
 
 export async function create(input: CreateInput) {
+  if (input.name.trim().toLowerCase() === "super admin") throw ApiError.forbidden("The Super Admin role is reserved.");
   const existing = await prisma.role.findUnique({ where: { name: input.name } });
   if (existing) throw ApiError.badRequest("A role with this name already exists.");
   validatePermissionKeys(input.permissionKeys);
@@ -67,6 +68,7 @@ export async function create(input: CreateInput) {
 export async function update(id: string, input: UpdateInput) {
   const role = await prisma.role.findUnique({ where: { id } });
   if (!role) throw ApiError.notFound("Role not found");
+  if (role.name === "Super Admin" || input.name?.trim().toLowerCase() === "super admin") throw ApiError.forbidden("The Super Admin role cannot be modified.");
   if (role.isSystem && (input.name || input.permissionKeys?.length === 0)) {
     // System roles may have their permission set fine-tuned by a Super Admin,
     // but cannot be renamed or stripped of every permission.

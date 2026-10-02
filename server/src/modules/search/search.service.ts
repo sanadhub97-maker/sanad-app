@@ -1,3 +1,5 @@
+import type { AuthContext } from "@/types/express";
+import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 
 export interface SearchResultItem {
@@ -12,11 +14,11 @@ export interface SearchResultItem {
 // Global search across identifiers (§30/§61) — Iqama/passport/employee
 // numbers, document/license numbers, payment/reference numbers, branch
 // codes. Each category capped at 5 for a fast, focused command palette.
-export async function globalSearch(q: string): Promise<SearchResultItem[]> {
+export async function globalSearch(q: string, auth: AuthContext): Promise<SearchResultItem[]> {
   const insensitive = { contains: q, mode: "insensitive" as const };
 
   const [employees, companyDocuments, payments, branches] = await Promise.all([
-    prisma.employee.findMany({
+    hasPermission(auth, "employees.view") ? prisma.employee.findMany({
       where: {
         deletedAt: null,
         OR: [
@@ -29,19 +31,19 @@ export async function globalSearch(q: string): Promise<SearchResultItem[]> {
         ],
       },
       take: 5,
-    }),
-    prisma.companyDocument.findMany({
+    }) : Promise.resolve([]),
+    hasPermission(auth, "companyDocuments.view") ? prisma.companyDocument.findMany({
       where: { deletedAt: null, OR: [{ name: insensitive }, { documentNumber: insensitive }, { licenseNumber: insensitive }] },
       take: 5,
-    }),
-    prisma.payment.findMany({
+    }) : Promise.resolve([]),
+    hasPermission(auth, "payments.view") ? prisma.payment.findMany({
       where: { deletedAt: null, OR: [{ paymentNumber: insensitive }, { referenceNumber: insensitive }] },
       take: 5,
-    }),
-    prisma.branch.findMany({
+    }) : Promise.resolve([]),
+    hasPermission(auth, "branches.view") ? prisma.branch.findMany({
       where: { deletedAt: null, OR: [{ name: insensitive }, { nameEn: insensitive }, { code: insensitive }] },
       take: 5,
-    }),
+    }) : Promise.resolve([]),
   ]);
 
   const results: SearchResultItem[] = [];

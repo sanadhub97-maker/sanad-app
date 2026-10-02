@@ -1,3 +1,4 @@
+import { escapeHtml } from "@/lib/security";
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, ColumnDef } from "@/services/excel";
@@ -25,8 +26,8 @@ export const week =asyncHandler(async (req: Request, res: Response) => {
 export const assignees = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.assignees() });
 });
-export const suggestions = asyncHandler(async (_req: Request, res: Response) => {
-  res.json({ data: await service.suggestions() });
+export const suggestions = asyncHandler(async (req: Request, res: Response) => {
+  res.json({ data: await service.suggestions(req.auth!) });
 });
 export const create = asyncHandler(async (req: Request, res: Response) => {
   res.status(201).json({ data: await service.create(req.body, req.auth?.userId) });

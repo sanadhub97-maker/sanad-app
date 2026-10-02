@@ -30,12 +30,20 @@ function MoreMenu({ items, className, compact }: { items: { label: string; href:
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" className={cn(className, on ? "bg-card text-foreground" : "text-dock-muted hover:text-ink-foreground")}>
+        <button
+          type="button"
+          className={cn(
+            className,
+            on
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.45),inset_0_1px_0_rgba(255,255,255,0.3)]"
+              : "text-slate-400 hover:text-white hover:bg-white/10"
+          )}
+        >
           <MoreHorizontal className={compact ? "h-[21px] w-[21px]" : "h-[19px] w-[19px]"} />
           <span>{t("nav.dock.more")}</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="center" sideOffset={14} className="w-64 rounded-3xl p-2">
+      <DropdownMenuContent side="top" align="center" sideOffset={14} className="w-64 rounded-3xl p-2 bg-card/95 dark:bg-[#0c1222]/95 backdrop-blur-2xl border border-white/15 shadow-2xl">
         {items.map((item) => {
           const Icon = item.icon;
           return (
@@ -71,20 +79,30 @@ export function DockNav() {
   const mobileMain = docked.slice(0, MOBILE_COUNT);
   const mobileMore = flatten([...docked.slice(MOBILE_COUNT), ...allowed.filter((i) => !i.dockLabel)]);
 
-  const desktopItem = "flex h-12 items-center gap-2 whitespace-nowrap rounded-full px-[18px] text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-  const mobileItem = "flex h-full flex-col items-center justify-center gap-0.5 rounded-full text-[10.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const desktopItem = "flex h-12 items-center gap-2 whitespace-nowrap rounded-full px-[18px] text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const mobileItem = "flex h-full flex-col items-center justify-center gap-0.5 rounded-full text-[10.5px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <>
       <nav
         aria-label={t("nav.dock.home")}
-        className="no-print fixed bottom-[26px] left-1/2 z-40 hidden desk:!hidden -translate-x-1/2 gap-1 rounded-full bg-ink p-2 shadow-[0_18px_40px_-16px_rgba(16,39,44,0.55)] lg:flex"
+        className="no-print fixed bottom-[26px] left-1/2 z-40 hidden desk:!hidden -translate-x-1/2 gap-1.5 rounded-full bg-[#0c1222]/85 dark:bg-[#070b14]/85 backdrop-blur-2xl border border-white/20 p-2 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.25)] lg:flex"
       >
         {docked.map((item) => {
           const Icon = item.icon;
           const on = isActive(path, item.href);
           return (
-            <NavLink key={item.href} to={item.href} end={item.href === "/"} className={cn(desktopItem, on ? "bg-card text-foreground" : "text-dock-muted hover:text-ink-foreground")}>
+            <NavLink
+              key={item.href}
+              to={item.href}
+              end={item.href === "/"}
+              className={cn(
+                desktopItem,
+                on
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.45),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                  : "text-slate-300 hover:text-white hover:bg-white/10"
+              )}
+            >
               <Icon className="h-[19px] w-[19px]" />
               <span>{t(item.dockLabel!)}</span>
             </NavLink>
@@ -95,13 +113,23 @@ export function DockNav() {
 
       <nav
         aria-label={t("nav.dock.home")}
-        className="no-print fixed inset-x-4 bottom-5 z-40 grid h-[68px] grid-cols-5 rounded-full bg-ink p-1.5 shadow-[0_18px_40px_-16px_rgba(16,39,44,0.55)] lg:hidden"
+        className="no-print fixed inset-x-4 bottom-5 z-40 grid h-[68px] grid-cols-5 rounded-full bg-[#0c1222]/85 dark:bg-[#070b14]/85 backdrop-blur-2xl border border-white/20 p-1.5 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.25)] lg:hidden"
       >
         {mobileMain.map((item) => {
           const Icon = item.icon;
           const on = isActive(path, item.href);
           return (
-            <NavLink key={item.href} to={item.href} end={item.href === "/"} className={cn(mobileItem, on ? "bg-card text-foreground" : "text-dock-muted")}>
+            <NavLink
+              key={item.href}
+              to={item.href}
+              end={item.href === "/"}
+              className={cn(
+                mobileItem,
+                on
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.45),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                  : "text-slate-400 hover:text-slate-200"
+              )}
+            >
               <Icon className="h-[21px] w-[21px]" />
               <span>{t(item.dockLabel!)}</span>
             </NavLink>

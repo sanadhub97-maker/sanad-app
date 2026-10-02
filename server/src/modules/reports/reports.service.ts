@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import { canViewSource } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
 import { prisma } from "@/lib/prisma";
 import { computeStatus } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
@@ -55,9 +57,9 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
   }));
 }
 
-export async function documentsReport(query: z.infer<typeof documentsReportQuerySchema>) {
+export async function documentsReport(query: z.infer<typeof documentsReportQuerySchema>, auth: AuthContext) {
   const rules = await getExpirationRules();
-  let items = await getTrackableItems();
+  let items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
 
   if (query.sourceType) {
     // The employee documents page asks for EMPLOYEE_DOCUMENT with an iqama or passport category.

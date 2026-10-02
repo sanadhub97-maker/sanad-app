@@ -1,4 +1,4 @@
-import cron from "node-cron";
+import cron, { type ScheduledTask } from "node-cron";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import { runExpirationScan } from "@/jobs/expirationScan";
@@ -6,7 +6,7 @@ import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/service
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
 
-let scheduledScanTask: cron.ScheduledTask | null = null;
+let scheduledScanTask: ScheduledTask | null = null;
 
 /**
  * Dynamically reschedules the daily expiration scan job based on user settings

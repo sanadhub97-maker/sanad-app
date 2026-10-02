@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { assertBrandFile } from "@/modules/files/files.access";
+import { assertMetaApiUrl } from "@/lib/security";
 import { encryptSecret } from "@/lib/crypto";
 import {
   DEFAULT_APPEARANCE,
@@ -23,6 +25,12 @@ export async function getCompanySettings() {
 }
 
 export async function updateCompanySettings(input: z.infer<typeof companySettingsSchema>) {
+  await Promise.all([
+    ...[input.logoFileId, input.logoDarkFileId, input.printLogoFileId].map((id) => assertBrandFile(id, ["company-logo"])),
+    assertBrandFile(input.faviconFileId, ["company-favicon", "company-logo"]),
+    assertBrandFile(input.stampFileId, ["company-stamp"]),
+    assertBrandFile(input.signatureFileId, ["company-signature", "company-stamp"]),
+  ]);
   const data = { ...input, email: input.email || undefined };
   return prisma.companySettings.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
@@ -91,6 +99,7 @@ export async function getWhatsappSettings() {
 }
 
 export async function updateWhatsappSettings(input: z.infer<typeof whatsappSettingsSchema>) {
+  if (input.apiUrl) assertMetaApiUrl(input.apiUrl);
   const existing = await prisma.whatsappSettings.findUnique({ where: { id: 1 } });
   const apiKeyEncrypted = input.apiKey ? encryptSecret(input.apiKey) : existing?.apiKeyEncrypted;
 

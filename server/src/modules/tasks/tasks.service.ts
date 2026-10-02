@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { canViewSource } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
 import { ApiError } from "@/utils/apiError";
 import { getTrackableItems } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
@@ -132,8 +134,9 @@ export async function assignees() {
 }
 
 /** Tasks the system proposes from its own data: documents expired or due within a week. */
-export async function suggestions() {
+export async function suggestions(auth: AuthContext) {
   const items = (await getTrackableItems())
+    .filter((item) => canViewSource(auth, item.sourceType))
     .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
     .filter((x) => x.days <= 7)
     .sort((a, b) => a.days - b.days)

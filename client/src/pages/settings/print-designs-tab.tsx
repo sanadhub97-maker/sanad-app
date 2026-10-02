@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { PrintSignaturesCard } from "./print-signatures-card";
 import { PrintLivePreview, type PreviewDoc } from "./print-live-preview";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PRINT_CONCEPTS, printDocument } from "@/pages/preview/print-template-documents";
 
 type Layout =
   | "classic" | "frame" | "band" | "spine-left" | "lattice" | "slant" | "spine-right" | "arch" | "split" | "damask" | "dunes" | "stripe"
@@ -35,6 +36,7 @@ interface Design {
 
 // Keep in sync with server/src/services/printThemes.ts.
 const DESIGNS: Design[] = [
+  ...PRINT_CONCEPTS.map((t): Design => ({ id: `studio_${t.id}` as PrintThemeId, nameAr: `${t.name} — مجموعة الطباعة`, nameEn: `${t.english} — Print Collection`, descAr: t.description, descEn: `${t.english}: reports, employee profiles and payment vouchers.`, paper: "#ffffff", accent: t.color, metal: t.accent, layout: "classic", ink: 1, fresh: true })),
   { id: "classic", nameAr: "الكلاسيكي", nameEn: "Classic", descAr: "التصميم الأصلي: رأس بسيط وجدول كحلي، مناسب للاستخدام اليومي.", descEn: "The original design: a simple header and navy table, for everyday use.", paper: "#ffffff", accent: "#1e293b", metal: "#c59a45", layout: "classic", ink: 1 },
   { id: "royal", nameAr: "الملكي", nameEn: "Royal", descAr: "كحلي ليلي وذهبي، إطار ذهبي مزدوج على كل صفحة، نقش أمان وعلامة مائية.", descEn: "Midnight navy and gold, a double gold frame on every page, security pattern and watermark.", paper: "#fbf8f1", accent: "#0a1a33", metal: "#b08d4c", layout: "frame", ink: 3 },
   { id: "emerald", nameAr: "الزمردي", nameEn: "Emerald", descAr: "أخضر زمردي وذهبي شمباني بزخرفة النجمة الثمانية الإسلامية.", descEn: "Emerald green and champagne gold with the eight-point Islamic star.", paper: "#fdfcf8", accent: "#0b3b33", metal: "#c2a062", layout: "band", ink: 2 },
@@ -71,6 +73,10 @@ const DESIGNS: Design[] = [
 
 /** A small drawing of the page layout in the design's colours. */
 function Thumb({ d }: { d: Design }) {
+  if (d.id.startsWith("studio_")) {
+    const index = PRINT_CONCEPTS.findIndex(t => `studio_${t.id}` === d.id);
+    return <div className="relative mx-auto aspect-[210/297] w-[150px] max-w-full overflow-hidden bg-white shadow-md" aria-hidden><iframe title={d.nameAr} srcDoc={printDocument(index, "report")} sandbox="" loading="lazy" tabIndex={-1} style={{ width: 794, height: 1123, border: 0, position: "absolute", top: 0, left: 0, transform: "scale(.1889)", transformOrigin: "top left", pointerEvents: "none" }} /></div>;
+  }
   const rows = Array.from({ length: 7 });
   const table = (
     <div className="space-y-[3px]">

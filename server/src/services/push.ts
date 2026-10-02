@@ -1,3 +1,4 @@
+import { assertPushEndpoint } from "@/lib/security";
 import webpush from "web-push";
 import { env } from "@/config/env";
 import { prisma } from "@/lib/prisma";
@@ -108,6 +109,7 @@ export interface SubscriptionInput {
 }
 
 export async function subscribe(userId: string, sub: SubscriptionInput, via: "app" | "sept", userAgent?: string, device?: DeviceGroup) {
+  assertPushEndpoint(sub.endpoint);
   // A device belongs to whoever signed in on it last. An iPad's browser calls
   // itself a Mac, so the page says which kind of device it is.
   const data = { userId, p256dh: sub.keys.p256dh, auth: sub.keys.auth, via, userAgent: userAgent?.slice(0, 300), device: device ?? groupOfAgent(userAgent) };
@@ -182,13 +184,16 @@ export async function sendToUser(
   const failures: string[] = [];
   await Promise.all(
     subs.map(async (s) => {
-      const send = () =>
-        webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body, {
+      const send = () => {
+        assertPushEndpoint(s.endpoint);
+        return webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body, {
           vapidDetails: { subject: "https://sanad-hr.sept.cloud", publicKey, privateKey },
+          timeout: 10000,
           TTL: m.urgent ? 3 * 24 * 3600 : 24 * 3600,
           urgency: m.urgent ? "high" : "normal",
           topic: m.tag.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32) || undefined,
         });
+      };
       try {
         // A push service sometimes refuses for a moment (a brand-new device,
         // a busy server): try once more before giving up on it.

@@ -16,7 +16,7 @@ import { tr } from "@/i18n";
 const makeSchema = () =>
   z
     .object({
-      password: z.string().min(8, tr("كلمة المرور يجب أن لا تقل عن 8 خانات", "Password must be at least 8 characters")),
+      password: z.string().min(12, tr("كلمة المرور يجب أن لا تقل عن 12 خانة", "Password must be at least 12 characters")).max(72).regex(/[A-Z]/).regex(/[a-z]/).regex(/[0-9]/).refine((value) => new TextEncoder().encode(value).length <= 72),
       confirmPassword: z.string(),
     })
     .refine((d) => d.password === d.confirmPassword, {

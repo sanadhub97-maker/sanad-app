@@ -1,4 +1,6 @@
 import { Prisma } from "@prisma/client";
+import type { AuthContext } from "@/types/express";
+import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
@@ -71,13 +73,13 @@ export async function list(query: ListQuery) {
   return { data, meta: paginationMeta(page, pageSize, total) };
 }
 
-export async function getById(id: string) {
+export async function getById(id: string, auth?: AuthContext) {
   const employee = await prisma.employee.findFirst({
     where: { id, deletedAt: null },
     include: {
       ...includeBranch,
-      documents: { where: { deletedAt: null }, orderBy: { expiryDate: "asc" } },
-      payments: { where: { deletedAt: null }, orderBy: { paymentDate: "desc" }, take: 10 },
+      documents: { where: { deletedAt: null, ...(hasPermission(auth, "employeeDocuments.view") ? {} : { id: { in: [] } }) }, orderBy: { expiryDate: "asc" } },
+      payments: { where: { deletedAt: null, ...(hasPermission(auth, "payments.view") ? {} : { id: { in: [] } }) }, orderBy: { paymentDate: "desc" }, take: 10 },
     },
   });
   if (!employee) throw ApiError.notFound("Employee not found");

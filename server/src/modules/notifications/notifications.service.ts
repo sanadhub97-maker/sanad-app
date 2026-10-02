@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
+import { notificationVisibility } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { getTrackableItems } from "@/services/expiringItems";
 import { NOTIFICATION_TITLE, messageArFor, messageFor, subjectAr } from "@/jobs/expirationScan";
@@ -9,10 +11,11 @@ import type { listNotificationsQuerySchema } from "@/modules/notifications/notif
 
 type ListQuery = z.infer<typeof listNotificationsQuerySchema>;
 
-export async function list(userId: string, query: ListQuery) {
+export async function list(userId: string, query: ListQuery, auth: AuthContext) {
   const { page, pageSize, isRead, severity } = query;
   const where: Prisma.NotificationWhereInput = {
     userId,
+    ...notificationVisibility(auth),
     ...(isRead !== undefined ? { isRead } : {}),
     ...(severity ? { severity } : {}),
   };
@@ -20,14 +23,14 @@ export async function list(userId: string, query: ListQuery) {
   const [data, total, unreadCount] = await Promise.all([
     prisma.notification.findMany({ where, orderBy: { createdAt: "desc" }, ...skipTake(page, pageSize) }),
     prisma.notification.count({ where }),
-    prisma.notification.count({ where: { userId, isRead: false } }),
+    prisma.notification.count({ where: { userId, isRead: false, ...notificationVisibility(auth) } }),
   ]);
 
   return { data: await withArabic(data), meta: paginationMeta(page, pageSize, total), unreadCount };
 }
 
-export async function markRead(userId: string, id: string) {
-  const notification = await prisma.notification.findFirst({ where: { id, userId } });
+export async function markRead(userId: string, id: string, auth: AuthContext) {
+  const notification = await prisma.notification.findFirst({ where: { id, userId, ...notificationVisibility(auth) } });
   if (!notification) throw ApiError.notFound("Notification not found");
   return prisma.notification.update({ where: { id }, data: { isRead: true, readAt: new Date() } });
 }

@@ -9,8 +9,17 @@ import { loadAuthContext } from "@/middleware/auth";
 import { sendMail } from "@/services/email";
 import { logger } from "@/lib/logger";
 import type { LoginInput } from "@/modules/auth/auth.schemas";
+import { escapeHtml } from "@/lib/security";
 
 const REFRESH_COOKIE_NAME = "refresh_token";
+
+// Serialize session issuance with password changes and account deactivation.
+async function lockUser(tx: Pick<typeof prisma, "$queryRaw">, userId: string) {
+  const users = await tx.$queryRaw<{ id: string; passwordHash: string; isActive: boolean; deletedAt: Date | null }[]>`SELECT "id", "passwordHash", "isActive", "deletedAt" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+  const user = users[0];
+  if (!user || !user.isActive || user.deletedAt) throw ApiError.unauthorized("Account is inactive or no longer exists");
+  return user;
+}
 
 export interface RequestMeta {
   ipAddress?: string;
@@ -27,7 +36,7 @@ export async function issueEmailVerification(userId: string, email: string, full
   await sendMail({
     to: email,
     subject: "Verify your email address",
-    html: `<p>Hello ${fullName},</p><p>Please verify your email by clicking the link below:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
+    html: `<p>Hello ${escapeHtml(fullName)},</p><p>Please verify your email by clicking the link below:</p><p><a href="${escapeHtml(verifyUrl)}">Verify email</a></p>`,
   });
 }
 
@@ -37,35 +46,36 @@ export async function verifyEmail(rawToken: string) {
   if (!record || record.usedAt || record.expiresAt < new Date()) {
     throw ApiError.badRequest("This verification link is invalid or has expired.");
   }
-  await prisma.$transaction([
-    prisma.emailVerificationToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
-    prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } }),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    const claimed = await tx.emailVerificationToken.updateMany({ where: { id: record.id, usedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } });
+    if (claimed.count !== 1) throw ApiError.badRequest("Verification link is no longer valid.");
+    await tx.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } });
+  });
 }
 
 export async function login(input: LoginInput, meta: RequestMeta) {
   const user = await prisma.user.findFirst({ where: { email: input.email, deletedAt: null } });
-  if (!user) throw ApiError.unauthorized("Invalid email or password");
-  if (!user.isActive) throw ApiError.forbidden("This account has been deactivated.");
-
-  const valid = await comparePassword(input.password, user.passwordHash);
-  if (!valid) throw ApiError.unauthorized("Invalid email or password");
-
-  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  // Compare a real-cost dummy hash for unknown users to limit enumeration.
+  const valid = await comparePassword(input.password, user?.passwordHash ?? "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxFqG7KfCz08WeAzMjRVGm4CZRu");
+  if (!user || !user.isActive || !valid) throw ApiError.unauthorized("Invalid email or password");
 
   const auth = await loadAuthContext(user.id);
   if (!auth) throw ApiError.unauthorized("Invalid email or password");
 
-  const accessToken = signAccessToken({ sub: user.id });
   const refreshTtl = input.rememberMe ? env.JWT_REFRESH_EXPIRES_IN : "1d";
-  const refreshToken = await createSession(user.id, refreshTtl, meta);
+  const { refreshToken, sessionId } = await createSession(user.id, refreshTtl, meta, user.passwordHash);
+  const accessToken = signAccessToken({ sub: user.id, sid: sessionId });
 
   return { accessToken, refreshToken, refreshTtl, auth };
 }
 
-async function createSession(userId: string, ttl: string, meta: RequestMeta) {
+async function createSession(userId: string, ttl: string, meta: RequestMeta, expectedPasswordHash: string) {
   const rawToken = generateOpaqueToken();
-  await prisma.session.create({
+  const session = await prisma.$transaction(async (tx) => {
+    const current = await lockUser(tx, userId);
+    if (current.passwordHash !== expectedPasswordHash) throw ApiError.unauthorized("Password changed. Please sign in again.");
+    await tx.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
+    return tx.session.create({
     data: {
       userId,
       tokenHash: hashToken(rawToken),
@@ -73,8 +83,9 @@ async function createSession(userId: string, ttl: string, meta: RequestMeta) {
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,
     },
+    });
   });
-  return rawToken;
+  return { refreshToken: rawToken, sessionId: session.id };
 }
 
 export async function refreshSession(rawToken: string, meta: RequestMeta) {
@@ -89,26 +100,38 @@ export async function refreshSession(rawToken: string, meta: RequestMeta) {
 
   // Rotate: revoke the used refresh token and issue a fresh one.
   const remainingMs = session.expiresAt.getTime() - Date.now();
-  await prisma.session.update({ where: { id: session.id }, data: { revokedAt: new Date() } });
   const rawRefresh = generateOpaqueToken();
-  await prisma.session.create({
+  const successor = await prisma.$transaction(async (tx) => {
+    await lockUser(tx, session.userId);
+    const claimed = await tx.session.updateMany({ where: { id: session.id, revokedAt: null, expiresAt: { gt: new Date() } }, data: { revokedAt: new Date() } });
+    if (claimed.count !== 1) throw ApiError.unauthorized("Refresh token has already been used.");
+    return tx.session.create({
     data: {
       userId: session.userId,
       tokenHash: hashToken(rawRefresh),
-      expiresAt: new Date(Date.now() + remainingMs),
+      expiresAt: session.expiresAt,
+      createdAt: session.createdAt,
+      familyId: session.familyId,
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,
     },
+    });
   });
 
-  const accessToken = signAccessToken({ sub: session.userId });
+  const accessToken = signAccessToken({ sub: session.userId, sid: successor.id });
   return { accessToken, refreshToken: rawRefresh, remainingMs, auth };
 }
 
 export async function logout(rawToken: string | undefined) {
   if (!rawToken) return;
   const tokenHash = hashToken(rawToken);
-  await prisma.session.updateMany({ where: { tokenHash, revokedAt: null }, data: { revokedAt: new Date() } });
+  const session = await prisma.session.findUnique({ where: { tokenHash } });
+  if (!session) return;
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${session.userId} FOR UPDATE`;
+    // Revoke every successor, including one created during this request.
+    await tx.session.updateMany({ where: { userId: session.userId, familyId: session.familyId, revokedAt: null }, data: { revokedAt: new Date() } });
+  });
 }
 
 export async function forgotPassword(email: string) {
@@ -130,7 +153,7 @@ export async function forgotPassword(email: string) {
     await sendMail({
       to: user.email,
       subject: "Reset your password",
-      html: `<p>Hello ${user.fullName},</p><p>Click the link below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+      html: `<p>Hello ${escapeHtml(user.fullName)},</p><p>This link expires in 1 hour.</p><p><a href="${escapeHtml(resetUrl)}">Reset password</a></p>`,
     });
   } catch (err) {
     logger.error({ err, userId: user.id }, "Failed to send password reset email");
@@ -145,11 +168,14 @@ export async function resetPassword(rawToken: string, newPassword: string) {
   }
 
   const passwordHash = await hashPassword(newPassword);
-  await prisma.$transaction([
-    prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } }),
-    prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
-    prisma.session.updateMany({ where: { userId: record.userId, revokedAt: null }, data: { revokedAt: new Date() } }),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    await lockUser(tx, record.userId);
+    const claimed = await tx.passwordResetToken.updateMany({ where: { id: record.id, usedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } });
+    if (claimed.count !== 1) throw ApiError.badRequest("Reset link is no longer valid.");
+    await tx.user.update({ where: { id: record.userId }, data: { passwordHash } });
+    await tx.passwordResetToken.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: new Date() } });
+    await tx.session.updateMany({ where: { userId: record.userId, revokedAt: null }, data: { revokedAt: new Date() } });
+  });
 }
 
 export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
@@ -158,7 +184,13 @@ export async function changePassword(userId: string, currentPassword: string, ne
   if (!valid) throw ApiError.badRequest("Current password is incorrect.");
 
   const passwordHash = await hashPassword(newPassword);
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  await prisma.$transaction(async (tx) => {
+    await lockUser(tx, userId);
+    const changed = await tx.user.updateMany({ where: { id: userId, passwordHash: user.passwordHash }, data: { passwordHash } });
+    if (changed.count !== 1) throw ApiError.badRequest("Password changed concurrently. Please sign in again.");
+    await tx.session.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    await tx.passwordResetToken.updateMany({ where: { userId, usedAt: null }, data: { usedAt: new Date() } });
+  });
 }
 
 export const cookies = {

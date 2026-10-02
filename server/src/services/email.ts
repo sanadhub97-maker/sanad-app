@@ -66,11 +66,16 @@ export async function sendMail(input: SendMailInput): Promise<{ sent: boolean; r
     host: config.host,
     port: config.port ?? 587,
     secure: config.secure,
+    requireTLS: !config.secure,
+    tls: { minVersion: "TLSv1.2", rejectUnauthorized: true },
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
     auth: config.username ? { user: config.username, pass: config.password } : undefined,
   });
 
   await transporter.sendMail({
-    from: `"${config.fromName}" <${config.fromEmail}>`,
+    from: { name: config.fromName, address: config.fromEmail },
     to: input.to,
     subject: input.subject,
     html: input.html,

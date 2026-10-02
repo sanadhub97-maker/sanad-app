@@ -9,17 +9,13 @@ interface AuditOptions {
 }
 
 /**
- * Wraps res.json so that any successful (status < 400) mutating response
- * automatically writes an AuditLog row — controllers don't need to
- * hand-write logging calls (§35 / architecture decision in the build plan).
+ * Records successful JSON and binary responses when the response finishes.
  */
 export function auditLog(action: AuditAction, module: string, opts: AuditOptions = {}) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const originalJson = res.json.bind(res);
-    res.json = ((body: unknown) => {
+    res.on("finish", () => {
       if (res.statusCode < 400) {
-        const record = body as { id?: string; data?: { id?: string } };
-        const recordId = opts.recordId?.(req) ?? record?.id ?? record?.data?.id ?? (req.params?.id as string | undefined);
+        const recordId = opts.recordId?.(req) ?? res.locals.auditRecordId ?? (req.params?.id as string | undefined);
         prisma.auditLog
           .create({
             data: {
@@ -34,6 +30,10 @@ export function auditLog(action: AuditAction, module: string, opts: AuditOptions
           })
           .catch((err) => logger.error({ err }, "Failed to write audit log"));
       }
+    });
+    const originalJson = res.json.bind(res);
+    res.json = ((body: { id?: string; data?: { id?: string } }) => {
+      res.locals.auditRecordId = body?.id ?? body?.data?.id;
       return originalJson(body);
     }) as Response["json"];
     next();

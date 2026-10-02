@@ -36,9 +36,11 @@ async function main() {
   const existingAdmin = await prisma.user.findUnique({ where: { email: superAdminEmail } });
 
   if (!existingAdmin) {
+    const seedPassword = process.env.SEED_SUPERADMIN_PASSWORD;
+    if (!seedPassword || seedPassword.length < 12 || !/[A-Z]/.test(seedPassword) || !/[a-z]/.test(seedPassword) || !/[0-9]/.test(seedPassword) || seedPassword === "ChangeMe123!") throw new Error("Set a strong SEED_SUPERADMIN_PASSWORD (at least 12 characters). No default password is allowed.");
     console.log(`Creating initial Super Admin account (${superAdminEmail})...`);
     const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { name: "Super Admin" } });
-    const passwordHash = await bcrypt.hash(process.env.SEED_SUPERADMIN_PASSWORD || "ChangeMe123!", 12);
+    const passwordHash = await bcrypt.hash(seedPassword, 12);
 
     await prisma.user.create({
       data: {

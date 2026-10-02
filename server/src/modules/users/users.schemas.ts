@@ -4,10 +4,12 @@ import { emptyToUndefined } from "@/utils/zodHelpers";
 
 const passwordSchema = z
   .string()
-  .min(8)
+  .max(72)
+  .min(12)
   .regex(/[A-Z]/, "Must contain an uppercase letter")
   .regex(/[a-z]/, "Must contain a lowercase letter")
-  .regex(/[0-9]/, "Must contain a number");
+  .regex(/[0-9]/, "Must contain a number")
+  .refine((value) => Buffer.byteLength(value, "utf8") <= 72, "Password must be at most 72 UTF-8 bytes");
 
 export const createUserSchema = z.object({
   fullName: z.string().min(2).max(150),
