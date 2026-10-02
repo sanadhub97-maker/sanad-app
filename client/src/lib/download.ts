@@ -2,6 +2,16 @@ import { toast } from "sonner";
 import { api, extractErrorMessage } from "@/lib/api";
 import { tr, isRtlLanguage } from "@/i18n";
 import i18n from "@/i18n";
+import { useAuthStore } from "@/stores/authStore";
+
+const pendingExports = new Set<string>();
+function exportKey(url: string, params: Record<string, unknown>) {
+  return JSON.stringify([useAuthStore.getState().user?.id, i18n.language, url, Object.entries(params).sort(([a], [b]) => a.localeCompare(b))]);
+}
+function beginExport(key: string) {
+  if (pendingExports.has(key)) { toast.info(tr("جاري تجهيز نفس المستند بالفعل، انتظر اكتماله.", "This document is already being prepared. Please wait.")); return false; }
+  pendingExports.add(key); return true;
+}
 
 function triggerDownload(blobUrl: string, filename: string) {
   const link = document.createElement("a");
@@ -36,6 +46,8 @@ export async function downloadFile(
   params: Record<string, unknown> = {},
   filenameFallback = "download"
 ) {
+  const key = exportKey(url, params);
+  if (!beginExport(key)) return;
   const toastId = toast.loading(tr("جاري تصدير وتجهيز الملف...", "Preparing your file..."));
   try {
     const res = await api.get(url, { params, responseType: "blob" });
@@ -51,6 +63,8 @@ export async function downloadFile(
     const errorMsg = await extractErrorMessage(err, tr("تعذر تصدير الملف. يرجى المحاولة مرة أخرى.", "Could not export the file. Please try again."));
     toast.error(errorMsg, { id: toastId });
     throw err;
+  } finally {
+    pendingExports.delete(key);
   }
 }
 
@@ -59,6 +73,8 @@ export async function openPdfInNewTab(
   params: Record<string, unknown> = {},
   fallbackName = "report.pdf"
 ) {
+  const key = exportKey(url, params);
+  if (!beginExport(key)) return;
   const toastId = toast.loading(tr("جاري تجهيز تقرير الـ PDF للطباعة والمعاينة...", "Preparing the PDF..."));
   const rtl = isRtlLanguage(i18n.language);
 
@@ -151,7 +167,7 @@ export async function openPdfInNewTab(
       releasePreviewUrl(blobUrl, newTab);
     }
 
-    toast.success(tr("تم تجهيز مستند الـ PDF بنجاح", "PDF ready"), { id: toastId });
+    toast.success(opened ? tr("تم فتح PDF للمعاينة؛ اضغط رمز الطابعة داخله للطباعة.", "PDF opened. Use its printer icon to print.") : tr("تم تنزيل PDF لأن نافذة المعاينة لم تفتح؛ افتح الملف للطباعة.", "PDF downloaded because the preview window did not open. Open the file to print."), { id: toastId });
   } catch (err) {
     if (newTab && !newTab.closed) {
       try {
@@ -164,5 +180,7 @@ export async function openPdfInNewTab(
     );
     toast.error(errorMsg, { id: toastId });
     throw err;
+  } finally {
+    pendingExports.delete(key);
   }
 }

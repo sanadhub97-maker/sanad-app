@@ -120,15 +120,25 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // A4 at 96dpi: fixed-position page decoration is laid out against the
     // viewport, so it must match the paper or the first page comes out wrong.
     await page.setViewport({ width: 794, height: 1123 });
+    await page.emulateMediaType("print");
     await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20000 });
-    await Promise.race([
-      page.evaluateHandle("document.fonts.ready"),
-      new Promise((resolve) => setTimeout(resolve, 5000)),
-    ]).catch(() => undefined);
+    const fontsReady = await Promise.race([
+      Promise.all([
+        page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }),
+        page.evaluate("document.fonts.ready.then(() => true)"),
+      ]).then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
+    ]).catch(() => false);
+    // Stop resources that exceed the readiness budget, including an external
+    // stylesheet that has not yet registered its fonts with document.fonts.
+    if (!fontsReady) await page.evaluate("window.stop()");
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,
       printBackground: true,
+      // Font readiness already has a bounded wait above; Puppeteer's second
+      // extra font wait otherwise turns a slow font provider into a failed PDF.
+      waitForFonts: false,
       displayHeaderFooter: true,
       headerTemplate: english ? englishLabels(theme.headerTemplate) : theme.headerTemplate,
       footerTemplate: english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel),
