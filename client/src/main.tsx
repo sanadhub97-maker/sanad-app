@@ -12,6 +12,12 @@ import "@/styles/royal.css";
 import "@/styles/pages-royal.css";
 import "@/styles/cards-royal.css";
 
+// Show the interface immediately with its system-font fallback while the
+// external font stylesheet downloads. Apply the original fonts when ready.
+const appFonts = document.getElementById("app-fonts") as HTMLLinkElement | null;
+if (appFonts?.sheet) appFonts.media = "all";
+else appFonts?.addEventListener("load", () => { appFonts.media = "all"; }, { once: true });
+
 // Makes SanaD installable as an app (production builds only; the dev server
 // would otherwise serve stale files from the worker cache).
 if (import.meta.env.PROD && "serviceWorker" in navigator) {

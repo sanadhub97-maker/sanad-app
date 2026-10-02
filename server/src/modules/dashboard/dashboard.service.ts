@@ -4,10 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { getExpirationRules } from "@/services/settingsStore";
 import { getTrackableItems, bucketByStatus, bucketByWindow, type TrackableItem } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
+import { singleFlight } from "@/lib/singleFlight";
+
+// Summary, charts, attention and expiration widgets ask for the same records.
+// Share their overlapping database reads, then apply each caller's permissions.
+const readDashboardItems = singleFlight(getTrackableItems);
 
 export async function getSummary(auth: AuthContext) {
-  const rules = await getExpirationRules();
-  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
+  const [rules, records] = await Promise.all([getExpirationRules(), readDashboardItems()]);
+  const items = records.filter((item) => canViewSource(auth, item.sourceType));
   const statusBuckets = bucketByStatus(items, rules);
   // The same counts split by owner, for the sidebar's two document sections.
   const companyBuckets = bucketByStatus(items.filter((i) => i.sourceType === "COMPANY_DOCUMENT"), rules);
@@ -41,13 +46,13 @@ export async function getSummary(auth: AuthContext) {
 }
 
 export async function getExpirationWidget(auth: AuthContext) {
-  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
+  const items = (await readDashboardItems()).filter((item) => canViewSource(auth, item.sourceType));
   return bucketByWindow(items);
 }
 
 export async function getCharts(auth: AuthContext) {
-  const rules = await getExpirationRules();
-  const items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
+  const [rules, records] = await Promise.all([getExpirationRules(), readDashboardItems()]);
+  const items = records.filter((item) => canViewSource(auth, item.sourceType));
 
   const [employeesByStatus, employeesByDepartment, paymentsByCategory, paymentsByBranch, monthlyPaymentsRaw, monthlyByCategoryRaw] = await Promise.all([
     hasPermission(auth, "employees.view") ? prisma.employee.groupBy({ by: ["employmentStatus"], where: { deletedAt: null }, _count: { _all: true } }) : Promise.resolve([]),
@@ -121,7 +126,7 @@ function typeGroup(item: TrackableItem): string {
  * within 30 days, soonest first), expiries in each of the next six months,
  * documents by type, and the branches summary. */
 export async function getOverview(auth: AuthContext) {
-  const items = (await getTrackableItems()).filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
+  const items = (await readDashboardItems()).filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
   const withDays = items.map((item) => ({ item, days: daysUntil(item.expiryDate) }));
 
   const due = withDays.filter((x) => x.days <= 30).sort((a, b) => a.days - b.days);

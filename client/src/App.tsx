@@ -7,10 +7,10 @@ import { RoyalAuthLayout } from "@/layouts/royal-auth-layout";
 import { RequireAuth } from "@/routes/require-auth";
 import { RequirePermission } from "@/routes/require-permission";
 
-import LoginPage from "@/pages/auth/login";
-import ForgotPasswordPage from "@/pages/auth/forgot-password";
-import ResetPasswordPage from "@/pages/auth/reset-password";
-import VerifyEmailPage from "@/pages/auth/verify-email";
+const LoginPage = lazy(() => import("@/pages/auth/login"));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/forgot-password"));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/reset-password"));
+const VerifyEmailPage = lazy(() => import("@/pages/auth/verify-email"));
 import NotFoundPage from "@/pages/errors/not-found";
 import ForbiddenPage from "@/pages/errors/forbidden";
 import ServerErrorPage from "@/pages/errors/server-error";
