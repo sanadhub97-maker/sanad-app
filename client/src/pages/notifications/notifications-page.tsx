@@ -12,6 +12,7 @@ import { notificationsApi } from "@/api/notifications";
 import { cn, formatDateTime } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import { notificationText } from "@/types/models";
+import { LiveAlerts } from "@/pages/productivity/productivity-page";
 
 const SEVERITY_DOT: Record<string, string> = { CRITICAL: "bg-destructive", WARNING: "bg-warning", INFO: "bg-info" };
 
@@ -22,13 +23,14 @@ export default function NotificationsPage() {
   const [severity, setSeverity] = useState("");
   const [isRead, setIsRead] = useState("");
   const [page, setPage] = useState(1);
+  const [view, setView] = useState("current");
 
   const params = { page, pageSize: 20, severity: severity || undefined, isRead: isRead || undefined };
   const { data, isLoading } = useQuery({ queryKey: ["notifications", "page", params], queryFn: () => notificationsApi.list(params) });
 
   async function markRead(id: string) {
-    await notificationsApi.markRead(id);
-    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    try { await notificationsApi.markRead(id); await queryClient.invalidateQueries({ queryKey: ["notifications"] }); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   }
   async function remove(id: string) {
     try {
@@ -40,8 +42,8 @@ export default function NotificationsPage() {
     }
   }
   async function markAllRead() {
-    await notificationsApi.markAllRead();
-    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    try { await notificationsApi.markAllRead(); await queryClient.invalidateQueries({ queryKey: ["notifications"] }); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   }
 
   return (
@@ -49,7 +51,7 @@ export default function NotificationsPage() {
       <PageHeader
         title={t("notifications.title")}
         description={t("notifications.subtitle")}
-        actions={
+        actions={view === "history" ?
           <>
             <Select value={severity || "all"} onValueChange={(v) => setSeverity(v === "all" ? "" : v)}>
               <SelectTrigger className="w-36">
@@ -75,11 +77,13 @@ export default function NotificationsPage() {
             <Button variant="outline" onClick={markAllRead}>
               <Check className="h-4 w-4" /> {t("notifications.markAllRead")}
             </Button>
-          </>
+          </> : undefined
         }
       />
 
-      {isLoading ? (
+      <div className="flex gap-2"><Button variant={view === "current" ? "default" : "outline"} onClick={() => setView("current")}>{isAr ? "التنبيهات الحالية والمتأخرة" : "Current & overdue alerts"}</Button><Button variant={view === "history" ? "default" : "outline"} onClick={() => setView("history")}>{isAr ? "سجل الإشعارات" : "Notification history"}</Button></div>
+      {view === "current" && <LiveAlerts />}
+      {view === "history" && (isLoading ? (
         <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : !data || data.data.length === 0 ? (
         <EmptyState icon={Bell} title={t("notifications.empty")} description={t("notifications.noneYet")} />
@@ -108,9 +112,9 @@ export default function NotificationsPage() {
             ))}
           </CardContent>
         </Card>
-      )}
+      ))}
 
-      {data && data.meta.totalPages > 1 && (
+      {view === "history" && data && data.meta.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
             {t("common.previous")}

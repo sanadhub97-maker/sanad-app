@@ -195,6 +195,8 @@ model User {
   importJobs               ImportJob[]
   assignedTasks            DailyTask[]      @relation("TaskAssignee")
   createdTasks             DailyTask[]      @relation("TaskCreator")
+  reportSchedules         ReportSchedule[]
+  alertAcknowledgements   AlertAcknowledgement[]
 
   @@index([isActive])
 }
@@ -426,6 +428,7 @@ model Employee {
   branch    Branch?            @relation(fields: [branchId], references: [id])
   documents EmployeeDocument[]
   payments  Payment[]
+  onboarding EmployeeOnboarding?
 
   @@index([branchId])
   @@index([employmentStatus])
@@ -757,4 +760,49 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model EmployeeOnboarding {
+  employeeId String @id
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  steps Json
+  updatedAt DateTime @updatedAt
+}
+
+model AlertAcknowledgement {
+  userId String
+  key String
+  acknowledgedAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, key])
+}
+
+model ReportSchedule {
+  id String @id @default(cuid())
+  userId String
+  name String
+  kind String
+  frequency String
+  time String
+  weekday Int @default(0)
+  monthday Int @default(1)
+  language String @default("ar")
+  enabled Boolean @default(true)
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs GeneratedReport[]
+  @@index([enabled])
+}
+
+model GeneratedReport {
+  id String @id @default(cuid())
+  scheduleId String
+  slot String
+  status String
+  fileId String?
+  error String?
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+  schedule ReportSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  @@unique([scheduleId, slot])
 }

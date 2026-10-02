@@ -10,6 +10,8 @@ import type { SearchResultItem } from "@/api/search";
 
 const ICON_BY_TYPE: Record<SearchResultItem["type"], typeof User> = {
   employee: User,
+  employeeDocument: FileText,
+  task: FileText,
   companyDocument: FileText,
   payment: Wallet,
   branch: Building2,
@@ -17,6 +19,8 @@ const ICON_BY_TYPE: Record<SearchResultItem["type"], typeof User> = {
 
 const TYPE_LABEL: Record<SearchResultItem["type"], { en: string; ar: string }> = {
   employee: { en: "Employee", ar: "موظف" },
+  employeeDocument: { en: "Employee document", ar: "مستند موظف" },
+  task: { en: "Task", ar: "مهمة" },
   companyDocument: { en: "Document", ar: "مستند" },
   payment: { en: "Payment", ar: "دفعة" },
   branch: { en: "Establishment", ar: "مؤسسة" },
@@ -132,4 +136,3 @@ export function GlobalSearch({ variant = "icon" }: { variant?: "pill" | "icon" }
     </>
   );
 }
-

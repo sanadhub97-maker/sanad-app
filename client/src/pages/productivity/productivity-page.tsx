@@ -1,0 +1,111 @@
+import { useState, type ReactNode } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { PageHeader } from "@/components/common/page-header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { useAuthStore } from "@/stores/authStore";
+import { getErrorMessage } from "@/lib/api";
+import { productivityApi, type ScheduleInput } from "@/api/productivity";
+import { employeesApi } from "@/api/employees";
+import { listActiveBranches } from "@/api/branches";
+import { downloadFile, openPdfInNewTab } from "@/lib/download";
+
+function useCopy() { const { i18n } = useTranslation(); const ar = (i18n.language || "ar").startsWith("ar"); return (a: string, e: string) => ar ? a : e; }
+function SelectBox({ label, value, onChange, children }: { label: string; value: string; onChange: (v: string) => void; children: ReactNode }) {
+  return <label className="grid gap-1 text-sm"><span>{label}</span><select className="h-10 rounded-lg border bg-background px-3" value={value} onChange={e => onChange(e.target.value)}>{children}</select></label>;
+}
+export function LiveAlerts() {
+  const copy = useCopy(); const qc = useQueryClient();
+  const [filter, setFilter] = useState("all"), [state, setState] = useState("all"), [page, setPage] = useState(1), [busy, setBusy] = useState("");
+  const query = useQuery({ queryKey: ["productivity", "alerts"], queryFn: productivityApi.alerts, refetchInterval: 60000 });
+  const rows = (query.data ?? []).filter(a => (filter === "all" || a.category === filter) && (state === "all" || a.acknowledged === (state === "acknowledged")));
+  async function acknowledge(key: string, done: boolean) { setBusy(key); try { await productivityApi.acknowledge(key, done); await qc.invalidateQueries({ queryKey: ["productivity", "alerts"] }); } catch (e) { toast.error(getErrorMessage(e)); } finally { setBusy(""); } }
+  return <div className="space-y-4"><div className="flex flex-wrap items-end gap-3">
+    <SelectBox label={copy("نوع التنبيه", "Alert type")} value={filter} onChange={v => { setFilter(v); setPage(1); }}><option value="all">{copy("الكل", "All")}</option><option value="document">{copy("المستندات والإقامات", "Documents & iqamas")}</option><option value="task">{copy("المهام المتأخرة", "Overdue tasks")}</option></SelectBox>
+    <SelectBox label={copy("حالة المتابعة", "Follow-up")} value={state} onChange={v => { setState(v); setPage(1); }}><option value="all">{copy("الكل", "All")}</option><option value="pending">{copy("بحاجة للمتابعة", "Pending")}</option><option value="acknowledged">{copy("تمت المراجعة", "Reviewed")}</option></SelectBox>
+    <span className="text-sm text-muted-foreground">{rows.length} {copy("تنبيه حالي", "current alerts")}</span></div>
+    <p className="text-xs text-muted-foreground">{copy("المراجعة تسجل متابعتك للتنبيه؛ يختفي سبب التنبيه بعد تجديد المستند أو إنجاز المهمة. الإرسال على واتساب يظل وفق إعدادات الكفالة الحالية.", "Review records your follow-up; the alert clears when the document is renewed or task completed. WhatsApp follows your existing sponsorship settings.")}</p>
+    {query.isPending && <p>{copy("جاري التحميل…", "Loading…")}</p>}{query.isError && <p role="alert">{getErrorMessage(query.error)}</p>}
+    {!query.isPending && !query.isError && !rows.length && <p>{copy("لا توجد تنبيهات مطابقة.", "No matching alerts.")}</p>}
+    {rows.slice((page - 1) * 20, page * 20).map(a => <div key={a.key} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4"><div><Link className="font-semibold hover:underline" to={a.href}>{copy(a.title, a.titleEn)}</Link><p className="text-sm text-muted-foreground">{a.due.slice(0, 10)} · {a.status === "EXPIRED" ? copy("منتهي", "Expired") : a.status === "OVERDUE" ? copy("مهمة متأخرة", "Overdue task") : copy("قارب الانتهاء", "Expiring soon")} · {a.acknowledged ? copy("تمت المراجعة", "Reviewed") : copy("بانتظار المتابعة", "Pending")}</p></div><Button variant="outline" disabled={Boolean(busy)} onClick={() => void acknowledge(a.key, !a.acknowledged)}>{a.acknowledged ? copy("إعادة للمتابعة", "Reopen") : copy("تمت المراجعة", "Mark reviewed")}</Button></div>)}
+    <Pager page={page} total={rows.length} size={20} setPage={setPage} />
+  </div>;
+}
+function Pager({ page, total, size = 20, setPage }: { page: number; total: number; size?: number; setPage: (v: number) => void }) { const c = useCopy(); return total > size ? <div className="flex items-center justify-center gap-3"><Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>{c("السابق", "Previous")}</Button><span>{page} / {Math.ceil(total / size)}</span><Button variant="outline" disabled={page * size >= total} onClick={() => setPage(page + 1)}>{c("التالي", "Next")}</Button></div> : null; }
+function QualityTab() {
+  const c = useCopy(); const [page, setPage] = useState(1), [filter, setFilter] = useState("all");
+  const q = useQuery({ queryKey: ["productivity", "quality"], queryFn: productivityApi.quality, staleTime: 60000 });
+  const rows = (q.data?.issues ?? []).filter(i => filter === "all" || i.severity === filter);
+  return <div className="space-y-4"><div className="flex items-end gap-3"><Button disabled={q.isFetching} variant="outline" onClick={() => { setPage(1); void q.refetch(); }}>{c("إعادة الفحص", "Scan again")}</Button><SelectBox label={c("النوع", "Type")} value={filter} onChange={v => { setFilter(v); setPage(1); }}><option value="all">{c("الكل", "All")}</option><option value="WARNING">{c("التكرار المحتمل", "Possible duplicates")}</option><option value="INFO">{c("نواقص البيانات", "Missing data")}</option></SelectBox></div>
+    <p className="text-sm text-muted-foreground">{c("فحص استرشادي؛ راجع الحالات قبل التعديل. تشابه الأرقام لا يثبت تكرار السجل، ولا يتم حذف أو دمج أي بيانات تلقائيًا.", "Review findings before editing. Matching identifiers may be legitimate; records are never merged or deleted automatically.")}</p>
+    {q.isPending && <p>{c("جاري الفحص…", "Scanning…")}</p>}{q.isError && <p role="alert">{getErrorMessage(q.error)}</p>}
+    {q.data && <p>{c("تم فحص", "Scanned")} {q.data.scanned} · {rows.length} {c("ملاحظة", "findings")} · {q.data.checkedAt.slice(0, 16).replace("T", " ")}</p>}
+    {rows.slice((page - 1) * 20, page * 20).map(i => <div key={i.key} className="rounded-xl border bg-card p-4"><p className="font-medium">{c(i.title, i.titleEn)}</p><div className="mt-2 flex flex-wrap gap-3">{i.records.map(r => <Link key={r.id} to={r.href} className="text-sm text-primary underline">{r.name}</Link>)}</div></div>)}
+    {q.data && !rows.length && <p>{c("لا توجد ملاحظات مطابقة.", "No matching findings.")}</p>}<Pager page={page} total={rows.length} setPage={setPage} />
+  </div>;
+}
+function OnboardingTab() {
+  const c = useCopy(); const qc = useQueryClient(); const canEdit = useAuthStore(s => s.hasPermission("employees.edit"));
+  const [search, setSearch] = useState(""), [page, setPage] = useState(1), [busy, setBusy] = useState(false);
+  const q = useQuery({ queryKey: ["productivity", "onboarding", search, page], queryFn: () => productivityApi.onboarding(search, page) });
+  async function setStep(id: string, step: string, done: boolean) { setBusy(true); try { await productivityApi.setStep(id, step, done); await qc.invalidateQueries({ queryKey: ["productivity", "onboarding"] }); } catch (e) { toast.error(getErrorMessage(e)); } finally { setBusy(false); } }
+  return <div className="space-y-4"><Input aria-label={c("بحث الموظفين", "Search employees")} placeholder={c("اسم الموظف أو رقمه", "Employee name or number")} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+    <p className="text-sm text-muted-foreground">{c("البيانات والمستندات تتحدث تلقائيًا من ملف الموظف، وخطوات التجهيز تُحفظ عند تحديدها.", "Information and documents update from the employee profile; setup steps are saved when checked.")}</p>
+    {q.isPending && <p>{c("جاري التحميل…", "Loading…")}</p>}{q.isError && <p role="alert">{getErrorMessage(q.error)}</p>}
+    <div className="grid gap-4 lg:grid-cols-2">{q.data?.rows.map(e => <div key={e.id} className="rounded-xl border bg-card p-5"><Link className="font-semibold text-primary" to={`/employees/${e.id}`}>{c(e.name, e.nameEn || e.name)} · {e.number}</Link><p className="my-2 text-sm">{e.completed} / {e.total} {c("مكتمل", "completed")}</p><progress className="mb-3 w-full" max={e.total} value={e.completed} aria-label={c("نسبة التجهيز", "Onboarding progress")} />{e.steps.map(s => <label key={s.key} className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" checked={s.done} disabled={s.automatic || !canEdit || busy} onChange={v => void setStep(e.id, s.key, v.target.checked)} />{c(s.title, s.titleEn)}{s.automatic && <span className="text-xs text-muted-foreground">{c("من ملف الموظف", "From profile")}</span>}</label>)}</div>)}</div>
+    {q.data && !q.data.rows.length && <p>{c("لا يوجد موظفون مطابقون.", "No matching employees.")}</p>}<Pager page={page} total={q.data?.total ?? 0} setPage={setPage} />
+  </div>;
+}
+function BulkTab() {
+  const c = useCopy(); const qc = useQueryClient(); const has = useAuthStore(s => s.hasPermission);
+  const [search, setSearch] = useState(""), [page, setPage] = useState(1), [selected, setSelected] = useState<Record<string, string>>({});
+  const [field, setField] = useState("employmentStatus"), [value, setValue] = useState(""), [confirm, setConfirm] = useState(false), [busy, setBusy] = useState(false);
+  const q = useQuery({ queryKey: ["employees", "bulk", search, page], queryFn: () => employeesApi.list({ q: search || undefined, page, pageSize: 20 }) });
+  const branches = useQuery({ queryKey: ["branches", "active"], queryFn: listActiveBranches, enabled: has("branches.view") });
+  const ids = Object.keys(selected);
+  const options: Record<string, [string, string][]> = { employmentStatus: [["ACTIVE", c("نشط", "Active")], ["INACTIVE", c("غير نشط", "Inactive")], ["ON_LEAVE", c("إجازة", "On leave")], ["TERMINATED", c("منتهي التعاقد", "Terminated")]], onSponsorship: [["true", c("على الكفالة", "Sponsored")], ["false", c("ليس على الكفالة", "Not sponsored")]], branchId: (branches.data ?? []).map(b => [b.id, b.name]) };
+  function toggle(id: string, name: string, checked: boolean) { setSelected(prev => { const next = { ...prev }; if (checked) { if (Object.keys(next).length >= 100) { toast.error(c("الحد الأقصى 100 موظف", "Maximum 100 employees")); return prev; } next[id] = name; } else delete next[id]; return next; }); }
+  async function apply() { setBusy(true); try { const result = await productivityApi.bulk(ids, { [field]: field === "onSponsorship" ? value === "true" : value }); toast.success(c(`تم تحديث ${result.data.data.count} موظف`, `Updated ${result.data.data.count} employees`)); setSelected({}); setConfirm(false); await qc.invalidateQueries({ queryKey: ["employees"] }); await qc.invalidateQueries({ queryKey: ["productivity"] }); await qc.invalidateQueries({ queryKey: ["dashboard"] }); } catch (e) { toast.error(getErrorMessage(e)); } finally { setBusy(false); } }
+  async function exportSelected() { setBusy(true); try { await downloadFile("/productivity/employees/export", { ids }, "employee-dossiers.zip"); } catch { /* download helper reports failures */ } finally { setBusy(false); } }
+  return <div className="space-y-4"><Input aria-label={c("بحث الموظفين", "Search employees")} placeholder={c("اسم الموظف أو رقمه", "Employee name or number")} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+    <div className="flex flex-wrap items-center gap-3"><b>{ids.length} {c("موظف محدد", "selected")}</b><Button variant="outline" disabled={busy || !ids.length} onClick={() => setSelected({})}>{c("إلغاء التحديد", "Clear selection")}</Button>{has("employees.export") && <Button variant="outline" disabled={busy || !ids.length || ids.length > 25} onClick={() => void exportSelected()}>{c("تحميل ملفات PDF في ZIP", "Download PDFs as ZIP")}</Button>}</div>
+    <p className="text-xs text-muted-foreground">{c("يمكن تحديث حتى 100 موظف دفعة واحدة، وتصدير ملفات PDF حتى 25 موظف في ملف ZIP واحد.", "Update up to 100 employees at once, or export up to 25 employee PDFs in one ZIP file.")}</p>
+    {q.isPending && <p>{c("جاري التحميل…", "Loading…")}</p>}{q.isError && <p role="alert">{getErrorMessage(q.error)}</p>}
+    <div className="rounded-xl border bg-card p-4"><Button variant="outline" disabled={busy || !q.data} onClick={() => q.data?.data.forEach(e => toggle(e.id, e.fullNameAr, true))}>{c("تحديد الصفحة الحالية", "Select current page")}</Button>{q.data?.data.map(e => <label key={e.id} className="flex items-center gap-3 border-b py-3 last:border-0"><input type="checkbox" checked={Boolean(selected[e.id])} disabled={busy} onChange={v => toggle(e.id, e.fullNameAr, v.target.checked)} /><Link to={`/employees/${e.id}`}>{e.fullNameAr} · {e.employeeNumber}</Link></label>)}</div>
+    <Pager page={page} total={q.data?.meta.total ?? 0} setPage={setPage} />
+    {has("employees.edit") && <div className="space-y-3 rounded-xl border bg-card p-4"><div className="flex flex-wrap items-end gap-3"><SelectBox label={c("الحقل المراد تحديثه", "Field to update")} value={field} onChange={v => { setField(v); setValue(""); }}><option value="employmentStatus">{c("حالة العمل", "Employment status")}</option><option value="onSponsorship">{c("الكفالة", "Sponsorship")}</option><option value="department">{c("القسم", "Department")}</option>{has("branches.view") && <option value="branchId">{c("الفرع", "Branch")}</option>}</SelectBox>{field === "department" ? <label className="grid gap-1 text-sm">{c("القسم الجديد", "New department")}<Input maxLength={100} value={value} onChange={e => setValue(e.target.value)} /></label> : <SelectBox label={c("القيمة الجديدة", "New value")} value={value} onChange={setValue}><option value="">{c("اختر قيمة", "Choose a value")}</option>{(options[field] ?? []).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</SelectBox>}<Button disabled={busy || !ids.length || !value.trim()} onClick={() => setConfirm(true)}>{c("مراجعة التحديث", "Review update")}</Button></div></div>}
+    <ConfirmDialog open={confirm} onOpenChange={setConfirm} destructive={false} loading={busy} confirmLabel={c("تطبيق التحديث", "Apply update")} title={c("تأكيد التحديث الجماعي", "Confirm bulk update")} description={c(`سيتم تحديث ${ids.length} موظف: ${Object.values(selected).join("، ")}. القيمة الجديدة: ${options[field]?.find(([key]) => key === value)?.[1] || value}`, `Update ${ids.length} employees: ${Object.values(selected).join(", ")}. New value: ${options[field]?.find(([key]) => key === value)?.[1] || value}`)} onConfirm={apply} />
+  </div>;
+}
+function SchedulesTab() {
+  const c = useCopy(); const qc = useQueryClient(); const has = useAuthStore(s => s.hasPermission); const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState<ScheduleInput>({ name: "", kind: ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(has) ? "documents" : has("payments.view") ? "payments" : "activity", frequency: "daily", time: "09:00", weekday: 0, monthday: 1, language: "ar", enabled: true });
+  const q = useQuery({ queryKey: ["productivity", "schedules"], queryFn: productivityApi.schedules, refetchInterval: 15000 });
+  const kinds: [string, string, boolean][] = [["employees", c("الموظفون", "Employees"), has("employees.view")], ["documents", c("المستندات", "Documents"), ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(has)], ["payments", c("المدفوعات", "Payments"), has("payments.view")], ["activity", c("سجل العمليات", "Activity log"), has("auditLogs.view")]];
+  async function action(fn: () => Promise<unknown>) { setBusy(true); try { await fn(); toast.success(c("تم تنفيذ الطلب", "Request completed")); await qc.invalidateQueries({ queryKey: ["productivity", "schedules"] }); } catch (e) { toast.error(getErrorMessage(e)); } finally { setBusy(false); } }
+  return <div className="space-y-4"><p className="text-sm text-muted-foreground">{c("التوقيت بتوقيت الرياض. التقارير تشمل البيانات الحالية وتبقى متاحة في حسابك للتحميل والطباعة. إذا كان الخادم متوقفًا تُجهز تقارير اليوم عند عودته. اليوم الشهري من 1 إلى 28.", "Times use Asia/Riyadh. Reports contain current data and stay available in your account for download and print. Today's reports catch up when the server resumes. Monthly dates range from 1 to 28.")}</p>
+    {has("reports.export") && <form className="grid gap-3 rounded-xl border bg-card p-4 md:grid-cols-3" onSubmit={e => { e.preventDefault(); void action(async () => { await productivityApi.createSchedule(form); setForm({ ...form, name: "" }); }); }}>
+      <label className="grid gap-1 text-sm">{c("اسم الجدول", "Schedule name")}<Input required maxLength={100} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label>
+      <SelectBox label={c("التقرير", "Report")} value={form.kind} onChange={kind => setForm({ ...form, kind })}>{kinds.filter(([, , allowed]) => allowed).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</SelectBox>
+      <SelectBox label={c("التكرار", "Frequency")} value={form.frequency} onChange={frequency => setForm({ ...form, frequency })}><option value="daily">{c("يومي", "Daily")}</option><option value="weekly">{c("أسبوعي", "Weekly")}</option><option value="monthly">{c("شهري", "Monthly")}</option></SelectBox>
+      <label className="grid gap-1 text-sm">{c("وقت التجهيز", "Preparation time")}<Input required type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} /></label>
+      {form.frequency === "weekly" && <SelectBox label={c("يوم الأسبوع", "Weekday")} value={String(form.weekday)} onChange={v => setForm({ ...form, weekday: Number(v) })}>{[c("الأحد", "Sunday"), c("الإثنين", "Monday"), c("الثلاثاء", "Tuesday"), c("الأربعاء", "Wednesday"), c("الخميس", "Thursday"), c("الجمعة", "Friday"), c("السبت", "Saturday")].map((day, i) => <option key={i} value={i}>{day}</option>)}</SelectBox>}
+      {form.frequency === "monthly" && <label className="grid gap-1 text-sm">{c("يوم الشهر", "Day of month")}<Input type="number" min={1} max={28} required value={form.monthday} onChange={e => setForm({ ...form, monthday: Number(e.target.value) })} /></label>}
+      <SelectBox label={c("لغة التقرير", "Report language")} value={form.language} onChange={language => setForm({ ...form, language })}><option value="ar">العربية</option><option value="en">English</option></SelectBox><Button disabled={busy} type="submit">{c("إضافة جدول", "Add schedule")}</Button>
+    </form>}
+    {q.isPending && <p>{c("جاري التحميل…", "Loading…")}</p>}{q.isError && <p role="alert">{getErrorMessage(q.error)}</p>}{q.data && !q.data.length && <p>{c("لم تضف تقارير مجدولة بعد.", "No report schedules yet.")}</p>}
+    {q.data?.map(s => <div key={s.id} className="space-y-3 rounded-xl border bg-card p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><b>{s.name}</b><p className="text-sm text-muted-foreground">{kinds.find(([key]) => key === s.kind)?.[1]} · {s.time} · {s.frequency === "daily" ? c("يومي", "Daily") : s.frequency === "weekly" ? c("أسبوعي", "Weekly") : c("شهري", "Monthly")} · {s.enabled ? c("مفعل", "Enabled") : c("متوقف", "Paused")}</p></div><div className="flex gap-2"><Button variant="outline" disabled={busy || !has("reports.export")} onClick={() => void action(() => productivityApi.toggleSchedule(s.id, !s.enabled))}>{s.enabled ? c("إيقاف", "Pause") : c("تفعيل", "Enable")}</Button><Button disabled={busy || !has("reports.export")} onClick={() => void action(() => productivityApi.runSchedule(s.id))}>{c("تجهيز الآن", "Prepare now")}</Button></div></div>
+      {s.runs.map(r => <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm"><span>{r.createdAt.slice(0, 16).replace("T", " ")} · {r.status === "READY" ? c("جاهز", "Ready") : r.status === "RUNNING" ? c("جاري التجهيز", "Preparing") : c("تعذر التجهيز", "Failed")}{r.error && <span className="block text-destructive">{r.error}</span>}</span>{r.status === "READY" && <div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => void openPdfInNewTab(`/productivity/runs/${r.id}/pdf`).catch(() => undefined)}>{c("معاينة وطباعة", "Preview & print")}</Button><Button variant="outline" size="sm" onClick={() => void downloadFile(`/productivity/runs/${r.id}/pdf`, {}, "report.pdf").catch(() => undefined)}>{c("تحميل", "Download")}</Button></div>}</div>)}
+    </div>)}
+  </div>;
+}
+export default function ProductivityPage() {
+  const c = useCopy(); const has = useAuthStore(s => s.hasPermission); const [params, setParams] = useSearchParams();
+  const tabs = [{ key: "quality", label: c("جودة البيانات", "Data quality"), allowed: ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(has), render: <QualityTab /> }, { key: "onboarding", label: c("تجهيز الموظفين", "Employee onboarding"), allowed: has("employees.view"), render: <OnboardingTab /> }, { key: "bulk", label: c("الإجراءات الجماعية", "Bulk actions"), allowed: has("employees.view"), render: <BulkTab /> }, { key: "schedules", label: c("التقارير المجدولة", "Scheduled reports"), allowed: has("reports.view"), render: <SchedulesTab /> }].filter(t => t.allowed);
+  const active = tabs.find(t => t.key === params.get("tab")) ?? tabs[0];
+  return <div className="space-y-5"><PageHeader title={c("أدوات العمل", "Work tools")} description={c("جودة البيانات والتجهيز والإجراءات الجماعية والتقارير المجدولة", "Data quality, onboarding, bulk actions and scheduled reports")} /><nav className="flex flex-wrap gap-2" aria-label={c("أدوات العمل", "Work tools")}>{tabs.map(t => <Button key={t.key} variant={active?.key === t.key ? "default" : "outline"} aria-pressed={active?.key === t.key} onClick={() => setParams({ tab: t.key })}>{t.label}</Button>)}</nav>{active?.render ?? <p>{c("لا توجد أدوات متاحة لصلاحياتك.", "No tools available with your permissions.")}</p>}</div>;
+}

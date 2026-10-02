@@ -64,6 +64,8 @@ class S3StorageDriver implements StorageDriver {
       endpoint: env.STORAGE_ENDPOINT,
       region: env.STORAGE_REGION || "us-east-2",
       forcePathStyle: true,
+      maxAttempts: 3,
+      requestHandler: { connectionTimeout: 10000, requestTimeout: 60000 },
       credentials: {
         accessKeyId: env.STORAGE_ACCESS_KEY,
         secretAccessKey: env.STORAGE_SECRET_KEY,

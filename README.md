@@ -166,7 +166,7 @@ Settings → WhatsApp. This integrates with the **official WhatsApp Business Clo
 
 ### File storage
 
-Local disk under `server/uploads` by default (`STORAGE_DRIVER=local`), behind the `StorageDriver` interface in `server/src/lib/storage.ts`. `STORAGE_DRIVER=s3` is reserved for a future S3-compatible driver — not implemented in this build.
+Local disk under `server/uploads` by default (`STORAGE_DRIVER=local`), behind the `StorageDriver` interface in `server/src/lib/storage.ts`. `STORAGE_DRIVER=s3` uses the implemented S3-compatible driver configured through `STORAGE_*` variables.
 
 ## Excel import/export
 
@@ -194,9 +194,18 @@ cd server && npm test
 
 Covers the expiration engine (§20 status calculation) end-to-end. Given the scope of this system, this build does not include exhaustive coverage of every module — RBAC enforcement and Excel import validation are the next highest-value additions.
 
-## Known scope cuts (documented, not hidden)
+## Work tools and scheduled reports
 
-- **Backup/restore automation** and a **CI/CD pipeline** are not built in this pass.
+- `/work-tools` contains permission-aware data-quality findings, employee onboarding, bulk employee updates, and personal report schedules. `/notifications` combines live expiry/overdue-task follow-up with the notification history.
+- Global search also covers employee documents and daily tasks; deleted employees' documents are excluded.
+- Bulk updates support up to 100 employees per atomic transaction and audit each employee. Batch PDF export supports up to 25 employee dossiers in one ZIP, capped at 64 MB.
+- Onboarding derives profile/document completion from live employee data; editable orientation, equipment, work-account and training steps are retained and audited.
+- Reports can run daily, weekly or monthly (days 1–28), at a specified Riyadh time, in Arabic or English. The scheduler catches up for the current due day when the host resumes, and uses database leases and unique daily slots. Downloading requires ownership and all source permissions used to generate the stored PDF. Up to 60 completed/failed runs per schedule and 20 schedules per user are retained.
+- Encrypted backups include the new tables and generated PDF attachments. Interrupted jobs display a failure instead of an indefinite running state; missing attachments are reported by filename. Backup restore revokes active sessions.
+
+## Remaining scope limits
+
+- **Backup scheduling and CI/CD** are implemented; configure durable file storage and preserve the encryption key to restore backups on another deployment.
 - **Print-template builder UI** (DB-editable templates) is deferred; the three PDF templates shipped are fixed, high-quality HTML/CSS.
 - **i18n coverage**: navigation, common actions, and status labels are fully bilingual (English/Arabic with RTL layout switching); many deep form-field labels are English-first, since translating every field across ~15 modules was out of scope for this pass.
-- **Global search** (`/api/search`) covers employees, company documents, payments, and branches; it does not yet index every EmployeeDocument sub-record individually.
+- **Global search** (`/api/search`) returns up to five matches per category across employees, employee documents, company documents, payments, branches and tasks.

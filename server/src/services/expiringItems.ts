@@ -92,7 +92,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       },
     }),
     prisma.employeeDocument.findMany({
-      where: { deletedAt: null, expiryDate: { not: null }, type: { notIn: ["IQAMA", "PASSPORT"] } },
+      where: { deletedAt: null, employee: { deletedAt: null }, expiryDate: { not: null }, type: { notIn: ["IQAMA", "PASSPORT"] } },
       include: { employee: { select: { id: true, fullNameAr: true, fullNameEn: true, onSponsorship: true, branch: { select: { name: true, nameEn: true } } } } },
     }),
     prisma.companyDocument.findMany({

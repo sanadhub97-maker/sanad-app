@@ -13,6 +13,7 @@ export const FILE_MODULE_PERMISSIONS: Record<string, string> = {
 export function assertFileAccess(file: { module: string | null; uploadedById: string | null; relatedId: string | null }, auth: AuthContext | undefined, action: "view" | "download" | "delete" = "view") {
   if (!auth) throw ApiError.unauthorized();
   if (auth.isSuperAdmin) return;
+  if (file.module === "scheduled-report") throw ApiError.forbidden("Open scheduled reports from your report schedules.");
   if (file.module === "user-avatar" && file.relatedId === auth.userId) return;
   const permission = file.module ? FILE_MODULE_PERMISSIONS[file.module] : undefined;
   if (permission ? !hasPermission(auth, permission) : !hasPermission(auth, "files.view")) throw ApiError.forbidden("You cannot access this file.");

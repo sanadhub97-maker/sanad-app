@@ -10,6 +10,8 @@ import type { LuluNavItem, LuluTone } from "@/components/lulu/lulu-nav";
 
 const TYPE: Record<SearchResultItem["type"], { icon: typeof Users; tone: LuluTone; ar: string; en: string }> = {
   employee: { icon: Users, tone: "indigo", ar: "الموظفون", en: "Employees" },
+  employeeDocument: { icon: FileText, tone: "sky", ar: "مستندات الموظفين", en: "Employee documents" },
+  task: { icon: FileText, tone: "green", ar: "المهام", en: "Tasks" },
   companyDocument: { icon: FileText, tone: "amber", ar: "المستندات", en: "Documents" },
   payment: { icon: Wallet, tone: "violet", ar: "المدفوعات", en: "Payments" },
   branch: { icon: Building2, tone: "teal", ar: "المؤسسات", en: "Establishments" },
@@ -64,7 +66,7 @@ export function LuluCommand({ open, onClose, pages }: { open: boolean; onClose: 
       const t = TYPE[r.type];
       return { group: isAr ? t.ar : t.en, title: localized(r.title, r.titleEn) ?? r.title, sub: r.subtitle ?? "", tone: t.tone, icon: t.icon, href: r.href };
     });
-    return [...pageItems.slice(0, needle ? 6 : 9), ...found].slice(0, 16);
+    return [...pageItems.slice(0, needle ? 6 : 9), ...found];
   }, [q, debounced, results, pages, isAr]);
 
   useEffect(() => setSel(0), [items.length]);

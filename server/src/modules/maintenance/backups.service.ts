@@ -21,6 +21,7 @@ export async function acquireLease() {
     const claimed = await prisma.maintenanceLease.updateMany({ where: { id: "backup", expiresAt: { lt: new Date() } }, data: { token, expiresAt } });
     if (!claimed.count) throw ApiError.tooMany("A backup or restore is already running.");
   }
+  await prisma.backupSnapshot.updateMany({ where: { status: "RUNNING" }, data: { status: "FAILED", error: "انقطع تشغيل النسخة الاحتياطية. أعد إنشاء النسخة. / Backup execution interrupted; create a new backup.", completedAt: new Date() } });
   return async () => { await prisma.maintenanceLease.deleteMany({ where: { id: "backup", token } }); };
 }
 export function validateManifest(value: any): asserts value is BackupManifest {
@@ -63,7 +64,12 @@ export async function createBackup(actorId?: string) {
     let totalBytes = 0;
     for (const file of tables.File) {
       if (file.size > 25 * 1024 * 1024) throw ApiError.badRequest("Backup attachment exceeds the supported limit.");
-      const original = await storage.read(file.storedName);
+      let original: Buffer;
+      try { original = await storage.read(file.storedName); }
+      catch (err) {
+        if (["ENOENT", "NoSuchKey", "NotFound"].includes((err as any)?.code || (err as any)?.name)) throw ApiError.badRequest(`مرفق مفقود: ${String(file.originalName).slice(0, 120)}. أعد رفع الملف الأصلي قبل إنشاء النسخة. / Missing attachment; upload its original before backing up.`);
+        throw err;
+      }
       if (original.length !== file.size) throw ApiError.badRequest("Attachment integrity check failed.");
       const encrypted = sealBackup(original), stored = await storage.save(encrypted, "attachment.sanad"); saved.push(stored.storedName); totalBytes += encrypted.length;
       manifest.files.push({ id: file.id, storedName: stored.storedName, checksum: checksum(encrypted), originalChecksum: checksum(original), size: original.length });
@@ -75,7 +81,7 @@ export async function createBackup(actorId?: string) {
     await pruneBackups(); return snapshot.id;
   } catch (error) {
     for (const name of saved) await storage.delete(name).catch(() => undefined);
-    if (snapshotId) await prisma.backupSnapshot.update({ where: { id: snapshotId }, data: { status: "FAILED", error: "Backup failed. Check server logs and storage availability.", completedAt: new Date() } }).catch(() => undefined);
+    if (snapshotId) await prisma.backupSnapshot.update({ where: { id: snapshotId }, data: { status: "FAILED", error: error instanceof ApiError && error.statusCode === 400 ? error.message : "Backup failed. Check server logs and storage availability.", completedAt: new Date() } }).catch(() => undefined);
     logger.error({ err: error }, "Backup failed"); throw error;
   } finally { await release(); }
 }
@@ -120,7 +126,8 @@ export async function restoreBackup(id: string, actorId: string, password: strin
 }
 export async function backupStatus() {
   const [rows, setting, lease] = await Promise.all([prisma.backupSnapshot.findMany({ orderBy: { createdAt: "desc" }, take: 30 }), prisma.setting.findUnique({ where: { key: "automaticBackups" } }), prisma.maintenanceLease.findUnique({ where: { id: "backup" } })]);
-  return { rows: rows.map(row => ({ ...row, storedName: undefined, checksum: undefined, totalBytes: Number(row.totalBytes) })), enabled: (setting?.value as any)?.enabled ?? true, running: Boolean(lease && lease.expiresAt > new Date()), retention: 7, schedule: "03:00 Asia/Riyadh" };
+  const running = Boolean(lease && lease.expiresAt > new Date());
+  return { rows: rows.map(row => ({ ...row, ...(row.status === "RUNNING" && !running ? { status: "FAILED", error: "انقطع تشغيل النسخة الاحتياطية. أعد إنشاء النسخة. / Backup execution interrupted; create a new backup." } : {}), storedName: undefined, checksum: undefined, totalBytes: Number(row.totalBytes) })), enabled: (setting?.value as any)?.enabled ?? true, running, retention: 7, schedule: "03:00 Asia/Riyadh" };
 }
 export async function runScheduledBackup() {
   const enabled = await prisma.setting.findUnique({ where: { key: "automaticBackups" } }); if ((enabled?.value as any)?.enabled === false) return;

@@ -316,6 +316,8 @@ export default function EmployeesListPage() {
         description={description}
         actions={
           <>
+            <Button variant="outline" onClick={() => navigate("/work-tools?tab=bulk")}>{isAr ? "إجراءات جماعية" : "Bulk actions"}</Button>
+            <Button variant="outline" onClick={() => navigate("/work-tools?tab=onboarding")}>{isAr ? "تجهيز الموظفين" : "Onboarding"}</Button>
             {hasPermission("importExport.import") && (
               <Button variant="outline" onClick={() => navigate("/import-export")}>
                 <FileUp className="h-4 w-4" /> {tr("استيراد من Excel", "Import from Excel")}

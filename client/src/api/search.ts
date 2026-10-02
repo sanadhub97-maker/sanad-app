@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 
 export interface SearchResultItem {
-  type: "employee" | "companyDocument" | "payment" | "branch";
+  type: "employee" | "employeeDocument" | "companyDocument" | "payment" | "branch" | "task";
   id: string;
   title: string;
   titleEn?: string | null;

@@ -4,6 +4,7 @@
     "enterpriseBadge": "Enterprise"
   },
   "nav": {
+    "workTools": "Work tools",
     "dashboard": "Dashboard",
     "dailyTasks": "Daily Tasks",
     "overviewSection": "Overview",
