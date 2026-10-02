@@ -84,6 +84,8 @@ export async function getContent(id: string) {
 
 export async function remove(id: string) {
   const file = await getMetadata(id);
+  const history = await prisma.documentRevision.findFirst({ where: { OR: ["before", "after"].flatMap(version => ["fileId", "iqamaFileId", "passportFileId"].map(field => ({ [version]: { path: [field], equals: id } }))) }, select: { id: true } });
+  if (history) throw ApiError.badRequest("This attachment is retained in document history and cannot be deleted.");
   await storage.delete(file.storedName);
   await prisma.file.delete({ where: { id } });
 }

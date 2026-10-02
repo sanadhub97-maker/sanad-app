@@ -18,8 +18,13 @@ import translateRoutes from "@/modules/translate/translate.routes";
 import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocuments.routes";
 import tasksRoutes from "@/modules/tasks/tasks.routes";
 import pushRoutes from "@/modules/push/push.routes";
+import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
+import { restoringSystem } from "@/modules/maintenance/backups.service";
+import { ApiError } from "@/utils/apiError";
 
 const router = Router();
+router.use((_req, _res, next) => restoringSystem ? next(new ApiError(503, "MAINTENANCE", "The system is restoring a backup. Please wait.")) : next());
+router.use("/maintenance", maintenanceRoutes);
 
 router.use("/auth", authRoutes);
 router.use("/branches", branchesRoutes);

@@ -16,7 +16,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  const doc = await service.update(String(req.params.employeeId), String(req.params.id), req.body);
+  const doc = await service.update(String(req.params.employeeId), String(req.params.id), req.body, req.auth);
   res.json({ data: doc, message: "Document updated successfully." });
 });
 

@@ -7,8 +7,11 @@ import { AuthContext } from "@/types/express";
 
 export async function authenticateAccessToken(token: string) {
   const { sub, sid } = verifyAccessToken(token);
-  const session = await prisma.session.findFirst({ where: { id: sid, userId: sub, revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } });
+  const session = await prisma.session.findFirst({ where: { id: sid, userId: sub, revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true, lastUsedAt: true } });
   if (!session) throw ApiError.unauthorized("Session has been revoked or expired");
+  if (session.lastUsedAt && session.lastUsedAt.getTime() < Date.now() - 5 * 60_000) {
+    await prisma.session.updateMany({ where: { id: sid, revokedAt: null, lastUsedAt: { lt: new Date(Date.now() - 5 * 60_000) } }, data: { lastUsedAt: new Date() } });
+  }
   return loadAuthContext(sub);
 }
 

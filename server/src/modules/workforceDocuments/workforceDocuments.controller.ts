@@ -101,7 +101,7 @@ export async function getCategoryCounts(_req: Request, res: Response, next: Next
 
 export async function createDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await service.createDocument(req.body);
+    const doc = await service.createDocument(req.body, req.auth);
     res.status(201).json({ data: doc, message: "Document added." });
   } catch (err) {
     next(err);
@@ -110,7 +110,7 @@ export async function createDoc(req: Request, res: Response, next: NextFunction)
 
 export async function updateDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    const doc = await service.updateDocument(String(req.params.id), req.body);
+    const doc = await service.updateDocument(String(req.params.id), req.body, req.auth);
     res.json({ data: doc, message: "Document updated." });
   } catch (err) {
     next(err);
@@ -119,7 +119,7 @@ export async function updateDoc(req: Request, res: Response, next: NextFunction)
 
 export async function removeDoc(req: Request, res: Response, next: NextFunction) {
   try {
-    await service.removeDocument(String(req.params.id), req.query.type as string | undefined);
+    await service.removeDocument(String(req.params.id), req.query.type as string | undefined, req.auth);
     res.json({ message: "Document deleted." });
   } catch (err) {
     next(err);

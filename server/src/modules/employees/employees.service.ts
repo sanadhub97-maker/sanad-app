@@ -1,3 +1,4 @@
+import { updateTrackedDocument } from "@/modules/maintenance/revisions.service";
 import { Prisma } from "@prisma/client";
 import type { AuthContext } from "@/types/express";
 import { hasPermission } from "@/lib/security";
@@ -137,11 +138,11 @@ export async function create(input: CreateInput) {
   return withComputedStatus(employee);
 }
 
-export async function update(id: string, input: UpdateInput) {
+export async function update(id: string, input: UpdateInput, auth?: AuthContext) {
   const existing = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Employee not found");
   await assertUniqueIdentifiers(input, id);
-  const employee = await prisma.employee.update({ where: { id }, data: input, include: includeBranch });
+  const employee = await updateTrackedDocument("employee", id, input, auth, { include: includeBranch });
   return withComputedStatus(employee);
 }
 

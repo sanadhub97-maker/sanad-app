@@ -5,6 +5,7 @@ import { runExpirationScan } from "@/jobs/expirationScan";
 import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/services/settingsStore";
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
+import { runScheduledBackup, restoringSystem } from "@/modules/maintenance/backups.service";
 
 let scheduledScanTask: ScheduledTask | null = null;
 
@@ -35,6 +36,7 @@ export async function rescheduleExpirationScan(timeStr?: string, timezone = "Asi
     scheduledScanTask = cron.schedule(
       cronExpr,
       () => {
+        if (restoringSystem) return;
         logger.info({ cronExpr, sendTime, timezone: tz }, "Triggering scheduled daily expiration scan");
         runExpirationScan().catch((err) => logger.error({ err }, "Scheduled expiration scan failed"));
       },
@@ -47,11 +49,14 @@ export async function rescheduleExpirationScan(timeStr?: string, timezone = "Asi
 }
 
 export async function startScheduledJobs() {
+  // Hourly catch-up also handles sleeping hosts; each Riyadh day runs at most once.
+  cron.schedule("0 * * * *", () => void runScheduledBackup().catch(err => logger.error({ err }, "Scheduled backup failed")));
+  if (env.NODE_ENV === "production") void runScheduledBackup().catch(err => logger.error({ err }, "Backup catch-up failed"));
   resumeWhatsappWebOnBoot().catch((err) => logger.error({ err }, "Resume WhatsApp Web on boot failed"));
 
   // Push: the morning brief at 08:00, and each task at its own time.
-  cron.schedule("0 8 * * *", () => void pushMorningBrief().catch((err) => logger.error({ err }, "Morning brief push failed")), { timezone: "Asia/Riyadh" });
-  cron.schedule("* * * * *", () => void pushTaskReminders().catch((err) => logger.error({ err }, "Task reminder push failed")));
+  cron.schedule("0 8 * * *", () => { if (!restoringSystem) void pushMorningBrief().catch((err) => logger.error({ err }, "Morning brief push failed")); }, { timezone: "Asia/Riyadh" });
+  cron.schedule("* * * * *", () => { if (!restoringSystem) void pushTaskReminders().catch((err) => logger.error({ err }, "Task reminder push failed")); });
 
   await rescheduleExpirationScan().catch((err) => logger.error({ err }, "Failed to initialize scheduled scan"));
 

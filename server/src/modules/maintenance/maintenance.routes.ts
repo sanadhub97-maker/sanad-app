@@ -1,0 +1,47 @@
+import { Router } from "express";
+import { z } from "zod";
+import multer from "multer";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
+import rateLimit from "express-rate-limit";
+import { requireAuth } from "@/middleware/auth";
+import { validate } from "@/middleware/validate";
+import { asyncHandler } from "@/utils/asyncHandler";
+import { ApiError } from "@/utils/apiError";
+import { prisma } from "@/lib/prisma";
+import * as sessions from "./sessions.service";
+import { TRASH_KINDS, listTrash, restoreTrash } from "./trash.service";
+import { listDocumentRevisions, restoreDocumentRevision } from "./revisions.service";
+import * as backups from "./backups.service";
+import { downloadBackup, importBackupArchive } from "./backup-archive";
+const router = Router(); router.use(requireAuth);
+const token = (req: any) => req.headers.authorization.slice(7);
+const id = z.string().min(1).max(150); const password = z.string().min(1).max(72);
+router.get("/sessions", asyncHandler(async (req, res) => { res.json({ data: await sessions.listSessions(req.auth!.userId, token(req)) }); }));
+router.post("/sessions/revoke", validate({ body: z.object({ familyId: id.optional() }) }), asyncHandler(async (req, res) => { res.json({ data: await sessions.revokeSessions(req.auth!.userId, token(req), req.body.familyId) }); }));
+router.get("/trash", validate({ query: z.object({ kind: z.enum(TRASH_KINDS), page: z.coerce.number().int().min(1).max(100000).default(1) }) }), asyncHandler(async (req, res) => { res.json({ data: await listTrash(req.auth!, req.query.kind as any, Number(req.query.page)) }); }));
+router.post("/trash/restore", validate({ body: z.object({ kind: z.enum(TRASH_KINDS), id }) }), asyncHandler(async (req, res) => { await restoreTrash(req.auth!, req.body.kind, req.body.id); res.json({ message: "Restored successfully." }); }));
+router.get("/revisions", validate({ query: z.object({ subjectType: z.enum(["employee", "employeeDocument", "companyDocument"]).optional(), subjectId: id.optional(), page: z.coerce.number().int().min(1).max(100000).default(1) }) }), asyncHandler(async (req, res) => { res.json({ data: await listDocumentRevisions(req.auth!, req.query.subjectType as any, req.query.subjectId as string | undefined, Number(req.query.page)) }); }));
+router.post("/revisions/restore", validate({ body: z.object({ id, version: z.enum(["before", "after"]) }) }), asyncHandler(async (req, res) => { await restoreDocumentRevision(req.auth!, req.body.id, req.body.version); res.json({ message: "Document version restored." }); }));
+router.use("/backups", (req, _res, next) => req.auth!.isSuperAdmin ? next() : next(ApiError.forbidden("Only the super administrator can manage backups.")));
+router.get("/backups", asyncHandler(async (_req, res) => { res.json({ data: await backups.backupStatus() }); }));
+const backupLimiter = rateLimit({ windowMs: 60 * 60_000, max: 10, standardHeaders: true, legacyHeaders: false, handler: (_req, _res, next) => next(ApiError.tooMany("Too many backup operations. Try again later.")) });
+router.use("/backups", backupLimiter);
+router.post("/backups/create", validate({ body: z.object({ password }) }), asyncHandler(async (req, res) => { await backups.confirmBackupPassword(req.auth!.userId, req.body.password); res.json({ data: { id: await backups.createBackup(req.auth!.userId) } }); }));
+router.post("/backups/schedule", validate({ body: z.object({ enabled: z.boolean(), password }) }), asyncHandler(async (req, res) => { await backups.confirmBackupPassword(req.auth!.userId, req.body.password); await prisma.setting.upsert({ where: { key: "automaticBackups" }, create: { key: "automaticBackups", value: { enabled: req.body.enabled } }, update: { value: { enabled: req.body.enabled } } }); res.json({ message: "Backup schedule saved." }); }));
+router.post("/backups/download", validate({ body: z.object({ id, password }) }), asyncHandler(async (req, res) => { await backups.confirmBackupPassword(req.auth!.userId, req.body.password); await downloadBackup(req.body.id, res); }));
+router.post("/backups/restore", validate({ body: z.object({ id, password, confirmation: z.literal("RESTORE") }) }), asyncHandler(async (req, res) => { await backups.restoreBackup(req.body.id, req.auth!.userId, req.body.password); res.json({ message: "Snapshot restored. Please sign in again." }); }));
+const importDir = path.join(os.tmpdir(), "sanad-backup-import");
+const upload = multer({ storage: multer.diskStorage({ destination: (_req, _file, cb) => { fs.mkdirSync(importDir, { recursive: true }); cb(null, importDir); }, filename: (_req, _file, cb) => cb(null, randomUUID() + ".zip") }), limits: { files: 1, fileSize: 512 * 1024 * 1024, fields: 2, fieldSize: 256 } });
+router.post("/backups/import", upload.single("file"), asyncHandler(async (req, res) => {
+  try {
+    const body = z.object({ password }).parse(req.body); await backups.confirmBackupPassword(req.auth!.userId, body.password);
+    if (!req.file) throw ApiError.badRequest("Select an encrypted backup ZIP file.");
+    const id = await importBackupArchive(req.file.path);
+    await prisma.auditLog.create({ data: { userId: req.auth!.userId, action: "IMPORT", module: "backups", recordId: id, description: "Imported encrypted backup archive; no live records changed" } });
+    res.json({ data: { id }, message: "Backup imported. Review it before restoring." });
+  } finally { if (req.file) await fs.promises.unlink(req.file.path).catch(() => undefined); }
+}));
+export default router;

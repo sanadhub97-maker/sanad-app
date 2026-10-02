@@ -9,6 +9,7 @@ import {
   BarChart3,
   ScrollText,
   Settings,
+  ShieldCheck,
   UserCog,
   Users,
   Wallet,
@@ -75,5 +76,6 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: "nav.auditLogs", href: "/audit-logs", icon: ScrollText, tone: "slate", permission: "auditLogs.view", section: "nav.systemSection" },
+  { label: "nav.maintenance", href: "/maintenance", icon: ShieldCheck, tone: "teal", section: "nav.systemSection" },
   { label: "nav.settings", href: "/settings", icon: Settings, tone: "zinc", permission: "settings.view", section: "nav.systemSection" },
 ];

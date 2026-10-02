@@ -41,7 +41,8 @@
       "payments": "Payments",
       "reports": "Reports",
       "more": "More"
-    }
+    },
+    "maintenance": "System maintenance"
   },
   "common": {
     "staff": "Staff",

@@ -22,7 +22,7 @@ export function makeController() {
     }),
 
     update: asyncHandler(async (req: Request, res: Response) => {
-      const doc = await service.update(String(req.params.id), req.body);
+      const doc = await service.update(String(req.params.id), req.body, req.auth);
       res.json({ data: doc, message: "Document updated successfully." });
     }),
 

@@ -251,12 +251,47 @@ model Session {
   expiresAt  DateTime
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
+  lastUsedAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   passkey Passkey? @relation(fields: [passkeyId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([familyId])
+}
+
+model DocumentRevision {
+  id String @id @default(cuid())
+  subjectType String
+  subjectId String
+  subjectName String
+  documentKind String
+  actorId String?
+  actorName String
+  before Json
+  after Json
+  createdAt DateTime @default(now())
+  @@index([subjectType, subjectId, createdAt])
+}
+
+model BackupSnapshot {
+  id String @id @default(cuid())
+  status String
+  storedName String?
+  checksum String?
+  recordCount Int @default(0)
+  fileCount Int @default(0)
+  totalBytes BigInt @default(0)
+  error String?
+  createdAt DateTime @default(now())
+  completedAt DateTime?
+  @@index([createdAt])
+}
+
+model MaintenanceLease {
+  id String @id
+  token String
+  expiresAt DateTime
 }
 
 model Passkey {

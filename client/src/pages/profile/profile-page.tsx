@@ -19,6 +19,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { translateRoleName } from "@/lib/role-display";
 import { tr } from "@/i18n";
 import { PasskeysCard } from "./passkeys-card";
+import { SessionsCard } from "./sessions-card";
+import { Link } from "react-router-dom";
 
 // Messages are picked when the error shows, so they follow a language switch.
 const schema = z
@@ -48,6 +50,8 @@ export default function ProfilePage() {
     <div className="space-y-6 max-w-2xl">
       <PageHeader title={t("profile.title")} description={t("profile.subtitle")} />
       <PasskeysCard isAr={isAr} />
+      <SessionsCard isAr={isAr} />
+      <Link to="/maintenance" className="inline-block text-sm text-primary underline">{isAr ? "المحذوفات وسجل الوثائق والنسخ الاحتياطي" : "Recycle bin, document history and backups"}</Link>
 
       <Card>
         <CardHeader>

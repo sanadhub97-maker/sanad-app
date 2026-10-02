@@ -1,3 +1,5 @@
+import { updateTrackedDocument } from "@/modules/maintenance/revisions.service";
+import type { AuthContext } from "@/types/express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
@@ -90,10 +92,10 @@ export async function create(input: CreateInput) {
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
-export async function update(id: string, input: UpdateInput) {
+export async function update(id: string, input: UpdateInput, auth?: AuthContext) {
   const existing = await prisma.companyDocument.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Document not found");
-  const doc = await prisma.companyDocument.update({ where: { id }, data: input, include: includeBranch });
+  const doc = await updateTrackedDocument("companyDocument", id, input, auth, { include: includeBranch });
   const rules = await getExpirationRules();
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }

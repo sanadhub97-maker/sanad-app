@@ -1,3 +1,5 @@
+import { updateTrackedDocument } from "@/modules/maintenance/revisions.service";
+import type { AuthContext } from "@/types/express";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { computeStatus } from "@/services/expiration";
@@ -37,9 +39,9 @@ export async function create(employeeId: string, input: CreateInput) {
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
-export async function update(employeeId: string, id: string, input: UpdateInput) {
+export async function update(employeeId: string, id: string, input: UpdateInput, auth?: AuthContext) {
   await getById(employeeId, id);
-  const doc = await prisma.employeeDocument.update({ where: { id }, data: input });
+  const doc = await updateTrackedDocument("employeeDocument", id, input, auth);
   const rules = await getExpirationRules();
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }

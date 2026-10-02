@@ -6,6 +6,17 @@ import i18n from "@/i18n";
  * Keep in sync when a server message is added or reworded — an unmapped
  * message is shown as is. */
 const EXACT: Record<string, string> = {
+  "This attachment is retained in document history and cannot be deleted.": "المرفق محفوظ ضمن سجل الوثائق ولا يمكن حذفه للحفاظ على النسخ السابقة.",
+  "The original identifier is now used by another record. Restore cannot replace it.": "الرقم الأصلي مستخدم في سجل آخر. لا يمكن الاسترجاع مع وجود هذا التعارض.",
+  "Restore the parent branch or employee first.": "استرجع المؤسسة أو الموظف المرتبط بالسجل أولًا.",
+  "The original attachment is no longer available.": "المرفق الأصلي لم يعد متاحًا.",
+  "Restore authorization has changed. Sign in again.": "تغيّرت صلاحيات الاستعادة أو كلمة المرور. سجّل الدخول مرة أخرى.",
+  "A backup or restore is already running.": "عملية نسخ احتياطي أو استعادة جارية بالفعل.",
+  "Backup schema does not match this version of the system.": "النسخة الاحتياطية لا تتوافق مع إصدار النظام الحالي.",
+  "Backup integrity check failed.": "فشل التحقق من سلامة النسخة الاحتياطية.",
+  "Completed backup not found.": "النسخة الاحتياطية المكتملة غير موجودة.",
+  "Backup contains no active super administrator.": "النسخة لا تحتوي على مدير نظام نشط يمكنه الدخول بعد الاستعادة.",
+  "Backup attachment integrity check failed.": "فشل التحقق من سلامة مرفقات النسخة الاحتياطية.",
   "Unable to verify this passkey. Please try again or use your password.": "تعذّر التحقق من مفتاح المرور. جرّب مرة أخرى أو ادخل بكلمة المرور.",
   "Unable to sign in with this passkey.": "تعذّر الدخول بمفتاح المرور هذا.",
   "Passkey was removed or changed. Please try again.": "تم إلغاء مفتاح المرور أو تغييره. جرّب مرة أخرى.",

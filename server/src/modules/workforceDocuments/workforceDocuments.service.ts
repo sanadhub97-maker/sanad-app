@@ -1,3 +1,5 @@
+import { updateTrackedDocument } from "@/modules/maintenance/revisions.service";
+import type { AuthContext } from "@/types/express";
 import { Prisma, EmployeeDocumentType, DocumentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
@@ -599,7 +601,7 @@ export async function getWorkforceOverviewStats() {
 // ---------------------------------------------------------------------------
 // 6. DOCUMENT MUTATIONS
 // ---------------------------------------------------------------------------
-export async function createDocument(input: any) {
+export async function createDocument(input: any, auth?: AuthContext) {
   const employee = await prisma.employee.findFirst({
     where: { id: input.employeeId, deletedAt: null },
   });
@@ -614,15 +616,12 @@ export async function createDocument(input: any) {
   // stale (edits only ever touch the Employee fields) and shows up as a phantom,
   // never-updated document on the employee's profile Documents tab.
   if (input.type === EmployeeDocumentType.IQAMA) {
-    const updated = await prisma.employee.update({
-      where: { id: input.employeeId },
-      data: {
+    const updated = await updateTrackedDocument("employee", input.employeeId, {
         iqamaNumber: input.documentNumber ?? employee.iqamaNumber,
         iqamaIssueDate: input.issueDate ?? employee.iqamaIssueDate,
         iqamaExpiryDate: input.expiryDate ?? employee.iqamaExpiryDate,
         iqamaFileId: input.fileId ?? employee.iqamaFileId,
-      },
-    });
+      }, auth);
     return {
       id: updated.id,
       employeeId: updated.id,
@@ -636,16 +635,13 @@ export async function createDocument(input: any) {
   }
 
   if (input.type === EmployeeDocumentType.PASSPORT) {
-    const updated = await prisma.employee.update({
-      where: { id: input.employeeId },
-      data: {
+    const updated = await updateTrackedDocument("employee", input.employeeId, {
         passportNumber: input.documentNumber ?? employee.passportNumber,
         passportIssueDate: input.issueDate ?? employee.passportIssueDate,
         passportExpiryDate: input.expiryDate ?? employee.passportExpiryDate,
         passportFileId: input.fileId ?? employee.passportFileId,
         passportCountry: input.issuingAuthority ?? employee.passportCountry,
-      },
-    });
+      }, auth);
     return {
       id: updated.id,
       employeeId: updated.id,
@@ -687,22 +683,18 @@ export async function createDocument(input: any) {
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
-export async function updateDocument(id: string, input: any) {
+export async function updateDocument(id: string, input: any, auth?: AuthContext) {
   const rules = await getExpirationRules();
 
   // Handle synthetic IDs for Iqamas
   if (id.startsWith("iqama-")) {
     const empId = id.replace("iqama-", "");
-    const updated = await prisma.employee.update({
-      where: { id: empId },
-      data: {
+    const updated = await updateTrackedDocument("employee", empId, {
         iqamaNumber: input.documentNumber !== undefined ? input.documentNumber : undefined,
         iqamaIssueDate: input.issueDate !== undefined ? input.issueDate : undefined,
         iqamaExpiryDate: input.expiryDate !== undefined ? input.expiryDate : undefined,
         iqamaFileId: input.fileId !== undefined ? input.fileId : undefined,
-      },
-      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
-    });
+      }, auth, { include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } } });
     return {
       id,
       employeeId: updated.id,
@@ -719,17 +711,13 @@ export async function updateDocument(id: string, input: any) {
   // Handle synthetic IDs for Passports
   if (id.startsWith("passport-")) {
     const empId = id.replace("passport-", "");
-    const updated = await prisma.employee.update({
-      where: { id: empId },
-      data: {
+    const updated = await updateTrackedDocument("employee", empId, {
         passportNumber: input.documentNumber !== undefined ? input.documentNumber : undefined,
         passportIssueDate: input.issueDate !== undefined ? input.issueDate : undefined,
         passportExpiryDate: input.expiryDate !== undefined ? input.expiryDate : undefined,
         passportFileId: input.fileId !== undefined ? input.fileId : undefined,
         passportCountry: input.issuingAuthority !== undefined ? input.issuingAuthority : undefined,
-      },
-      include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } },
-    });
+      }, auth, { include: { branch: { select: { id: true, name: true, nameEn: true, code: true } } } });
     return {
       id,
       employeeId: updated.id,
@@ -756,37 +744,28 @@ export async function updateDocument(id: string, input: any) {
     const emp = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
     if (emp) {
       if (input.type === EmployeeDocumentType.PASSPORT) {
-        const updated = await prisma.employee.update({
-          where: { id },
-          data: {
+        const updated = await updateTrackedDocument("employee", id, {
             passportNumber: input.documentNumber ?? emp.passportNumber,
             passportIssueDate: input.issueDate ?? emp.passportIssueDate,
             passportExpiryDate: input.expiryDate ?? emp.passportExpiryDate,
             passportFileId: input.fileId ?? emp.passportFileId,
             passportCountry: input.issuingAuthority ?? emp.passportCountry,
-          },
-        });
+          }, auth);
         return { ...updated, status: computeStatus(updated.passportExpiryDate, rules) };
       } else if (input.type === EmployeeDocumentType.IQAMA) {
-        const updated = await prisma.employee.update({
-          where: { id },
-          data: {
+        const updated = await updateTrackedDocument("employee", id, {
             iqamaNumber: input.documentNumber ?? emp.iqamaNumber,
             iqamaIssueDate: input.issueDate ?? emp.iqamaIssueDate,
             iqamaExpiryDate: input.expiryDate ?? emp.iqamaExpiryDate,
             iqamaFileId: input.fileId ?? emp.iqamaFileId,
-          },
-        });
+          }, auth);
         return { ...updated, status: computeStatus(updated.iqamaExpiryDate, rules) };
       }
     }
     throw ApiError.notFound("Document not found");
   }
 
-  const doc = await prisma.employeeDocument.update({
-    where: { id },
-    data: input,
-    include: {
+  const doc = await updateTrackedDocument("employeeDocument", id, input, auth, { include: {
       employee: {
         select: {
           id: true,
@@ -796,28 +775,21 @@ export async function updateDocument(id: string, input: any) {
           branch: { select: { id: true, name: true, nameEn: true } },
         },
       },
-    },
-  });
+    } });
 
   return { ...doc, status: computeStatus(doc.expiryDate, rules) };
 }
 
-export async function removeDocument(id: string, type?: string) {
+export async function removeDocument(id: string, type?: string, auth?: AuthContext) {
   if (id.startsWith("iqama-")) {
     const empId = id.replace("iqama-", "");
-    await prisma.employee.update({
-      where: { id: empId },
-      data: { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null },
-    });
+    await updateTrackedDocument("employee", empId, { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null }, auth);
     return;
   }
 
   if (id.startsWith("passport-")) {
     const empId = id.replace("passport-", "");
-    await prisma.employee.update({
-      where: { id: empId },
-      data: { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null },
-    });
+    await updateTrackedDocument("employee", empId, { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null }, auth);
     return;
   }
 
@@ -832,17 +804,11 @@ export async function removeDocument(id: string, type?: string) {
     const emp = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
     if (emp) {
       if (type === EmployeeDocumentType.PASSPORT) {
-        await prisma.employee.update({
-          where: { id },
-          data: { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null },
-        });
+        await updateTrackedDocument("employee", id, { passportNumber: null, passportIssueDate: null, passportExpiryDate: null, passportFileId: null, passportCountry: null }, auth);
         return;
       }
       if (type === EmployeeDocumentType.IQAMA) {
-        await prisma.employee.update({
-          where: { id },
-          data: { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null },
-        });
+        await updateTrackedDocument("employee", id, { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null }, auth);
         return;
       }
       throw ApiError.badRequest("Document type is required to delete this record");
