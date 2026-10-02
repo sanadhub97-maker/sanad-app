@@ -11,7 +11,7 @@ vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 vi.mock("@/lib/storage", () => ({ storage: {}, validateStoredName: (name: string) => { if (!/^[a-z0-9._-]+$/i.test(name)) throw new Error("Invalid storage key"); return name; } }));
 vi.mock("@/lib/jwt", () => ({ verifyAccessToken: () => ({ sub: "owner", sid: "current" }) }));
 vi.mock("@/lib/password", () => ({ comparePassword: vi.fn(async () => false) }));
-import { sealBackup, openBackup, modelOrder, backupModels, encodeRows, decodeRows } from "@/modules/maintenance/backup-format";
+import { sealBackup, openBackup, modelOrder, backupModels, encodeRows, decodeRows, schemaFingerprint, schemaFingerprintFor } from "@/modules/maintenance/backup-format";
 import { confirmBackupPassword, validateManifest } from "@/modules/maintenance/backups.service";
 import { revokeSessions, listSessions } from "@/modules/maintenance/sessions.service";
 import { assertTrashPermission, restoreTrash } from "@/modules/maintenance/trash.service";
@@ -20,6 +20,18 @@ import { remove as removeFile } from "@/modules/files/files.service";
 const auth: any = { userId: "owner", fullName: "Test Admin", isSuperAdmin: true, permissions: new Set(), roles: ["Super Admin"] };
 beforeEach(() => { vi.resetAllMocks(); mock.$transaction.mockImplementation(async (fn: any) => fn(mock)); });
 describe("Encrypted backups", () => {
+  it("upgrades exactly the known additive tables without accepting a missing core table", () => {
+    const added = new Set(["ManagedAsset", "AssetHandover", "EmployeeOffboarding", "RenewalCase"]);
+    const names = new Set(backupModels.filter(m => !added.has(m.name)).map(m => m.name));
+    const legacy = { format: 1, schema: schemaFingerprintFor(names), tables: Object.fromEntries([...names].map(name => [name, []])), files: [] };
+    // Empty fixtures deliberately lack an administrator: reaching that check proves schema compatibility.
+    expect(() => validateManifest(legacy)).toThrow("no active super administrator");
+    expect(legacy.schema).toBe(schemaFingerprint());
+    for (const table of added) expect(legacy.tables[table]).toEqual([]);
+    names.delete("Employee");
+    const invalid = { format: 1, schema: schemaFingerprintFor(names), tables: Object.fromEntries([...names].map(name => [name, []])), files: [] };
+    expect(() => validateManifest(invalid)).toThrow("schema does not match");
+  });
   it("retains attachments referenced by earlier document versions", async () => {
     mock.file.findUnique.mockResolvedValue({ id: "file", storedName: "sample.bin" });
     mock.documentRevision.findFirst.mockResolvedValue({ id: "revision" });

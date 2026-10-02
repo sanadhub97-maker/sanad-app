@@ -44,7 +44,8 @@ export function modelOrder() {
   }
   return result;
 }
-export const schemaFingerprint = () => checksum(Buffer.from(JSON.stringify(backupModels.map(m => [m.name, m.fields.filter(f => f.kind !== "object").map(f => [f.name, f.type, f.isList, f.isRequired])]))));
+export const schemaFingerprintFor = (names: Set<string>) => checksum(Buffer.from(JSON.stringify(backupModels.filter(m => names.has(m.name)).map(m => [m.name, m.fields.filter(f => f.kind !== "object").map(f => [f.name, f.type, f.isList, f.isRequired])]))));
+export const schemaFingerprint = () => schemaFingerprintFor(new Set(backupModels.map(m => m.name)));
 export function encodeRows(name: string, rows: any[]) {
   const fields = backupModels.find(m => m.name === name)!.fields.filter(f => f.kind !== "object");
   return rows.map(row => Object.fromEntries(fields.map(f => { const v = row[f.name]; return [f.name, v == null ? null : f.type === "Bytes" ? Buffer.from(v).toString("base64") : ["BigInt", "Decimal"].includes(f.type) ? String(v) : f.type === "DateTime" ? v.toISOString() : v]; })));

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma, type TransactionClient } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import type { AuthContext } from "@/types/express";
 import { hasPermission } from "@/lib/security";
@@ -10,7 +10,9 @@ export function revisionGroups(type: DocumentSubject): Record<string, string[]> 
 }
 const snapshot = (row: any, fields: string[]) => Object.fromEntries(fields.map(key => [key, row[key] instanceof Date ? row[key].toISOString() : row[key] ?? null]));
 export async function updateTrackedDocument(type: DocumentSubject, id: string, input: any, auth?: AuthContext, extra: any = {}) {
-  return prisma.$transaction(async tx => {
+  return prisma.$transaction(tx => applyTrackedDocumentUpdate(tx, type, id, input, auth, extra));
+}
+export async function applyTrackedDocumentUpdate(tx: TransactionClient, type: DocumentSubject, id: string, input: any, auth?: AuthContext, extra: any = {}) {
     const table = { employee: "Employee", employeeDocument: "EmployeeDocument", companyDocument: "CompanyDocument" }[type];
     await tx.$queryRaw(Prisma.sql`SELECT "id" FROM ${Prisma.raw(`"${table}"`)} WHERE "id" = ${id} AND "deletedAt" IS NULL FOR UPDATE`);
     const model = (tx as any)[type];
@@ -23,7 +25,6 @@ export async function updateTrackedDocument(type: DocumentSubject, id: string, i
       await tx.documentRevision.create({ data: { subjectType: type, subjectId: id, subjectName: before.fullNameAr ?? before.name ?? before.documentNumber ?? id, documentKind, actorId: auth?.userId, actorName: auth?.fullName ?? "النظام", before: previous, after: next } });
     }
     return after;
-  });
 }
 export async function listDocumentRevisions(auth: AuthContext, subjectType?: DocumentSubject, subjectId?: string, page = 1) {
   const permitted = ["employee", "employeeDocument", "companyDocument"].filter(t => hasPermission(auth, t === "companyDocument" ? "companyDocuments.view" : t === "employee" ? "employees.view" : "employeeDocuments.view"));

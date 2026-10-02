@@ -35,7 +35,9 @@ export async function loadAuthContext(userId: string): Promise<AuthContext | nul
     }
   }
 
-  return { userId: user.id, fullName: user.fullName, email: user.email, roles, permissions, isSuperAdmin, avatarFileId: user.avatarFileId, avatarKey: user.avatarKey };
+  const financeAccess = isSuperAdmin || roles.some(role => ["Admin", "Accountant"].includes(role));
+  if (!financeAccess) for (const key of permissions) if (key.startsWith("payments.")) permissions.delete(key);
+  return { userId: user.id, fullName: user.fullName, email: user.email, roles, permissions, isSuperAdmin, financeAccess, avatarFileId: user.avatarFileId, avatarKey: user.avatarKey };
 }
 
 export const requireAuth = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {

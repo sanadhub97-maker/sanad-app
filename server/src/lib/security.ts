@@ -17,6 +17,7 @@ export function notificationVisibility(auth: AuthContext): Prisma.NotificationWh
 }
 
 export function hasPermission(auth: AuthContext | undefined, key: string): boolean {
+  if (key.startsWith("payments.") && auth?.financeAccess === false) return false;
   return Boolean(auth && (auth.isSuperAdmin || auth.permissions.has("*") || auth.permissions.has(key)));
 }
 

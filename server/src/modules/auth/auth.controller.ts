@@ -53,6 +53,7 @@ function serializeAuth(auth: AuthContext) {
     roles: auth.roles,
     permissions: auth.isSuperAdmin ? ["*"] : Array.from(auth.permissions),
     isSuperAdmin: auth.isSuperAdmin,
+    financeAccess: auth.financeAccess,
     avatarFileId: auth.avatarFileId,
     avatarKey: auth.avatarKey,
   };

@@ -205,6 +205,14 @@ Covers the expiration engine (§20 status calculation) end-to-end. Given the sco
 
 ## Remaining scope limits
 
+### Operations release
+
+`/operations` adds asset inventory/issue/return with audited PDF receipts, clearance tracking, document renewals with an owner/deadline/task/payment and retained document revisions, employee/branch document requirements with missing-document follow-up tasks, and financial period/branch/employee comparisons with suspected duplicate payment findings. Partial unique indexes prevent concurrent active handovers or renewals. Clearance completion requires all four steps and zero outstanding assets; settlement/access steps are human confirmations.
+
+Financial permissions are effective only for Super Admin, Admin and Accountant; old Manager/Viewer financial permissions are suppressed, including wildcard grants. Rules and follow-up metadata are included in encrypted backups. Missing-document scans support up to 5,000 scoped records and financial comparisons up to 20,000 payments across the current and equal preceding period. Existing snapshots remain schema-compatible with the four added empty operation tables.
+
+The broader requested expansion is tracked in `IMPLEMENTATION_PROGRESS.md`. Branch isolation, OCR, extended notifications, budgets/advances, custom reporting, additional verification and continuity monitoring are not yet complete.
+
 - **Backup scheduling and CI/CD** are implemented; configure durable file storage and preserve the encryption key to restore backups on another deployment.
 - **Print-template builder UI** (DB-editable templates) is deferred; the three PDF templates shipped are fixed, high-quality HTML/CSS.
 - **i18n coverage**: navigation, common actions, and status labels are fully bilingual (English/Arabic with RTL layout switching); many deep form-field labels are English-first, since translating every field across ~15 modules was out of scope for this pass.

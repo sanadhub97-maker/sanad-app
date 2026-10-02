@@ -197,6 +197,8 @@ model User {
   createdTasks             DailyTask[]      @relation("TaskCreator")
   reportSchedules         ReportSchedule[]
   alertAcknowledgements   AlertAcknowledgement[]
+  recordedHandovers       AssetHandover[]
+  assignedRenewals        RenewalCase[]
 
   @@index([isActive])
 }
@@ -376,6 +378,7 @@ model Branch {
   employees        Employee[]
   companyDocuments CompanyDocument[]
   payments         Payment[]
+  assets           ManagedAsset[]
 
   @@index([status])
 }
@@ -429,6 +432,8 @@ model Employee {
   documents EmployeeDocument[]
   payments  Payment[]
   onboarding EmployeeOnboarding?
+  assetHandovers AssetHandover[]
+  offboarding EmployeeOffboarding?
 
   @@index([branchId])
   @@index([employmentStatus])
@@ -805,4 +810,79 @@ model GeneratedReport {
   completedAt DateTime?
   schedule ReportSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
   @@unique([scheduleId, slot])
+}
+
+enum AssetState {
+  AVAILABLE
+  ASSIGNED
+  MAINTENANCE
+  RETIRED
+}
+
+model ManagedAsset {
+  id String @id @default(cuid())
+  code String @unique
+  name String
+  category String
+  serialNumber String?
+  branchId String?
+  purchaseValue Decimal @default(0) @db.Decimal(12, 2)
+  state AssetState @default(AVAILABLE)
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  branch Branch? @relation(fields: [branchId], references: [id])
+  handovers AssetHandover[]
+  @@index([branchId, state])
+}
+
+model AssetHandover {
+  id String @id @default(cuid())
+  assetId String
+  employeeId String
+  recordedById String
+  issuedAt DateTime @default(now())
+  returnedAt DateTime?
+  issuedCondition String
+  returnedCondition String?
+  notes String?
+  asset ManagedAsset @relation(fields: [assetId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+  recordedBy User @relation(fields: [recordedById], references: [id])
+  @@index([employeeId, returnedAt])
+  @@index([assetId, returnedAt])
+}
+
+model EmployeeOffboarding {
+  id String @id @default(cuid())
+  employeeId String @unique
+  plannedDate DateTime @db.Date
+  reason String
+  steps Json
+  status String @default("OPEN")
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model RenewalCase {
+  id String @id @default(cuid())
+  sourceType String
+  sourceId String
+  title String
+  ownerId String
+  dueDate DateTime @db.Date
+  status String @default("OPEN")
+  estimatedCost Decimal @default(0) @db.Decimal(12, 2)
+  notes String?
+  paymentId String?
+  taskId String?
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner User @relation(fields: [ownerId], references: [id])
+  @@index([sourceType, sourceId, status])
+  @@index([ownerId, dueDate])
 }

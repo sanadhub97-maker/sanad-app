@@ -20,6 +20,7 @@ import tasksRoutes from "@/modules/tasks/tasks.routes";
 import pushRoutes from "@/modules/push/push.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
 import productivityRoutes from "@/modules/productivity/productivity.routes";
+import operationsRoutes from "@/modules/operations/operations.routes";
 import { restoringSystem } from "@/modules/maintenance/backups.service";
 import { ApiError } from "@/utils/apiError";
 
@@ -27,6 +28,7 @@ const router = Router();
 router.use((_req, _res, next) => restoringSystem ? next(new ApiError(503, "MAINTENANCE", "The system is restoring a backup. Please wait.")) : next());
 router.use("/maintenance", maintenanceRoutes);
 router.use("/productivity", productivityRoutes);
+router.use("/operations", operationsRoutes);
 
 router.use("/auth", authRoutes);
 router.use("/branches", branchesRoutes);

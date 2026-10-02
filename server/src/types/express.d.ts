@@ -5,6 +5,7 @@ export interface AuthContext {
   roles: string[];
   permissions: Set<string>;
   isSuperAdmin: boolean;
+  financeAccess?: boolean;
   avatarFileId: string | null;
   avatarKey: string | null;
 }

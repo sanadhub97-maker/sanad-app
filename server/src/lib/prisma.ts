@@ -36,3 +36,4 @@ function createClient() {
 }
 
 export const prisma = createClient();
+export type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];

@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { storage, validateStoredName } from "@/lib/storage";
 import { ApiError } from "@/utils/apiError";
 import { comparePassword } from "@/lib/password";
-import { checksum, sealBackup, openBackup, backupModels, modelOrder, schemaFingerprint, encodeRows, decodeRows } from "./backup-format";
+import { checksum, sealBackup, openBackup, backupModels, modelOrder, schemaFingerprint, schemaFingerprintFor, encodeRows, decodeRows } from "./backup-format";
 import { logger } from "@/lib/logger";
 export let restoringSystem = false;
 export type BackupManifest = { format: 1; schema: string; createdAt: string; tables: Record<string, any[]>; files: { id: string; storedName: string; checksum: string; originalChecksum: string; size: number }[] };
@@ -25,6 +25,17 @@ export async function acquireLease() {
   return async () => { await prisma.maintenanceLease.deleteMany({ where: { id: "backup", token } }); };
 }
 export function validateManifest(value: any): asserts value is BackupManifest {
+  // Existing encrypted snapshots remain restorable after this additive release.
+  // Only the specifically added tables may be absent; verify the original exact schema hash.
+  if (value?.format === 1 && value.tables && value.schema !== schemaFingerprint()) {
+    const additive = new Set(["ManagedAsset", "AssetHandover", "EmployeeOffboarding", "RenewalCase"]);
+    const names = new Set<string>(Object.keys(value.tables));
+    const missing = backupModels.filter(m => !names.has(m.name));
+    if (missing.length && missing.every(m => additive.has(m.name)) && [...names].every(name => backupModels.some(m => m.name === name)) && value.schema === schemaFingerprintFor(names)) {
+      for (const model of missing) value.tables[model.name] = [];
+      value.schema = schemaFingerprint();
+    }
+  }
   if (!value || value.format !== 1 || value.schema !== schemaFingerprint() || !value.tables || !Array.isArray(value.files)) throw ApiError.badRequest("Backup schema does not match this version of the system.");
   if (Object.keys(value.tables).length !== backupModels.length || backupModels.some(m => !Array.isArray(value.tables[m.name]))) throw ApiError.badRequest("Backup tables are incomplete.");
   if (value.files.length > 20000 || new Set(value.files.map((f: any) => f.id)).size !== value.files.length) throw ApiError.badRequest("Invalid backup attachments.");
