@@ -18,6 +18,7 @@ import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { translateRoleName } from "@/lib/role-display";
 import { tr } from "@/i18n";
+import { PasskeysCard } from "./passkeys-card";
 
 // Messages are picked when the error shows, so they follow a language switch.
 const schema = z
@@ -46,6 +47,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <PageHeader title={t("profile.title")} description={t("profile.subtitle")} />
+      <PasskeysCard isAr={isAr} />
 
       <Card>
         <CardHeader>

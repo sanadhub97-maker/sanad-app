@@ -3,6 +3,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
 import { isProduction } from "@/config/env";
 import * as authService from "@/modules/auth/auth.service";
+import * as passkeys from "@/modules/auth/passkeys.service";
 import { loadAuthContext } from "@/middleware/auth";
 import { prisma } from "@/lib/prisma";
 import * as filesService from "@/modules/files/files.service";
@@ -61,6 +62,29 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.login(req.body, clientMeta(req));
   setRefreshCookie(res, result.refreshToken, msFromTtl(result.refreshTtl));
   res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth), ...(embedded(req) ? { refreshToken: result.refreshToken } : {}) } });
+});
+
+export const passkeyList = asyncHandler(async (req, res) => {
+  res.json({ data: await passkeys.listPasskeys(req.auth!.userId) });
+});
+export const passkeyRegistrationOptions = asyncHandler(async (req, res) => {
+  res.json({ data: await passkeys.registrationOptions(req.auth!.userId, req.body.password, req.get("origin")) });
+});
+export const passkeyRegistrationVerify = asyncHandler(async (req, res) => {
+  await passkeys.finishRegistration(req.auth!.userId, req.body.ceremonyId, req.body.response, req.body.name, req.get("origin"));
+  res.json({ message: "Passkey added." });
+});
+export const passkeyAuthenticationOptions = asyncHandler(async (req, res) => {
+  res.json({ data: await passkeys.authenticationOptions(req.body.rememberMe, req.get("origin")) });
+});
+export const passkeyAuthenticationVerify = asyncHandler(async (req, res) => {
+  const result = await passkeys.finishAuthentication(req.body.ceremonyId, req.body.response, clientMeta(req), req.get("origin"));
+  setRefreshCookie(res, result.refreshToken, msFromTtl(result.refreshTtl));
+  res.json({ data: { accessToken: result.accessToken, user: serializeAuth(result.auth), ...(embedded(req) ? { refreshToken: result.refreshToken } : {}) } });
+});
+export const passkeyRemove = asyncHandler(async (req, res) => {
+  await passkeys.removePasskey(req.auth!.userId, req.body.id, req.body.password);
+  res.json({ message: "Passkey removed. Its sign-in sessions were revoked." });
 });
 
 function msFromTtl(ttl: string): number {

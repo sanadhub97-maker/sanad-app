@@ -6,6 +6,14 @@ import i18n from "@/i18n";
  * Keep in sync when a server message is added or reworded — an unmapped
  * message is shown as is. */
 const EXACT: Record<string, string> = {
+  "Unable to verify this passkey. Please try again or use your password.": "تعذّر التحقق من مفتاح المرور. جرّب مرة أخرى أو ادخل بكلمة المرور.",
+  "Unable to sign in with this passkey.": "تعذّر الدخول بمفتاح المرور هذا.",
+  "Passkey was removed or changed. Please try again.": "تم إلغاء مفتاح المرور أو تغييره. جرّب مرة أخرى.",
+  "Remove an old passkey before adding another.": "ألغِ مفتاح مرور قديمًا قبل إضافة جهاز جديد.",
+  "Passkey limit reached.": "وصلت للحد الأقصى لمفاتيح المرور.",
+  "Passkey not found.": "مفتاح المرور غير موجود.",
+  "Untrusted passkey origin.": "افتح الموقع من رابطه المعتمد لاستخدام البصمة.",
+  "Open the website in a browser to use a passkey.": "افتح الموقع في المتصفح لاستخدام البصمة.",
   "A branch with this code already exists.": "توجد مؤسسة مسجلة بنفس الرمز.",
   "A payment with this number already exists.": "توجد دفعة مسجلة بنفس الرقم.",
   "A record with this value already exists.": "يوجد سجل بنفس القيمة مسبقاً.",

@@ -8,6 +8,8 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { dashboardApi } from "@/api/dashboard";
 import { login } from "@/api/auth";
+import { loginWithPasskey, passkeysSupported, passkeyError } from "@/api/passkeys";
+import { Fingerprint, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
@@ -65,6 +67,7 @@ export default function LoginPage() {
   const [caps, setCaps] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [welcome, setWelcome] = useState(false);
+  const [biometricBusy, setBiometricBusy] = useState(false);
 
   const {
     register,
@@ -90,16 +93,26 @@ export default function LoginPage() {
     setFailure(null);
     try {
       const result = await login(values);
-      setWelcome(true);
-      const from = (location.state as { from?: Location })?.from?.pathname ?? "/";
-      // Signed in at once, so the home page's data loads while the gate opens.
-      setAuth(result.accessToken, result.user);
-      if (from === "/") prefetchHome(queryClient);
-      setTimeout(() => navigate(from, { replace: true }), 900);
+      signedIn(result);
     } catch (err) {
       setFailure(getErrorMessage(err, isAr ? "البريد الإلكتروني أو كلمة المرور غير صحيحة." : "Invalid email or password."));
       shake();
     }
+  }
+
+  function signedIn(result: Awaited<ReturnType<typeof login>>) {
+    setWelcome(true);
+    const from = (location.state as { from?: Location })?.from?.pathname ?? "/";
+    setAuth(result.accessToken, result.user);
+    if (from === "/") prefetchHome(queryClient);
+    setTimeout(() => navigate(from, { replace: true }), 900);
+  }
+  async function biometricLogin() {
+    setFailure(null);
+    setBiometricBusy(true);
+    try { signedIn(await loginWithPasskey(!!remember)); }
+    catch (error) { setFailure(passkeyError(error, isAr) ?? getErrorMessage(error)); }
+    finally { setBiometricBusy(false); }
   }
 
   const passField = register("password");
@@ -176,10 +189,18 @@ export default function LoginPage() {
           </label>
           <Link to="/forgot-password">{t("auth.forgotPassword")}</Link>
         </div>
-        <button type="submit" className={cn("ry-go", (isSubmitting || welcome) && "busy")} disabled={isSubmitting || welcome}>
+        <button type="submit" className={cn("ry-go", (isSubmitting || welcome) && "busy")} disabled={isSubmitting || welcome || biometricBusy}>
           <span>{isSubmitting ? (isAr ? "جاري الدخول…" : "Signing in…") : t("auth.signIn")}</span>
           <Svg d={I.arrow} w={2.4} />
         </button>
+        {passkeysSupported() && <>
+          <button type="button" className="ry-go" style={{ background: "transparent", color: "inherit", border: "1px solid currentColor", marginTop: 12 }} disabled={isSubmitting || welcome || biometricBusy} onClick={biometricLogin}>
+            <span>{biometricBusy ? (isAr ? "جاري التحقق…" : "Verifying…") : (isAr ? "الدخول بالبصمة أو الوجه" : "Sign in with fingerprint or face")}</span>
+            {biometricBusy ? <Loader2 size={20} className="animate-spin" /> : <Fingerprint size={20} />}
+          </button>
+          <p className="sub" style={{ fontSize: 11, marginTop: 8 }}>{isAr ? "فعّل مفتاح المرور أولًا من حسابك بعد الدخول بكلمة المرور." : "First enable a passkey in your profile after signing in with your password."}</p>
+          {window.self !== window.top && <a href={`${window.location.origin}/login`} target="_blank" rel="noopener noreferrer">{isAr ? "فتح الموقع مباشرة لاستخدام البصمة" : "Open the website directly to use biometrics"}</a>}
+        </>}
         <div className="ry-safe">
           <Svg d={I.shield} />
           {isAr ? "اتصال مشفّر · بياناتك محمية" : "Encrypted connection · your data is protected"}

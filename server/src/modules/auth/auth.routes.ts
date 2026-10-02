@@ -45,6 +45,17 @@ const accountLimiter = rateLimit({
   handler: (_req, _res, next) => next(ApiError.tooMany("Too many attempts. Please wait a few minutes and try again.")),
 });
 router.post("/login", authLimiter, validate({ body: loginSchema }), accountLimiter, controller.login);
+const password = z.string().min(1).max(72);
+const credentialId = z.string().min(1).max(1400).regex(/^[A-Za-z0-9_-]+$/);
+const responseBase = { id: credentialId, rawId: credentialId, type: z.literal("public-key"), clientExtensionResults: z.record(z.unknown()), authenticatorAttachment: z.enum(["platform", "cross-platform"]).optional() };
+const ceremonyId = z.string().length(43).regex(/^[A-Za-z0-9_-]+$/);
+const clientDataJSON = z.string().min(1).max(8192);
+router.get("/passkeys", requireAuth, controller.passkeyList);
+router.post("/passkeys/register/options", authLimiter, requireAuth, validate({ body: z.object({ password }) }), controller.passkeyRegistrationOptions);
+router.post("/passkeys/register/verify", authLimiter, requireAuth, validate({ body: z.object({ ceremonyId, name: z.string().trim().min(1).max(80), response: z.object({ ...responseBase, response: z.object({ clientDataJSON, attestationObject: z.string().min(1).max(65536), transports: z.array(z.string().max(30)).max(10).optional() }) }) }) }), controller.passkeyRegistrationVerify);
+router.post("/passkeys/login/options", authLimiter, validate({ body: z.object({ rememberMe: z.boolean().default(true) }) }), controller.passkeyAuthenticationOptions);
+router.post("/passkeys/login/verify", authLimiter, validate({ body: z.object({ ceremonyId, response: z.object({ ...responseBase, response: z.object({ clientDataJSON, authenticatorData: z.string().min(1).max(8192), signature: z.string().min(1).max(8192), userHandle: z.string().max(512).nullable().optional() }) }) }) }), controller.passkeyAuthenticationVerify);
+router.post("/passkeys/remove", authLimiter, requireAuth, validate({ body: z.object({ id: credentialId, password }) }), controller.passkeyRemove);
 router.post("/refresh", controller.refresh);
 router.post("/logout", controller.logout);
 router.get("/me", requireAuth, controller.me);

@@ -69,15 +69,20 @@ export async function login(input: LoginInput, meta: RequestMeta) {
   return { accessToken, refreshToken, refreshTtl, auth };
 }
 
-async function createSession(userId: string, ttl: string, meta: RequestMeta, expectedPasswordHash: string) {
+async function createSession(userId: string, ttl: string, meta: RequestMeta, expectedPasswordHash?: string, passkey?: { id: string; counter: bigint; newCounter: number }) {
   const rawToken = generateOpaqueToken();
   const session = await prisma.$transaction(async (tx) => {
     const current = await lockUser(tx, userId);
-    if (current.passwordHash !== expectedPasswordHash) throw ApiError.unauthorized("Password changed. Please sign in again.");
+    if (expectedPasswordHash && current.passwordHash !== expectedPasswordHash) throw ApiError.unauthorized("Password changed. Please sign in again.");
+    if (passkey) {
+      const claimed = await tx.passkey.updateMany({ where: { id: passkey.id, userId, counter: passkey.counter }, data: { counter: BigInt(passkey.newCounter), lastUsedAt: new Date() } });
+      if (claimed.count !== 1) throw ApiError.unauthorized("Passkey was removed or changed. Please try again.");
+    }
     await tx.user.update({ where: { id: userId }, data: { lastLoginAt: new Date() } });
     return tx.session.create({
     data: {
       userId,
+      passkeyId: passkey?.id,
       tokenHash: hashToken(rawToken),
       expiresAt: new Date(Date.now() + ms(ttl)),
       ipAddress: meta.ipAddress,
@@ -86,6 +91,14 @@ async function createSession(userId: string, ttl: string, meta: RequestMeta, exp
     });
   });
   return { refreshToken: rawToken, sessionId: session.id };
+}
+
+export async function loginWithPasskey(userId: string, rememberMe: boolean, meta: RequestMeta, passkey: { id: string; counter: bigint; newCounter: number }) {
+  const auth = await loadAuthContext(userId);
+  if (!auth) throw ApiError.unauthorized("Unable to sign in with this passkey.");
+  const refreshTtl = rememberMe ? env.JWT_REFRESH_EXPIRES_IN : "1d";
+  const { refreshToken, sessionId } = await createSession(userId, refreshTtl, meta, undefined, passkey);
+  return { accessToken: signAccessToken({ sub: userId, sid: sessionId }), refreshToken, refreshTtl, auth };
 }
 
 export async function refreshSession(rawToken: string, meta: RequestMeta) {
@@ -112,6 +125,7 @@ export async function refreshSession(rawToken: string, meta: RequestMeta) {
       expiresAt: session.expiresAt,
       createdAt: session.createdAt,
       familyId: session.familyId,
+      passkeyId: session.passkeyId,
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,
     },

@@ -183,6 +183,7 @@ model User {
 
   userRoles              UserRole[]
   sessions                Session[]
+  passkeys                Passkey[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
   notifications           Notification[]
@@ -245,15 +246,46 @@ model Session {
   userId     String
   tokenHash  String    @unique
   userAgent  String?
+  passkeyId  String?
   ipAddress  String?
   expiresAt  DateTime
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passkey Passkey? @relation(fields: [passkeyId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([familyId])
+}
+
+model Passkey {
+  id           String @id
+  userId       String
+  rpId         String
+  publicKey    Bytes
+  counter      BigInt @default(0)
+  transports   String[]
+  name         String
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime?
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  @@index([userId, rpId])
+}
+
+// Short-lived, single-use ceremonies; no biometric information is stored.
+model PasskeyChallenge {
+  id           String @id
+  challenge    String
+  purpose      String
+  userId       String?
+  passwordProof String?
+  origin       String
+  rpId         String
+  rememberMe   Boolean @default(false)
+  expiresAt    DateTime
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {
