@@ -19,6 +19,7 @@ import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocu
 import tasksRoutes from "@/modules/tasks/tasks.routes";
 import pushRoutes from "@/modules/push/push.routes";
 import violationsRoutes from "@/modules/violations/violations.routes";
+import taxReturnsRoutes from "@/modules/taxReturns/taxReturns.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
 import productivityRoutes from "@/modules/productivity/productivity.routes";
 import operationsRoutes from "@/modules/operations/operations.routes";
@@ -40,6 +41,7 @@ router.use("/employees", employeesRoutes);
 router.use("/workforce-documents", workforceDocumentsRoutes);
 router.use("/company-documents", makeCompanyDocumentsRouter());
 router.use("/payments", paymentsRoutes);
+router.use("/tax-returns", taxReturnsRoutes);
 router.use("/notifications", notificationsRoutes);
 router.use("/audit-logs", auditLogsRoutes);
 router.use("/settings", settingsRoutes);

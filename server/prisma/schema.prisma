@@ -202,6 +202,7 @@ model User {
   assignedViolations      Violation[]      @relation("ViolationAssignee")
   createdViolations       Violation[]      @relation("ViolationCreator")
   violationEvents         ViolationEvent[]
+  createdTaxReturns       TaxReturn[]      @relation("TaxReturnCreator")
 
   @@index([isActive])
 }
@@ -383,6 +384,7 @@ model Branch {
   payments         Payment[]
   assets           ManagedAsset[]
   violations       Violation[]
+  taxReturns       TaxReturn[]
 
   @@index([status])
 }
@@ -531,6 +533,7 @@ model Payment {
   employee  Employee? @relation(fields: [employeeId], references: [id])
   createdBy User      @relation("PaymentCreatedBy", fields: [createdById], references: [id])
   violation Violation?
+  taxReturn TaxReturn?
 
   @@index([branchId])
   @@index([employeeId])
@@ -657,6 +660,7 @@ model File {
 
   uploadedBy User @relation(fields: [uploadedById], references: [id])
   violations Violation[]
+  taxReturns TaxReturn[]
 
   @@index([module, relatedId])
 }
@@ -971,4 +975,71 @@ model ViolationEvent {
   user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([violationId])
+}
+
+// ---------------------------------------------------------------------------
+// Tax returns: the quarterly VAT return and the yearly zakat return filed with
+// ZATCA, with the amounts entered on them. The periods themselves are worked
+// out from the "tax.config" setting (who files, since when), so a period with
+// no row yet still shows, and is reminded of, as "not filed".
+// ---------------------------------------------------------------------------
+
+enum TaxReturnKind {
+  VAT
+  ZAKAT
+}
+
+enum TaxReturnStatus {
+  DRAFT
+  FILED
+  PAID
+}
+
+model TaxReturn {
+  id                String          @id @default(cuid())
+  kind              TaxReturnKind
+  /// The establishment filing it; null = the company as one taxpayer.
+  branchId          String?
+  year              Int
+  /// 1–4 for VAT; null for zakat.
+  quarter           Int?
+  dueDate           DateTime        @db.Date
+  status            TaxReturnStatus @default(DRAFT)
+  // VAT return boxes (amounts before tax)
+  salesStandard     Decimal         @default(0) @db.Decimal(14, 2)
+  salesZero         Decimal         @default(0) @db.Decimal(14, 2)
+  salesExports      Decimal         @default(0) @db.Decimal(14, 2)
+  salesExempt       Decimal         @default(0) @db.Decimal(14, 2)
+  purchasesStandard Decimal         @default(0) @db.Decimal(14, 2)
+  purchasesImports  Decimal         @default(0) @db.Decimal(14, 2)
+  purchasesZero     Decimal         @default(0) @db.Decimal(14, 2)
+  purchasesExempt   Decimal         @default(0) @db.Decimal(14, 2)
+  outputVat         Decimal         @default(0) @db.Decimal(14, 2)
+  inputVat          Decimal         @default(0) @db.Decimal(14, 2)
+  corrections       Decimal         @default(0) @db.Decimal(14, 2)
+  // Zakat
+  zakatBase         Decimal?        @db.Decimal(16, 2)
+  /// What is owed for the period: the net VAT, or the zakat.
+  amount            Decimal         @default(0) @db.Decimal(14, 2)
+  /// A late-payment fine paid with it, if any.
+  penalty           Decimal         @default(0) @db.Decimal(14, 2)
+  filedDate         DateTime?       @db.Date
+  reference         String?
+  sadadNumber       String?
+  paymentId         String?         @unique
+  fileId            String?
+  notes             String?
+  createdById       String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+
+  branch    Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  createdBy User?    @relation("TaxReturnCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([kind, year, quarter])
+  @@index([branchId])
+  @@index([dueDate])
 }

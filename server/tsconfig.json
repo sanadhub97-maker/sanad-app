@@ -20,5 +20,16 @@
     "types": ["node"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "src/__tests__"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/__tests__",
+    "src/capture_*.ts",
+    "src/test_*.ts",
+    "src/verify_*.ts",
+    "src/build_*.ts",
+    "src/crop_*.ts",
+    "src/list_*.ts",
+    "src/check_*.ts"
+  ]
 }

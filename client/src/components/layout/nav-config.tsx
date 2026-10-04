@@ -5,6 +5,7 @@ import {
   Files,
   FolderOpen,
   Gavel,
+  Landmark,
   LayoutDashboard,
   ListChecks,
   BarChart3,
@@ -62,6 +63,7 @@ export const NAV_ITEMS: NavItem[] = [
 
   // Finance & Data
   { label: "nav.payments", href: "/payments", dockLabel: "nav.dock.payments", icon: Wallet, tone: "rose", permission: "payments.view", section: "nav.financeSection" },
+  { label: "nav.taxDeclarations", href: "/tax-declarations", icon: Landmark, tone: "amber", permission: "payments.view", section: "nav.financeSection" },
   { label: "nav.reports", href: "/reports", dockLabel: "nav.dock.reports", icon: BarChart3, tone: "purple", permission: "reports.view", section: "nav.financeSection" },
   { label: "nav.importExport", href: "/import-export", icon: FileSpreadsheet, tone: "teal", permission: "importExport.import", section: "nav.financeSection" },
   { label: "nav.fileManager", href: "/files", icon: FolderOpen, tone: "sky", permission: "files.view", section: "nav.financeSection" },

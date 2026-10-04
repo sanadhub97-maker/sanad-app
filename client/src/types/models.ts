@@ -194,3 +194,45 @@ export interface FileMeta {
 export function notificationText(n: Pick<NotificationItem, "title" | "message" | "titleAr" | "messageAr">, isAr: boolean) {
   return isAr ? { title: n.titleAr || n.title, message: n.messageAr || n.message } : { title: n.title, message: n.message };
 }
+
+export type TaxReturnKind = "VAT" | "ZAKAT";
+export type TaxReturnStatus = "DRAFT" | "FILED" | "PAID";
+
+export interface TaxReturn {
+  id: string;
+  kind: TaxReturnKind;
+  branchId?: string | null;
+  branch?: { id: string; name: string; nameEn?: string | null } | null;
+  year: number;
+  quarter?: number | null;
+  dueDate: string;
+  status: TaxReturnStatus;
+  salesStandard: number;
+  salesZero: number;
+  salesExports: number;
+  salesExempt: number;
+  purchasesStandard: number;
+  purchasesImports: number;
+  purchasesZero: number;
+  purchasesExempt: number;
+  outputVat: number;
+  inputVat: number;
+  corrections: number;
+  zakatBase?: number | null;
+  amount: number;
+  penalty: number;
+  filedDate?: string | null;
+  reference?: string | null;
+  sadadNumber?: string | null;
+  paymentId?: string | null;
+  payment?: { id: string; paymentNumber?: string; total?: number } | null;
+  fileId?: string | null;
+  file?: { id: string; originalName: string; size?: number; mimeType?: string } | null;
+  notes?: string | null;
+  createdById?: string | null;
+  createdBy?: { id: string; fullName: string } | null;
+  createdAt: string;
+  updatedAt?: string;
+  daysRemaining?: number;
+}
+

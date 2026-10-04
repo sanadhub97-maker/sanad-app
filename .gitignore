@@ -11,3 +11,12 @@ coverage/
 Thumbs.db
 generated/
 .cache/
+.print-preview/
+.security-audit/
+server/src/capture_*.ts
+server/src/test_*.ts
+server/src/verify_*.ts
+server/src/build_*.ts
+server/src/crop_*.ts
+server/src/list_*.ts
+server/src/check_*.ts

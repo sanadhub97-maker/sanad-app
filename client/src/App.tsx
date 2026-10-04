@@ -30,6 +30,7 @@ const DailyTasksPage = lazy(() => import("@/pages/tasks/daily-tasks-page"));
 const ViolationsPage = lazy(() => import("@/pages/violations/violations-page"));
 const ViolationDetailsPage = lazy(() => import("@/pages/violations/violation-details-page"));
 const PaymentsPage = lazy(() => import("@/pages/payments/payments-page"));
+const TaxDeclarationsPage = lazy(() => import("@/pages/tax/tax-declarations-page"));
 const NotificationsPage = lazy(() => import("@/pages/notifications/notifications-page"));
 const ReportsPage = lazy(() => import("@/pages/reports/reports-page"));
 const ImportExportPage = lazy(() => import("@/pages/importExport/import-export-page"));
@@ -119,6 +120,7 @@ export default function App() {
                 </Route>
                 <Route element={<RequirePermission permission="payments.view" />}>
                   <Route path="/payments" element={<PaymentsPage />} />
+                  <Route path="/tax-declarations" element={<TaxDeclarationsPage />} />
                 </Route>
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route element={<RequirePermission permission="reports.view" />}>
