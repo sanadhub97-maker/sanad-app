@@ -1,3 +1,4 @@
+import { taxReportQuerySchema, violationReportQuerySchema } from "./reports.schemas";
 import { Router } from "express";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -23,5 +24,8 @@ router.get("/employees", requirePermission("employees.view"), validate({ query: 
 router.get("/documents", requirePermission("employees.view", "employeeDocuments.view", "companyDocuments.view"), validate({ query: documentsReportQuerySchema }), controller.documents);
 router.get("/payments", requirePermission("payments.view"), validate({ query: paymentsReportQuerySchema }), controller.payments);
 router.get("/activity", requirePermission("auditLogs.view"), validate({ query: activityReportQuerySchema }), controller.activity);
+
+router.get("/tax-declarations", requirePermission("taxReturns.view"), validate({ query: taxReportQuerySchema }), controller.taxDeclarations);
+router.get("/violations", requirePermission("violations.view"), validate({ query: violationReportQuerySchema }), controller.violationReport);
 
 export default router;

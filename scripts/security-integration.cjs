@@ -32,7 +32,7 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   const {createApp}=require('../server/dist/app');const app=createApp();
   stage='create synthetic role fixtures';
   const password='SyntheticPass123456';const {hashPassword}=require('../server/dist/lib/password');const hash=await hashPassword(password);
-  const definitions={'Super Admin':['*'],Admin:['*'],Accountant:['payments.view','payments.create','payments.edit','payments.export','taxReturns.view','taxReturns.create','violations.view','violations.pay','files.view'],'HR':['employees.view','employeeDocuments.view','violations.view','users.edit','files.view','payments.view','taxReturns.view','violations.pay'],Manager:['*'],Viewer:['employees.view'],Employee:[]};
+  const definitions={'Super Admin':['*'],Admin:['*'],Accountant:['reports.view','reports.export','payments.view','payments.create','payments.edit','payments.export','taxReturns.view','taxReturns.create','violations.view','violations.pay','files.view'],'HR':['employees.view','employeeDocuments.view','violations.view','users.edit','files.view','payments.view','taxReturns.view','violations.pay'],Manager:['*'],Viewer:['employees.view'],Employee:[]};
   const people={};const roles={};
   for(const [name,keys]of Object.entries(definitions)){
    const role=await prisma.role.create({data:{name}});roles[name]=role;
@@ -92,6 +92,12 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   await check('anonymous cannot fetch private file via public route','get','/api/files/public/'+file.id,403);
   const employeeFile=await prisma.file.create({data:{originalName:'synthetic-employee.pdf',storedName:'synthetic-employee.pdf',mimeType:'application/pdf',size:9,module:'employee',uploadedById:people.HR.id}});
   await check('accountant cannot attach a staff file to a tax return','post','/api/tax-returns',400,{...taxBody,fileId:employeeFile.id},tokens.Accountant);
+  const taxReport=await check('accountant declaration report','get','/api/reports/tax-declarations?year=2026&quarter=3&ownerName=Synthetic%20owner',200,null,tokens.Accountant);
+  assert.equal(taxReport.body.data.every(r=>r.owner==='Synthetic owner'),true);
+  await check('HR cannot export declaration report','get','/api/reports/tax-declarations?year=2026&format=xlsx',403,null,tokens.HR);
+  const sheet=await check('declaration Excel uses report exporter','get','/api/reports/tax-declarations?year=2026&format=xlsx',200,null,tokens.Accountant);
+  assert.equal(sheet.headers['content-type'].includes('spreadsheetml'),true);
+  for(const state of ['all','overdue','open','objection','done']) await check('violation report category '+state,'get','/api/reports/violations?state='+state,200,null,tokens.Accountant);
   // Current database permissions are authoritative even for an already-issued token.
   await prisma.rolePermission.deleteMany({where:{roleId:roles.Accountant.id}});
   await check('role revocation applies to existing token','get','/api/payments',403,null,tokens.Accountant);

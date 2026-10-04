@@ -27,3 +27,13 @@ export const activityReportQuerySchema = formatQuerySchema.extend({
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
 });
+
+export const taxReportQuerySchema = formatQuerySchema.extend({
+  year: z.coerce.number().int().min(2000).max(2100),
+  kind: z.enum(["VAT", "ZAKAT"]).optional(),
+  quarter: z.coerce.number().int().min(1).max(4).optional(),
+  ownerName: z.string().trim().max(200).optional(),
+});
+export const violationReportQuerySchema = formatQuerySchema.extend({
+  state: z.enum(["all", "overdue", "open", "objection", "done"]).default("all"),
+});
