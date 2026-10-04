@@ -15,6 +15,7 @@ export interface Paginated<T> {
 }
 
 export interface Branch {
+  ownerName?: string | null;
   id: string;
   name: string;
   nameEn?: string | null;

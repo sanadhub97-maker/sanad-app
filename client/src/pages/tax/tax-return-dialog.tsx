@@ -27,6 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { listActiveBranches } from "@/api/branches";
 import { taxReturnsApi, type TaxReturnInput } from "@/api/taxReturns";
 import type { TaxReturn, TaxReturnKind, TaxReturnStatus } from "@/types/models";
 
@@ -52,6 +54,9 @@ export function TaxReturnDialog({
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
 
+  const [branchId, setBranchId] = useState<string>("");
+  const { data: establishments = [] } = useQuery({ queryKey: ["branches", "active"], queryFn: listActiveBranches, enabled: open });
+  useEffect(() => { if (open) setBranchId(taxReturn?.branchId || ""); }, [open, taxReturn]);
   const [saving, setSaving] = useState(false);
   const [kind, setKind] = useState<TaxReturnKind>(defaultKind);
   const [year, setYear] = useState<number>(defaultYear);
@@ -198,6 +203,7 @@ export function TaxReturnDialog({
           : (amount !== 0 ? amount : computedZakatAmount);
 
       const payload: TaxReturnInput = {
+        branchId: branchId || null,
         kind,
         year: Number(year),
         quarter: kind === "VAT" ? Number(quarter) : null,
@@ -658,7 +664,12 @@ export function TaxReturnDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tax-owner-name" className="text-xs font-semibold">{isAr ? "اسم المالك" : "Owner name"}</Label>
+            <Label>{isAr ? "المؤسسة / الشركة" : "Establishment / company"}</Label>
+            <Select value={branchId || "company"} onValueChange={value => { const next = value === "company" ? "" : value; setBranchId(next); setOwnerName(establishments.find(b => b.id === next)?.ownerName || ""); }}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="company">{isAr ? "إقرار عام للشركة" : "Company-wide return"}</SelectItem>{establishments.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Label htmlFor="tax-owner-name">{isAr ? "اسم المالك" : "Owner name"}</Label>
             <Input id="tax-owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} maxLength={200} placeholder={isAr ? "أدخل اسم المالك" : "Enter owner name"} className="rounded-xl border-border/60" />
           </div>
 

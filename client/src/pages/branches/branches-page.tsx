@@ -174,6 +174,7 @@ export default function BranchesPage() {
                 sub={other && other !== name ? <bdi>{other}</bdi> : undefined}
                 onOpen={open}
                 facts={[
+                  [isAr ? "اسم المالك" : "Owner name", b.ownerName || "—"],
                   [isAr ? "المدينة" : "City", city],
                   [isAr ? "الرمز" : "Code", <span className="rp-mono">{b.code}</span>],
                   [isAr ? "المسؤول" : "Manager", b.manager?.fullName],

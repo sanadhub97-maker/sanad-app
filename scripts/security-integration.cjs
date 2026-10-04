@@ -53,6 +53,18 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   await check('HR cannot self-promote','put','/api/users/'+people.HR.id,403,{roleIds:[roles['Super Admin'].id]},tokens.HR);
   assert.equal(await prisma.userRole.count({where:{userId:people.HR.id,roleId:roles['Super Admin'].id}}),0);
   await check('Admin wildcard cannot alter role definitions','post','/api/roles',403,{name:'Forbidden escalation',permissionKeys:['*']},tokens.Admin);
+  const createdBranch=await check('save establishment owner','post','/api/branches',201,{name:'Synthetic establishment',code:'OWNER-FIXTURE',ownerName:'  Original owner  '},tokens['Super Admin']);
+  const branch=createdBranch.body.data;
+  assert.equal(branch.ownerName,'Original owner');
+  await check('reject oversized owner','put','/api/branches/'+branch.id,400,{ownerName:'x'.repeat(201)},tokens['Super Admin']);
+  const inherited=await check('tax return inherits establishment owner','post','/api/tax-returns',201,{kind:'VAT',year:2026,quarter:2,dueDate:'2026-07-31',branchId:branch.id},tokens.Accountant);
+  assert.equal(inherited.body.ownerName,'Original owner');
+  const changed=await check('update establishment owner','put','/api/branches/'+branch.id,200,{ownerName:'Changed owner'},tokens['Super Admin']);
+  assert.equal(changed.body.data.ownerName,'Changed owner');
+  const historic=await check('historic tax owner survives establishment changes','get','/api/tax-returns/'+inherited.body.id,200,null,tokens.Accountant);
+  assert.equal(historic.body.ownerName,'Original owner');
+  const next=await check('new return uses current owner','post','/api/tax-returns',201,{kind:'VAT',year:2026,quarter:3,dueDate:'2026-10-31',branchId:branch.id},tokens.Accountant);
+  assert.equal(next.body.ownerName,'Changed owner');
   const taxBody={kind:'VAT',year:2026,quarter:3,dueDate:'2026-10-31',ownerName:'Synthetic owner'};
   const newTax=await check('accountant can save owner name','post','/api/tax-returns',201,taxBody,tokens.Accountant);
   assert.equal(newTax.body.ownerName,taxBody.ownerName);

@@ -80,6 +80,7 @@ export async function list(query: ListTaxReturnsQuery) {
       ? {
           OR: [
             { reference: { contains: search, mode: "insensitive" } },
+            { ownerName: { contains: search, mode: "insensitive" } },
             { sadadNumber: { contains: search, mode: "insensitive" } },
             { notes: { contains: search, mode: "insensitive" } },
           ],
@@ -113,6 +114,8 @@ export async function getById(id: string) {
 }
 
 export async function create(input: CreateTaxReturnInput, userId?: string) {
+  const branch = input.branchId ? await prisma.branch.findFirst({ where: { id: input.branchId, deletedAt: null }, select: { ownerName: true } }) : null;
+  if (input.branchId && !branch) throw ApiError.badRequest("Establishment not found");
   let outputVat = input.outputVat;
   let inputVat = input.inputVat;
   let amount = input.amount;
@@ -161,7 +164,7 @@ export async function create(input: CreateTaxReturnInput, userId?: string) {
       penalty: input.penalty,
       filedDate: input.filedDate ? toDate(input.filedDate) : null,
       reference: input.reference || null,
-      ownerName: input.ownerName || null,
+      ownerName: input.ownerName?.trim() || branch?.ownerName || null,
       sadadNumber: input.sadadNumber || null,
       fileId: input.fileId || null,
       notes: input.notes || null,
@@ -179,7 +182,12 @@ export async function update(id: string, input: UpdateTaxReturnInput) {
 
   const data: Prisma.TaxReturnUpdateInput = {};
 
-  if (input.branchId !== undefined) data.branch = input.branchId ? { connect: { id: input.branchId } } : { disconnect: true };
+  if (input.branchId !== undefined) {
+    const branch = input.branchId ? await prisma.branch.findFirst({ where: { id: input.branchId, deletedAt: null }, select: { ownerName: true } }) : null;
+    if (input.branchId && !branch) throw ApiError.badRequest("Establishment not found");
+    data.branch = input.branchId ? { connect: { id: input.branchId } } : { disconnect: true };
+    if (input.branchId !== existing.branchId && input.ownerName === undefined) data.ownerName = branch?.ownerName || null;
+  }
   if (input.year !== undefined) data.year = input.year;
   if (input.quarter !== undefined) data.quarter = input.quarter;
   if (input.dueDate !== undefined) data.dueDate = toDate(input.dueDate);

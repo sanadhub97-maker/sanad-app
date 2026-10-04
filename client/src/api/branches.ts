@@ -3,6 +3,7 @@ import { createResourceApi } from "@/api/createResourceApi";
 import type { Branch } from "@/types/models";
 
 export interface BranchInput {
+  ownerName?: string | null;
   name: string;
   code: string;
   city?: string;
@@ -25,6 +26,6 @@ export const branchesApi = {
 };
 
 export async function listActiveBranches() {
-  const res = await api.get<{ data: { id: string; name: string; nameEn?: string | null; code: string }[] }>("/branches/active");
+  const res = await api.get<{ data: { id: string; name: string; nameEn?: string | null; ownerName?: string | null; code: string }[] }>("/branches/active");
   return res.data.data;
 }

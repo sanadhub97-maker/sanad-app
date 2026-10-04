@@ -362,6 +362,7 @@ model EmailVerificationToken {
 // ---------------------------------------------------------------------------
 
 model Branch {
+  ownerName String?
   id        String       @id @default(cuid())
   name      String
   nameEn    String?

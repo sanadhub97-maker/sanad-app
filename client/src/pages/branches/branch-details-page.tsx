@@ -193,6 +193,7 @@ export default function BranchDetailsPage() {
           <DCard title={isAr ? "بيانات المؤسسة" : "Establishment details"} icon={Building2} color="var(--teal)" i={5}>
             <div className="rc-facts">
               <Fact label={isAr ? "الرمز" : "Code"} icon={Hash} value={<span className="rp-mono" style={{ fontSize: 14 }}>{b.code}</span>} copy={b.code} />
+              <Fact label={isAr ? "اسم المالك" : "Owner name"} icon={User} value={b.ownerName || "—"} />
               <Fact label={isAr ? "المدينة" : "City"} icon={MapPin} value={city || "—"} />
               <Fact label={isAr ? "المسؤول" : "Manager"} icon={User} value={b.manager?.fullName || "—"} />
               <Fact label={t("branches.fields.phone")} icon={Phone} value={b.phone ? <a href={`tel:${b.phone}`} className="rp-num">{b.phone}</a> : "—"} copy={b.phone} />

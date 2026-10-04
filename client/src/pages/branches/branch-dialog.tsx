@@ -35,6 +35,7 @@ import type { Branch } from "@/types/models";
 const makeSchema = () =>
   z.object({
     nameEn: z.string().optional(),
+    ownerName: z.string().trim().max(200).optional(),
     name: z.string().min(2, tr("اسم المؤسسة مطلوب", "Establishment name is required")),
     code: z.string().min(1, tr("رمز المؤسسة مطلوب", "Establishment code is required")),
     city: z.string().optional(),
@@ -81,6 +82,7 @@ export function BranchDialog({
         branch
           ? {
               ...branch,
+              ownerName: branch.ownerName ?? "",
               email: branch.email ?? "",
               city: branch.city ?? "",
               cityEn: branch.cityEn ?? "",
@@ -176,6 +178,10 @@ export function BranchDialog({
                   placeholder={isAr ? "مثال: مؤسسة الرياض الرئيسية" : "e.g. Riyadh Est."}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/70 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15"
                 />
+              </FormField>
+
+              <FormField label={isAr ? "اسم المالك" : "Owner name"} error={errors.ownerName?.message} icon={Building2} className="sm:col-span-6">
+                <Input {...register("ownerName")} maxLength={200} placeholder={isAr ? "اسم المالك أو الشركاء" : "Owner or partners names"} className="h-11 rounded-xl" />
               </FormField>
 
               <FormField label={t("branches.fields.nameEn")} icon={Building2} className="sm:col-span-6">
