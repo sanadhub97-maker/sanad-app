@@ -6,7 +6,7 @@ for(const consumer of ['micromatch','chokidar']){
  const parent=path.dirname(require.resolve(consumer));
  braceRoots.add(path.dirname(require.resolve('braces/package.json',{paths:[parent]})));
 }
-const fingerprint=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const fingerprint=file=>crypto.createHash('sha256').update(fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n')).digest('hex');
 for(const root of braceRoots){
  const braces=require(root);
  const label=path.relative(process.cwd(),root);
@@ -36,4 +36,5 @@ for(const root of braceRoots){
 test('the glob consumer still matches the normal file patterns',()=>{
  const mm=require('micromatch');assert.equal(mm.isMatch('src/app.ts','src/*.{ts,tsx}'),true);assert.equal(mm.isMatch('src/app.png','src/*.{ts,tsx}'),false);
 });
+
 
