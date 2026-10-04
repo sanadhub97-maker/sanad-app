@@ -9,14 +9,15 @@ const safeSchema=()=>{if(!/^sanad_test_[a-f0-9]{16}$/.test(schema))throw new Err
 const url=new URL(base);url.searchParams.set('schema',schema);url.searchParams.set('options','-c search_path='+schema);if(!['localhost','127.0.0.1','::1'].includes(url.hostname))url.searchParams.set('sslmode','verify-full');
 // Synthetic secrets override every real credential before importing application code.
 Object.assign(process.env,{NODE_ENV:'test',DATABASE_URL:url.href,DIRECT_URL:url.href,CLIENT_URL:'https://security.example.invalid',TRUSTED_ORIGINS:'',TRUST_PROXY_HOPS:'0',JWT_ACCESS_SECRET:crypto.randomBytes(48).toString('hex'),JWT_REFRESH_SECRET:crypto.randomBytes(48).toString('hex'),SETTINGS_ENCRYPTION_KEY:crypto.randomBytes(48).toString('hex'),EMAIL_ENABLED:'false',WHATSAPP_ENABLED:'false',STORAGE_DRIVER:'local',UPLOAD_DIR:path.resolve('.security-audit',schema)});
-const results=[];let prisma;let created=false;
+const results=[];let prisma;let created=false;let stage="connect isolated database";
 (async()=>{
  const c=new Client({connectionString:base,connectionTimeoutMillis:15000});await c.connect();
  try{
   await c.query('CREATE SCHEMA '+safeSchema());created=true;await c.query('SET search_path TO '+safeSchema());
   const dirs=fs.readdirSync('server/prisma/migrations').filter(n=>fs.existsSync('server/prisma/migrations/'+n+'/migration.sql')).sort();
-  for(const dir of dirs)await c.query(fs.readFileSync('server/prisma/migrations/'+dir+'/migration.sql','utf8'));
+  for(const dir of dirs){stage='migration '+dir;await c.query(fs.readFileSync('server/prisma/migrations/'+dir+'/migration.sql','utf8'));}
   results.push({check:'fresh ordered migration chain',passed:true,migrations:dirs.length});
+  stage='tax baseline replay';
   const baseline=fs.readFileSync('server/prisma/migrations/20261004180000_tax_returns_baseline/migration.sql','utf8');
   await c.query(`INSERT INTO "TaxReturn" (id,kind,year,"dueDate","updatedAt","ownerName") VALUES ('preserve-fixture','VAT',2026,'2026-10-31',CURRENT_TIMESTAMP,'Synthetic owner')`);
   await c.query(baseline);
@@ -24,10 +25,12 @@ const results=[];let prisma;let created=false;
   results.push({check:'baseline replay preserves existing tax records',passed:true});
   const cols=await c.query(`SELECT count(*)::int AS n FROM information_schema.columns WHERE table_schema=$1 AND table_name='TaxReturn'`,[schema]);assert.equal(cols.rows[0].n,32);
   const fk=await c.query(`SELECT count(*)::int AS n FROM pg_constraint WHERE conrelid='"TaxReturn"'::regclass AND contype='f' AND convalidated`);assert.equal(fk.rows[0].n,4);
+  stage='verify application schema';
   prisma=require('../server/dist/lib/prisma').prisma;
   const current=await prisma.$queryRawUnsafe('SELECT current_schema() AS schema');assert.equal(current[0].schema,schema);assert.equal(await prisma.user.count(),0);
   require('../server/dist/lib/logger').logger.level='silent';
   const {createApp}=require('../server/dist/app');const app=createApp();
+  stage='create synthetic role fixtures';
   const password='SyntheticPass123456';const {hashPassword}=require('../server/dist/lib/password');const hash=await hashPassword(password);
   const definitions={'Super Admin':['*'],Admin:['*'],Accountant:['payments.view','payments.create','payments.edit','payments.export','taxReturns.view','taxReturns.create','violations.view','violations.pay','files.view'],'HR':['employees.view','employeeDocuments.view','violations.view','users.edit','files.view','payments.view','taxReturns.view','violations.pay'],Manager:['*'],Viewer:['employees.view'],Employee:[]};
   const people={};const roles={};
@@ -36,9 +39,9 @@ const results=[];let prisma;let created=false;
    for(const key of keys){const p=await prisma.permission.upsert({where:{key},create:{key,module:key.split('.')[0]},update:{}});await prisma.rolePermission.create({data:{roleId:role.id,permissionId:p.id}})}
    people[name]=await prisma.user.create({data:{fullName:'Synthetic '+name,email:name.toLowerCase().replaceAll(' ','-')+'@fixture.invalid',passwordHash:hash,userRoles:{create:{roleId:role.id}}}});
   }
-  const login=async name=>{const r=await request(app).post('/api/auth/login').send({email:people[name].email,password,rememberMe:false});assert.equal(r.status,200,'login '+name);assert.equal(r.headers['cache-control'].includes('no-store'),true);return r.body.data.accessToken};
+  const login=async name=>{stage='login '+name;const r=await request(app).post('/api/auth/login').send({email:people[name].email,password,rememberMe:false});assert.equal(r.status,200,'login '+name);assert.equal(r.headers['cache-control'].includes('no-store'),true);return r.body.data.accessToken};
   const tokens={};for(const name of Object.keys(people))tokens[name]=await login(name);
-  const check=async(name,method,route,status,body,token)=>{let q=request(app)[method](route);if(token)q=q.set('Authorization','Bearer '+token);if(body)q=q.send(body);const r=await q;assert.equal(r.status,status,name+': '+r.status);results.push({check:name,passed:true});return r};
+  const check=async(name,method,route,status,body,token)=>{stage=name;let q=request(app)[method](route);if(token)q=q.set('Authorization','Bearer '+token);if(body)q=q.send(body);const r=await q;assert.equal(r.status,status,name+': '+r.status);results.push({check:name,passed:true});return r};
   for(const name of Object.keys(people)){
    const finance=['Super Admin','Admin','Accountant'].includes(name);
    await check(name+' payment visibility','get','/api/payments',finance?200:403,null,tokens[name]);
@@ -80,4 +83,4 @@ const results=[];let prisma;let created=false;
   if(created){await c.query('RESET search_path');await c.query('DROP SCHEMA '+safeSchema()+' CASCADE')}
   await c.end();
  }
-})().catch(e=>{console.error('Security integration failed:',e.code||e.name,e instanceof assert.AssertionError?e.message:'');process.exitCode=1});
+})().catch(e=>{const message=(stage+': '+(e.code||e.name)+': '+String(e.message)).replace(/postgres(?:ql)?:\/\/[^\s]+/gi,'[REDACTED]').replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A');console.error('::error title=Isolated security integration::'+message);process.exitCode=1});
