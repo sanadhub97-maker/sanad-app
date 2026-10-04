@@ -84,4 +84,3 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   await c.end();
  }
 })().catch(e=>{const message=(stage+': '+(e.code||e.name)+': '+String(e.message)).replace(/postgres(?:ql)?:\/\/[^\s]+/gi,'[REDACTED]').replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A');console.error('::error title=Isolated security integration::'+message);process.exitCode=1});
-
