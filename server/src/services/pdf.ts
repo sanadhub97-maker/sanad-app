@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { isEn } from "@/services/lang";
 import puppeteer, { Browser, Page } from "puppeteer";
 import { env } from "@/config/env";
@@ -5,6 +7,24 @@ import { escapeHtml } from "@/lib/security";
 import { logger } from "@/lib/logger";
 import { ApiError } from "@/utils/apiError";
 import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
+
+const bundledFontDir = path.resolve(__dirname, "../../assets/print-fonts");
+let bundledFontManifest: Record<string, string> = {};
+let bundledFontCss: Buffer | null = null;
+try {
+  bundledFontManifest = JSON.parse(readFileSync(path.join(bundledFontDir, "manifest.json"), "utf8").replace(/^\uFEFF/, ""));
+  bundledFontCss = readFileSync(path.join(bundledFontDir, "fonts.css"));
+} catch { logger.warn("Bundled print fonts unavailable; using font provider fallback"); }
+const bundledFontBuffers = new Map<string, Buffer>();
+export function bundledRenderResource(raw: string): { contentType: string; body: Buffer } | null {
+  if (raw === PRINT_FONTS_HREF && bundledFontCss) return { contentType: "text/css; charset=utf-8", body: bundledFontCss };
+  const filename = bundledFontManifest[raw];
+  if (!filename || !/^font-[0-9]+\.bin$/.test(filename)) return null;
+  let body = bundledFontBuffers.get(filename);
+  if (!body) { body = readFileSync(path.join(bundledFontDir, filename)); bundledFontBuffers.set(filename, body); }
+  const magic = body.subarray(0, 4).toString("ascii");
+  return { contentType: magic === "wOF2" ? "font/woff2" : magic === "wOFF" ? "font/woff" : magic === "OTTO" ? "font/otf" : "font/ttf", body };
+}
 
 let browserPromise: Promise<Browser> | null = null;
 let activeRenders = 0;
@@ -31,7 +51,11 @@ export async function secureRenderPage(page: Page) {
   await page.setRequestInterception(true);
   page.on("request", (request) => {
     const permitted = request.method() === "GET" && allowedRenderUrl(request.url());
-    void (permitted ? request.continue() : request.abort("blockedbyclient")).catch(() => undefined);
+    if (!permitted) { void request.abort("blockedbyclient").catch(() => undefined); return; }
+    try {
+      const bundled = bundledRenderResource(request.url());
+      void (bundled ? request.respond({ status: 200, contentType: bundled.contentType, body: bundled.body, headers: { "Cache-Control": "public, max-age=31536000" } }) : request.continue()).catch(() => undefined);
+    } catch { void request.continue().catch(() => undefined); }
   });
 }
 

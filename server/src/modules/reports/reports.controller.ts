@@ -1,7 +1,6 @@
 import * as taxService from "@/modules/taxReturns/taxReturns.service";
 import * as violationService from "@/modules/violations/violations.service";
 import { taxReportQuerySchema, violationReportQuerySchema } from "./reports.schemas";
-import { ApiError } from "@/utils/apiError";
 import { escapeHtml } from "@/lib/security";
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
@@ -50,6 +49,7 @@ async function respond(
 ) {
   const { filenameBase, format, columns, rows } = opts;
   const title = L(opts.title, opts.titleEn);
+  if (format === "json") return res.json({ data: rows });
   const branding = await getBrandingContext();
 
   if (format === "xlsx") {
@@ -187,20 +187,9 @@ export const activity = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-async function collectRows<T>(fetchPage: (page: number) => Promise<{data: T[]; meta: {totalPages: number; total: number}}>) {
-  const result: T[] = [];
-  for (let page=1;page<=1000;page++) {
-    const batch=await fetchPage(page);result.push(...batch.data);
-    if(page>=batch.meta.totalPages) {
-      if(result.length!==batch.meta.total) throw ApiError.badRequest("Report records changed; refresh and try again");
-      return result;
-    }
-  }
-  throw ApiError.badRequest("Report too large; narrow the filters");
-}
 export const taxDeclarations = asyncHandler(async (req: Request, res: Response) => {
   const query=taxReportQuerySchema.parse(req.query);
-  const records=await collectRows(page=>taxService.list({page,pageSize:100,year:query.year,kind:query.kind}));
+  const records=await taxService.reportRows({year:query.year,kind:query.kind});
   const rows=records.filter(r=>(!query.ownerName||r.ownerName===query.ownerName)&&(!query.quarter||r.kind==="ZAKAT"||r.quarter===query.quarter)).map(r=>({
     owner:r.ownerName||"—",establishments:r.selectedBranches.map(b=>b.nameSnapshot).join("، ")||r.branch?.name||L("عام للشركة","Company-wide"),
     type:r.kind==="VAT"?L("القيمة المضافة","VAT"):L("الزكاة","Zakat"),period:r.kind==="VAT"?`${r.year} / Q${r.quarter}`:`${r.year} / ${L("سنوي","Annual")}`,
@@ -210,7 +199,7 @@ export const taxDeclarations = asyncHandler(async (req: Request, res: Response) 
 });
 export const violationReport = asyncHandler(async (req: Request,res: Response)=>{
   const query=violationReportQuerySchema.parse(req.query);
-  const records=await collectRows(page=>violationService.list({page,pageSize:100,state:query.state,sortDir:"desc",dateFrom:null,dateTo:null}));
+  const records=await violationService.reportRows({state:query.state});
   const labels:Record<string,[string,string]>={NEW:["جديدة","New"],OBJECTION:["تم الاعتراض","Objected"],ACCEPTED:["تم قبول الاعتراض","Objection accepted"],REJECTED:["تم رفض الاعتراض","Objection rejected"],PAID:["تم السداد","Paid"],OPEN:["مفتوحة","Open"],APPLIED:["تم التنفيذ","Applied"],OVERDUE:["متأخرة","Overdue"]};
   const categories:Record<string,[string,string]>={all:["الكل","All"],overdue:["متأخرة","Overdue"],open:["مفتوحة","Open"],objection:["تم الاعتراض","Objected"],done:["منتهية","Completed"]};
   const rows=records.map(r=>({number:r.number||"—",authority:r.authorityLabel||r.authorityName||"—",entity:r.branch?.name||r.employee?.fullNameAr||"—",reason:r.reason,deadline:r.payDeadline||"—",amount:r.amount,state:labels[r.state]?L(...labels[r.state]):r.state}));

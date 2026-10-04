@@ -288,3 +288,9 @@ export async function relatedOptions(employeeId: string | undefined, branchId: s
   }
   return out;
 }
+
+export async function reportRows(query: Partial<ListViolationsQuery>) {
+  const rows=await prisma.violation.findMany({where:whereOf(query),include,orderBy:[{date:"desc"}],take:100001});
+  if(rows.length>100000) throw ApiError.badRequest("Report too large; narrow the filters");
+  return rows.map(shape);
+}

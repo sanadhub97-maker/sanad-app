@@ -391,3 +391,9 @@ export async function getStatsAndAlerts(yearParam?: number, branchId?: string) {
     recentReturns: shaped.slice(0, 10),
   };
 }
+
+export async function reportRows(query: {year: number; kind?: TaxReturnKind}) {
+  const rows=await prisma.taxReturn.findMany({where:{deletedAt:null,year:query.year,...(query.kind?{kind:query.kind}:{})},include,orderBy:[{year:"desc"},{quarter:"desc"},{dueDate:"asc"}],take:100001});
+  if(rows.length>100000) throw ApiError.badRequest("Report too large; narrow the filters");
+  return rows.map(shapeReturn);
+}
