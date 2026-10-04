@@ -1,4 +1,5 @@
 import { SIGNATURE_THEMES } from "@/services/printThemesSignature";
+import { shafaq } from "@/services/printThemeShafaq";
 
 // Print designs for every server-rendered PDF (reports, payment voucher,
 // employee profile). "classic" is the original design; the others are the
@@ -16,6 +17,7 @@ export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "bur
   "pearl", "passport", "airmail", "bauhaus", "palm", "circuit", "topo", "marble", "ticket", "calligraphy",
   "studio_executive", "studio_heritage", "studio_editorial", "studio_minimal", "studio_blueprint", "studio_royal", "studio_ledger", "studio_atelier", "studio_modern", "studio_archive",
   "munassa", "janib", "bitaqa", "qutri", "fatih",
+  "shafaq",
 ] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
 export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
@@ -50,6 +52,10 @@ export interface PrintTheme {
   headerTemplate: string;
   /** A letterhead repeated at the top of every page (a Puppeteer header built from the document), with its height; replaces headerTemplate and margin.top. */
   runningHeader?: (ctx: ShellContext) => { html: string; height: string };
+  /** CSS custom properties (a ":root{...}" rule) from the company's brand colour; also given to the page header and footer. */
+  palette?: (brandColor?: string | null) => string;
+  /** Report status tally as a dashboard (ring, bars, share valid) instead of four number tiles. */
+  dashboard?: boolean;
   footerTemplate: (label: string) => string;
 }
 
@@ -2144,6 +2150,7 @@ const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, exec
   studio_modern: studioTheme("studio_modern", "#145d69", "#c9914b", "modern"),
   studio_archive: studioTheme("studio_archive", "#303d53", "#8994a7", "archive"),
   ...SIGNATURE_THEMES,
+  shafaq,
 };
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {

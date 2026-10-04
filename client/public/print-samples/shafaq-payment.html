@@ -1,0 +1,561 @@
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8" />
+<title>سند صرف مالي رسمي معتمد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta name="print-theme" content="shafaq">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4 portrait; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+    color: #1e293b;
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+    font-size: 9pt;
+    line-height: 1.45;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 🌟 Royal Accent Bar */
+  .royal-top-stripe {
+    height: 3px;
+    background: linear-gradient(90deg, #1e3a8a 0%, #c59a45 50%, #1e3a8a 100%);
+    width: 100%;
+    margin-bottom: 12px;
+    border-radius: 2px;
+  }
+
+  /* 🏛️ Header Top: Company Branding (Right) vs Document Meta (Left) */
+  .doc-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .company-brand-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .company-logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+  }
+  .company-names h2 {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #0b1b3d;
+    margin: 0;
+    line-height: 1.3;
+  }
+  .company-names p {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: #64748b;
+    margin: 2px 0 0 0;
+  }
+
+  .doc-meta-card {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 6px 12px;
+    text-align: left;
+    font-size: 8pt;
+    color: #475569;
+    line-height: 1.5;
+  }
+  .doc-meta-card .meta-item strong {
+    color: #0f172a;
+    font-family: 'Cairo', sans-serif;
+  }
+  .doc-meta-card .meta-code {
+    font-family: monospace;
+    font-weight: 700;
+    color: #0284c7;
+  }
+
+  /* 🏷️ Dedicated Document Title Banner */
+  .doc-title-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+  }
+  .title-content h1 {
+    font-size: 13.5pt;
+    font-weight: 900;
+    color: #0b1b3d;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .title-content .title-subtitle-en {
+    font-size: 8pt;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 1px;
+  }
+  .title-badge {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+  }
+
+  /* 📦 Section Styling */
+  .section-card {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    font-size: 9pt;
+    font-weight: 800;
+    color: #0b1b3d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* 📊 Executive Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+  }
+  th, td {
+    padding: 5px 8px;
+    font-size: 8.5pt;
+    text-align: right;
+    border-bottom: 1px solid #e2e8f0;
+    border-inline: 1px solid #f1f5f9;
+  }
+  th {
+    background: #1e293b;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 8pt;
+    text-align: center;
+    border-color: #334155;
+    vertical-align: middle;
+  }
+  th .th-sub {
+    font-size: 6.5pt;
+    font-weight: 500;
+    color: #94a3b8;
+    margin-top: 1px;
+    letter-spacing: 0.2px;
+  }
+  tbody tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  /* Report tables on A4 portrait: keep rows intact across pages, repeat the
+     header on every page, and tighten wide tables so every column fits. */
+  .report-table thead { display: table-header-group; }
+  .report-table tr { page-break-inside: avoid; break-inside: avoid; }
+  .report-table td { overflow-wrap: anywhere; vertical-align: middle; }
+  .report-table .nowrap { white-space: nowrap; }
+  .report-table.compact th, .report-table.compact td { padding: 4px 5px; font-size: 7.5pt; }
+  .report-table.compact th .th-sub { font-size: 6pt; }
+  .report-table.dense th, .report-table.dense td { padding: 3px 3px; font-size: 6.6pt; line-height: 1.3; }
+  .report-table.dense th .th-sub { font-size: 5.3pt; }
+  .report-table.dense .badge-status, .report-table.compact .badge-status { padding: 1px 4px; font-size: 6.2pt; }
+
+  /* 🏷️ Status Badges */
+  .badge-status {
+    display: inline-block;
+    padding: 1.5px 7px;
+    border-radius: 9999px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .status-VALID, .status-ACTIVE {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+  }
+  .status-EXPIRING_SOON, .status-ON_LEAVE {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+  }
+  .status-EXPIRED, .status-TERMINATED, .status-INACTIVE {
+    background: #ffe4e6;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+  }
+
+  /* 🔍 Empty State */
+  .empty-state-card {
+    padding: 24px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    margin: 8px 0;
+  }
+  .empty-state-title {
+    font-size: 10pt;
+    font-weight: 800;
+    color: #334155;
+    margin-bottom: 3px;
+  }
+  .empty-state-desc {
+    font-size: 8pt;
+    color: #64748b;
+  }
+
+  /* 🏁 Summary & Totals Bar */
+  .report-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 8pt;
+    color: #475569;
+    margin-top: 8px;
+  }
+  .report-summary-bar .summary-kpi {
+    font-weight: 800;
+    color: #0b1b3d;
+    font-size: 8.5pt;
+  }
+
+  /* ✍️ Official Signatures & Seal Section */
+  .signature-matrix {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 14px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .sig-card {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  .sig-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 5px 10px;
+    text-align: center;
+  }
+  .sig-card-header .sig-title-ar {
+    font-size: 8.5pt;
+    font-weight: 800;
+    color: #0b1b3d;
+  }
+  .sig-card-header .sig-title-en {
+    font-size: 6.5pt;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .sig-card-body {
+    padding: 10px 12px;
+    font-size: 7.5pt;
+    color: #475569;
+  }
+  .sig-row {
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .sig-dots {
+    border-bottom: 1px dotted #94a3b8;
+    flex: 1;
+    height: 10px;
+  }
+
+  /* ⭕ Official Circular Seal */
+  .sig-seal-box {
+    width: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .official-seal-circle {
+    width: 82px;
+    height: 82px;
+    border: 2px dashed #94a3b8;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4px;
+  }
+  .seal-stars {
+    font-size: 6.5pt;
+    color: #c59a45;
+    letter-spacing: 2px;
+  }
+  .seal-text-ar {
+    font-size: 7pt;
+    font-weight: 800;
+    color: #0b1b3d;
+    line-height: 1.1;
+    margin: 2px 0;
+  }
+  .seal-text-en {
+    font-size: 5.5pt;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.5px;
+  }
+  /* Shared pieces the templates use */
+  .kpi-total-card { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #0b1b3d; color: #fff; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+  .amount-label { font-size: 10pt; font-weight: 800; }
+  .amount-sub { font-size: 8pt; color: #cbd5e1; margin-top: 2px; }
+  .amount-val { font-size: 20pt; font-weight: 900; white-space: nowrap; }
+  .ref-code { font-family: monospace; font-size: 9pt; color: #2563eb; }
+  .total-th { background: #1e3a8a !important; }
+  .total-cell { font-weight: 900; color: #1e3a8a; background: #f0fdf4; }
+  /* Signature box rows: one grid for name, signature and date — the same
+     height, a fixed label column, and the value centred on its line. */
+  .sig-card-body .sig-row { display: grid; grid-template-columns: 13mm 1fr; align-items: stretch; column-gap: 2mm; height: 11mm; margin: 0 0 1.5mm; }
+  .sig-card-body .sig-row:last-child { margin-bottom: 0; }
+  .sig-label { white-space: nowrap; align-self: center; }
+  .sig-card-body .sig-dots,
+  .sig-name,
+  .sig-date { height: auto; display: flex; align-items: center; justify-content: center; border-bottom: 1px dotted #94a3b8; }
+  .sig-name img { max-height: 9.5mm; max-width: 100%; object-fit: contain; }
+  .sig-date { font-family: 'IBM Plex Mono', monospace; font-size: 9pt; font-weight: 700; letter-spacing: .06em; }
+  .stamp-img { width: 30mm; height: 30mm; object-fit: contain; }
+  .signature-matrix.seal-only { justify-content: center; }
+  .report-stats { display: none; }
+  .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
+:root{--sg-deep:#00473f;--sg-mid:#00a389;--sg-accent:#c4d600;--sg-ink:#10302b;--sg-mute:#5f7672;--sg-line:#e4ece9;--sg-soft:#eef6f3;--sg-soft2:#cfeae2;--sg-on-sub:#cfe6e0;--sg-on-border:#4f8a80;--sg-faint:#9db1ad;--sg-line2:#cfdcd8;}
+
+  body.lux { background: transparent; font-variant-numeric: tabular-nums; }
+  .lux .ltr { direction: ltr; unicode-bidi: isolate; }
+  .lux td[style*="monospace"], .lux tr[style*="monospace"], .lux tr[style*="monospace"] td { font-family: inherit !important; }
+  .lux table { margin-bottom: 0; border-radius: 0; }
+  .lux th, .lux td { border-inline: none; }
+  .lux tbody tr:nth-child(even) td { background: none; }
+  .lux .section-card { border: none; border-radius: 0; background: transparent; overflow: visible; }
+  .lux .section-body { padding: 0 !important; }
+  .lux .section-header { background: none; border: none; }
+  .lux .badge-status { border: none !important; background: none !important; border-radius: 0; padding: 0; }
+  .lux .total-th { background: inherit !important; }
+  .lux .amount-val span { font-family: inherit; }
+  .lux .sig-card { border: none; border-radius: 0; background: transparent; }
+  .lux .sig-card-header { background: none; border: none; }
+  .lux .report-stats .rs i { display: block; }
+
+  html { background: #ffffff; }
+  body.lux { font-family: 'Cairo', sans-serif; color: #172033; padding-inline: 14mm; font-size: 8.8pt; line-height: 1.55; }
+  .lux .section-card { margin-bottom: 7mm; }
+  .lux .section-header { justify-content: center; text-align: center; padding: 0 0 3mm; font-size: 12pt; font-weight: 800; }
+  .lux .section-header > span:first-child { background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lux .section-header > span:not(:first-child) { display: none; }
+  .lux table { border-collapse: separate; border-spacing: 0; }
+  .lux th, .lux td { border: none !important; padding: 2.2mm 2.4mm; }
+  .lux thead th { background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%); background-attachment: fixed; color: #fff; font-weight: 700; font-size: 7.8pt; text-align: start; }
+  .lux thead th:first-child { border-radius: 0 3mm 3mm 0; } .lux thead th:last-child { border-radius: 3mm 0 0 3mm; }
+  .lux th .th-sub { color: #fff; opacity: .7; }
+  .lux tbody tr:nth-child(even) td { background: var(--sg-soft); }
+  .lux tbody tr > :first-child { border-radius: 0 2mm 2mm 0; } .lux tbody tr > :last-child { border-radius: 2mm 0 0 2mm; }
+  .lux td { font-size: 8.8pt; }
+  .lux .report-table tbody td:first-child { color: var(--sg-mid) !important; font-weight: 800; }
+  .lux tbody th { background: var(--sg-soft); color: var(--sg-deep); font-weight: 700; font-size: 8pt; text-align: start; }
+  .lux .badge-status { border-radius: 99px !important; padding: .4mm 2.8mm !important; font-weight: 700; font-size: 7.6pt; }
+  .lux .badge-status:is(.status-EXPIRED, .status-TERMINATED, .status-INACTIVE) { background: #ffe4e4 !important; color: #c8282f !important; } .lux .badge-status:is(.status-EXPIRING_SOON, .status-ON_LEAVE) { background: #fff0cf !important; color: #8f5c00 !important; } .lux .badge-status:is(.status-VALID, .status-ACTIVE) { background: #d9f5ea !important; color: #0f7a55 !important; }
+
+  .lux .report-stats { display: grid; grid-template-columns: 32mm minmax(0, 1fr) 38mm; gap: 6mm; align-items: center; border: .7mm solid transparent; border-radius: 6mm; background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%) border-box; padding: 4.5mm 5.5mm; margin-bottom: 8mm; }
+  .lux .rs-chart { position: relative; width: 30mm; height: 30mm; }
+  .lux .rs-chart svg { width: 100%; height: 100%; }
+  .lux .rs-track { stroke: var(--sg-soft); }
+  .lux .seg-red { stroke: #e5484d; } .lux .seg-amber { stroke: #f0a420; } .lux .seg-green { stroke: #16a37b; }
+  .lux .rs-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .lux .rs-c b { font-size: 17pt; font-weight: 900; color: var(--sg-deep); line-height: 1; } .lux .rs-c span { font-size: 7pt; color: #66708a; }
+  .lux .rs-list { display: grid; gap: 2.4mm; }
+  .lux .rs { display: grid; grid-template-columns: minmax(0, 1fr) auto 10mm; grid-template-areas: "l n p" "bar bar bar"; align-items: baseline; column-gap: 2mm; row-gap: 1mm; }
+  .lux .rs-l { grid-area: l; font-size: 8.2pt; font-weight: 700; }
+  .lux .rs b { grid-area: n; font-size: 11pt; font-weight: 900; }
+  .lux .rs em { grid-area: p; font-style: normal; font-size: 7.6pt; color: #66708a; text-align: left; }
+  .lux .rs i { grid-area: bar; height: 2mm; border-radius: 99px; background: var(--sg-soft); overflow: hidden; }
+  .lux .rs i u { display: block; height: 100%; border-radius: 99px; background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%); }
+  .lux .rs-red b { color: #c8282f; } .lux .rs-amber b { color: #8f5c00; } .lux .rs-green b { color: #0f7a55; }
+  .lux .rs-score { align-self: stretch; border-radius: 4.5mm; background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .lux .rs-score b { font-size: 24pt; font-weight: 900; line-height: 1; } .lux .rs-score span { font-size: 7.6pt; margin-top: 1mm; }
+
+  .lux .kpi-total-card { background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%); color: #fff; border-radius: 6mm; padding: 6mm 8mm; margin-bottom: 7mm; text-align: center; flex-direction: column; justify-content: center; gap: 1mm; }
+  .lux .amount-label { font-size: 10pt; font-weight: 700; opacity: .9; }
+  .lux .amount-val { font-size: 28pt; font-weight: 900; color: #fff; }
+  .lux .total-th { background: linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%) !important; background-attachment: fixed !important; color: #fff !important; }
+  .lux .total-cell { color: var(--sg-deep); font-weight: 900; background: var(--sg-soft) !important; }
+  .lux .desc-box { background: var(--sg-soft); border: none; border-radius: 4mm; text-align: center; }
+  .lux .report-summary-bar { background: var(--sg-soft); border: none; border-radius: 99px; color: #66708a; padding: 2mm 5mm; }
+  .lux .report-summary-bar .summary-kpi { color: var(--sg-deep); }
+  .lux .sig-card { background: #fff; border-radius: 5mm; border: .5mm solid transparent; background: linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%) border-box; }
+  .lux .sig-card-header { padding: 2.6mm 2mm 0; }
+  .lux .sig-title-ar { color: var(--sg-deep); font-size: 10pt; font-weight: 800; }
+  .lux .sig-card-body { padding: 2.5mm 4mm 3.5mm; }
+  .lux .official-seal-circle { border: .5mm solid var(--sg-mid); }
+  .lux .seal-text-ar { color: var(--sg-deep); } .lux .seal-stars { color: var(--sg-accent); }
+
+</style>
+<style>html{background:white}body{min-height:297mm;padding-top:54mm;padding-bottom:15mm}@media print{@page{size:A4;margin:0}}</style></head>
+<body class="lux">
+<div style="position:absolute;top:0;left:0;right:0;height:54mm"><div dir="rtl" style="position:relative;width:100%;height:54mm;margin:0;padding:0;background:transparent;font-family:'Cairo','IBM Plex Sans Arabic',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;"><div style="position:relative;height:48mm;"><div style="position:absolute;inset:0;background:linear-gradient(120deg, var(--sg-deep) 0%, var(--sg-mid) 55%, var(--sg-accent) 100%);border-radius:0 0 50% 50% / 0 0 16mm 16mm;overflow:hidden;text-align:center;color:#fff;">
+         <div style="position:absolute;left:-20mm;top:-30mm;width:70mm;height:70mm;border-radius:50%;border:.4mm solid rgba(255,255,255,.25);"></div>
+         <div style="position:absolute;right:-14mm;top:8mm;width:46mm;height:46mm;border-radius:50%;border:.4mm solid rgba(255,255,255,.2);"></div>
+         <div style="display:flex;justify-content:center;margin-top:6mm;"><div style="width:10mm;height:10mm;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13pt;background:#fff;border-radius:50%;padding:1.4mm;box-sizing:content-box;color:var(--sg-deep);">ش</div></div>
+         <div style="font-size:8.4pt;opacity:.9;margin-top:1.6mm;">شركة سند النموذجية</div>
+         <div style="font-size:17pt;font-weight:800;line-height:1.2;margin-top:.6mm;">سند صرف مالي رسمي معتمد</div>
+         <div style="font-size:7.4pt;opacity:.92;margin-top:2mm;">سند صرف معتمد &nbsp;•&nbsp; تاريخ الإصدار 04/10/2026 &nbsp;•&nbsp; الوقت 17:13 &nbsp;•&nbsp; المرجع PAY-DEMO</div>
+       </div></div></div></div><template id="sanad-print-vars">:root{--sg-deep:#00473f;--sg-mid:#00a389;--sg-accent:#c4d600;--sg-ink:#10302b;--sg-mute:#5f7672;--sg-line:#e4ece9;--sg-soft:#eef6f3;--sg-soft2:#cfeae2;--sg-on-sub:#cfe6e0;--sg-on-border:#4f8a80;--sg-faint:#9db1ad;--sg-line2:#cfdcd8;}</template>
+
+
+    <!-- 💰 Total Amount Highlight Banner -->
+    <div class="kpi-total-card">
+      <div>
+        <div class="amount-label">المبلغ الإجمالي المصروف (شامل ضريبة القيمة المضافة)</div>
+      </div>
+      <div class="amount-val">
+        12800.00 <span style="font-size:11pt; font-weight:700;">ر.س</span>
+      </div>
+    </div>
+
+    <!-- 📋 Section 1: Voucher & Transaction Details -->
+    <div class="section-card">
+      <div class="section-header">
+        <span>بيانات قيد الصرف والمؤسسة</span>
+        <span class="ref-code">#PAY-DEMO</span>
+      </div>
+      <div class="section-body">
+        <table>
+          <tr>
+            <th style="width:20%;">رقم سند الصرف</th>
+            <td style="width:30%; font-family:monospace; font-weight:700;">PAY-DEMO</td>
+            <th style="width:20%;">تاريخ السند</th>
+            <td style="width:30%; font-weight:700;">02/10/2026</td>
+          </tr>
+          <tr>
+            <th>بند الصرف</th>
+            <td style="font-weight:700;">أخرى</td>
+            <th>طريقة الدفع</th>
+            <td style="font-weight:700;">تحويل بنكي</td>
+          </tr>
+          <tr>
+            <th>المؤسسة / الفرع</th>
+            <td>الرياض</td>
+            <th>القائم بالصرف</th>
+            <td>الإدارة</td>
+          </tr>
+          <tr>
+            <th>الموظف المستفيد</th>
+            <td>—</td>
+            <th>المورد / الجهة المستفيدة</th>
+            <td style="font-weight:700;">شركة التأمين النموذجية</td>
+          </tr>
+          <tr>
+            <th>رقم المرجع / الفاتورة</th>
+            <td colspan="3" style="font-family:monospace;">DEMO-142</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 📝 Section 2: Description & Breakdown -->
+    <div class="section-card">
+      <div class="section-header">
+        <span>البيان والتفاصيل المالية</span>
+      </div>
+      <div class="section-body">
+        <p class="desc-box">
+          <strong>البيان: </strong>تأمين طبي — نموذج للمعاينة
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:center;">المبلغ الأساسي (بدون ضريبة)</th>
+              <th style="text-align:center;">ضريبة القيمة المضافة</th>
+              <th class="total-th" style="text-align:center;">المبلغ الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="text-align:center; font-family:'Cairo',monospace; font-size:11pt; font-weight:700;">
+              <td style="text-align:center;">12800.00 ر.س</td>
+              <td style="text-align:center;">0.00 ر.س</td>
+              <td class="total-cell" style="text-align:center;">12800.00 ر.س</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="signature-matrix">
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">المستلم / المفوض بالصرف</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span class="sig-label">الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">04/10/2026</span></div>
+        </div>
+      </div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">المحاسب المالي</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span class="sig-label">الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">04/10/2026</span></div>
+        </div>
+      </div><div class="sig-seal-box">
+        <div class="official-seal-circle">
+          <div class="seal-stars">★★★★★</div>
+          <div class="seal-text-ar">الإدارة المالية<br/>معتمد للصرف</div>
+        </div>
+      </div>
+      <div class="sig-card">
+        <div class="sig-card-header">
+          <div class="sig-title-ar">الاعتماد المالي العام</div>
+        </div>
+        <div class="sig-card-body">
+          <div class="sig-row"><span class="sig-label">الاسم:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التوقيع:</span><span class="sig-dots"></span></div>
+          <div class="sig-row"><span class="sig-label">التاريخ:</span><span class="sig-date">04/10/2026</span></div>
+        </div>
+      </div></div>
+
+</body>
+</html>

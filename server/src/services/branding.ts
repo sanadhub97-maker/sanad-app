@@ -39,6 +39,61 @@ async function fileDataUrl(fileId: string | null | undefined) {
   }
 }
 
+// The logo's brand colour, worked out once per logo file.
+const brandColorCache = new Map<string, string | null>();
+
+/**
+ * The logo's most characteristic colour: of its clearly coloured pixels
+ * (white, black and greys left out), the hue that covers the most, weighted
+ * by how vivid it is — averaged into one colour. Null for a logo with no real
+ * colour, so designs keep their own.
+ */
+export async function logoBrandColor(buffer: Buffer): Promise<string | null> {
+  const { data, info } = await sharp(buffer).resize(64, 64, { fit: "inside" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const buckets = Array.from({ length: 24 }, () => ({ w: 0, r: 0, g: 0, b: 0 }));
+  let pixels = 0;
+  for (let i = 0; i < data.length; i += info.channels) {
+    const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+    if (a < 128) continue;
+    pixels++;
+    const max = Math.max(r, g, b) / 255;
+    const min = Math.min(r, g, b) / 255;
+    const l = (max + min) / 2;
+    const d = max - min;
+    const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+    if (s < 0.28 || l < 0.12 || l > 0.9) continue;
+    let h = 0;
+    const [rf, gf, bf] = [r / 255, g / 255, b / 255];
+    if (max === rf) h = ((gf - bf) / d) % 6;
+    else if (max === gf) h = (bf - rf) / d + 2;
+    else h = (rf - gf) / d + 4;
+    h = (h * 60 + 360) % 360;
+    const w = s * (1 - Math.abs(l - 0.5));
+    const k = buckets[Math.floor(h / 15) % 24];
+    k.w += w;
+    k.r += r * w;
+    k.g += g * w;
+    k.b += b * w;
+  }
+  const best = buckets.reduce((x, y) => (y.w > x.w ? y : x));
+  // Too little colour to call it the brand's (a stray pixel on a black logo).
+  if (!pixels || best.w < pixels * 0.02) return null;
+  const hex = (v: number) => Math.round(v / best.w).toString(16).padStart(2, "0");
+  return `#${hex(best.r)}${hex(best.g)}${hex(best.b)}`;
+}
+
+async function brandColorOf(fileId: string | null | undefined, buffer: Buffer | undefined) {
+  if (!fileId || !buffer) return null;
+  if (brandColorCache.has(fileId)) return brandColorCache.get(fileId)!;
+  const color = await logoBrandColor(buffer).catch((err) => {
+    logger.warn({ err }, "Could not read the logo's colour");
+    return null;
+  });
+  if (brandColorCache.size >= 32) brandColorCache.clear();
+  brandColorCache.set(fileId, color);
+  return color;
+}
+
 /** Company identity + logo (as a data: URL) for embedding into PDF/print
  * templates (§28/§33/§54) — logo/stamp/signature always come from whatever
  * the admin uploaded in Settings → Company, never hard-coded. */
@@ -46,10 +101,11 @@ export async function getBrandingContext() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   const logo = await readPrintLogo(company);
   const logoDataUrl = logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null;
-  const [printTheme, signatures, stampDataUrl] = await Promise.all([
+  const [printTheme, signatures, stampDataUrl, brandColor] = await Promise.all([
     getPrintThemeSetting(),
     getPrintSignatures(),
     fileDataUrl(company?.stampFileId),
+    brandColorOf(company?.printLogoFileId || company?.logoFileId, logo?.buffer),
   ]);
   // Name images of every signature box, by file id.
   const nameIds = [...new Set([signatures.report, signatures.voucher, signatures.profile].flatMap((d) => d.boxes.map((b) => b.nameFileId)).filter(Boolean))] as string[];
@@ -60,7 +116,7 @@ export async function getBrandingContext() {
       if (url) nameImages[id] = url;
     })
   );
-  return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages };
+  return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages, brandColor };
 }
 
 // The WhatsApp alert cards use the logo twice: whole, and — for small round

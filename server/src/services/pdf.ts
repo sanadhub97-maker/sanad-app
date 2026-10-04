@@ -119,6 +119,9 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // The letterhead some designs repeat on every page (see pdfDocumentShell).
     const rh = /<template id="sanad-running-header" data-height="([^"]+)">([\s\S]*?)<\/template>/.exec(html);
     const running = rh ? { height: rh[1], html: rh[2] } : null;
+    // The design's colour variables, which the header and footer documents need too.
+    const pv = /<template id="sanad-print-vars">([\s\S]*?)<\/template>/.exec(html);
+    const vars = pv ? `<style>${pv[1]}</style>` : "";
     const footerLabel = options.footerLabel ?? (english ? "Official administrative document — valid for archiving and audit" : "وثيقة إدارية رسمية معتمدة — صالحة للأرشفة والتدقيق");
     // A4 at 96dpi: fixed-position page decoration is laid out against the
     // viewport, so it must match the paper or the first page comes out wrong.
@@ -143,8 +146,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // extra font wait otherwise turns a slow font provider into a failed PDF.
       waitForFonts: false,
       displayHeaderFooter: true,
-      headerTemplate: running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate,
-      footerTemplate: english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel),
+      headerTemplate: vars + (running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate),
+      footerTemplate: vars + (english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel)),
       // No side margins: designs draw full-bleed side columns and the body's
       // own padding keeps the content in.
       margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
@@ -218,6 +221,8 @@ export function pdfDocumentShell(opts: {
   classification?: string;
   /** Print design id from Settings → Print (see services/printThemes). */
   theme?: string | null;
+  /** The logo's colour, for designs that take their palette from it. */
+  brandColor?: string | null;
   highlight?: ShellContext["highlight"];
 }): string {
   // The document is in the interface language only: the title and company name
@@ -613,6 +618,7 @@ export function pdfDocumentShell(opts: {
   .signature-matrix.seal-only { justify-content: center; }
   .report-stats { display: none; }
   .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
+${theme.palette ? theme.palette(opts.brandColor) : ""}
 ${theme.css}
 </style>
 </head>
@@ -621,7 +627,9 @@ ${(() => {
   const top = isClassic ? classicHeader() : themeDecor(theme, ctx) + theme.letterhead(ctx);
   // A design whose letterhead repeats on every page hands it to renderOnce here.
   const running = theme.runningHeader?.(ctx);
-  const head = running ? `<template id="sanad-running-header" data-height="${running.height}">${running.html}</template>` : "";
+  const head =
+    (running ? `<template id="sanad-running-header" data-height="${running.height}">${running.html}</template>` : "") +
+    (theme.palette ? `<template id="sanad-print-vars">${theme.palette(opts.brandColor)}</template>` : "");
   return en ? englishLabels(top + head) : top + head;
 })()}
 

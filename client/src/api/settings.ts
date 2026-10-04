@@ -104,7 +104,8 @@ export type PrintThemeId =
   | "ledger" | "blueprint" | "mono" | "ribbon" | "mosaic" | "ocean" | "sadu" | "glass" | "gazette" | "prism"
   | "pearl" | "passport" | "airmail" | "bauhaus" | "palm" | "circuit" | "topo" | "marble" | "ticket" | "calligraphy"
   | "studio_executive" | "studio_heritage" | "studio_editorial" | "studio_minimal" | "studio_blueprint" | "studio_royal" | "studio_ledger" | "studio_atelier" | "studio_modern" | "studio_archive"
-  | "munassa" | "janib" | "bitaqa" | "qutri" | "fatih";
+  | "munassa" | "janib" | "bitaqa" | "qutri" | "fatih"
+  | "shafaq";
 
 export interface WhatsappMessageItem {
   id: string;

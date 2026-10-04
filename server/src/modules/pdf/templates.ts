@@ -5,6 +5,7 @@ import { daysRemainingLabel } from "@/services/expiration";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { DOCUMENT_KINDS } from "@/services/expiringItems";
 import { L, isEn } from "@/services/lang";
+import { getPrintTheme } from "@/services/printThemes";
 
 /** A value with an optional English version, for the current language. */
 const pick = (ar: string | null | undefined, en: string | null | undefined) => escapeHtml((isEn() ? en || ar : ar || en) || "—");
@@ -16,6 +17,7 @@ type Branding = {
   signatures?: PrintSignatures;
   stampDataUrl?: string | null;
   nameImages?: Record<string, string>;
+  brandColor?: string | null;
 };
 
 const escHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -244,6 +246,7 @@ export function employeeProfilePdf(
     referenceNumber: employee.employeeNumber,
     classification: "ملف موظف رسمي | Official HR Dossier",
     theme: branding.printTheme,
+    brandColor: branding.brandColor,
     bodyHtml: body,
   });
 }
@@ -367,6 +370,7 @@ export function paymentReceiptPdf(
     referenceNumber: payment.paymentNumber,
     classification: "سند صرف معتمد | Payment Voucher",
     theme: branding.printTheme,
+    brandColor: branding.brandColor,
     highlight: { value: totalNum, label: L("ريال سعودي", "Saudi riyals") },
     bodyHtml: body,
   });
@@ -405,24 +409,47 @@ export function tableReportPdf(
                   </tr>`
   );
 
-  // How many rows are expired, ending soon and valid. Hidden in most designs;
-  // some show it as tiles, readouts or a distribution bar (--n is the count).
+  // How many rows are expired, ending soon and valid. Hidden unless the design
+  // shows it: as four number tiles, or (dashboard designs) a ring of the three
+  // shares, a bar per status and the share still valid.
   const tally = { red: 0, amber: 0, green: 0 };
   for (const r of rowHtml) {
     if (/status-(EXPIRED|TERMINATED|INACTIVE)\b/.test(r)) tally.red++;
     else if (/status-(EXPIRING_SOON|ON_LEAVE)\b/.test(r)) tally.amber++;
     else if (/status-(VALID|ACTIVE)\b/.test(r)) tally.green++;
   }
-  const stat = (cls: string, n: number, label: string) => `<div class="rs ${cls}" style="--n:${n}"><b>${n}</b><span>${label}</span></div>`;
-  const statsHtml =
-    tally.red + tally.amber + tally.green > 0
+  const known = tally.red + tally.amber + tally.green;
+  const share = (n: number) => (known ? Math.round((n / known) * 100) : 0);
+  // The ring: a circle of circumference 100, so each share is its own length.
+  let offset = 25;
+  const seg = (cls: string, n: number) => {
+    const len = known ? (n / known) * 100 : 0;
+    const out = len > 0 ? `<circle class="${cls}" cx="21" cy="21" r="15.9155" fill="none" stroke-width="5.2" stroke-dasharray="${len.toFixed(2)} ${(100 - len).toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>` : "";
+    offset -= len;
+    return out;
+  };
+  const ring = `<svg viewBox="0 0 42 42" aria-hidden="true"><circle class="rs-track" cx="21" cy="21" r="15.9155" fill="none" stroke-width="5.2"/>${seg("seg-red", tally.red)}${seg("seg-amber", tally.amber)}${seg("seg-green", tally.green)}</svg>`;
+  const row = (cls: string, n: number, label: string) =>
+    `<div class="rs ${cls}"><span class="rs-l">${label}</span><b>${n}</b><em>${share(n)}%</em><i><u style="width:${share(n)}%"></u></i></div>`;
+  const tile = (cls: string, n: number, label: string) => `<div class="rs ${cls}" style="--n:${n}"><b>${n}</b><span>${label}</span></div>`;
+  const statsHtml = !known
+    ? ""
+    : !getPrintTheme(branding.printTheme).dashboard
       ? `<div class="report-stats">
-      ${stat("rs-red", tally.red, L("منتهية", "Expired"))}
-      ${stat("rs-amber", tally.amber, L("قريبة من الانتهاء", "Ending soon"))}
-      ${stat("rs-green", tally.green, L("سارية", "Valid"))}
-      ${stat("rs-total", rows.length, L("إجمالي السجلات", "Total records"))}
+      ${tile("rs-red", tally.red, L("منتهية", "Expired"))}
+      ${tile("rs-amber", tally.amber, L("قريبة من الانتهاء", "Ending soon"))}
+      ${tile("rs-green", tally.green, L("سارية", "Valid"))}
+      ${tile("rs-total", rows.length, L("إجمالي السجلات", "Total records"))}
     </div>`
-      : "";
+      : `<div class="report-stats">
+      <div class="rs-chart">${ring}<div class="rs-c"><b>${known}</b><span>${L("وثيقة", "documents")}</span></div></div>
+      <div class="rs-list">
+        ${row("rs-red", tally.red, L("منتهية", "Expired"))}
+        ${row("rs-amber", tally.amber, L("قريبة من الانتهاء", "Ending soon"))}
+        ${row("rs-green", tally.green, L("سارية", "Valid"))}
+      </div>
+      <div class="rs-score"><b>${share(tally.green)}%</b><span>${L("نسبة الوثائق السارية", "Share still valid")}</span></div>
+    </div>`;
 
   const contentHtml = rows.length > 0
     ? `
@@ -481,6 +508,7 @@ export function tableReportPdf(
     logoDataUrl: branding.logoDataUrl,
     classification: opts?.classification || "تقرير تنفيذي رسمي معتمد | Official Executive Report",
     theme: branding.printTheme,
+    brandColor: branding.brandColor,
     highlight: { value: String(rows.length).padStart(2, "0"), label: L("سجل في التقرير", "records") },
     bodyHtml: body,
   });

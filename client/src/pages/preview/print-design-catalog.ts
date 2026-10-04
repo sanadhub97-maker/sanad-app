@@ -23,6 +23,8 @@ interface Design {
 
 // Keep in sync with server/src/services/printThemes.ts.
 export const DESIGNS: Design[] = [
+  // Colours from the company logo; the letterhead repeats on every page.
+  { id: "shafaq", nameAr: "الشفق", nameEn: "Dawn", descAr: "تدرّج من ألوان شعار الشركة، وترويسة منحنية فوق كل صفحة، ولوحة رسوم بنسب الوثائق.", descEn: "A gradient from the company logo's colours, a curved letterhead on every page and a status dashboard.", paper: "#ffffff", accent: "#167ea3", metal: "#00b0ee", layout: "band", ink: 3, fresh: true },
   // Modern Saudi: deep green, teal and lime; the letterhead repeats on every page.
   { id: "munassa", nameAr: "المنصة — سعودي حديث", nameEn: "Platform — Modern Saudi", descAr: "شريط أخضر بأشكال هندسية فوق كل صفحة، وبطاقات أرقام، وجداول بخط ليموني.", descEn: "A green band with geometric shapes on every page, number cards and lime-ruled tables.", paper: "#ffffff", accent: "#00594f", metal: "#c4d600", layout: "band", ink: 3, fresh: true },
   { id: "janib", nameAr: "الجانبي — سعودي حديث", nameEn: "Side — Modern Saudi", descAr: "عمود أخضر على جنب كل صفحة، والترويسة على الأبيض بخط ليموني.", descEn: "A green column down every page, with the letterhead on white over a lime rule.", paper: "#ffffff", accent: "#00594f", metal: "#c4d600", layout: "spine-right", ink: 2, fresh: true },
