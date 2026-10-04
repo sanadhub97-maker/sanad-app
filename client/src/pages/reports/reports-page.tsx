@@ -1,3 +1,4 @@
+import { DeclarationViolationReports } from "./declaration-violation-reports";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -190,6 +191,8 @@ export default function ReportsPage() {
           );
         })}
       </div>
+
+      <DeclarationViolationReports />
 
       {open && look && (
         <section ref={panel} className="rc-dcard rc-rpanel rp-rise" style={{ ["--c" as string]: look.c }}>
