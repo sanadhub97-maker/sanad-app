@@ -56,7 +56,7 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   const createdBranch=await check('save establishment owner','post','/api/branches',201,{name:'Synthetic establishment',code:'OWNER-FIXTURE',ownerName:'  Original owner  '},tokens['Super Admin']);
   const branch=createdBranch.body.data;
   assert.equal(branch.ownerName,'Original owner');
-  await check('reject oversized owner','put','/api/branches/'+branch.id,400,{ownerName:'x'.repeat(201)},tokens['Super Admin']);
+  await check('reject oversized owner','put','/api/branches/'+branch.id,422,{ownerName:'x'.repeat(201)},tokens['Super Admin']);
   const inherited=await check('tax return inherits establishment owner','post','/api/tax-returns',201,{kind:'VAT',year:2026,quarter:2,dueDate:'2026-07-31',branchId:branch.id},tokens.Accountant);
   assert.equal(inherited.body.ownerName,'Original owner');
   const changed=await check('update establishment owner','put','/api/branches/'+branch.id,200,{ownerName:'Changed owner'},tokens['Super Admin']);
