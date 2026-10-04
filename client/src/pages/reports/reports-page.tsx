@@ -190,9 +190,8 @@ export default function ReportsPage() {
             </article>
           );
         })}
+        <DeclarationViolationReports />
       </div>
-
-      <DeclarationViolationReports />
 
       {open && look && (
         <section ref={panel} className="rc-dcard rc-rpanel rp-rise" style={{ ["--c" as string]: look.c }}>
