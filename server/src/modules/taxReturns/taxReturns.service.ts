@@ -17,6 +17,7 @@ const toDate = (day: string | Date) => {
 const toDay = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 
 const include = {
+  selectedBranches: { select: { branchId: true, nameSnapshot: true } },
   branch: { select: { id: true, name: true, nameEn: true } },
   file: { select: { id: true, originalName: true, mimeType: true, size: true } },
   payment: { select: { id: true, paymentNumber: true, paymentDate: true, total: true } },
@@ -30,6 +31,8 @@ function shapeReturn(r: TaxReturnRow) {
     id: r.id,
     kind: r.kind,
     branchId: r.branchId,
+    branchIds: r.selectedBranches.map(b => b.branchId),
+    selectedBranches: r.selectedBranches,
     branch: r.branch,
     year: r.year,
     quarter: r.quarter,
@@ -75,15 +78,15 @@ export async function list(query: ListTaxReturnsQuery) {
     ...(year ? { year } : {}),
     ...(quarter ? { quarter } : {}),
     ...(status ? { status } : {}),
-    ...(branchId ? { branchId } : {}),
+    ...(branchId ? { OR: [{ branchId }, { selectedBranches: { some: { branchId } } }] } : {}),
     ...(search
       ? {
-          OR: [
+          AND: [{ OR: [
             { reference: { contains: search, mode: "insensitive" } },
             { ownerName: { contains: search, mode: "insensitive" } },
             { sadadNumber: { contains: search, mode: "insensitive" } },
             { notes: { contains: search, mode: "insensitive" } },
-          ],
+          ] }],
         }
       : {}),
   };
@@ -113,9 +116,23 @@ export async function getById(id: string) {
   return shapeReturn(item);
 }
 
+async function resolveBranches(ids: string[], kind: TaxReturnKind) {
+  const rows = await prisma.branch.findMany({ where: { id: { in: ids }, deletedAt: null }, select: { id: true, name: true, ownerName: true, vatRegistrationNumber: true } });
+  if (rows.length !== ids.length) throw ApiError.badRequest("Some establishments are missing or deleted");
+  if (rows.length > 1) {
+    const owner = rows[0].ownerName?.trim();
+    if (!owner || rows.some(row => row.ownerName?.trim() !== owner)) throw ApiError.badRequest("Selected establishments must have the same owner");
+    if (kind !== "VAT") throw ApiError.badRequest("Multiple establishments are currently supported for VAT only");
+    const registration = rows[0].vatRegistrationNumber;
+    if (!registration || rows.some(row => row.vatRegistrationNumber !== registration)) throw ApiError.badRequest("Set the same VAT registration number for selected establishments, or prepare separate returns");
+  }
+  return rows;
+}
+
 export async function create(input: CreateTaxReturnInput, userId?: string) {
-  const branch = input.branchId ? await prisma.branch.findFirst({ where: { id: input.branchId, deletedAt: null }, select: { ownerName: true } }) : null;
-  if (input.branchId && !branch) throw ApiError.badRequest("Establishment not found");
+  const ids = input.branchIds ?? (input.branchId ? [input.branchId] : []);
+  const branches = await resolveBranches(ids, input.kind);
+  const branch = branches[0];
   let outputVat = input.outputVat;
   let inputVat = input.inputVat;
   let amount = input.amount;
@@ -143,7 +160,8 @@ export async function create(input: CreateTaxReturnInput, userId?: string) {
   const created = await prisma.taxReturn.create({
     data: {
       kind: input.kind,
-      branchId: input.branchId || null,
+      branchId: ids.length === 1 ? ids[0] : null,
+      selectedBranches: { create: branches.map(b => ({ branchId: b.id, nameSnapshot: b.name })) },
       year: input.year,
       quarter: input.kind === "VAT" ? input.quarter ?? null : null,
       dueDate: toDate(input.dueDate),
@@ -181,12 +199,18 @@ export async function update(id: string, input: UpdateTaxReturnInput) {
   if (!existing) throw ApiError.notFound("Tax return not found");
 
   const data: Prisma.TaxReturnUpdateInput = {};
+  if (input.kind && input.kind !== existing.kind && input.branchIds === undefined && input.branchId === undefined) {
+    const selected = await prisma.taxReturnBranch.findMany({ where: { taxReturnId: id }, select: { branchId: true } });
+    await resolveBranches(selected.map(b => b.branchId), input.kind);
+  }
 
-  if (input.branchId !== undefined) {
-    const branch = input.branchId ? await prisma.branch.findFirst({ where: { id: input.branchId, deletedAt: null }, select: { ownerName: true } }) : null;
-    if (input.branchId && !branch) throw ApiError.badRequest("Establishment not found");
-    data.branch = input.branchId ? { connect: { id: input.branchId } } : { disconnect: true };
-    if (input.branchId !== existing.branchId && input.ownerName === undefined) data.ownerName = branch?.ownerName || null;
+
+  if (input.branchIds !== undefined || input.branchId !== undefined) {
+    const ids = input.branchIds ?? (input.branchId ? [input.branchId] : []);
+    const branches = await resolveBranches(ids, input.kind ?? existing.kind);
+    data.branch = ids.length === 1 ? { connect: { id: ids[0] } } : { disconnect: true };
+    data.selectedBranches = { deleteMany: {}, create: branches.map(b => ({ branchId: b.id, nameSnapshot: b.name })) };
+    if (input.ownerName === undefined) data.ownerName = branches[0]?.ownerName || null;
   }
   if (input.year !== undefined) data.year = input.year;
   if (input.quarter !== undefined) data.quarter = input.quarter;
@@ -241,7 +265,7 @@ export async function getStatsAndAlerts(yearParam?: number, branchId?: string) {
   const where: Prisma.TaxReturnWhereInput = {
     deletedAt: null,
     year: currentYear,
-    ...(branchId ? { branchId } : {}),
+    ...(branchId ? { OR: [{ branchId }, { selectedBranches: { some: { branchId } } }] } : {}),
   };
 
   const records = await prisma.taxReturn.findMany({

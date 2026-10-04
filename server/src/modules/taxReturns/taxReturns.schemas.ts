@@ -22,6 +22,7 @@ export const listTaxReturnsQuerySchema = z.object({
 export const createTaxReturnSchema = z.object({
   kind: z.enum(["VAT", "ZAKAT"]),
   branchId: id.nullable().optional(),
+  branchIds: z.array(id).max(500).refine(ids => new Set(ids).size === ids.length, "Duplicate establishments").optional(),
   year: z.coerce.number().int().min(2000).max(2100),
   quarter: z.coerce.number().int().min(1).max(4).nullable().optional(),
   dueDate: day,

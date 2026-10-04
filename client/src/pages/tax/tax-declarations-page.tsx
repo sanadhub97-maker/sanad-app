@@ -867,6 +867,7 @@ export default function TaxDeclarationsPage() {
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {r.ownerName && `${isAr ? "المالك" : "Owner"}: ${r.ownerName}`}
+                              {!!r.selectedBranches?.length && <div>{r.selectedBranches.map(b => b.nameSnapshot).join("، ")}</div>}
                             </div>
                           </div>
                         </div>

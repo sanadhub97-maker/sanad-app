@@ -35,6 +35,7 @@ import type { Branch } from "@/types/models";
 const makeSchema = () =>
   z.object({
     nameEn: z.string().optional(),
+    vatRegistrationNumber: z.string().regex(/^$|^3[0-9]{13}3$/, tr("الرقم الضريبي 15 رقمًا يبدأ وينتهي بـ3", "VAT number must be 15 digits starting and ending with 3")).optional(),
     ownerName: z.string().trim().max(200).optional(),
     name: z.string().min(2, tr("اسم المؤسسة مطلوب", "Establishment name is required")),
     code: z.string().min(1, tr("رمز المؤسسة مطلوب", "Establishment code is required")),
@@ -83,6 +84,7 @@ export function BranchDialog({
           ? {
               ...branch,
               ownerName: branch.ownerName ?? "",
+              vatRegistrationNumber: branch.vatRegistrationNumber ?? "",
               email: branch.email ?? "",
               city: branch.city ?? "",
               cityEn: branch.cityEn ?? "",
@@ -184,6 +186,9 @@ export function BranchDialog({
                 <Input {...register("ownerName")} maxLength={200} placeholder={isAr ? "اسم المالك أو الشركاء" : "Owner or partners names"} className="h-11 rounded-xl" />
               </FormField>
 
+              <FormField label={isAr ? "رقم التسجيل الضريبي" : "VAT registration number"} error={errors.vatRegistrationNumber?.message} icon={Hash} className="sm:col-span-6">
+                <Input {...register("vatRegistrationNumber")} maxLength={15} inputMode="numeric" dir="ltr" placeholder="3XXXXXXXXXXXXX3" className="h-11 rounded-xl" />
+              </FormField>
               <FormField label={t("branches.fields.nameEn")} icon={Building2} className="sm:col-span-6">
                 <EnglishInput
                   {...register("nameEn", { onChange: auto.enChange("nameEn") })}

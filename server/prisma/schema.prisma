@@ -363,6 +363,8 @@ model EmailVerificationToken {
 
 model Branch {
   ownerName String?
+  vatRegistrationNumber String?
+  selectedTaxReturns TaxReturnBranch[]
   id        String       @id @default(cuid())
   name      String
   nameEn    String?
@@ -997,6 +999,7 @@ enum TaxReturnStatus {
 }
 
 model TaxReturn {
+  selectedBranches TaxReturnBranch[]
   id                String          @id @default(cuid())
   kind              TaxReturnKind
   /// The establishment filing it; null = the company as one taxpayer.
@@ -1044,4 +1047,14 @@ model TaxReturn {
   @@index([kind, year, quarter])
   @@index([branchId])
   @@index([dueDate])
+}
+
+model TaxReturnBranch {
+  taxReturnId String
+  branchId String
+  nameSnapshot String
+  taxReturn TaxReturn @relation(fields: [taxReturnId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  @@id([taxReturnId, branchId])
+  @@index([branchId])
 }

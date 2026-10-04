@@ -54,11 +54,18 @@ export function TaxReturnDialog({
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
 
-  const [branchId, setBranchId] = useState<string>("");
+  const [branchIds, setBranchIds] = useState<string[]>([]);
+  const [selectedOwner, setSelectedOwner] = useState("");
+  const [branchSearch, setBranchSearch] = useState("");
   const { data: establishments = [] } = useQuery({ queryKey: ["branches", "active"], queryFn: listActiveBranches, enabled: open });
-  useEffect(() => { if (open) setBranchId(taxReturn?.branchId || ""); }, [open, taxReturn]);
+  const available = [...establishments, ...(taxReturn?.selectedBranches ?? []).filter(b => !establishments.some(e => e.id === b.branchId)).map(b => ({ id: b.branchId, name: b.nameSnapshot, code: "", ownerName: taxReturn?.ownerName ?? "", vatRegistrationNumber: null }))];
+  const ownerOptions = [...new Set(available.map(b => b.ownerName?.trim()).filter((name): name is string => !!name))];
+  const ownerBranches = available.filter(b => (b.ownerName?.trim() || "") === selectedOwner);
+  const picked = available.filter(b => branchIds.includes(b.id));
+  useEffect(() => { if (open) { setBranchIds(taxReturn?.branchIds?.length ? taxReturn.branchIds : taxReturn?.branchId ? [taxReturn.branchId] : []); setSelectedOwner(taxReturn?.ownerName || ""); setBranchSearch(""); } }, [open, taxReturn]);
   const [saving, setSaving] = useState(false);
   const [kind, setKind] = useState<TaxReturnKind>(defaultKind);
+  const multipleValid = picked.length < 2 || (kind === "VAT" && !!picked[0]?.vatRegistrationNumber && picked.every(b => b.vatRegistrationNumber === picked[0].vatRegistrationNumber && b.ownerName?.trim() === picked[0].ownerName?.trim()));
   const [year, setYear] = useState<number>(defaultYear);
   const [quarter, setQuarter] = useState<number>(defaultQuarter || 3);
   const [dueDate, setDueDate] = useState<string>("");
@@ -203,7 +210,7 @@ export function TaxReturnDialog({
           : (amount !== 0 ? amount : computedZakatAmount);
 
       const payload: TaxReturnInput = {
-        branchId: branchId || null,
+        branchIds,
         kind,
         year: Number(year),
         quarter: kind === "VAT" ? Number(quarter) : null,
@@ -664,11 +671,22 @@ export function TaxReturnDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>{isAr ? "المؤسسة / الشركة" : "Establishment / company"}</Label>
-            <Select value={branchId || "company"} onValueChange={value => { const next = value === "company" ? "" : value; setBranchId(next); setOwnerName(establishments.find(b => b.id === next)?.ownerName || ""); }}>
+            <Label>{isAr ? "اختيار المالك لتحديد منشآته" : "Select owner to choose establishments"}</Label>
+            <Select value={selectedOwner || "__unassigned"} onValueChange={value => { const next = value === "__unassigned" ? "" : value; setSelectedOwner(next); setOwnerName(next); setBranchIds([]); setBranchSearch(""); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="company">{isAr ? "إقرار عام للشركة" : "Company-wide return"}</SelectItem>{establishments.map(b => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
+              <SelectContent><SelectItem value="__unassigned">{isAr ? "بدون مالك مسجل" : "No registered owner"}</SelectItem>{ownerOptions.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}</SelectContent>
             </Select>
+            <details className="rounded-xl border p-3" open>
+              <summary className="cursor-pointer font-semibold">{isAr ? `المؤسسات / الشركات (${branchIds.length} مختارة)` : `Establishments / companies (${branchIds.length} selected)`}</summary>
+              <div className="space-y-3 pt-3">
+                <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => { setBranchIds(ownerBranches.map(b => b.id)); setOwnerName(selectedOwner); }}>{isAr ? "اختيار جميع منشآت المالك" : "Select all owner establishments"}</Button><Button type="button" variant="ghost" onClick={() => setBranchIds([])}>{isAr ? "إلغاء الاختيار" : "Clear selection"}</Button></div>
+                <Input value={branchSearch} onChange={e => setBranchSearch(e.target.value)} placeholder={isAr ? "ابحث في منشآت المالك" : "Search owner establishments"} aria-label={isAr ? "البحث في المنشآت" : "Search establishments"} />
+                <div className="max-h-52 overflow-y-auto">{ownerBranches.filter(b => b.name.includes(branchSearch)).map(b => <label key={b.id} className="flex items-center gap-3 border-b p-3"><input type="checkbox" checked={branchIds.includes(b.id)} onChange={e => { setBranchIds(ids => e.target.checked ? [...ids, b.id] : ids.filter(id => id !== b.id)); setOwnerName(selectedOwner); }} /><span>{b.name}<small className="block text-muted-foreground">{b.vatRegistrationNumber || (isAr ? "رقم التسجيل الضريبي غير مسجل" : "VAT registration number missing")}</small></span></label>)}</div>
+              </div>
+            </details>
+            <div className="flex flex-wrap gap-2">{picked.map(b => <Button type="button" size="sm" variant="outline" key={b.id} onClick={() => setBranchIds(ids => ids.filter(id => id !== b.id))} aria-label={isAr ? `إزالة ${b.name}` : `Remove ${b.name}`}>{b.name} ×</Button>)}</div>
+            {!multipleValid && <p role="alert" className="text-sm text-destructive">{isAr ? "لا يمكن دمج هذه المنشآت: سجّل نفس رقم التسجيل الضريبي لمنشآت نفس المالك، أو أنشئ إقرارات منفصلة. الاختيار المتعدد متاح للقيمة المضافة فقط." : "Selected establishments must share an owner and VAT registration number. Configure registration numbers or create separate returns. Multiple selection supports VAT only."}</p>}
+            <p className="text-xs text-muted-foreground">{isAr ? "المبالغ تُدخل إجماليًا للجهات المختارة؛ الاختيار لا يحسبها تلقائيًا. بدون تحديد منشأة يُحفظ إقرار عام." : "Enter aggregate amounts for selected establishments; selection does not calculate them automatically. No selection creates a company-wide return."}</p>
             <Label htmlFor="tax-owner-name">{isAr ? "اسم المالك" : "Owner name"}</Label>
             <Input id="tax-owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} maxLength={200} placeholder={isAr ? "أدخل اسم المالك" : "Enter owner name"} className="rounded-xl border-border/60" />
           </div>
@@ -696,7 +714,7 @@ export function TaxReturnDialog({
             </Button>
             <Button
               type="submit"
-              disabled={saving}
+              disabled={saving || !multipleValid}
               className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25 font-semibold px-6"
             >
               {saving

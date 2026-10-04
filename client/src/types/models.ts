@@ -15,6 +15,7 @@ export interface Paginated<T> {
 }
 
 export interface Branch {
+  vatRegistrationNumber?: string | null;
   ownerName?: string | null;
   id: string;
   name: string;
@@ -200,6 +201,8 @@ export type TaxReturnKind = "VAT" | "ZAKAT";
 export type TaxReturnStatus = "DRAFT" | "FILED" | "PAID";
 
 export interface TaxReturn {
+  branchIds?: string[];
+  selectedBranches?: { branchId: string; nameSnapshot: string }[];
   id: string;
   kind: TaxReturnKind;
   branchId?: string | null;

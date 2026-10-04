@@ -98,5 +98,5 @@ export async function getNextCode(): Promise<string> {
 }
 
 export async function listAllActive() {
-  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true }, orderBy: { name: "asc" } });
+  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true }, orderBy: { name: "asc" } });
 }

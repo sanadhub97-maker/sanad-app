@@ -5,6 +5,7 @@ import type { Paginated, TaxReturn, TaxReturnKind, TaxReturnStatus } from "@/typ
 export interface TaxReturnInput {
   kind: TaxReturnKind;
   branchId?: string | null;
+  branchIds?: string[];
   year: number;
   quarter?: number | null;
   dueDate: string;
