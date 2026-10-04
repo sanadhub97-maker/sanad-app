@@ -34,7 +34,7 @@ interface FormValues {
 const ACTIONS: Record<string, [string, string]> = {
   view: ["عرض", "View"], create: ["إضافة", "Create"], edit: ["تعديل", "Edit"], delete: ["حذف", "Delete"],
   export: ["تصدير", "Export"], import: ["استيراد", "Import"], download: ["تنزيل", "Download"], upload: ["رفع", "Upload"],
-  manage: ["إدارة", "Manage"], print: ["طباعة", "Print"], send: ["إرسال", "Send"], approve: ["اعتماد", "Approve"],
+  manage: ["إدارة", "Manage"], print: ["طباعة", "Print"], send: ["إرسال", "Send"], approve: ["اعتماد", "Approve"], pay: ["سداد", "Pay"],
 };
 const actionLabel = (a: string) => (ACTIONS[a] ? tr(ACTIONS[a][0], ACTIONS[a][1]) : a);
 

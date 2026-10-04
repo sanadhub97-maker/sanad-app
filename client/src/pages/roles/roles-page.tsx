@@ -23,9 +23,9 @@ import type { Tone } from "@/components/royal/rp";
 const ACTIONS: Record<string, [string, string]> = {
   view: ["عرض", "View"], create: ["إضافة", "Create"], edit: ["تعديل", "Edit"], delete: ["حذف", "Delete"],
   export: ["تصدير", "Export"], import: ["استيراد", "Import"], download: ["تنزيل", "Download"], upload: ["رفع", "Upload"],
-  manage: ["إدارة", "Manage"], print: ["طباعة", "Print"], send: ["إرسال", "Send"], approve: ["اعتماد", "Approve"],
+  manage: ["إدارة", "Manage"], print: ["طباعة", "Print"], send: ["إرسال", "Send"], approve: ["اعتماد", "Approve"], pay: ["سداد", "Pay"],
 };
-const ORDER = ["view", "create", "edit", "delete", "export", "import", "upload", "download", "print", "manage", "send", "approve"];
+const ORDER = ["view", "create", "edit", "delete", "pay", "export", "import", "upload", "download", "print", "manage", "send", "approve"];
 const TONES: Tone[] = ["pri", "vio", "gold", "teal", "sky", "ok", "mut"];
 
 export default function RolesPage() {

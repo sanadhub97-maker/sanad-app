@@ -5,18 +5,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, Briefcase, Building2, Calendar, CheckCircle2, Clock, Edit, Globe, Hash, IdCard, Mail, MapPin, Phone, Plus, Printer, ShieldCheck, Sparkles, StickyNote, User, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, Briefcase, Gavel, Building2, Calendar, CheckCircle2, Clock, Edit, Globe, Hash, IdCard, Mail, MapPin, Phone, Plus, Printer, ShieldCheck, Sparkles, StickyNote, User, UserCheck, Wallet } from "lucide-react";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
 import { AvatarPickerDialog } from "@/components/avatars/avatar-picker-dialog";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
 import { employeesApi, employeePdfUrl } from "@/api/employees";
 import { paymentsApi } from "@/api/payments";
+import { violationsApi } from "@/api/violations";
+import { STATE_LOOK } from "@/lib/violations";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { EmployeeDocumentDialog } from "@/pages/employees/employee-document-dialog";
 import { PrintDocumentHeader, PrintDocumentFooter } from "@/components/common/print-document-header";
-import { daysFromToday, dmy, weekday } from "@/components/royal/rp";
+import { Pill, daysFromToday, dmy, weekday } from "@/components/royal/rp";
 import { BigRing, CoverHero, DCard, DetailBar, Fact, History, MiniDoc, Owner, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory } from "@/components/royal/cards";
 import { employeeDocs } from "@/pages/workforce/employee-docs";
 
@@ -38,6 +40,11 @@ export default function EmployeeProfilePage() {
     queryKey: ["payments", "byEmployee", id],
     queryFn: () => paymentsApi.list({ employeeId: id, pageSize: 10 }),
     enabled: hasPermission("payments.view"),
+  });
+  const { data: violations } = useQuery({
+    queryKey: ["violations", "list", { employeeId: id }],
+    queryFn: () => violationsApi.list({ employeeId: id, pageSize: 20 }),
+    enabled: Boolean(id) && hasPermission("violations.view"),
   });
   const { data: history } = useRecordHistory(id);
 
@@ -248,6 +255,26 @@ export default function EmployeeProfilePage() {
               ))}
             </div>
           </DCard>
+          {hasPermission("violations.view") && (
+            <DCard title={isAr ? "المخالفات والجزاءات" : "Violations & penalties"} icon={Gavel} color="var(--bad)" right={violations?.meta.total ?? 0} i={3}>
+              {violations && violations.data.length > 0 ? (
+                <div className="rc-rows">
+                  {violations.data.map((v) => (
+                    <button key={v.id} type="button" onClick={() => navigate(`/violations/${v.id}`)}>
+                      <span className="d">{Number(v.date.slice(8, 10))}</span>
+                      <span className="min-w-0">
+                        <b>{v.kind === "STAFF" ? v.penalty : v.authorityLabel}</b>
+                        <small>{v.reason}</small>
+                      </span>
+                      <Pill tone={STATE_LOOK[v.state].tone}>{isAr ? STATE_LOOK[v.state].ar : STATE_LOOK[v.state].en}</Pill>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rc-none">{isAr ? "مفيش مخالفات ولا جزاءات على الموظف" : "No violations or penalties"}</div>
+              )}
+            </DCard>
+          )}
           {e.branch && (
             <DCard title={isAr ? "المؤسسة" : "Establishment"} icon={Building2} i={4}>
               <Owner tile={initialsOf(branch || e.branch.code)} color={color} title={branch || e.branch.code} sub={e.branch.code} onOpen={hasPermission("branches.view") ? () => navigate(`/branches/${e.branch!.id}`) : undefined} />

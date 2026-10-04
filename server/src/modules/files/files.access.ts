@@ -7,7 +7,7 @@ export const FILE_MODULE_PERMISSIONS: Record<string, string> = {
   employee: "employees.view", "employee-document": "employeeDocuments.view", "employee-documents": "employees.view",
   "company-document": "companyDocuments.view", payment: "payments.view",
   "company-logo": "settings.view", "company-favicon": "settings.view", "company-stamp": "settings.view", "company-signature": "settings.view",
-  "user-avatar": "users.view",
+  "user-avatar": "users.view", violation: "violations.view",
 };
 
 export function assertFileAccess(file: { module: string | null; uploadedById: string | null; relatedId: string | null }, auth: AuthContext | undefined, action: "view" | "download" | "delete" = "view") {

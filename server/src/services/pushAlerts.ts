@@ -146,7 +146,21 @@ export async function pushMorningBrief() {
     const fresh = await claim([`brief:${date}:${u.id}`]);
     if (fresh.size === 0) continue;
     const tasks = hasPermission(auth, "tasks.view") ? await prisma.dailyTask.count({ where: { date: today, deletedAt: null, done: false, OR: [{ assigneeId: u.id }, { assigneeId: null }] } }) : 0;
-    const parts = [expired && `${expired} وثائق منتهية`, soon && `${soon} قريبين من الانتهاء`, tasks && `${tasks} مهام`].filter(Boolean) as string[];
+    // Authority violations whose payment or objection deadline is within a week.
+    const week = new Date(today.getTime() + 7 * 86_400_000);
+    const violations = hasPermission(auth, "violations.view")
+      ? await prisma.violation.count({
+          where: {
+            deletedAt: null,
+            kind: "AUTHORITY",
+            OR: [
+              { status: { in: ["NEW", "REJECTED"] }, payDeadline: { lte: week } },
+              { status: "NEW", objectionDeadline: { gte: today, lte: week } },
+            ],
+          },
+        })
+      : 0;
+    const parts = [expired && `${expired} وثائق منتهية`, soon && `${soon} قريبين من الانتهاء`, tasks && `${tasks} مهام`, violations && `${violations} مخالفات ميعادها قرب`].filter(Boolean) as string[];
     const total = expired + soon;
     const share = visible.length ? Math.round(((visible.length - total) / visible.length) * 100) : 100;
     await sendToUser(u.id, {

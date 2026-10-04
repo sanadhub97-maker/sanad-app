@@ -10,6 +10,7 @@ import { sendMail } from "@/services/email";
 import { sendWhatsappDigests, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
 import { pushDueItems } from "@/services/pushAlerts";
+import { runViolationReminders } from "@/services/violationReminders";
 
 // Roles considered "responsible" for expiration alerts in this build — a
 // per-branch/per-user notify-list is a reasonable future enhancement, but
@@ -182,6 +183,9 @@ async function performExpirationScan() {
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));
+
+  // Violations whose objection or payment deadline is near.
+  await runViolationReminders().catch((err) => logger.error({ err }, "Violation reminders failed"));
 
   await markExpirationScanRun();
   await setWhatsappScheduleSetting({ lastRunAt: new Date().toISOString() }).catch(() => undefined);

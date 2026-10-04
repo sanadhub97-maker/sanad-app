@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,7 +41,9 @@ export default function PaymentsPage() {
   const queryClient = useQueryClient();
   const hasPermission = useAuthStore((s) => s.hasPermission);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  // Opened from a violation's voucher link: /payments?q=PAY-000123.
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(() => params.get("q") ?? "");
   const [category, setCategory] = useState("");
   const [dialog, setDialog] = useState<{ open: boolean; payment?: Payment }>({ open: false });
   const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null);

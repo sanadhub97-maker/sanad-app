@@ -8,8 +8,9 @@ import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { dashboardApi, type DashboardAttentionItem } from "@/api/dashboard";
 import { tasksApi, type DailyTask } from "@/api/tasks";
+import { violationsApi } from "@/api/violations";
 import { useAuthStore } from "@/stores/authStore";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
    welcome with a stack of documents, the compliance gauge, four stat cards,
@@ -105,6 +106,8 @@ export default function DashboardLulu() {
   const { data: recent } = useQuery({ queryKey: ["dashboard", "recent"], queryFn: dashboardApi.recentActivity, staleTime: 60_000 });
   const dayKey = ["tasks", "day", today];
   const { data: tasks } = useQuery({ queryKey: dayKey, queryFn: () => tasksApi.day(today), enabled: canTasks });
+  const canViolations = hasPermission("violations.view");
+  const { data: vio } = useQuery({ queryKey: ["violations", "stats"], queryFn: violationsApi.stats, enabled: canViolations });
 
   const toggleTask = useMutation({
     mutationFn: (x: DailyTask) => tasksApi.update(x.id, { done: !x.done }),
@@ -733,6 +736,37 @@ export default function DashboardLulu() {
                 </span>
               </button>
             ))}
+          </section>
+        )}
+
+        {canViolations && vio && vio.authorityTotal + vio.staffTotal > 0 && (
+          <section className="ry-card ry-s12" style={v({ "--i": 13 })}>
+            <div className="ry-ch">
+              <div>
+                <h3>{isAr ? "المخالفات" : "Violations"}</h3>
+                <small>{isAr ? `${vio.open} مفتوحة · ${formatCurrency(vio.unpaidAmount)} غير مسدد` : `${vio.open} open · ${formatCurrency(vio.unpaidAmount)} unpaid`}</small>
+              </div>
+              <button type="button" className="ry-link" onClick={() => navigate("/violations")}>
+                {isAr ? "كل المخالفات" : "All violations"}
+              </button>
+            </div>
+            <div className="ry-gl">
+              {(
+                [
+                  [vio.overdue, isAr ? "متأخرة السداد" : "Overdue", "var(--l-rose)"],
+                  [vio.dueSoon, isAr ? "ميعادها خلال أسبوعين" : "Due in 2 weeks", "var(--l-amber)"],
+                  [vio.staffOpen, isAr ? "جزاءات قائمة" : "Open penalties", "var(--l-violet)"],
+                ] as const
+              ).map(([n, label, c]) => (
+                <div key={label}>
+                  <b>
+                    <i style={{ background: c }} />
+                    <Count to={n} />
+                  </b>
+                  {label}
+                </div>
+              ))}
+            </div>
           </section>
         )}
       </div>

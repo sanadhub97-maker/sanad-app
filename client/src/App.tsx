@@ -27,6 +27,8 @@ const BranchDetailsPage = lazy(() => import("@/pages/branches/branch-details-pag
 const CompanyDocumentsPage = lazy(() => import("@/pages/companyDocuments/company-documents-page"));
 const BranchesPage = lazy(() => import("@/pages/branches/branches-page"));
 const DailyTasksPage = lazy(() => import("@/pages/tasks/daily-tasks-page"));
+const ViolationsPage = lazy(() => import("@/pages/violations/violations-page"));
+const ViolationDetailsPage = lazy(() => import("@/pages/violations/violation-details-page"));
 const PaymentsPage = lazy(() => import("@/pages/payments/payments-page"));
 const NotificationsPage = lazy(() => import("@/pages/notifications/notifications-page"));
 const ReportsPage = lazy(() => import("@/pages/reports/reports-page"));
@@ -106,6 +108,10 @@ export default function App() {
                 <Route path="/licenses" element={<Navigate to="/company-documents" replace />} />
                 <Route element={<RequirePermission permission="tasks.view" />}>
                   <Route path="/daily-tasks" element={<DailyTasksPage />} />
+                </Route>
+                <Route element={<RequirePermission permission="violations.view" />}>
+                  <Route path="/violations" element={<ViolationsPage />} />
+                  <Route path="/violations/:id" element={<ViolationDetailsPage />} />
                 </Route>
                 <Route element={<RequirePermission permission="branches.view" />}>
                   <Route path="/branches" element={<BranchesPage />} />

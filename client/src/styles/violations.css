@@ -1,0 +1,72 @@
+/* The Violations page (as in the approved preview): a card per violation
+   with the authority's tile, a status stripe, the next deadline and a meter;
+   the details page's red hero with its deadline clocks, and the timeline.
+   Built on the Royal tokens (.rc), so dark mode follows. */
+
+.vio-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.vio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+@container (max-width: 520px) { .vio-grid { grid-template-columns: 1fr; } }
+
+.vio-card { position: relative; overflow: hidden; display: grid; gap: 10px; text-align: start; padding: 15px 16px; border-radius: 22px; background: var(--surf); border: 1px solid var(--line); box-shadow: var(--shadow); color: var(--ink); transition: transform .15s, box-shadow .15s; }
+.vio-card:hover { transform: translateY(-1px); box-shadow: var(--lift); }
+.vio-card::before { content: ""; position: absolute; inset-inline-start: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: var(--sc, var(--muted)); }
+.vio-r1 { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.vio-tile { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; color: #fff; flex: none; font: 700 12.5px var(--head); }
+.vio-who { min-width: 0; flex: 1; }
+.vio-who b { display: block; font: 600 14.5px var(--head); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vio-who small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vio-reason { font-size: 13px; line-height: 1.55; }
+.vio-meter { height: 5px; border-radius: 5px; background: var(--track); overflow: hidden; }
+.vio-meter i { display: block; height: 100%; border-radius: 5px; background: var(--dc, var(--muted)); }
+.vio-r3 { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--dash); }
+.vio-amt b { font: 700 18px var(--head); }
+.vio-amt small { font-size: 11.5px; color: var(--muted); margin-inline-start: 3px; }
+.vio-due { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.vio-due svg { width: 15px; height: 15px; }
+.vio-due b { color: var(--dc, var(--ink)); }
+
+.vio-hero { position: relative; overflow: hidden; display: grid; gap: 14px; padding: 20px; border-radius: 24px; color: #fff; background: linear-gradient(140deg, #3b0a0a, var(--hc, #b91c1c)); box-shadow: var(--lift); }
+.vio-hero::after { content: ""; position: absolute; left: -40px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255, 255, 255, .08); }
+.vio-hero > * { position: relative; }
+.vio-hero .vio-tile { width: 48px; height: 48px; border-radius: 15px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .25); }
+.vio-hero h2 { margin: 0; font: 600 21px var(--head); }
+.vio-hero .sub { color: #ffd9d6; font-size: 13px; }
+.vio-hero .rp-pill { background: rgba(255, 255, 255, .16); color: #fff; }
+.vio-big { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 22px; }
+.vio-big b { font: 700 34px/1 var(--head); }
+.vio-big span { font-size: 13px; color: #ffd9d6; margin-inline-start: 6px; }
+.vio-clocks { display: flex; flex-wrap: wrap; gap: 10px; }
+.vio-clk { background: rgba(255, 255, 255, .12); border-radius: 16px; padding: 9px 13px; min-width: 130px; }
+.vio-clk span, .vio-clk em { display: block; font-size: 11.5px; color: #ffd9d6; font-style: normal; }
+.vio-clk b { font: 700 17px var(--head); }
+
+.vio-acts { display: grid; gap: 8px; }
+.vio-acts .rc-btn { justify-content: center; height: 40px; }
+.vio-note { font-size: 12.5px; color: var(--muted); background: var(--soft); border-radius: 13px; padding: 10px 12px; line-height: 1.6; }
+.vio-warn { display: flex; gap: 9px; align-items: flex-start; background: var(--warn-s); color: var(--warn); border-radius: 14px; padding: 10px 12px; font-size: 13px; }
+.vio-warn svg { width: 17px; height: 17px; flex: none; margin-top: 2px; }
+
+.vio-links { display: grid; gap: 8px; }
+.vio-link { display: flex; align-items: center; gap: 10px; width: 100%; text-align: start; padding: 10px 12px; border-radius: 15px; border: 1px solid var(--line); background: var(--surf); color: var(--ink); }
+.vio-link:hover { background: var(--soft); }
+.vio-link .ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; flex: none; background: var(--t, var(--soft)); color: var(--c, var(--muted)); }
+.vio-link .ic svg { width: 17px; height: 17px; }
+.vio-link b { display: block; font-size: 13.5px; }
+.vio-link small { display: block; font-size: 12px; color: var(--muted); }
+
+.vio-tl { display: grid; }
+.vio-st { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; position: relative; padding-bottom: 14px; }
+.vio-st:not(:last-child)::before { content: ""; position: absolute; inset-inline-start: 14px; top: 28px; bottom: 0; width: 2px; background: var(--line); }
+.vio-st .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c); }
+.vio-st .dot svg { width: 15px; height: 15px; }
+.vio-st b { display: block; font-size: 13.5px; }
+.vio-st small { font-size: 12px; color: var(--muted); }
+.vio-st p { margin: 4px 0 0; font-size: 12.5px; background: var(--soft); border-radius: 11px; padding: 6px 10px; white-space: pre-wrap; }
+
+.vio-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vio-form .full { grid-column: 1 / -1; }
+@media (max-width: 560px) { .vio-form { grid-template-columns: 1fr; } }
+.vio-select { width: 100%; height: 44px; border-radius: 12px; border: 1px solid hsl(var(--border)); background: hsl(var(--background)); color: hsl(var(--foreground)); padding: 0 12px; font: inherit; font-size: 14px; }
+.vio-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 13px; background: hsl(var(--muted)); }
+.vio-seg button { border: 0; background: none; border-radius: 10px; padding: 7px 14px; font-weight: 600; font-size: 13px; color: hsl(var(--muted-foreground)); }
+.vio-seg button[aria-pressed="true"] { background: hsl(var(--background)); color: hsl(var(--foreground)); box-shadow: 0 1px 3px rgba(20, 30, 60, .12); }

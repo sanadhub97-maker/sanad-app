@@ -8,6 +8,7 @@
     "operations": "العُهد والتجديدات",
     "dashboard": "لوحة التحكم",
     "dailyTasks": "المهام اليومية",
+    "violations": "المخالفات",
     "overviewSection": "نظرة عامة",
     "workforceSection": "القوى العاملة",
     "complianceSection": "الوثائق والامتثال",
@@ -846,6 +847,7 @@
   },
   "moduleNames": {
     "tasks": "المهام اليومية",
+    "violations": "المخالفات",
     "employees": "الموظفون",
     "employeeDocuments": "مستندات الموظفين",
     "companyDocuments": "مستندات الشركة",

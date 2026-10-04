@@ -18,6 +18,7 @@ import translateRoutes from "@/modules/translate/translate.routes";
 import workforceDocumentsRoutes from "@/modules/workforceDocuments/workforceDocuments.routes";
 import tasksRoutes from "@/modules/tasks/tasks.routes";
 import pushRoutes from "@/modules/push/push.routes";
+import violationsRoutes from "@/modules/violations/violations.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
 import productivityRoutes from "@/modules/productivity/productivity.routes";
 import operationsRoutes from "@/modules/operations/operations.routes";
@@ -49,5 +50,6 @@ router.use("/search", searchRoutes);
 router.use("/translate", translateRoutes);
 router.use("/tasks", tasksRoutes);
 router.use("/push", pushRoutes);
+router.use("/violations", violationsRoutes);
 
 export default router;

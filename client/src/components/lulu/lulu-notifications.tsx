@@ -78,7 +78,16 @@ export function LuluNotifications({ open, anchor, onClose }: { open: boolean; an
           const s = SEVERITY[n.severity] ?? SEVERITY.INFO;
           const Icon = s.icon;
           return (
-            <button key={n.id} type="button" onClick={openAll} className={cn("lu-nitem", `lt-${s.tone}`, !n.isRead && "unread")} style={{ ["--k" as string]: k }}>
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => {
+                // A violation's reminder opens the violation itself.
+                if (n.relatedType !== "VIOLATION" || !n.relatedId) return openAll();
+                onClose();
+                navigate(`/violations/${n.relatedId}`);
+              }}
+              className={cn("lu-nitem", `lt-${s.tone}`, !n.isRead && "unread")} style={{ ["--k" as string]: k }}>
               <span className="lu-ci">
                 <Icon />
               </span>

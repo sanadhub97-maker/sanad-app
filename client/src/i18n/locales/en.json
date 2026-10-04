@@ -8,6 +8,7 @@
     "operations": "Assets & renewals",
     "dashboard": "Dashboard",
     "dailyTasks": "Daily Tasks",
+    "violations": "Violations",
     "overviewSection": "Overview",
     "workforceSection": "Workforce",
     "complianceSection": "Compliance & Assets",
@@ -846,6 +847,7 @@
   },
   "moduleNames": {
     "tasks": "Daily Tasks",
+    "violations": "Violations",
     "employees": "Employees",
     "employeeDocuments": "Employee Documents",
     "companyDocuments": "Company Documents",
