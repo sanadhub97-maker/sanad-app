@@ -61,7 +61,7 @@ export default function ReportsPage() {
     if (tab === "documents") return status === "EXPIRED" ? "expired" : status === "EXPIRING_SOON" ? "soon" : "documents";
     return TILES.includes(tab as TileId) ? (tab as TileId) : null;
   })();
-  const [open, setOpen] = useState<TileId | null>(initial);
+  const [open, setOpen] = useState<TileId | "tax" | "violations" | null>(initial);
   const panel = useRef<HTMLDivElement>(null);
 
   // Filters of the open report
@@ -81,7 +81,9 @@ export default function ReportsPage() {
     setDocSource("");
   }
   useEffect(() => {
-    if (open) setTimeout(() => panel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    if (!open || open === "tax" || open === "violations") return;
+    const timer = setTimeout(() => panel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    return () => clearTimeout(timer);
   }, [open]);
 
   // The figures on the cards
@@ -101,7 +103,7 @@ export default function ReportsPage() {
   const acts = monthAct ?? [];
 
   // The open report, with its filters
-  const look = open ? TILE_LOOK[open] : null;
+  const look = open && open !== "tax" && open !== "violations" ? TILE_LOOK[open] : null;
   const report = look?.report;
   const query = useMemo(() => {
     if (report === "documents") return { ...(docStatus ? { status: docStatus } : {}), ...(docSource ? { sourceType: docSource } : {}) };
@@ -190,7 +192,7 @@ export default function ReportsPage() {
             </article>
           );
         })}
-        <DeclarationViolationReports />
+        <DeclarationViolationReports kind={open === "tax" || open === "violations" ? open : null} onKindChange={setOpen} />
       </div>
 
       {open && look && (

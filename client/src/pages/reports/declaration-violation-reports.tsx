@@ -10,11 +10,10 @@ import { getErrorMessage } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { collectReportPages, buildReportDocument } from "./print-report-utils";
 
-export function DeclarationViolationReports() {
+export function DeclarationViolationReports({ kind, onKindChange }: { kind: "tax" | "violations" | null; onKindChange: (kind: "tax" | "violations" | null) => void }) {
   const isAr = useTranslation().i18n.language.startsWith("ar");
   const L = (ar: string, en: string) => isAr ? ar : en;
   const has = useAuthStore(s => s.hasPermission);
-  const [kind, setKind] = useState<"tax" | "violations" | null>(null);
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [type, setType] = useState("all");
   const [quarter, setQuarter] = useState("all");
@@ -23,8 +22,8 @@ export function DeclarationViolationReports() {
   const [ready, setReady] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
   const panel = useRef<HTMLElement>(null);
-  function openReport(next: "tax" | "violations") { setKind(next); setTimeout(() => panel.current?.scrollIntoView({behavior:"smooth",block:"start"}),120); }
-  useEffect(() => { if(kind) panel.current?.scrollIntoView({behavior:"smooth",block:"start"}); },[kind]);
+  function openReport(next: "tax" | "violations") { onKindChange(kind === next ? null : next); }
+  useEffect(() => { if (!kind) return; const timer = setTimeout(() => panel.current?.scrollIntoView({behavior:"smooth",block:"start"}),120); return () => clearTimeout(timer); },[kind]);
   const exportParams = kind === "tax" ? {year:Number(year),...(type!=="all"?{kind:type}:{}),...(type!=="ZAKAT"&&quarter!=="all"?{quarter:Number(quarter)}:{}),...(owner!=="all"?{ownerName:owner}:{})} : {state:category};
   const exportPath = kind === "tax" ? "/reports/tax-declarations" : "/reports/violations";
   const exportReport = (format: "pdf" | "xlsx") => void downloadFile(exportPath,{...exportParams,format},`report.${format}`).catch(()=>undefined);
