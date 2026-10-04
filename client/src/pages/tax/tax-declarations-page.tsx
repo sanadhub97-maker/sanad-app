@@ -865,6 +865,9 @@ export default function TaxDeclarationsPage() {
                             <div className="text-[11px] text-muted-foreground font-mono">
                               {isAr ? `عام ${r.year}` : `Year ${r.year}`}
                             </div>
+                            <div className="text-xs text-muted-foreground">
+                              {r.ownerName && `${isAr ? "المالك" : "Owner"}: ${r.ownerName}`}
+                            </div>
                           </div>
                         </div>
                       </td>

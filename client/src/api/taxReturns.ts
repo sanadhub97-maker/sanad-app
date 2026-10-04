@@ -25,6 +25,7 @@ export interface TaxReturnInput {
   penalty?: number;
   filedDate?: string | null;
   reference?: string | null;
+  ownerName?: string | null;
   sadadNumber?: string | null;
   fileId?: string | null;
   notes?: string | null;

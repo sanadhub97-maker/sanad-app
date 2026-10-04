@@ -223,6 +223,7 @@ export interface TaxReturn {
   penalty: number;
   filedDate?: string | null;
   reference?: string | null;
+  ownerName?: string | null;
   sadadNumber?: string | null;
   paymentId?: string | null;
   payment?: { id: string; paymentNumber?: string; total?: number } | null;

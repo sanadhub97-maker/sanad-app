@@ -82,6 +82,7 @@ export function TaxReturnDialog({
   const [penalty, setPenalty] = useState<number>(0);
   const [filedDate, setFiledDate] = useState<string>("");
   const [reference, setReference] = useState<string>("");
+  const [ownerName, setOwnerName] = useState<string>("");
   const [sadadNumber, setSadadNumber] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
@@ -117,6 +118,7 @@ export function TaxReturnDialog({
       setPenalty(taxReturn.penalty);
       setFiledDate(taxReturn.filedDate ? taxReturn.filedDate.slice(0, 10) : "");
       setReference(taxReturn.reference || "");
+      setOwnerName(taxReturn.ownerName || "");
       setSadadNumber(taxReturn.sadadNumber || "");
       setNotes(taxReturn.notes || "");
     } else {
@@ -140,6 +142,7 @@ export function TaxReturnDialog({
       setPenalty(0);
       setFiledDate("");
       setReference("");
+      setOwnerName("");
       setSadadNumber("");
       setNotes("");
 
@@ -216,6 +219,7 @@ export function TaxReturnDialog({
         penalty: Number(penalty || 0),
         filedDate: filedDate || null,
         reference: reference.trim() || null,
+        ownerName: ownerName.trim() || null,
         sadadNumber: sadadNumber.trim() || null,
         notes: notes.trim() || null,
       };
@@ -651,6 +655,11 @@ export function TaxReturnDialog({
                 className="rounded-xl border-border/60"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="tax-owner-name" className="text-xs font-semibold">{isAr ? "اسم المالك" : "Owner name"}</Label>
+            <Input id="tax-owner-name" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} maxLength={200} placeholder={isAr ? "أدخل اسم المالك" : "Enter owner name"} className="rounded-xl border-border/60" />
           </div>
 
           {/* Notes */}

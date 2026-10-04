@@ -1,0 +1,1 @@
+ALTER TABLE "TaxReturn" ADD COLUMN IF NOT EXISTS "ownerName" TEXT;

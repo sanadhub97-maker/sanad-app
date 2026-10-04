@@ -42,6 +42,7 @@ export const createTaxReturnSchema = z.object({
   penalty: money.default(0),
   filedDate: day.nullable().optional(),
   reference: z.string().max(150).nullable().optional(),
+  ownerName: z.string().trim().max(200).nullable().optional(),
   sadadNumber: z.string().max(100).nullable().optional(),
   fileId: id.nullable().optional(),
   notes: z.string().max(4000).nullable().optional(),

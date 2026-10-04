@@ -1025,6 +1025,7 @@ model TaxReturn {
   penalty           Decimal         @default(0) @db.Decimal(14, 2)
   filedDate         DateTime?       @db.Date
   reference         String?
+  ownerName         String?
   sadadNumber       String?
   paymentId         String?         @unique
   fileId            String?

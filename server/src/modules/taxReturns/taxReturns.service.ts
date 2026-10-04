@@ -51,6 +51,7 @@ function shapeReturn(r: TaxReturnRow) {
     penalty: Number(r.penalty),
     filedDate: toDay(r.filedDate),
     reference: r.reference,
+    ownerName: r.ownerName,
     sadadNumber: r.sadadNumber,
     paymentId: r.paymentId,
     payment: r.payment ? { ...r.payment, total: Number(r.payment.total) } : null,
@@ -160,6 +161,7 @@ export async function create(input: CreateTaxReturnInput, userId?: string) {
       penalty: input.penalty,
       filedDate: input.filedDate ? toDate(input.filedDate) : null,
       reference: input.reference || null,
+      ownerName: input.ownerName || null,
       sadadNumber: input.sadadNumber || null,
       fileId: input.fileId || null,
       notes: input.notes || null,
@@ -198,6 +200,7 @@ export async function update(id: string, input: UpdateTaxReturnInput) {
   if (input.penalty !== undefined) data.penalty = input.penalty;
   if (input.filedDate !== undefined) data.filedDate = input.filedDate ? toDate(input.filedDate) : null;
   if (input.reference !== undefined) data.reference = input.reference;
+  if (input.ownerName !== undefined) data.ownerName = input.ownerName || null;
   if (input.sadadNumber !== undefined) data.sadadNumber = input.sadadNumber;
   if (input.fileId !== undefined) data.file = input.fileId ? { connect: { id: input.fileId } } : { disconnect: true };
   if (input.notes !== undefined) data.notes = input.notes;
