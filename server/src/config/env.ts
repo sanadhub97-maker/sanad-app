@@ -54,6 +54,13 @@ const envSchema = z.object({
     catch { ctx.addIssue({ code: "custom", path: ["TRUSTED_ORIGINS"], message: "Invalid trusted origin" }); }
   }
   if (value.NODE_ENV === "production" && new URL(value.CLIENT_URL).protocol !== "https:") ctx.addIssue({ code: "custom", path: ["CLIENT_URL"], message: "Production requires HTTPS" });
+  if (value.NODE_ENV === "production" && value.STORAGE_DRIVER === "s3") {
+    for (const key of ["STORAGE_ENDPOINT", "STORAGE_BUCKET", "STORAGE_ACCESS_KEY", "STORAGE_SECRET_KEY"] as const) {
+      if (!value[key].trim()) ctx.addIssue({ code: "custom", path: [key], message: "Production S3 storage requires this value" });
+    }
+    try { if (new URL(value.STORAGE_ENDPOINT).protocol !== "https:") throw new Error(); }
+    catch { ctx.addIssue({ code: "custom", path: ["STORAGE_ENDPOINT"], message: "Production storage requires HTTPS" }); }
+  }
   if (value.NODE_ENV === "production") {
     for (const key of ["JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET", "SETTINGS_ENCRYPTION_KEY"] as const) {
       if (/change[-_]?me|example|placeholder/i.test(value[key]) || new Set(value[key]).size < 10) ctx.addIssue({ code: "custom", path: [key], message: "Use an independently generated random secret" });

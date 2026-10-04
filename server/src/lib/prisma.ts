@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env, isProduction } from "@/config/env";
+import { databaseTarget } from "./databaseTarget";
 
 // Serverless Postgres (Neon's free tier included) suspends its compute after
 // a few minutes idle; the first query after a gap can fail with P1001/P1017
@@ -19,7 +20,8 @@ function isTransient(err: unknown) {
 }
 
 function createClient() {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+  const target = databaseTarget(env.DATABASE_URL, isProduction);
+  const adapter = new PrismaPg({ connectionString: target.connectionString }, { schema: target.schema });
   return new PrismaClient({ adapter, log: isProduction ? ["error", "warn"] : ["warn", "error"] }).$extends({
     query: {
       async $allOperations({ args, query }) {
