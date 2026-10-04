@@ -55,7 +55,7 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   await check('Admin wildcard cannot alter role definitions','post','/api/roles',403,{name:'Forbidden escalation',permissionKeys:['*']},tokens.Admin);
   const taxBody={kind:'VAT',year:2026,quarter:3,dueDate:'2026-10-31',ownerName:'Synthetic owner'};
   const newTax=await check('accountant can save owner name','post','/api/tax-returns',201,taxBody,tokens.Accountant);
-  assert.equal(newTax.body.data.ownerName,taxBody.ownerName);
+  assert.equal(newTax.body.ownerName,taxBody.ownerName);
   await check('HR cannot create tax returns','post','/api/tax-returns',403,taxBody,tokens.HR);
   const file=await prisma.file.create({data:{originalName:'synthetic-private.pdf',storedName:'synthetic-private.pdf',mimeType:'application/pdf',size:9,module:'payment',uploadedById:people.Accountant.id}});
   await check('HR cannot download a financial attachment','get','/api/files/'+file.id+'/download',403,null,tokens.HR);
@@ -84,3 +84,4 @@ const results=[];let prisma;let created=false;let stage="connect isolated databa
   await c.end();
  }
 })().catch(e=>{const message=(stage+': '+(e.code||e.name)+': '+String(e.message)).replace(/postgres(?:ql)?:\/\/[^\s]+/gi,'[REDACTED]').replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A');console.error('::error title=Isolated security integration::'+message);process.exitCode=1});
+
