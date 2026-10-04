@@ -7,6 +7,8 @@ import { daysUntil } from "@/services/expiration";
 import { riyadhNow } from "@/services/push";
 import { authorityName } from "@/constants/violations";
 import { isEn } from "@/services/lang";
+import { canViewSource, hasPermission } from "@/lib/security";
+import type { AuthContext } from "@/types/express";
 import * as paymentsService from "@/modules/payments/payments.service";
 import type { CreateViolationInput, ListViolationsQuery, UpdateViolationInput } from "@/modules/violations/violations.schemas";
 
@@ -273,14 +275,14 @@ export async function apply(id: string, input: { date: string; note?: string }, 
 }
 
 /** Documents a violation may be about: the employee's, or the establishment's. */
-export async function relatedOptions(employeeId?: string, branchId?: string) {
+export async function relatedOptions(employeeId: string | undefined, branchId: string | undefined, auth: AuthContext) {
   const out: { type: string; id: string; label: string; expiry: string | null; expired: boolean }[] = [];
   if (employeeId) {
-    const items = (await getTrackableItems()).filter((i) => i.employeeId === employeeId);
+    const items = (await getTrackableItems()).filter((i) => i.employeeId === employeeId && canViewSource(auth, i.sourceType));
     for (const i of items)
       out.push({ type: i.sourceType, id: i.recordId, label: `${i.documentAr || i.kindAr} — ${(i.employeeNameAr || i.labelAr || "").trim()}`, expiry: toDay(i.expiryDate), expired: daysUntil(i.expiryDate) <= 0 });
   }
-  if (branchId) {
+  if (branchId && hasPermission(auth, "companyDocuments.view")) {
     const docs = await prisma.companyDocument.findMany({ where: { deletedAt: null, branchId }, select: { id: true, name: true, category: true, expiryDate: true }, orderBy: { expiryDate: "asc" }, take: 60 });
     for (const d of docs) out.push({ type: "COMPANY_DOCUMENT", id: d.id, label: d.name, expiry: toDay(d.expiryDate), expired: !!d.expiryDate && daysUntil(d.expiryDate) <= 0 });
   }

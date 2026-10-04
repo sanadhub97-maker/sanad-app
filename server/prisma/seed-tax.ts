@@ -5,6 +5,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 
 async function main() {
+  if (process.env.NODE_ENV !== "test") throw new Error("Tax demo data may only be seeded into an isolated test database.");
+  const [target] = await prisma.$queryRaw<{ database: string; schema: string }[]>`SELECT current_database() AS database, current_schema() AS schema`;
+  if (!target || (!target.database.endsWith("_test") && !/^sanad_test_[a-f0-9]{16}$/.test(target.schema))) {
+    throw new Error("Refusing to insert fictional financial records into this database.");
+  }
   console.log("Checking tax returns in database...");
   const count = await prisma.taxReturn.count();
   console.log(`Current tax returns count: ${count}`);
@@ -99,4 +104,4 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect());
+main().catch(() => { console.error("Tax demo seeding stopped; production databases are not permitted."); process.exitCode = 1; }).finally(() => prisma.$disconnect());

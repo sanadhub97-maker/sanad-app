@@ -3,6 +3,8 @@ import { logger } from "@/lib/logger";
 import { daysUntil } from "@/services/expiration";
 import { riyadhNow, sendToUser, withDevices } from "@/services/push";
 import { authorityName } from "@/constants/violations";
+import { loadAuthContext } from "@/middleware/auth";
+import { canViewSource } from "@/lib/security";
 
 /*
  * Daily, with the expiration scan: reminders before an authority violation's
@@ -52,7 +54,10 @@ export async function runViolationReminders() {
       const titleAr = n < 0 ? `فات ميعاد ${what} — مخالفة ${who}` : n === 0 ? `اليوم آخر ميعاد ${what} — مخالفة ${who}` : `باقي ${daysAr(n)} على ${what} — مخالفة ${who}`;
       const messageAr = `${v.reason} · ${money(Number(v.amount))} ر.س${v.branch?.name ? ` · ${v.branch.name}` : ""}`;
       const title = n < 0 ? `${which === "pay" ? "Payment" : "Objection"} deadline passed — ${who}` : `${which === "pay" ? "Payment" : "Objection"} due in ${n} day(s) — ${who}`;
-      const recipients = [...new Set([...staff.map((s) => s.id), ...(v.assigneeId ? [v.assigneeId] : [])])];
+      const candidates = [...new Set([...staff.map((s) => s.id), ...(v.assigneeId ? [v.assigneeId] : [])])];
+      const authorized = await Promise.all(candidates.map(async id => canViewSource(await loadAuthContext(id), "VIOLATION") ? id : null));
+      const recipients = authorized.filter((id): id is string => id !== null);
+      if (!recipients.length) continue;
       const base = `vio:${v.id}:${which}:${n}`;
 
       const fresh = await claim([`${base}:SYSTEM`]);
@@ -74,6 +79,7 @@ export async function runViolationReminders() {
 
       const devices = await withDevices(recipients);
       for (const userId of devices) {
+        if (!canViewSource(await loadAuthContext(userId), "VIOLATION")) continue;
         const ok = await claim([`${base}:PUSH:${userId}`]);
         if (!ok.size) continue;
         await sendToUser(userId, {

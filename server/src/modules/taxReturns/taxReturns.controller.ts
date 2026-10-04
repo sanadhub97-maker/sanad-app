@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as service from "@/modules/taxReturns/taxReturns.service";
+import { assertLinkedFileAccess } from "@/modules/files/files.access";
 
 export async function list(req: Request, res: Response) {
   const result = await service.list(req.query as any);
@@ -12,11 +13,13 @@ export async function get(req: Request, res: Response) {
 }
 
 export async function create(req: Request, res: Response) {
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["tax-return", "payment"]);
   const result = await service.create(req.body, req.auth?.userId);
   res.status(201).json(result);
 }
 
 export async function update(req: Request, res: Response) {
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["tax-return", "payment"]);
   const result = await service.update(req.params.id as string, req.body);
   res.json(result);
 }

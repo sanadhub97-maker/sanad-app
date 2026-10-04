@@ -34,7 +34,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   hasPermission: (key: string) => {
     const user = get().user;
     if (!user) return false;
-    if (key.startsWith("payments.") && user.financeAccess === false) return false;
+    if ((key.startsWith("payments.") || key.startsWith("taxReturns.") || key === "violations.pay") && user.financeAccess === false) return false;
     return user.isSuperAdmin || user.permissions.includes("*") || user.permissions.includes(key);
   },
 }));

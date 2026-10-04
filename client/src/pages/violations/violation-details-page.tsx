@@ -164,7 +164,7 @@ export default function ViolationDetailsPage() {
         <div className="rc-dcol">
           <DCard title={isAr ? "الإجراءات" : "Actions"} icon={ShieldCheck} color="var(--pri)">
             <div className="vio-acts">
-              {!staff && v.open && hasPermission("violations.pay") && (
+              {!staff && v.open && hasPermission("violations.pay") && hasPermission("payments.create") && (
                 <button type="button" className="rc-btn pri" onClick={() => setPaying(true)}>
                   <Wallet />
                   {isAr ? "سدّد المخالفة" : "Pay"}

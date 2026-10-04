@@ -7,7 +7,7 @@ export const FILE_MODULE_PERMISSIONS: Record<string, string> = {
   employee: "employees.view", "employee-document": "employeeDocuments.view", "employee-documents": "employees.view",
   "company-document": "companyDocuments.view", payment: "payments.view",
   "company-logo": "settings.view", "company-favicon": "settings.view", "company-stamp": "settings.view", "company-signature": "settings.view",
-  "user-avatar": "users.view", violation: "violations.view",
+  "user-avatar": "users.view", violation: "violations.view", "tax-return": "payments.view",
 };
 
 export function assertFileAccess(file: { module: string | null; uploadedById: string | null; relatedId: string | null }, auth: AuthContext | undefined, action: "view" | "download" | "delete" = "view") {
@@ -22,6 +22,13 @@ export function assertFileAccess(file: { module: string | null; uploadedById: st
     if (required && !hasPermission(auth, required)) throw ApiError.forbidden("Document download permission is required.");
   }
   if (action === "delete" && !hasPermission(auth, "files.delete")) throw ApiError.forbidden("You cannot delete this file.");
+}
+
+export async function assertLinkedFileAccess(id: string | null | undefined, auth: AuthContext | undefined, modules: string[]) {
+  if (!id) return;
+  const file = await prisma.file.findUnique({ where: { id }, select: { module: true, uploadedById: true, relatedId: true } });
+  if (!file || !modules.includes(file.module ?? "")) throw ApiError.badRequest("Attachment does not belong to this document module.");
+  assertFileAccess(file, auth);
 }
 
 export async function isPublicBrandAsset(file: { id: string; mimeType: string; module?: string | null }) {

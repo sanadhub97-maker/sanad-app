@@ -36,7 +36,7 @@ export async function loadAuthContext(userId: string): Promise<AuthContext | nul
   }
 
   const financeAccess = isSuperAdmin || roles.some(role => ["Admin", "Accountant"].includes(role));
-  if (!financeAccess) for (const key of permissions) if (key.startsWith("payments.")) permissions.delete(key);
+  if (!financeAccess) for (const key of permissions) if (key.startsWith("payments.") || key.startsWith("taxReturns.") || key === "violations.pay") permissions.delete(key);
   return { userId: user.id, fullName: user.fullName, email: user.email, roles, permissions, isSuperAdmin, financeAccess, avatarFileId: user.avatarFileId, avatarKey: user.avatarKey };
 }
 

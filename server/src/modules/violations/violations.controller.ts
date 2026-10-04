@@ -6,43 +6,50 @@ import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
 import { tableReportPdf } from "@/modules/pdf/templates";
 import * as service from "@/modules/violations/violations.service";
 import { L, isEn } from "@/services/lang";
+import { assertLinkedFileAccess } from "@/modules/files/files.access";
+import { visiblePaymentLink } from "@/lib/financialVisibility";
 
 type Row = Record<string, unknown>;
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
-  res.json(await service.list(req.query as never));
+  const result = await service.list(req.query as never);
+  res.json({ ...result, data: result.data.map(item => visiblePaymentLink(item, req.auth)) });
 });
 export const stats = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ data: await service.stats() });
 });
 export const get = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.getById(String(req.params.id)) });
+  res.json({ data: visiblePaymentLink(await service.getById(String(req.params.id)), req.auth) });
 });
 export const create = asyncHandler(async (req: Request, res: Response) => {
-  res.status(201).json({ data: await service.create(req.body, req.auth?.userId) });
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["violation"]);
+  res.status(201).json({ data: visiblePaymentLink(await service.create(req.body, req.auth?.userId), req.auth) });
 });
 export const update = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.update(String(req.params.id), req.body, req.auth?.userId) });
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["violation"]);
+  res.json({ data: visiblePaymentLink(await service.update(String(req.params.id), req.body, req.auth?.userId), req.auth) });
 });
 export const remove = asyncHandler(async (req: Request, res: Response) => {
   await service.softDelete(String(req.params.id));
   res.json({ message: "Violation deleted." });
 });
 export const pay = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.pay(String(req.params.id), req.body, req.auth!.userId) });
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["payment"]);
+  res.json({ data: visiblePaymentLink(await service.pay(String(req.params.id), req.body, req.auth!.userId), req.auth) });
 });
 export const objection = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.objection(String(req.params.id), req.body, req.auth?.userId) });
+  await assertLinkedFileAccess(req.body.fileId, req.auth, ["violation"]);
+  res.json({ data: visiblePaymentLink(await service.objection(String(req.params.id), req.body, req.auth?.userId), req.auth) });
 });
 export const objectionResult = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.objectionResult(String(req.params.id), req.body, req.auth?.userId) });
+  res.json({ data: visiblePaymentLink(await service.objectionResult(String(req.params.id), req.body, req.auth?.userId), req.auth) });
 });
 export const apply = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ data: await service.apply(String(req.params.id), req.body, req.auth?.userId) });
+  res.json({ data: visiblePaymentLink(await service.apply(String(req.params.id), req.body, req.auth?.userId), req.auth) });
 });
 export const related = asyncHandler(async (req: Request, res: Response) => {
   const q = req.query as Record<string, string | undefined>;
-  res.json({ data: await service.relatedOptions(q.employeeId, q.branchId) });
+  res.json({ data: await service.relatedOptions(q.employeeId, q.branchId, req.auth!) });
 });
 
 const STATE: Record<string, [string, string, string]> = {

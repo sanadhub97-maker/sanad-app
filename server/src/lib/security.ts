@@ -5,6 +5,7 @@ import type { Prisma } from "@prisma/client";
 export const SOURCE_PERMISSIONS: Record<string, string> = {
   EMPLOYEE_IQAMA: "employees.view", EMPLOYEE_PASSPORT: "employees.view", EMPLOYEE_DOCUMENT: "employeeDocuments.view",
   COMPANY_DOCUMENT: "companyDocuments.view", PAYMENT: "payments.view", DAILY_TASK: "tasks.view",
+  VIOLATION: "violations.view", TAX_RETURN: "payments.view",
 };
 
 export function canViewSource(auth: AuthContext | null | undefined, source: string) {
@@ -17,7 +18,7 @@ export function notificationVisibility(auth: AuthContext): Prisma.NotificationWh
 }
 
 export function hasPermission(auth: AuthContext | undefined, key: string): boolean {
-  if (key.startsWith("payments.") && auth?.financeAccess === false) return false;
+  if ((key.startsWith("payments.") || key.startsWith("taxReturns.") || key === "violations.pay") && auth?.financeAccess === false) return false;
   return Boolean(auth && (auth.isSuperAdmin || auth.permissions.has("*") || auth.permissions.has(key)));
 }
 

@@ -31,7 +31,7 @@ router.post("/", requirePermission("violations.create"), validate({ body: create
 router.patch("/:id", requirePermission("violations.edit"), validate({ params: idParamSchema, body: updateViolationSchema }), auditLog(AuditAction.UPDATE, "violations"), controller.update);
 router.delete("/:id", requirePermission("violations.delete"), validate({ params: idParamSchema }), auditLog(AuditAction.DELETE, "violations"), controller.remove);
 
-router.post("/:id/pay", requirePermission("violations.pay"), validate({ params: idParamSchema, body: paySchema }), auditLog(AuditAction.UPDATE, "violations", { description: () => "Paid with a payment voucher" }), controller.pay);
+router.post("/:id/pay", requirePermission("violations.pay"), requirePermission("payments.create"), validate({ params: idParamSchema, body: paySchema }), auditLog(AuditAction.UPDATE, "violations", { description: () => "Paid with a payment voucher" }), controller.pay);
 router.post("/:id/objection", requirePermission("violations.edit"), validate({ params: idParamSchema, body: objectionSchema }), auditLog(AuditAction.UPDATE, "violations", { description: () => "Objection filed" }), controller.objection);
 router.post("/:id/objection-result", requirePermission("violations.edit"), validate({ params: idParamSchema, body: objectionResultSchema }), auditLog(AuditAction.UPDATE, "violations", { description: () => "Objection result" }), controller.objectionResult);
 router.post("/:id/apply", requirePermission("violations.edit"), validate({ params: idParamSchema, body: applySchema }), auditLog(AuditAction.UPDATE, "violations", { description: () => "Penalty applied" }), controller.apply);

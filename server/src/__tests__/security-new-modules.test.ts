@@ -1,0 +1,40 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import express from "express";
+import request from "supertest";
+import type { AuthContext } from "@/types/express";
+const mocks = vi.hoisted(() => ({ auth: undefined as unknown, file: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({ prisma: { file: { findUnique: mocks.file } } }));
+vi.mock("@/middleware/auth", () => ({ requireAuth: (req: any, _res: any, next: any) => { req.auth = mocks.auth; next(); } }));
+vi.mock("@/middleware/audit", () => ({ auditLog: () => (_req: any, _res: any, next: any) => next() }));
+vi.mock("@/modules/taxReturns/taxReturns.controller", () => Object.fromEntries(["list", "get", "create", "update", "remove", "statsAndAlerts"].map(key => [key, (_req: any, res: any) => res.json({ success: true })])));
+vi.mock("@/modules/violations/violations.controller", () => Object.fromEntries(["list", "stats", "get", "create", "update", "remove", "pay", "objection", "objectionResult", "apply", "related", "exportViolations"].map(key => [key, (_req: any, res: any) => res.json({ success: true })])));
+import taxes from "@/modules/taxReturns/taxReturns.routes";
+import violations from "@/modules/violations/violations.routes";
+import { assertLinkedFileAccess } from "@/modules/files/files.access";
+import { canViewSource, notificationVisibility } from "@/lib/security";
+import { createTaxReturnSchema } from "@/modules/taxReturns/taxReturns.schemas";
+import { visiblePaymentLink } from "@/lib/financialVisibility";
+const auth = (permissions: string[], financeAccess = false): AuthContext => ({ userId: "fixture", fullName: "Fixture", email: "test@example.invalid", roles: ["Fixture"], permissions: new Set(permissions), isSuperAdmin: false, financeAccess });
+const app = express(); app.use(express.json()); app.use("/tax", taxes); app.use("/violations", violations); app.use((err: any, _req: any, res: any, _next: any) => res.status(err.statusCode || 500).json({ message: err.message }));
+beforeEach(() => { vi.resetAllMocks(); mocks.auth = auth([]); });
+describe("New-module privilege boundaries", () => {
+  it("removes linked payment details from non-finance responses", () => {
+    const original = { reason: "Fixture", paymentId: "payment", payment: { total: 500, paymentNumber: "PAY-1" } };
+    expect(visiblePaymentLink(original, auth(["violations.view"]))).toEqual({ reason: "Fixture", paymentId: null, payment: null });
+    expect(original.paymentId).toBe("payment");
+    expect(visiblePaymentLink(original, auth(["payments.view"], true))).toBe(original);
+  });
+  it.each([["taxReturns.view"], ["*"], ["payments.view", "taxReturns.view"]])("rejects tax access outside finance despite permissions %s", async permissions => {
+    mocks.auth = auth(permissions); expect((await request(app).get("/tax")).status).toBe(403);
+  });
+  it("allows a finance viewer to read tax declarations", async () => { mocks.auth = auth(["payments.view"], true); expect((await request(app).get("/tax")).status).toBe(200); });
+  it("does not let a violation-only role create a payment", async () => { mocks.auth = auth(["violations.pay"], false); expect((await request(app).post("/violations/id/pay").send({ date: "2026-10-04", method: "CASH" })).status).toBe(403); });
+  it("requires payment creation in addition to violation payment permission", async () => { mocks.auth = auth(["violations.pay", "payments.view"], true); expect((await request(app).post("/violations/id/pay").send({ date: "2026-10-04", method: "CASH" })).status).toBe(403); });
+  it("allows the properly authorized finance role to pay a violation", async () => { mocks.auth = auth(["violations.pay", "payments.create"], true); expect((await request(app).post("/violations/id/pay").send({ date: "2026-10-04", method: "CASH" })).status).toBe(200); });
+  it("denies notification sources when the underlying module is forbidden", () => { const user = auth([]); expect(canViewSource(user, "VIOLATION")).toBe(false); expect(canViewSource(user, "TAX_RETURN")).toBe(false); expect(JSON.stringify(notificationVisibility(user))).toContain("VIOLATION"); });
+  it("rejects a cross-module attachment even with access to its original module", async () => { mocks.file.mockResolvedValue({ module: "employee", uploadedById: "fixture", relatedId: "employee" }); await expect(assertLinkedFileAccess("file", auth(["employees.view"]), ["tax-return"])).rejects.toThrow("Attachment"); });
+  it("rejects finance attachments without finance access", async () => { mocks.file.mockResolvedValue({ module: "payment", uploadedById: "fixture", relatedId: null }); await expect(assertLinkedFileAccess("file", auth(["payments.view"]), ["payment"])).rejects.toThrow("access"); });
+  it("allows a correctly scoped attachment", async () => { mocks.file.mockResolvedValue({ module: "violation", uploadedById: "fixture", relatedId: null }); await expect(assertLinkedFileAccess("file", auth(["violations.view"]), ["violation"])).resolves.toBeUndefined(); });
+  it.each([{ dueDate: "2026-02-30" }, { salesStandard: Infinity }, { penalty: -1 }, { notes: "x".repeat(4001) }])("rejects invalid tax input %j", extra => { expect(createTaxReturnSchema.safeParse({ kind: "VAT", year: 2026, quarter: 1, dueDate: "2026-04-30", ...extra }).success).toBe(false); });
+  it("permits a negative VAT refund rather than treating it as invalid", () => { expect(createTaxReturnSchema.safeParse({ kind: "VAT", year: 2026, quarter: 1, dueDate: "2026-04-30", amount: -150 }).success).toBe(true); });
+});
