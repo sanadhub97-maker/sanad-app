@@ -6,7 +6,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
 import { renderHtmlToPdf } from "@/services/pdf";
-import { getBrandingContext, getPrintLogoPng } from "@/services/branding";
+import { getBrandingContext, getSpreadsheetBranding } from "@/services/branding";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { actionLabel, moduleLabel } from "@/constants/auditLabels";
 import { tableReportPdf, statusBadge } from "@/modules/pdf/templates";
@@ -14,6 +14,9 @@ import { L, isEn } from "@/services/lang";
 import * as service from "@/modules/reports/reports.service";
 
 type Row = Record<string, unknown>;
+export const summary = asyncHandler(async (req: Request, res: Response) => {
+  res.json({ data: await service.reportSummary(req.auth!) });
+});
 
 /* Every report prints in the interface language (services/lang): Arabic
    headers and values for Arabic, English ones for English. */
@@ -50,12 +53,12 @@ async function respond(
   const { filenameBase, format, columns, rows } = opts;
   const title = L(opts.title, opts.titleEn);
   if (format === "json") return res.json({ data: rows });
-  const branding = await getBrandingContext();
 
   if (format === "xlsx") {
+    const branding = await getSpreadsheetBranding();
     const name = isEn() ? branding.company?.nameEn || branding.company?.nameAr : branding.company?.nameAr || branding.company?.nameEn;
     const buffer = await buildWorkbook(title, columns, rows, {
-      logo: await getPrintLogoPng(),
+      logo: branding.logo,
       title,
       companyName: name || undefined,
     });
@@ -72,6 +75,7 @@ async function respond(
   }
 
   if (format === "pdf") {
+    const branding = await getBrandingContext("report");
     const pdfColumns = columns.map((c) => ({
       header: c.header,
       subHeader: c.subHeader,

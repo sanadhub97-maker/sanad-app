@@ -3,14 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
 import { getPrintThemeSetting, getPrintSignatures } from "@/services/settingsStore";
+import type { SignatureDocument } from "@/services/settingsStore";
 
+const logoCache = new Map<string, Promise<{ buffer: Buffer; mimeType: string } | null>>();
 async function readPrintLogo(company: { printLogoFileId: string | null; logoFileId: string | null } | null) {
   // A dedicated print logo wins; otherwise the light-mode logo (prints are on white paper).
   const printLogoId = company?.printLogoFileId || company?.logoFileId;
   if (!printLogoId) return null;
+  let pending = logoCache.get(printLogoId);
+  if (!pending) {
+    if (logoCache.size >= 32) logoCache.clear();
+    pending = loadPrintLogo(printLogoId).catch(error => { logoCache.delete(printLogoId); throw error; });
+    logoCache.set(printLogoId, pending);
+  }
+  return pending;
+}
+async function loadPrintLogo(printLogoId: string) {
   const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
   if (!logoFile || logoFile.module !== "company-logo" || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
-  return { buffer: await storage.read(logoFile.storedName), mimeType: logoFile.mimeType };
+  const raw = await storage.read(logoFile.storedName);
+  const buffer = await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png().toBuffer();
+  return { buffer, mimeType: "image/png" };
 }
 
 // Stamp/signature images, shrunk once per file and kept: they print about
@@ -97,7 +110,7 @@ async function brandColorOf(fileId: string | null | undefined, buffer: Buffer | 
 /** Company identity + logo (as a data: URL) for embedding into PDF/print
  * templates (§28/§33/§54) — logo/stamp/signature always come from whatever
  * the admin uploaded in Settings → Company, never hard-coded. */
-export async function getBrandingContext() {
+export async function getBrandingContext(kind?: SignatureDocument) {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   const logo = await readPrintLogo(company);
   const logoDataUrl = logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null;
@@ -108,7 +121,8 @@ export async function getBrandingContext() {
     brandColorOf(company?.printLogoFileId || company?.logoFileId, logo?.buffer),
   ]);
   // Name images of every signature box, by file id.
-  const nameIds = [...new Set([signatures.report, signatures.voucher, signatures.profile].flatMap((d) => d.boxes.map((b) => b.nameFileId)).filter(Boolean))] as string[];
+  const documents = kind ? [signatures[kind]] : [signatures.report, signatures.voucher, signatures.profile];
+  const nameIds = [...new Set(documents.flatMap((d) => d.boxes.map((b) => b.nameFileId)).filter(Boolean))] as string[];
   const nameImages: Record<string, string> = {};
   await Promise.all(
     nameIds.map(async (id) => {
@@ -117,6 +131,11 @@ export async function getBrandingContext() {
     })
   );
   return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages, brandColor };
+}
+
+export async function getSpreadsheetBranding() {
+  const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
+  return { company, logo: await getPrintLogoPng() };
 }
 
 // The WhatsApp alert cards use the logo twice: whole, and — for small round

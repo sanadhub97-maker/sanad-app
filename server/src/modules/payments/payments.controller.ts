@@ -40,7 +40,7 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 
 export const receiptPdf = asyncHandler(async (req: Request, res: Response) => {
   const payment = await service.getById(String(req.params.id));
-  const branding = await getBrandingContext();
+  const branding = await getBrandingContext("voucher");
   const html = paymentReceiptPdf(payment as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: L("سند صرف", "Payment Receipt") });
   res.setHeader("Content-Type", "application/pdf");

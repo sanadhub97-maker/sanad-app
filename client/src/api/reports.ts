@@ -2,6 +2,13 @@ import { api } from "@/lib/api";
 import { downloadFile } from "@/lib/download";
 
 export type ReportFormat = "json" | "xlsx" | "pdf" | "csv";
+export interface ReportSummary {
+  documents: { total: number; expired: number; soon: number } | null;
+  employees: { total: number; active: number } | null;
+  payments: { total: number; count: number } | null;
+  activity: number | null;
+}
+export const fetchReportSummary = () => fetchJson<ReportSummary>("/reports/summary", {});
 
 async function fetchJson<T>(path: string, params: Record<string, unknown>) {
   const res = await api.get<{ data: T }>(path, { params: { ...params, format: "json" } });

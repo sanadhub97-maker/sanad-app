@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ApiError } from "@/utils/apiError";
-import { canViewSource } from "@/lib/security";
+import { canViewSource, hasPermission } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
 import { prisma } from "@/lib/prisma";
 import { computeStatus } from "@/services/expiration";
@@ -15,6 +15,22 @@ import type {
 } from "@/modules/reports/reports.schemas";
 
 const REPORT_ROW_CAP = 10_000;
+export async function reportSummary(auth: AuthContext) {
+  const since = new Date(Date.now() - 30 * 86_400_000);
+  const [documents, employees, activeEmployees, payments, activity] = await Promise.all([
+    ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(key => hasPermission(auth, key)) ? (async () => {
+      const [items, rules] = await Promise.all([getTrackableItems(), getExpirationRules()]);
+      const visible = items.filter(item => canViewSource(auth, item.sourceType));
+      const statuses = visible.map(item => computeStatus(item.expiryDate, rules));
+      return { total: visible.length, expired: statuses.filter(status => status === "EXPIRED").length, soon: statuses.filter(status => status === "EXPIRING_SOON").length };
+    })() : null,
+    hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null } }) : null,
+    hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null, employmentStatus: "ACTIVE" } }) : null,
+    hasPermission(auth, "payments.view") ? prisma.payment.aggregate({ where: { deletedAt: null, paymentDate: { gte: since } }, _sum: { total: true }, _count: { _all: true } }) : null,
+    hasPermission(auth, "auditLogs.view") ? prisma.auditLog.count({ where: { createdAt: { gte: since } } }) : null,
+  ]);
+  return { documents, employees: employees === null ? null : { total: employees, active: activeEmployees ?? 0 }, payments: payments ? { total: Number(payments._sum.total ?? 0), count: payments._count._all } : null, activity };
+}
 function requireCompleteReport<T>(rows: T[]): T[] {
   if (rows.length > REPORT_ROW_CAP) throw ApiError.badRequest("التقرير يتجاوز 10000 سجل. ضيّق نطاق التقرير باستخدام الفلاتر لضمان تصدير جميع البيانات.");
   return rows;

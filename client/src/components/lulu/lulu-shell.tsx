@@ -30,6 +30,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useUiStore } from "@/stores/uiStore";
 import { translateRoleName } from "@/lib/role-display";
 import { cn } from "@/lib/utils";
+import { preloadPage } from "@/lib/page-preload";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
    tablets), a sticky glass header that holds each page's title and actions,
@@ -254,7 +255,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
                     const on = isOnPath(path, item.href);
                     const b = badges[item.href];
                     return (
-                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} style={{ ["--nc" as string]: item.color }} aria-current={on ? "page" : undefined}>
+                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onPointerEnter={() => preloadPage(item.href)} onFocus={() => preloadPage(item.href)} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} style={{ ["--nc" as string]: item.color }} aria-current={on ? "page" : undefined}>
                         <span className="i">
                           <Icon />
                         </span>

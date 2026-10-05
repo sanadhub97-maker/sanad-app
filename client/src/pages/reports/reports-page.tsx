@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Activity, ArrowDownToLine, Bell, Building2, ChevronLeft, Clock, FileSpreadsheet, FileText, Printer, User, Users, Wallet, type LucideIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/common/page-header";
-import { reportsApi } from "@/api/reports";
+import { reportsApi, fetchReportSummary } from "@/api/reports";
 import { listActiveBranches } from "@/api/branches";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency } from "@/lib/utils";
@@ -88,20 +88,17 @@ export default function ReportsPage() {
   }, [open]);
 
   // The figures on the cards
-  const since30 = useMemo(() => daysAgo(30).toISOString(), []);
-  const { data: allDocs } = useQuery({ queryKey: ["reports", "documents", {}], queryFn: () => reportsApi.documents.fetch({}) as Promise<DocumentRow[]>, staleTime: 60_000, enabled: canReadReport("documents") });
-  const { data: allEmps } = useQuery({ queryKey: ["reports", "employees", {}], queryFn: () => reportsApi.employees.fetch({}) as Promise<EmployeeRow[]>, staleTime: 60_000, enabled: canReadReport("employees") });
-  const { data: monthPays } = useQuery({ queryKey: ["reports", "payments", { dateFrom: since30 }], queryFn: () => reportsApi.payments.fetch({ dateFrom: since30 }) as Promise<PaymentRow[]>, staleTime: 60_000, enabled: canReadReport("payments") });
-  const { data: monthAct } = useQuery({ queryKey: ["reports", "activity", { dateFrom: since30 }], queryFn: () => reportsApi.activity.fetch({ dateFrom: since30 }) as Promise<ActivityRow[]>, staleTime: 60_000, enabled: canReadReport("activity") });
+  const { data: summary } = useQuery({ queryKey: ["reports", "summary"], queryFn: fetchReportSummary, staleTime: 60_000 });
   const { data: branches = [] } = useQuery({ queryKey: ["active-branches"], queryFn: listActiveBranches, staleTime: 300_000, enabled: hasPermission("branches.view") });
 
-  const docs = allDocs ?? [];
-  const nExpired = docs.filter((d) => d.status === "EXPIRED").length;
-  const nSoon = docs.filter((d) => d.status === "EXPIRING_SOON").length;
-  const emps = allEmps ?? [];
-  const pays = monthPays ?? [];
-  const paid = pays.reduce((n, p) => n + Number(p.total || 0), 0);
-  const acts = monthAct ?? [];
+  const docCount = summary?.documents?.total ?? 0;
+  const nExpired = summary?.documents?.expired ?? 0;
+  const nSoon = summary?.documents?.soon ?? 0;
+  const employeeCount = summary?.employees?.total ?? 0;
+  const activeEmployeeCount = summary?.employees?.active ?? 0;
+  const paymentCount = summary?.payments?.count ?? 0;
+  const paid = summary?.payments?.total ?? 0;
+  const activityCount = summary?.activity ?? 0;
 
   // The open report, with its filters
   const look = open && open !== "tax" && open !== "violations" ? TILE_LOOK[open] : null;
@@ -128,12 +125,12 @@ export default function ReportsPage() {
   const figure: Record<TileId, { value: string | number; sub: string; parts?: [number, string][] }> = {
     expired: { value: nExpired, sub: L("وثيقة منتهية", "expired"), parts: [[nExpired, "var(--bad)"]] },
     soon: { value: nSoon, sub: L("تنتهي خلال 30 يوم", "end within 30 days"), parts: [[nSoon, "var(--warn)"]] },
-    documents: { value: docs.length, sub: L("وثيقة", "documents"), parts: [[nExpired, "var(--bad)"], [nSoon, "var(--warn)"], [docs.length - nExpired - nSoon, "var(--ok)"]] },
-    employees: { value: emps.length, sub: L(`موظف · ${emps.filter((e) => e.employmentStatus === "ACTIVE").length} على رأس العمل`, `employees · ${emps.filter((e) => e.employmentStatus === "ACTIVE").length} on duty`) },
-    payments: { value: formatCurrency(paid), sub: L(`${pays.length} دفعة في آخر 30 يوم`, `${pays.length} payments in 30 days`) },
-    activity: { value: acts.length, sub: L("عملية في آخر 30 يوم", "actions in 30 days") },
+    documents: { value: docCount, sub: L("وثيقة", "documents"), parts: [[nExpired, "var(--bad)"], [nSoon, "var(--warn)"], [docCount - nExpired - nSoon, "var(--ok)"]] },
+    employees: { value: employeeCount, sub: L(`موظف · ${activeEmployeeCount} على رأس العمل`, `employees · ${activeEmployeeCount} on duty`) },
+    payments: { value: formatCurrency(paid), sub: L(`${paymentCount} دفعة في آخر 30 يوم`, `${paymentCount} payments in 30 days`) },
+    activity: { value: activityCount, sub: L("عملية في آخر 30 يوم", "actions in 30 days") },
   };
-  const docsTotal = Math.max(1, docs.length);
+  const docsTotal = Math.max(1, docCount);
   const branchName = (ar?: string | null, en?: string | null) => localized(ar, en);
 
   return (
@@ -142,10 +139,10 @@ export default function ReportsPage() {
 
       <Kpis
         items={[
-          { label: L("وثائق منتهية", "Expired documents"), value: allDocs ? nExpired : "—", sub: L("تحتاج تجديد فورًا", "Renew now"), hero: true, onClick: () => openTile("expired"), active: open === "expired" },
-          { label: L("تنتهي خلال 30 يوم", "Ending within 30 days"), value: allDocs ? nSoon : "—", sub: L("جهّز التجديد", "Get the renewal ready"), tone: "warn", onClick: () => openTile("soon"), active: open === "soon" },
-          { label: L("الموظفون", "Employees"), value: allEmps ? emps.length : "—", sub: L("في كل المؤسسات", "Across the establishments"), tone: "pri", onClick: () => openTile("employees"), active: open === "employees" },
-          { label: L("مدفوعات آخر 30 يوم", "Payments, last 30 days"), value: monthPays ? formatCurrency(paid) : "—", sub: L(`${pays.length} دفعة`, `${pays.length} payments`), tone: "vio", onClick: () => openTile("payments"), active: open === "payments" },
+          { label: L("وثائق منتهية", "Expired documents"), value: summary?.documents ? nExpired : "—", sub: L("تحتاج تجديد فورًا", "Renew now"), hero: true, onClick: () => openTile("expired"), active: open === "expired" },
+          { label: L("تنتهي خلال 30 يوم", "Ending within 30 days"), value: summary?.documents ? nSoon : "—", sub: L("جهّز التجديد", "Get the renewal ready"), tone: "warn", onClick: () => openTile("soon"), active: open === "soon" },
+          { label: L("الموظفون", "Employees"), value: summary?.employees ? employeeCount : "—", sub: L("في كل المؤسسات", "Across the establishments"), tone: "pri", onClick: () => openTile("employees"), active: open === "employees" },
+          { label: L("مدفوعات آخر 30 يوم", "Payments, last 30 days"), value: summary?.payments ? formatCurrency(paid) : "—", sub: L(`${paymentCount} دفعة`, `${paymentCount} payments`), tone: "vio", onClick: () => openTile("payments"), active: open === "payments" },
         ]}
       />
 
@@ -172,7 +169,7 @@ export default function ReportsPage() {
               </div>
               {f.parts && (
                 <div className="rc-rp-bar" aria-hidden="true">
-                  {f.parts.map(([v, c], k) => (v ? <i key={k} style={{ width: `${(v / (id === "documents" ? docsTotal : Math.max(1, docs.length))) * 100}%`, background: c }} /> : null))}
+                  {f.parts.map(([v, c], k) => (v ? <i key={k} style={{ width: `${(v / (id === "documents" ? docsTotal : Math.max(1, docCount))) * 100}%`, background: c }} /> : null))}
                   {id !== "documents" && sum === 0 && <i style={{ width: "100%", background: "var(--ok)" }} />}
                 </div>
               )}

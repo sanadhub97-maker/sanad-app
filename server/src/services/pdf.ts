@@ -105,6 +105,11 @@ export async function closePdfBrowser() {
   }
 }
 
+/** Start the shared renderer before the first export, without rendering data. */
+export async function warmPdfBrowser() {
+  await getBrowser();
+}
+
 /** The designs' Arabic labels in English, for documents printed in English. */
 const EN_LABELS: [RegExp, string][] = [
   [/تاريخ الإصدار/g, "Issue date"],

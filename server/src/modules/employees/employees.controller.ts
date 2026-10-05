@@ -37,7 +37,7 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 
 export const exportPdf = asyncHandler(async (req: Request, res: Response) => {
   const employee = await service.getById(String(req.params.id), req.auth);
-  const branding = await getBrandingContext();
+  const branding = await getBrandingContext("profile");
   const html = employeeProfilePdf(employee as never, branding);
   const pdf = await renderHtmlToPdf(html, { footerLabel: L("ملف الموظف", "Employee Profile") });
   res.setHeader("Content-Type", "application/pdf");

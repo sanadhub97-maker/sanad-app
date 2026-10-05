@@ -4,7 +4,7 @@ const mock = vi.hoisted(() => ({ launch: vi.fn(), pdf: vi.fn(), closePage: vi.fn
 vi.mock("puppeteer", () => ({ default: { launch: mock.launch } }));
 vi.mock("@/config/env", () => ({ env: { CLIENT_URL: "https://example.invalid", PDF_DISABLE_SANDBOX: false } }));
 vi.mock("@/lib/logger", () => ({ logger: { warn: vi.fn(), error: vi.fn() } }));
-import { bundledRenderResource, closePdfBrowser, renderHtmlToPdf } from "@/services/pdf";
+import { bundledRenderResource, closePdfBrowser, renderHtmlToPdf, warmPdfBrowser } from "@/services/pdf";
 function browser() {
   const instance = { connected: true, close: vi.fn(async () => { instance.connected = false; }), newPage: vi.fn(async () => ({ setJavaScriptEnabled: vi.fn(), setRequestInterception: vi.fn(), on: vi.fn(), setViewport: vi.fn(), emulateMediaType: vi.fn(), setContent: vi.fn(), waitForNetworkIdle: mock.networkIdle, evaluate: mock.evaluate, pdf: mock.pdf, close: mock.closePage })) };
   return instance;
@@ -12,6 +12,14 @@ function browser() {
 beforeEach(() => { vi.resetAllMocks(); mock.pdf.mockResolvedValue(Buffer.from("%PDF-1.7")); mock.closePage.mockResolvedValue(undefined); mock.networkIdle.mockResolvedValue(undefined); mock.evaluate.mockResolvedValue(true); });
 afterEach(async () => { await closePdfBrowser(); });
 describe("PDF browser recovery and resource limits", () => {
+  it("warms the renderer without opening a document, then reuses it for export", async () => {
+    const instance = browser();
+    mock.launch.mockResolvedValue(instance);
+    await warmPdfBrowser();
+    expect(instance.newPage).not.toHaveBeenCalled();
+    await renderHtmlToPdf("<html>synthetic</html>");
+    expect(mock.launch).toHaveBeenCalledOnce();
+  });
   it("serves every declared print font from the local bundle", () => {
     const css=bundledRenderResource(PRINT_FONTS_HREF);
     expect(css?.contentType).toContain("text/css");

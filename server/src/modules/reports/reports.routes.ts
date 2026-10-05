@@ -15,6 +15,7 @@ import {
 
 const router = Router();
 router.use(requireAuth, requirePermission("reports.view"));
+router.get("/summary", controller.summary);
 router.use((req, _res, next) => {
   if (req.query.format && req.query.format !== "json" && !hasPermission(req.auth, "reports.export")) return next(ApiError.forbidden("Report export permission is required."));
   next();
