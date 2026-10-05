@@ -61,6 +61,7 @@ export const PAYMENT_CATEGORIES = [
   "WATER",
   "MAINTENANCE",
   "PURCHASES",
+  "SUBSCRIPTION",
 ] as const;
 
 /** Sub-types a category requires (labels in i18n paymentSubtypes.*). Keep in

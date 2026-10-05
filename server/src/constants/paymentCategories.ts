@@ -22,6 +22,7 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   WATER: "مياه",
   MAINTENANCE: "صيانة",
   PURCHASES: "مشتريات",
+  SUBSCRIPTION: "اشتراك",
 
   // Older categories no longer offered in the form, kept for existing records
   // السجل التجاري والتراخيص
@@ -81,6 +82,7 @@ const PAYMENT_CATEGORY_LABELS_EN: Record<string, string> = {
   WATER: "Water",
   MAINTENANCE: "Maintenance",
   PURCHASES: "Purchases",
+  SUBSCRIPTION: "Subscription",
   COMMERCIAL_REGISTRATION_ISSUE: "Commercial registration — issue",
   COMMERCIAL_REGISTRATION_RENEWAL: "Commercial registration — renewal",
   COMMERCIAL_REGISTRATION_AMENDMENT: "Commercial registration — amendment",
