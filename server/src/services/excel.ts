@@ -63,7 +63,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const companyTitle = options.companyName || L("منظومة سند للحلول الرقمية وإدارة الموارد البشرية", "SanaD Enterprise HR");
 
   // Create worksheet with RTL enabled and frozen pane below header row (row 4)
-  const sheet = workbook.addWorksheet(sheetName.slice(0, 31), {
+  const sheet = workbook.addWorksheet(sheetName.replace(/[\\/?*\[\]:\x00-\x1f]/g, " ").replace(/^'+|'+$/g, "").trim().slice(0, 31) || "Report", {
     views: [{ state: "frozen", ySplit: 4, rightToLeft: !isEn() }],
     pageSetup: {
       paperSize: 9, // A4

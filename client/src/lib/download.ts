@@ -29,8 +29,9 @@ function responseFilename(disposition: string | undefined, fallback: string) {
   return (name ?? fallback).split(/[\\/]/).pop()?.replace(/[\x00-\x1f\x7f]/g, "") || fallback;
 }
 
-async function prepareBlob(blob: Blob, pdf: boolean) {
+async function prepareBlob(blob: Blob, pdf: boolean, xlsx = false) {
   if (!blob.size || (pdf && await blob.slice(0, 5).text() !== "%PDF-")) throw new Error(tr("الملف المستلم غير صالح. يرجى إعادة المحاولة.", "The received file is invalid. Please try again."));
+  if (xlsx) { const bytes = new Uint8Array(await blob.slice(0, 4).arrayBuffer()); if (bytes[0] !== 0x50 || bytes[1] !== 0x4b || bytes[2] !== 0x03 || bytes[3] !== 0x04) throw new Error(tr("ملف Excel المستلم غير صالح. يرجى إعادة المحاولة.", "The received Excel file is invalid. Please try again.")); }
   return pdf && blob.type !== "application/pdf" ? new Blob([blob], { type: "application/pdf" }) : blob;
 }
 
@@ -53,7 +54,7 @@ export async function downloadFile(
     const res = await api.get(url, { params, responseType: "blob" });
     const disposition = res.headers["content-disposition"] as string | undefined;
     const filename = responseFilename(disposition, filenameFallback);
-    const blob = await prepareBlob(res.data as Blob, params.format === "pdf" || /\.pdf$/i.test(filename));
+    const blob = await prepareBlob(res.data as Blob, params.format === "pdf" || /\.pdf$/i.test(filename), params.format === "xlsx" || /\.xlsx$/i.test(filename));
 
     const blobUrl = window.URL.createObjectURL(blob);
     triggerDownload(blobUrl, filename);

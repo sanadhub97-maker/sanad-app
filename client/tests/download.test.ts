@@ -65,3 +65,14 @@ describe("PDF download and preview", () => {
     expect(newTab.close).toHaveBeenCalled(); expect(mocked.error).toHaveBeenCalled(); expect(anchor.click).not.toHaveBeenCalled();
   });
 });
+
+it("does not save a JSON error response as a corrupted Excel file", async () => {
+  mocked.get.mockResolvedValue({data:new Blob(['{"error":"failed"}'],{type:"application/json"}),headers:{}});
+  await expect(downloadFile("/reports/tax-declarations",{format:"xlsx"},"report.xlsx")).rejects.toThrow("Excel file is invalid");
+  expect(anchor.click).not.toHaveBeenCalled();
+});
+it("downloads a ZIP-based Excel response", async () => {
+  mocked.get.mockResolvedValue({data:new Blob([new Uint8Array([0x50,0x4b,0x03,0x04,1])]),headers:{"content-disposition":'attachment; filename="report.xlsx"'}});
+  await downloadFile("/reports/tax-declarations",{format:"xlsx"},"report.xlsx");
+  expect(anchor.click).toHaveBeenCalledOnce();
+});
