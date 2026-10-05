@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { localized } from "@/lib/names";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
-import { FileUpload } from "@/components/common/file-upload";
+import { MultiFileUpload } from "@/components/common/multi-file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
 import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } from "@/api/payments";
@@ -62,6 +62,7 @@ const makeSchema = () => z.object({
   supplierName: z.string().optional(),
   referenceNumber: z.string().optional(),
   fileId: z.string().optional(),
+  fileIds: z.array(z.string()).max(20).default([]),
   notes: z.string().optional(),
 }).superRefine((v, ctx) => {
   const subtypes = PAYMENT_SUBTYPES[v.category];
@@ -119,6 +120,7 @@ export function PaymentDialog({
   });
 
   const category = watch("category");
+  const [uploadingAttachments, setUploadingAttachments] = useState(false);
   const visaType = watch("type");
   const showEmployee = !!category && EMPLOYEE_CATEGORIES.includes(category);
   const subtypes = category ? PAYMENT_SUBTYPES[category] : undefined;
@@ -142,6 +144,7 @@ export function PaymentDialog({
               branchId: payment.branchId ?? undefined,
               paymentDate: toDateInputValue(payment.paymentDate),
               fileId: payment.fileId ?? undefined,
+              fileIds: payment.fileIds?.length ? payment.fileIds : payment.fileId ? [payment.fileId] : [],
             }) as FormValues)
           : {
               category: PAYMENT_CATEGORIES[0],
@@ -201,7 +204,7 @@ export function PaymentDialog({
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
+        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending || uploadingAttachments ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 💰 Section 1: Financial Calculations */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -508,12 +511,7 @@ export function PaymentDialog({
             </div>
 
             <div className="rounded-xl border border-border/80 bg-background/60 p-2 shadow-inner">
-              <FileUpload
-                fileId={watch("fileId")}
-                module="payment"
-                onUploaded={(fid) => setValue("fileId", fid)}
-                onRemoved={() => setValue("fileId", undefined)}
-              />
+              <MultiFileUpload fileIds={watch("fileIds") ?? []} onChange={ids => { setValue("fileIds", ids, { shouldDirty: true }); setValue("fileId", undefined); }} onBusyChange={setUploadingAttachments} />
             </div>
           </div>
         </form>
@@ -531,7 +529,7 @@ export function PaymentDialog({
           <Button
             form="payment-dialog-form"
             type="submit"
-            disabled={isSubmitting || mutation.isPending}
+            disabled={isSubmitting || mutation.isPending || uploadingAttachments}
             className="h-11 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white font-bold text-sm px-8 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}

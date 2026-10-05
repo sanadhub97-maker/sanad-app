@@ -25,6 +25,7 @@ const basePaymentSchema = z.object({
   supplierName: emptyToUndefined(z.string().max(150).optional()),
   referenceNumber: emptyToUndefined(z.string().max(100).optional()),
   fileId: emptyToUndefined(z.string().optional()),
+  fileIds: z.array(z.string().min(1)).max(20).transform(ids => [...new Set(ids)]).optional(),
   notes: emptyToUndefined(z.string().max(2000).optional()),
 });
 

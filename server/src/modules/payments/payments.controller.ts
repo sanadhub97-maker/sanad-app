@@ -9,6 +9,7 @@ import { L } from "@/services/lang";
 import { pdfContentDisposition } from "@/utils/pdfHeaders";
 import { logger } from "@/lib/logger";
 import { pushPaymentCreated } from "@/services/pushAlerts";
+import { assertLinkedFileAccess } from "@/modules/files/files.access";
 
 export const list = asyncHandler(async (req: Request, res: Response) => {
   res.json(await service.list(req.query as never));
@@ -20,12 +21,14 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
 
 export const create = asyncHandler(async (req: Request, res: Response) => {
   if (!req.auth) throw ApiError.unauthorized();
+  for (const id of new Set<string>([...(req.body.fileIds ?? []), ...(req.body.fileId ? [req.body.fileId] : [])])) await assertLinkedFileAccess(id, req.auth, ["payment"]);
   const payment = await service.create(req.body, req.auth.userId);
   pushPaymentCreated(payment.id, req.auth.userId).catch((err) => logger.warn({ err }, "Payment push failed"));
   res.status(201).json({ data: payment, message: "Payment saved successfully." });
 });
 
 export const update = asyncHandler(async (req: Request, res: Response) => {
+  for (const id of new Set<string>([...(req.body.fileIds ?? []), ...(req.body.fileId ? [req.body.fileId] : [])])) await assertLinkedFileAccess(id, req.auth, ["payment"]);
   const payment = await service.update(String(req.params.id), req.body);
   res.json({ data: payment, message: "Payment updated successfully." });
 });

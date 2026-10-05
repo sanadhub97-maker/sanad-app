@@ -527,6 +527,7 @@ model Payment {
   supplierName    String?
   referenceNumber String?
   fileId          String?
+  fileIds         String[]         @default([])
   notes           String?
   createdById     String
   createdAt       DateTime         @default(now())

@@ -130,6 +130,7 @@ export interface Payment {
   supplierName?: string | null;
   referenceNumber?: string | null;
   fileId?: string | null;
+  fileIds?: string[];
   notes?: string | null;
   createdBy?: { id: string; fullName: string };
   createdAt: string;

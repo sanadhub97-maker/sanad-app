@@ -85,7 +85,7 @@ export async function create(input: CreateInput, createdById: string) {
   }
 
   return prisma.payment.create({
-    data: { ...input, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
+    data: { ...input, fileIds: input.fileIds ?? (input.fileId ? [input.fileId] : []), fileId: input.fileIds ? input.fileIds[0] ?? null : input.fileId, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
     include: includeRelations,
   });
 }
@@ -108,7 +108,8 @@ export async function update(id: string, input: UpdateInput) {
   // `type` holds the sub-type (issue/renewal, visa kind…); drop it if the new category has none.
   const type = input.category && !PAYMENT_SUBTYPES[input.category] ? null : input.type;
 
-  return prisma.payment.update({ where: { id }, data: { ...input, type, amount, vat, total }, include: includeRelations });
+  const attachments = input.fileIds !== undefined ? { fileIds: input.fileIds, fileId: input.fileIds[0] ?? null } : input.fileId !== undefined ? { fileIds: [input.fileId], fileId: input.fileId } : {};
+  return prisma.payment.update({ where: { id }, data: { ...input, ...attachments, type, amount, vat, total }, include: includeRelations });
 }
 
 export async function softDelete(id: string) {
