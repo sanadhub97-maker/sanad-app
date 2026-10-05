@@ -46,6 +46,8 @@ router.put(
 
 router.get("/print-theme", requirePermission("settings.view"), controller.getPrintTheme);
 const signatureBox = z.object({
+  nameAr: z.string().trim().max(150).optional(),
+  nameEn: z.string().trim().max(150).optional(),
   ar: z.string().trim().min(1).max(80),
   en: z.string().trim().max(80).default(""),
   nameFileId: z.string().min(1).nullable().optional(),

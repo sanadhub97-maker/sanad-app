@@ -46,7 +46,7 @@ function NameImagePicker({
     if (!file) return;
     setUploading(true);
     try {
-      const uploaded = await filesApi.upload(file, "signature-name");
+      const uploaded = await filesApi.upload(file, "company-signature");
       onChange(uploaded.id);
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -57,7 +57,7 @@ function NameImagePicker({
 
   return (
     <div className="flex items-center gap-2">
-      <input id={inputId} type="file" accept=".png,.jpg,.jpeg,.svg" className="hidden" disabled={disabled} onChange={(e) => upload(e.target.files?.[0])} />
+      <input id={inputId} type="file" accept=".png,.jpg,.jpeg" className="hidden" disabled={disabled} onChange={(e) => upload(e.target.files?.[0])} />
       {fileId ? (
         <div className="flex h-10 min-w-[96px] max-w-[160px] items-center justify-center rounded-xl border border-border/70 bg-white px-2">
           <AuthedFileImage fileId={fileId} alt={isRtl ? "صورة الاسم" : "Name image"} className="max-h-8 max-w-full object-contain" />
@@ -126,11 +126,12 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
     });
 
   async function preview() {
+    if (dirty) { toast.error(isRtl ? "احفظ التغييرات أولًا لمعاينة أسماء المعتمدين الجديدة" : "Save changes before previewing the new approver names"); return; }
     setPreviewing(true);
     try {
-      // The preview is a report, rendered with the saved settings.
+      // Preview the selected document, with its own saved approvers.
       const theme = await settingsApi.getPrintTheme();
-      await openPdfInNewTab("/settings/print-theme/preview", { theme }, "print-signatures.pdf");
+      await openPdfInNewTab("/settings/print-theme/preview", { theme, doc }, "print-signatures.pdf");
     } catch {
       // openPdfInNewTab already reported it
     } finally {
@@ -258,6 +259,10 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
                   <Trash2 className="h-4 w-4" />
                 </Button>
                 <div className="space-y-1 sm:col-span-3">
+                  <Label>{isRtl ? "اسم المعتمد بالعربية" : "Approver name in Arabic"}</Label>
+                  <Input value={b.nameAr ?? ""} disabled={!canEdit} maxLength={150} onChange={e => update(d => void (d.signatures[doc].boxes[i].nameAr = e.target.value))} className="h-10 rounded-xl" />
+                  <Label>{isRtl ? "اسم المعتمد بالإنجليزية (اختياري)" : "Approver name in English (optional)"}</Label>
+                  <Input value={b.nameEn ?? ""} disabled={!canEdit} maxLength={150} dir="ltr" onChange={e => update(d => void (d.signatures[doc].boxes[i].nameEn = e.target.value))} className="h-10 rounded-xl" />
                   <span className="text-xs text-muted-foreground">{isRtl ? "صورة الاسم (بتظهر في سطر الاسم)" : "Name image (printed on the name line)"}</span>
                   <NameImagePicker
                     fileId={b.nameFileId}

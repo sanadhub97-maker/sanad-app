@@ -38,17 +38,18 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
   if (!boxes.length && !cfg.showSeal) return "";
 
   const date = printDate();
-  const box = (b: { ar: string; en: string; nameFileId?: string | null }) => {
+  const box = (b: { ar: string; en: string; nameAr?: string; nameEn?: string; nameFileId?: string | null }) => {
     const nameImg = b.nameFileId ? branding.nameImages?.[b.nameFileId] : null;
     // One language: the box title in the document's language only.
     const heading = isEn() ? b.en || b.ar : b.ar || b.en;
+    const name = isEn() ? b.nameEn || b.nameAr : b.nameAr || b.nameEn;
     return `
       <div class="sig-card">
         <div class="sig-card-header">
           <div class="sig-title-ar">${escHtml(heading)}</div>
         </div>
         <div class="sig-card-body">
-          <div class="sig-row"><span class="sig-label">${L("الاسم:", "Name:")}</span>${nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
+          <div class="sig-row"><span class="sig-label">${L("الاسم:", "Name:")}</span>${name ? `<span class="sig-name">${escapeHtml(name)}</span>` : nameImg ? `<span class="sig-name"><img src="${nameImg}" alt="" /></span>` : `<span class="sig-dots"></span>`}</div>
           <div class="sig-row"><span class="sig-label">${L("التوقيع:", "Signature:")}</span><span class="sig-dots"></span></div>
           <div class="sig-row"><span class="sig-label">${L("التاريخ:", "Date:")}</span><span class="sig-date">${date}</span></div>
         </div>

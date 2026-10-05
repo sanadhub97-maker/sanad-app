@@ -177,6 +177,8 @@ export async function setWhatsappScheduleSetting(input: Partial<WhatsappSchedule
 // Signature boxes and the seal at the end of every printed document
 // (Settings → Print). Defaults are the texts the templates always had.
 export interface SignatureBox {
+  nameAr?: string;
+  nameEn?: string;
   ar: string;
   en: string;
   /** An image printed on the box's name line (e.g. the signer's name plate). */

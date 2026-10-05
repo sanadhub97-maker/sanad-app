@@ -74,6 +74,8 @@ export interface CompanyBranding {
 }
 
 export interface SignatureBox {
+  nameAr?: string;
+  nameEn?: string;
   ar: string;
   en: string;
   /** Image printed on the box's name line. */
