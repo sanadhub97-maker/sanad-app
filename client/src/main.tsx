@@ -1,3 +1,5 @@
+import { shouldRetryQuery } from "@/lib/query-retry";
+import { installAuthCacheIsolation } from "@/lib/auth-query-cache";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -28,9 +30,10 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
+    queries: { retry: shouldRetryQuery, refetchOnWindowFocus: false, staleTime: 30_000 },
   },
 });
+installAuthCacheIsolation(queryClient);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

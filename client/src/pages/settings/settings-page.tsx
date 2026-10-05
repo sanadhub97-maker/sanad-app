@@ -173,7 +173,7 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+    <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
       {/* Group 1: Corporate Identity & Legal */}
       <Card className="specular-border overflow-hidden border-border/80">
         <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
@@ -492,7 +492,7 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
   }
 
   return (
-    <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+    <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
       {/* Theme Mode Selector */}
       <Card className="specular-border overflow-hidden border-border/80">
         <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
@@ -1011,7 +1011,7 @@ function EmailTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+      <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
         {/* Gateway Master Switch */}
         <Card className="specular-border overflow-hidden border-border/80">
           <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
@@ -1235,7 +1235,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-6">
+      <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
         {/* Gateway Master Switch & Form */}
         <Card className="specular-border overflow-hidden border-border/80">
           <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">

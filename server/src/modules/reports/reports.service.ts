@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { ApiError } from "@/utils/apiError";
 import { canViewSource } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,10 @@ import type {
 } from "@/modules/reports/reports.schemas";
 
 const REPORT_ROW_CAP = 10_000;
+function requireCompleteReport<T>(rows: T[]): T[] {
+  if (rows.length > REPORT_ROW_CAP) throw ApiError.badRequest("التقرير يتجاوز 10000 سجل. ضيّق نطاق التقرير باستخدام الفلاتر لضمان تصدير جميع البيانات.");
+  return rows;
+}
 
 export async function employeesReport(query: z.infer<typeof employeeReportQuerySchema>) {
   const rules = await getExpirationRules();
@@ -26,12 +31,12 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
 
   const rows = await prisma.employee.findMany({
     where,
-    take: REPORT_ROW_CAP,
+    take: REPORT_ROW_CAP + 1,
     orderBy: { fullNameEn: "asc" },
     include: { branch: { select: { name: true, nameEn: true } } },
   });
 
-  return rows.map((e) => ({
+  return requireCompleteReport(rows).map((e) => ({
     id: e.id,
     employeeNumber: e.employeeNumber,
     // Arabic first: the PDF/Excel reports are Arabic. The screen picks by language.
@@ -70,9 +75,8 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
   const withStatus = items.map((i) => ({ ...i, status: computeStatus(i.expiryDate, rules) }));
   const filtered = query.status ? withStatus.filter((i) => i.status === query.status) : withStatus;
 
-  return filtered
+  return requireCompleteReport(filtered)
     .sort((a, b) => a.expiryDate.getTime() - b.expiryDate.getTime())
-    .slice(0, REPORT_ROW_CAP)
     .map((i) => {
       const company = i.sourceType === "COMPANY_DOCUMENT";
       return {
@@ -111,12 +115,12 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
 
   const rows = await prisma.payment.findMany({
     where,
-    take: REPORT_ROW_CAP,
+    take: REPORT_ROW_CAP + 1,
     orderBy: { paymentDate: "desc" },
     include: { branch: { select: { name: true, nameEn: true } }, employee: { select: { fullNameAr: true, fullNameEn: true } } },
   });
 
-  return rows.map((p) => ({
+  return requireCompleteReport(rows).map((p) => ({
     paymentNumber: p.paymentNumber,
     paymentDate: p.paymentDate,
     category: p.category,
@@ -140,12 +144,12 @@ export async function activityReport(query: z.infer<typeof activityReportQuerySc
 
   const rows = await prisma.auditLog.findMany({
     where,
-    take: REPORT_ROW_CAP,
+    take: REPORT_ROW_CAP + 1,
     orderBy: { createdAt: "desc" },
     include: { user: { select: { fullName: true } } },
   });
 
-  return rows.map((r) => ({
+  return requireCompleteReport(rows).map((r) => ({
     date: r.createdAt,
     user: r.user?.fullName ?? "System",
     action: r.action,

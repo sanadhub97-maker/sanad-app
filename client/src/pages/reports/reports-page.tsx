@@ -54,6 +54,7 @@ export default function ReportsPage() {
   const L = (a: string, e: string) => (isAr ? a : e);
   const navigate = useNavigate();
   const hasPermission = useAuthStore((s) => s.hasPermission);
+  const canReadReport = (report: Report) => hasPermission("reports.view") && (report === "payments" ? hasPermission("payments.view") : report === "activity" ? hasPermission("auditLogs.view") : report === "employees" ? hasPermission("employees.view") : ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(hasPermission));
   const [params] = useSearchParams();
   const initial = ((): TileId | null => {
     const tab = params.get("tab");
@@ -88,11 +89,11 @@ export default function ReportsPage() {
 
   // The figures on the cards
   const since30 = useMemo(() => daysAgo(30).toISOString(), []);
-  const { data: allDocs } = useQuery({ queryKey: ["reports", "documents", {}], queryFn: () => reportsApi.documents.fetch({}) as Promise<DocumentRow[]>, staleTime: 60_000 });
-  const { data: allEmps } = useQuery({ queryKey: ["reports", "employees", {}], queryFn: () => reportsApi.employees.fetch({}) as Promise<EmployeeRow[]>, staleTime: 60_000 });
-  const { data: monthPays } = useQuery({ queryKey: ["reports", "payments", { dateFrom: since30 }], queryFn: () => reportsApi.payments.fetch({ dateFrom: since30 }) as Promise<PaymentRow[]>, staleTime: 60_000 });
-  const { data: monthAct } = useQuery({ queryKey: ["reports", "activity", { dateFrom: since30 }], queryFn: () => reportsApi.activity.fetch({ dateFrom: since30 }) as Promise<ActivityRow[]>, staleTime: 60_000 });
-  const { data: branches = [] } = useQuery({ queryKey: ["active-branches"], queryFn: listActiveBranches, staleTime: 300_000 });
+  const { data: allDocs } = useQuery({ queryKey: ["reports", "documents", {}], queryFn: () => reportsApi.documents.fetch({}) as Promise<DocumentRow[]>, staleTime: 60_000, enabled: canReadReport("documents") });
+  const { data: allEmps } = useQuery({ queryKey: ["reports", "employees", {}], queryFn: () => reportsApi.employees.fetch({}) as Promise<EmployeeRow[]>, staleTime: 60_000, enabled: canReadReport("employees") });
+  const { data: monthPays } = useQuery({ queryKey: ["reports", "payments", { dateFrom: since30 }], queryFn: () => reportsApi.payments.fetch({ dateFrom: since30 }) as Promise<PaymentRow[]>, staleTime: 60_000, enabled: canReadReport("payments") });
+  const { data: monthAct } = useQuery({ queryKey: ["reports", "activity", { dateFrom: since30 }], queryFn: () => reportsApi.activity.fetch({ dateFrom: since30 }) as Promise<ActivityRow[]>, staleTime: 60_000, enabled: canReadReport("activity") });
+  const { data: branches = [] } = useQuery({ queryKey: ["active-branches"], queryFn: listActiveBranches, staleTime: 300_000, enabled: hasPermission("branches.view") });
 
   const docs = allDocs ?? [];
   const nExpired = docs.filter((d) => d.status === "EXPIRED").length;
@@ -112,7 +113,7 @@ export default function ReportsPage() {
     if (report === "payments") return { ...range, ...(branchId ? { branchId } : {}) };
     return range;
   }, [report, docStatus, docSource, branchId, empStatus, from, to]);
-  const { data: rowsRaw, isFetching } = useQuery({ queryKey: ["reports", report, query], queryFn: () => reportsApi[report!].fetch(query), enabled: Boolean(report) });
+  const { data: rowsRaw, isFetching } = useQuery({ queryKey: ["reports", report, query], queryFn: () => reportsApi[report!].fetch(query), enabled: !!report && canReadReport(report) });
   let rows = (rowsRaw as unknown[]) ?? [];
   if (report === "documents" && docSource === "EMPLOYEE") rows = (rows as DocumentRow[]).filter((r) => r.sourceType !== "COMPANY_DOCUMENT");
 
@@ -149,7 +150,7 @@ export default function ReportsPage() {
       />
 
       <div className="rc-rp-grid">
-        {TILES.map((id, j) => {
+        {TILES.filter(id => canReadReport(TILE_LOOK[id].report)).map((id, j) => {
           const x = TILE_LOOK[id];
           const f = figure[id];
           const sum = f.parts?.reduce((n, [v]) => n + v, 0) ?? 0;
@@ -195,7 +196,7 @@ export default function ReportsPage() {
         <DeclarationViolationReports kind={open === "tax" || open === "violations" ? open : null} onKindChange={setOpen} />
       </div>
 
-      {open && look && (
+      {open && look && canReadReport(look.report) && (
         <section ref={panel} className="rc-dcard rc-rpanel rp-rise" style={{ ["--c" as string]: look.c }}>
           <h2>
             <span className="ico">

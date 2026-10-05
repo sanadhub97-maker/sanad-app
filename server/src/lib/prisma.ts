@@ -1,3 +1,4 @@
+import { retrySafeRead } from "./readRetry";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env, isProduction } from "@/config/env";
@@ -6,8 +7,8 @@ import { databaseTarget } from "./databaseTarget";
 // Serverless Postgres (Neon's free tier included) suspends its compute after
 // a few minutes idle; the first query after a gap can fail with P1001/P1017
 // while the compute wakes, even though a retry a moment later succeeds. This
-// extension retries once, transparently, instead of surfacing a 500 for
-// what is really just a cold start.
+// extension retries reads once. Writes cannot be safely repeated after a
+// lost connection because they may already have committed.
 const TRANSIENT_ERROR_CODES = new Set(["P1001", "P1002", "P1008", "P1017"]);
 
 function isTransient(err: unknown) {
@@ -24,14 +25,8 @@ function createClient() {
   const adapter = new PrismaPg({ connectionString: target.connectionString }, { schema: target.schema });
   return new PrismaClient({ adapter, log: isProduction ? ["error", "warn"] : ["warn", "error"] }).$extends({
     query: {
-      async $allOperations({ args, query }) {
-        try {
-          return await query(args);
-        } catch (err) {
-          if (!isTransient(err)) throw err;
-          await new Promise((resolve) => setTimeout(resolve, 750));
-          return query(args);
-        }
+      async $allOperations({ args, query, operation }) {
+        return retrySafeRead(operation, () => query(args), isTransient, () => new Promise(resolve => setTimeout(resolve, 750)));
       },
     },
   });

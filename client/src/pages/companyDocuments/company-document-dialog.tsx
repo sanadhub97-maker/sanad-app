@@ -148,7 +148,7 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form id="company-doc-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
+        <form id="company-doc-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 📄 Section 1: Document Classification & Identity */}
           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.03] dark:bg-amber-500/[0.04] p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-amber-500/10">
@@ -401,7 +401,7 @@ export function CompanyDocumentDialog({ api, categories, queryKey, open, documen
           <Button
             form="company-doc-form"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || mutation.isPending}
             className="h-11 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white font-bold text-sm px-8 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}

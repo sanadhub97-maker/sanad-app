@@ -201,7 +201,7 @@ export function PaymentDialog({
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
+        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
           {/* 💰 Section 1: Financial Calculations */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -531,7 +531,7 @@ export function PaymentDialog({
           <Button
             form="payment-dialog-form"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || mutation.isPending}
             className="h-11 rounded-xl bg-gradient-to-r from-rose-500 via-rose-600 to-pink-600 text-white font-bold text-sm px-8 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}

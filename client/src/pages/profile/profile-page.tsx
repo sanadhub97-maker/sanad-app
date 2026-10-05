@@ -91,7 +91,7 @@ export default function ProfilePage() {
           <CardTitle>{t("auth.changePassword")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="space-y-4">
+          <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-4">
             <div className="space-y-1.5">
               <Label>{t("auth.currentPassword")}</Label>
               <Input type="password" {...register("currentPassword")} />
@@ -107,7 +107,7 @@ export default function ProfilePage() {
               <Input type="password" {...register("confirmPassword")} />
               {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
             </div>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || mutation.isPending}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />} {t("auth.updatePassword")}
             </Button>
           </form>

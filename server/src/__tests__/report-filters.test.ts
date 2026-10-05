@@ -9,6 +9,12 @@ import { pdfContentDisposition } from "@/utils/pdfHeaders";
 import { exportQuerySchema } from "@/modules/tasks/tasks.schemas";
 const items = ["EMPLOYEE_IQAMA", "EMPLOYEE_PASSPORT", "EMPLOYEE_DOCUMENT", "COMPANY_DOCUMENT"].map((sourceType, i) => ({ sourceType, kind: ["IQAMA", "PASSPORT", "HEALTH_CERTIFICATE", "COMMERCIAL_REGISTRATION"][i], recordId: String(i), expiryDate: new Date("2027-01-01"), label: "Synthetic", labelAr: "تجريبي" }));
 describe("Report source filters", () => {
+  it("rejects oversized reports instead of silently exporting incomplete data", async () => {
+    fixture.items.mockResolvedValue(Array.from({ length: 10_001 }, () => items[0]));
+    await expect(documentsReport({ format: "pdf" }, { isSuperAdmin: true } as any)).rejects.toMatchObject({ statusCode: 400 });
+    fixture.items.mockResolvedValue(Array.from({ length: 10_000 }, () => items[0]));
+    await expect(documentsReport({ format: "json" }, { isSuperAdmin: true } as any)).resolves.toHaveLength(10_000);
+  });
   it("keeps Arabic record numbers in valid HTTP filenames", () => {
     const header = pdfContentDisposition('employee-١٢٣"\r\n.pdf');
     expect(header).not.toMatch(/[^\x20-\x7e]/);

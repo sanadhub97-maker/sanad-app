@@ -128,7 +128,7 @@ export function UserDialog({
         </div>
 
         {/* 📋 Form Body */}
-        <form id="user-dialog-form" onSubmit={handleSubmit((v) => mutation.mutate(v))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 pb-12">
+        <form id="user-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 pb-12">
           {/* Section 1: Account Credentials */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center gap-2 pb-1 text-xs font-bold uppercase tracking-wider text-foreground">
@@ -284,7 +284,7 @@ export function UserDialog({
           <Button
             form="user-dialog-form"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || mutation.isPending}
             className="h-11 rounded-xl bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 text-white font-bold text-xs sm:text-sm px-8 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all"
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <CheckCircle2 className="h-4 w-4 me-2" />}
