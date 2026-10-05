@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import "@/i18n";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import App from "@/App";
+import { PdfPreview } from "@/components/pdf-preview";
 import "@/index.css";
 import "@/styles/lulu.css";
 import "@/styles/royal.css";
@@ -41,6 +42,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <TooltipProvider delayDuration={200}>
           <App />
+          <PdfPreview />
           <Toaster position="top-center" richColors closeButton />
         </TooltipProvider>
       </BrowserRouter>

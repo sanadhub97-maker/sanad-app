@@ -2,12 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import axios, { AxiosError } from "axios";
 vi.mock("@/i18n", () => ({ default: { language: "en" }, tr: (_ar: string, en: string) => en, isRtlLanguage: () => false }));
 vi.mock("@/lib/server-messages", () => ({ localizeServerMessage: (message: string) => message }));
-import { api, getErrorMessage, refreshAccessToken } from "@/lib/api";
+import { api, getErrorMessage, extractErrorMessage, refreshAccessToken } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 const user = { id: "fixture", fullName: "Test", email: "test@example.invalid", roles: [], permissions: [], isSuperAdmin: false };
 beforeEach(() => { vi.restoreAllMocks(); useAuthStore.getState().setAuth("existing-token", user); });
 function failed(status?: number) { return new AxiosError("failure", status ? undefined : "ERR_NETWORK", undefined, undefined, status ? { status, data: {}, headers: {}, config: {} } as any : undefined); }
 describe("Request and session recovery", () => {
+  it("reports gateway failures for HTML blobs and preserves structured PDF errors", async () => {
+    const gateway = failed(504);
+    gateway.response!.data = new Blob(["<html>Gateway timeout</html>"]);
+    expect(await extractErrorMessage(gateway)).toContain("timed out preparing");
+    const busy = failed(429);
+    busy.response!.data = new Blob([JSON.stringify({ error: { message: "PDF renderer is busy" } })]);
+    expect(await extractErrorMessage(busy)).toBe("PDF renderer is busy");
+    expect(getErrorMessage(failed(503))).toContain("temporarily unavailable");
+  });
   it.each([undefined, 500, 503])("preserves authentication on transient refresh failure %s", async status => {
     vi.spyOn(axios, "post").mockRejectedValue(failed(status));
     await expect(refreshAccessToken()).rejects.toBeInstanceOf(AxiosError);

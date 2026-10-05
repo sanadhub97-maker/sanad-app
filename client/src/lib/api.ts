@@ -124,6 +124,9 @@ export function getErrorMessage(
     if (err.response?.status === 401) return tr("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.", "Your session has expired. Please sign in again.");
     if (err.response?.status === 403) return tr("ليس لديك الصلاحية الكافية للوصول إلى هذا المحتوى أو الإجراء.", "You don't have permission for this action.");
     if (err.response?.status === 404) return tr("المورد أو التقرير المطلوب غير موجود.", "The requested item was not found.");
+    if (err.response?.status === 429) return tr("الخدمة مشغولة بطلبات أخرى. انتظر قليلًا ثم أعد المحاولة.", "The service is busy. Wait a moment and retry.");
+    if ([502, 503].includes(err.response?.status ?? 0)) return tr("خدمة الخادم غير متاحة مؤقتًا. أعد المحاولة بعد قليل.", "The server service is temporarily unavailable. Retry shortly.");
+    if (err.response?.status === 504) return tr("انتهت مهلة تجهيز الملف على الخادم. أعد المحاولة أو قلّل نطاق التقرير.", "The server timed out preparing the file. Retry or reduce the report range.");
     if (err.response?.status === 500) return tr("حدث خطأ داخلي في الخادم أثناء معالجة الطلب.", "The server hit an error while processing the request.");
   }
   return fallback;
