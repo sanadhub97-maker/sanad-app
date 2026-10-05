@@ -3,10 +3,15 @@ import { hasPermission } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
 import { ApiError } from "@/utils/apiError";
 
+// Existing name plates were uploaded under signature-name. Keep them private
+// and usable as name plates without allowing them as logos or company seals.
+export const PRINT_NAME_IMAGE_MODULES = ["company-signature", "company-stamp", "signature-name"] as const;
+
 export const FILE_MODULE_PERMISSIONS: Record<string, string> = {
   employee: "employees.view", "employee-document": "employeeDocuments.view", "employee-documents": "employees.view",
   "company-document": "companyDocuments.view", payment: "payments.view",
   "company-logo": "settings.view", "company-favicon": "settings.view", "company-stamp": "settings.view", "company-signature": "settings.view",
+  "signature-name": "settings.view",
   "user-avatar": "users.view", violation: "violations.view", "tax-return": "payments.view",
 };
 
@@ -38,7 +43,7 @@ export async function isPublicBrandAsset(file: { id: string; mimeType: string; m
   return Boolean(company && Object.values(company).includes(file.id));
 }
 
-export async function assertBrandFile(id: string | null | undefined, modules: string[]) {
+export async function assertBrandFile(id: string | null | undefined, modules: readonly string[]) {
   if (!id) return;
   const file = await prisma.file.findUnique({ where: { id }, select: { module: true, mimeType: true } });
   if (!file || !modules.includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) {

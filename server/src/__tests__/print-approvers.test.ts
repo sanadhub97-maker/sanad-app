@@ -29,4 +29,10 @@ it("escapes approver names and retains name-image support", () => {
   b.signatures.voucher.boxes[0].nameEn = "";
   b.signatures.voucher.boxes[0].nameFileId = "image";
   expect(voucher({ ...b, nameImages: { image: "data:image/png;base64,synthetic" } } as any)).toContain('src="data:image/png;base64,synthetic"');
+  b.signatures.voucher.boxes[0].nameAr = "   ";
+  expect(voucher({ ...b, nameImages: { image: "data:image/png;base64,synthetic" } } as any)).toContain('src="data:image/png;base64,synthetic"');
+  b.signatures.voucher.boxes[0].nameAr = "المعتمد المكتوب";
+  const html = voucher({ ...b, nameImages: { image: "data:image/png;base64,synthetic" } } as any);
+  expect(html).toContain("المعتمد المكتوب");
+  expect(html).not.toContain('src="data:image/png;base64,synthetic"');
 });

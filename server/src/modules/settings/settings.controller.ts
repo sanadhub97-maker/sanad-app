@@ -3,7 +3,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
 import { escapeHtml, hasPermission } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
-import { assertBrandFile } from "@/modules/files/files.access";
+import { assertBrandFile, PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
 import { sendWhatsapp, getWhatsappProvider, CALLMEBOT_PROVIDER } from "@/services/whatsapp";
@@ -122,7 +122,7 @@ export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, r
   await Promise.all([
     assertBrandFile(body.stampFileId, ["company-stamp"]),
     assertBrandFile(body.signatureFileId, ["company-signature", "company-stamp"]),
-    ...[body.signatures.report, body.signatures.voucher, body.signatures.profile].flatMap((doc) => doc.boxes.map((box) => assertBrandFile(box.nameFileId, ["company-stamp", "company-signature"]))),
+    ...[body.signatures.report, body.signatures.voucher, body.signatures.profile].flatMap((doc) => doc.boxes.map((box) => assertBrandFile(box.nameFileId, PRINT_NAME_IMAGE_MODULES))),
   ]);
   await setPrintSignatures(body.signatures);
   // The stamp and signature images live on the company record.

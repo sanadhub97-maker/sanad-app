@@ -42,7 +42,9 @@ function signatureBlock(kind: SignatureDocument, branding: Branding) {
     const nameImg = b.nameFileId ? branding.nameImages?.[b.nameFileId] : null;
     // One language: the box title in the document's language only.
     const heading = isEn() ? b.en || b.ar : b.ar || b.en;
-    const name = isEn() ? b.nameEn || b.nameAr : b.nameAr || b.nameEn;
+    const arName = b.nameAr?.trim();
+    const enName = b.nameEn?.trim();
+    const name = isEn() ? enName || arName : arName || enName;
     return `
       <div class="sig-card">
         <div class="sig-card-header">

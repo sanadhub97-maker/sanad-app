@@ -4,6 +4,7 @@ import { storage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
 import { getPrintThemeSetting, getPrintSignatures } from "@/services/settingsStore";
 import type { SignatureDocument } from "@/services/settingsStore";
+import { PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 
 const logoCache = new Map<string, Promise<{ buffer: Buffer; mimeType: string } | null>>();
 async function readPrintLogo(company: { printLogoFileId: string | null; logoFileId: string | null } | null) {
@@ -30,12 +31,13 @@ async function loadPrintLogo(printLogoId: string) {
 // 3cm wide, and embedding a multi-megabyte photo made every PDF slow and heavy.
 const printAssetCache = new Map<string, string>();
 
-async function fileDataUrl(fileId: string | null | undefined) {
+async function fileDataUrl(fileId: string | null | undefined, modules: readonly string[] = ["company-stamp", "company-signature"]) {
   if (!fileId) return null;
-  const cached = printAssetCache.get(fileId);
+  const cacheKey = `${modules.join(",")}:${fileId}`;
+  const cached = printAssetCache.get(cacheKey);
   if (cached) return cached;
   const file = await prisma.file.findUnique({ where: { id: fileId } });
-  if (!file || !["company-stamp", "company-signature"].includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
+  if (!file || !modules.includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
   try {
     const raw = await storage.read(file.storedName);
     let url = `data:${file.mimeType};base64,${raw.toString("base64")}`;
@@ -44,7 +46,7 @@ async function fileDataUrl(fileId: string | null | undefined) {
       url = `data:image/png;base64,${png.toString("base64")}`;
     }
     if (printAssetCache.size >= 128) printAssetCache.clear();
-    printAssetCache.set(fileId, url);
+    printAssetCache.set(cacheKey, url);
     return url;
   } catch (err) {
     logger.warn({ err, fileId }, "Could not read a print asset");
@@ -126,7 +128,7 @@ export async function getBrandingContext(kind?: SignatureDocument) {
   const nameImages: Record<string, string> = {};
   await Promise.all(
     nameIds.map(async (id) => {
-      const url = await fileDataUrl(id);
+      const url = await fileDataUrl(id, PRINT_NAME_IMAGE_MODULES);
       if (url) nameImages[id] = url;
     })
   );
