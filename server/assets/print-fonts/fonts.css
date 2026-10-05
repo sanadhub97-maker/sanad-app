@@ -195,3 +195,25 @@
   src: url(https://fonts.gstatic.com/s/tajawal/v12/Iurf6YBj_oCad4k1l7KmLrY.ttf) format('truetype');
 }
 
+@font-face {
+  font-family: 'Alexandria';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/alexandria/v6/UMBCrPdDqW66y0Y2usFeQCH18mulUxBvI9rJTqbH.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Alexandria';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/alexandria/v6/UMBCrPdDqW66y0Y2usFeQCH18mulUxBvI9olSabH.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Alexandria';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/alexandria/v6/UMBCrPdDqW66y0Y2usFeQCH18mulUxBvI9ocSabH.ttf) format('truetype');
+}
+

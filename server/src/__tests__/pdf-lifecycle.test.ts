@@ -30,6 +30,12 @@ describe("PDF browser recovery and resource limits", () => {
     mock.launch.mockResolvedValue(browser());
     await renderHtmlToPdf("<html>synthetic</html>");
     expect(mock.pdf).toHaveBeenCalledWith(expect.objectContaining({ waitForFonts: false, printBackground: true, format: "A4" }));
+    const options = mock.pdf.mock.calls[0][0];
+    for (const template of [options.headerTemplate, options.footerTemplate]) {
+      expect(template).toContain("IBM Plex Sans Arabic");
+      expect(template).toContain("Alexandria");
+      expect(template).toContain("base64,");
+    }
   });
   it("retries a failed page without leaking a second healthy browser", async () => {
     mock.launch.mockResolvedValue(browser()); mock.pdf.mockRejectedValueOnce(new Error("Page closed"));

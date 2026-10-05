@@ -6,6 +6,7 @@ import { env } from "@/config/env";
 import { escapeHtml } from "@/lib/security";
 import { logger } from "@/lib/logger";
 import { ApiError } from "@/utils/apiError";
+import { SITE_PRINT_TYPOGRAPHY } from "@/services/printTypography";
 import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
 
 const bundledFontDir = path.resolve(__dirname, "../../assets/print-fonts");
@@ -16,6 +17,17 @@ try {
   bundledFontCss = readFileSync(path.join(bundledFontDir, "fonts.css"));
 } catch { logger.warn("Bundled print fonts unavailable; using font provider fallback"); }
 const bundledFontBuffers = new Map<string, Buffer>();
+let marginTypography: string | undefined;
+function printMarginTypography() {
+  if (marginTypography !== undefined) return marginTypography;
+  const blocks = bundledFontCss?.toString("utf8").match(/@font-face\s*\{[^}]+\}/g) ?? [];
+  const css = blocks.filter(block => /font-family:\s*['"](?:IBM Plex Sans Arabic|Alexandria)['"]/.test(block)).map(block => block.replace(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g, (_match, url) => {
+    const font = bundledRenderResource(url);
+    return font ? `url(data:${font.contentType};base64,${font.body.toString("base64")})` : `url(${url})`;
+  })).join("\n");
+  marginTypography = `<style>${css}\n${SITE_PRINT_TYPOGRAPHY}</style>`;
+  return marginTypography;
+}
 export function bundledRenderResource(raw: string): { contentType: string; body: Buffer } | null {
   if (raw === PRINT_FONTS_HREF && bundledFontCss) return { contentType: "text/css; charset=utf-8", body: bundledFontCss };
   const filename = bundledFontManifest[raw];
@@ -170,8 +182,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // extra font wait otherwise turns a slow font provider into a failed PDF.
       waitForFonts: false,
       displayHeaderFooter: true,
-      headerTemplate: vars + (running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate),
-      footerTemplate: vars + (english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel)),
+      headerTemplate: printMarginTypography() + vars + (running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate),
+      footerTemplate: printMarginTypography() + vars + (english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel)),
       // No side margins: designs draw full-bleed side columns and the body's
       // own padding keeps the content in.
       margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
@@ -644,6 +656,7 @@ export function pdfDocumentShell(opts: {
   .desc-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin: 0 0 14px; font-size: 10pt; }
 ${theme.palette ? theme.palette(opts.brandColor) : ""}
 ${theme.css}
+${SITE_PRINT_TYPOGRAPHY}
 </style>
 </head>
 <body class="${isClassic ? "" : "lux"}">
