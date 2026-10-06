@@ -28,11 +28,57 @@ function printMarginTypography() {
   marginTypography = `<style>${css}\n${SITE_PRINT_TYPOGRAPHY}</style>`;
   return marginTypography;
 }
-/** The document with the site's fonts (IBM Plex Sans Arabic, Alexandria) embedded in its head. */
-export function withSiteFonts(html: string) {
-  const fonts = printMarginTypography();
+// The page header and footer are separate documents Chromium lays out for every
+// page, so carrying the full fonts (1.5 MB) there cost about 60 MB per report on a
+// 512 MB host. They get the same fonts cut down to the characters they contain.
+const marginFontCache = new Map<string, string>();
+export async function marginTypographyFor(templatesHtml: string): Promise<string> {
+  const text = templatesHtml.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ");
+  // Plus digits (page numbers), all printable ASCII and the usual Arabic punctuation,
+  // which designs also draw from CSS content the text above doesn't see.
+  let ascii = "";
+  for (let c = 0x20; c < 0x7f; c++) ascii += String.fromCharCode(c);
+  // Chromium fills in the date and page numbers itself; its time format uses
+  // narrow and thin spaces and direction marks, so those are kept too.
+  const chars = [...new Set(`${text}${ascii}٠١٢٣٤٥٦٧٨٩٫٬،؛؟٪«»·•…–—‘’“”✓صم     ‎‏؜`)].sort().join("");
+  const cached = marginFontCache.get(chars);
+  if (cached !== undefined) return cached;
+  try {
+    const { default: subsetFont } = await import("subset-font");
+    const blocks = (bundledFontCss?.toString("utf8").match(/@font-face\s*\{[^}]+\}/g) ?? []).filter((block) => /font-family:\s*['"](?:IBM Plex Sans Arabic|Alexandria)['"]/.test(block));
+    const faces = await Promise.all(blocks.map(async (block) => {
+      const url = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/.exec(block)?.[1];
+      const font = url ? bundledRenderResource(url) : null;
+      if (!url || !font) return "";
+      const small = await subsetFont(font.body, chars, { targetFormat: "truetype" });
+      return block.replace(url, `data:font/ttf;base64,${Buffer.from(small).toString("base64")}`).replace(/\s*unicode-range:[^;]+;/, "");
+    }));
+    const css = `<style>${faces.join("\n")}\n${SITE_PRINT_TYPOGRAPHY}</style>`;
+    if (marginFontCache.size > 100) marginFontCache.clear();
+    marginFontCache.set(chars, css);
+    return css;
+  } catch (err) {
+    logger.warn({ err }, "Could not cut the print fonts down for the page header and footer");
+    return printMarginTypography();
+  }
+}
+
+/** The document with the site's fonts (IBM Plex Sans Arabic, Alexandria) embedded in its head.
+ * `preload` is the header/footer's cut-down fonts: the page loads them first under another
+ * name, so Chromium already has them when it draws the margins (it doesn't wait for them there). */
+export function withSiteFonts(html: string, preload = "") {
+  const fonts = printMarginTypography() + preload;
   if (!fonts) return html;
   return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, `${fonts}</head>`) : fonts + html;
+}
+
+/** The margin fonts again, renamed and used once in a hidden line, so the page loads the exact same files. */
+function preloadMarginFonts(marginCss: string) {
+  const faces = marginCss.match(/@font-face\s*\{[^}]+\}/g) ?? [];
+  if (!faces.length) return "";
+  const css = faces.map((face, i) => face.replace(/font-family:\s*(['"])[^'"]+\1/, `font-family: 'sanad-margin-${i}'`)).join("\n");
+  const probes = faces.map((face, i) => `<span style="font-family:'sanad-margin-${i}' !important;font-weight:${/font-weight:\s*(\d+)/.exec(face)?.[1] ?? 400}">سند 0</span>`).join("");
+  return `<style>${css}</style><div aria-hidden="true" style="position:absolute;left:-9999px;top:0;height:0;overflow:hidden">${probes}</div>`;
 }
 
 // Lay the page out (which requests exactly the font weights it uses), then wait
@@ -242,7 +288,10 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     await page.emulateMediaType("print");
     // The site's fonts travel inside the document, so nothing has to arrive over
     // the network before they can be used.
-    await page.setContent(withSiteFonts(html), { waitUntil: "domcontentloaded", timeout: 20000 });
+    const headerHtml = running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate;
+    const footerHtml = english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel);
+    const marginFonts = await marginTypographyFor(headerHtml + footerHtml);
+    await page.setContent(withSiteFonts(html, preloadMarginFonts(marginFonts)), { waitUntil: "domcontentloaded", timeout: 20000 });
     await waitForSiteFonts(page);
     const settled = await Promise.race([
       page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
@@ -258,8 +307,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // extra font wait otherwise turns a slow font provider into a failed PDF.
       waitForFonts: false,
       displayHeaderFooter: true,
-      headerTemplate: printMarginTypography() + vars + (running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate),
-      footerTemplate: printMarginTypography() + vars + (english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel)),
+      headerTemplate: marginFonts + vars + headerHtml,
+      footerTemplate: marginFonts + vars + footerHtml,
       // No side margins: designs draw full-bleed side columns and the body's
       // own padding keeps the content in.
       margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
