@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown, UserRound, X, Search } from "lucide-react";
