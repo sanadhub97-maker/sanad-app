@@ -7,6 +7,7 @@ import { escapeHtml } from "@/lib/security";
 import { logger } from "@/lib/logger";
 import { ApiError } from "@/utils/apiError";
 import { SITE_PRINT_TYPOGRAPHY } from "@/services/printTypography";
+import { pdfDiag } from "@/services/pdfDiag";
 import { getPrintTheme, themeDecor, PRINT_FONTS_HREF, type ShellContext } from "@/services/printThemes";
 
 const bundledFontDir = path.resolve(__dirname, "../../assets/print-fonts");
@@ -268,8 +269,11 @@ export interface RenderPdfOptions {
  * - Official corporate signatures and circular compliance seal
  */
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
+  const diag = pdfDiag(options.footerLabel ?? "pdf");
+  await diag.phase("start");
   const page = await browser.newPage();
   try {
+    await diag.phase("page");
     await secureRenderPage(page);
     // The shell stamps its design into the page; margins and the per-page
     // header/footer come from that design.
@@ -292,13 +296,16 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     const footerHtml = english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel);
     const marginFonts = await marginTypographyFor(headerHtml + footerHtml);
     await page.setContent(withSiteFonts(html, preloadMarginFonts(marginFonts)), { waitUntil: "domcontentloaded", timeout: 20000 });
+    await diag.phase("content");
     await waitForSiteFonts(page);
+    await diag.phase("fonts");
     const settled = await Promise.race([
       page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
     ]).catch(() => false);
     // Stop anything still loading past the budget (a design's own extra font).
     if (!settled) await page.evaluate("window.stop()").catch(() => undefined);
+    await diag.phase("before-pdf");
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,
@@ -313,9 +320,11 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // own padding keeps the content in.
       margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
     });
+    await diag.phase("after-pdf " + pdf.length);
     return Buffer.from(pdf);
   } finally {
     await page.close().catch(() => undefined);
+    await diag.end();
   }
 }
 
