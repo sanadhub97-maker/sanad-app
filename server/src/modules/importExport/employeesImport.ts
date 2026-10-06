@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import type ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { validateWorkbookArchive } from "@/modules/importExport/archiveLimits";
@@ -158,7 +158,9 @@ function excelDateToJs(value: unknown): Date | undefined {
 
 export async function parseWorkbook(buffer: Buffer): Promise<{ rows: ParsedRow[]; parseErrors: RowError[] }> {
   await validateWorkbookArchive(buffer);
-  const workbook = new ExcelJS.Workbook();
+  // Loaded on first use, not at startup: the host's memory is small.
+  const { default: Excel } = await import("exceljs");
+  const workbook = new Excel.Workbook();
   await workbook.xlsx.load(buffer as never);
   const sheet = workbook.worksheets[0];
   // The API speaks English; the client shows these in Arabic (lib/server-messages).

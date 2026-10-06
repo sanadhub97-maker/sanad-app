@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import type ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { getPrintLogoPng } from "@/services/branding";
 import { addLogoToSheet } from "@/services/excel";
@@ -284,7 +284,9 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   const branchCodes = branches.map((b) => b.code);
   const defaultBranch = branchCodes[0] ?? "";
 
-  const workbook = new ExcelJS.Workbook();
+  // Loaded on first use, not at startup: the host's memory is small.
+  const { default: Excel } = await import("exceljs");
+  const workbook = new Excel.Workbook();
   workbook.creator = "SanaD Enterprise HR & Compliance Suite";
   workbook.lastModifiedBy = "SanaD Automated System";
   workbook.created = new Date();

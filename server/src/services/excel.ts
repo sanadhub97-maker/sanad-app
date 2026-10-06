@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import type ExcelJS from "exceljs";
 import { L, isEn } from "@/services/lang";
 
 /** A column's title in the sheet's language (the English one on English sheets). */
@@ -49,7 +49,9 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   rows: T[],
   options: WorkbookOptions = {}
 ): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
+  // Loaded on first use, not at startup: the host's memory is small.
+  const { default: Excel } = await import("exceljs");
+  const workbook = new Excel.Workbook();
   workbook.creator = "SanaD Enterprise HR & Compliance Suite";
   workbook.lastModifiedBy = "SanaD Automated Reporting System";
   workbook.created = new Date();

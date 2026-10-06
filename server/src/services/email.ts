@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret } from "@/lib/crypto";
 import { env } from "@/config/env";
@@ -62,6 +61,8 @@ export async function sendMail(input: SendMailInput): Promise<{ sent: boolean; r
     return { sent: false, reason: "EMAIL_NOT_CONFIGURED" };
   }
 
+  // Loaded on first send, not at startup: the host's memory is small.
+  const { default: nodemailer } = await import("nodemailer");
   const transporter = nodemailer.createTransport({
     host: config.host,
     port: config.port ?? 587,

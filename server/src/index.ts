@@ -3,7 +3,7 @@ import { logger } from "@/lib/logger";
 import { createApp } from "@/app";
 import { startScheduledJobs } from "@/jobs/scheduler";
 import { startKeepAwake } from "@/jobs/keepAwake";
-import { closePdfBrowser, warmPdfBrowser } from "@/services/pdf";
+import { closePdfBrowser } from "@/services/pdf";
 
 const app = createApp();
 
@@ -11,7 +11,8 @@ const server = app.listen(env.PORT, env.NODE_ENV === "production" ? "0.0.0.0" : 
   logger.info(`Server listening on http://localhost:${env.PORT}`);
   startScheduledJobs();
   startKeepAwake();
-  if (env.NODE_ENV === "production") void warmPdfBrowser().catch(err => logger.warn({ err }, "PDF warmup failed; exports will retry on demand"));
+  // The PDF browser is no longer started here: idle, it held 100+ MB of the 512 MB host.
+  // The reports page warms it when someone is about to print.
 });
 server.requestTimeout = 30_000;
 server.headersTimeout = 15_000;

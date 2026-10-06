@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { isEn } from "@/services/lang";
-import puppeteer, { Browser, Page } from "puppeteer";
+import type { Browser, Page } from "puppeteer";
 import { env } from "@/config/env";
 import { escapeHtml } from "@/lib/security";
 import { logger } from "@/lib/logger";
@@ -131,18 +131,21 @@ async function withRenderBudget<T>(html: string, render: () => Promise<T>): Prom
   }
 }
 
-// An idle Chromium holds well over 100 MB; close it a minute after the last document.
-const IDLE_CLOSE_MS = 60_000;
+// An idle Chromium holds well over 100 MB, and the API itself already uses most of
+// the 512 MB host: close it shortly after the last document (a little later after a
+// warm-up, when the user is about to print).
+const IDLE_CLOSE_MS = 10_000;
+const WARM_IDLE_CLOSE_MS = 45_000;
 let idleTimer: NodeJS.Timeout | null = null;
 function cancelIdleClose() {
   if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
 }
-function scheduleIdleClose() {
+function scheduleIdleClose(ms = IDLE_CLOSE_MS) {
   cancelIdleClose();
   idleTimer = setTimeout(() => {
     idleTimer = null;
     if (activeRenders === 0 && renderQueue.length === 0) void closePdfBrowser().catch(() => undefined);
-  }, IDLE_CLOSE_MS);
+  }, ms);
   idleTimer.unref?.();
 }
 
@@ -171,7 +174,8 @@ export async function secureRenderPage(page: Page) {
 }
 
 function launchBrowser(): Promise<Browser> {
-  const promise = puppeteer.launch({
+  // The library is loaded with the first document, not at startup: the host's memory is small.
+  const promise = import("puppeteer").then(({ default: puppeteer }) => puppeteer.launch({
     headless: true,
     args: [
       ...(env.PDF_DISABLE_SANDBOX ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),
@@ -191,7 +195,7 @@ function launchBrowser(): Promise<Browser> {
       "--disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AcceptCHFrame,AutofillServerCommunication,CertificateTransparencyComponentUpdater,PaintHolding,DialMediaRouteProvider",
       "--js-flags=--max-old-space-size=96",
     ],
-  });
+  }));
   // A launch failure must not wedge every future PDF request behind the same
   // rejected promise forever — clear it so the next call retries a fresh launch.
   promise.catch(() => {
@@ -226,7 +230,7 @@ export async function closePdfBrowser() {
 /** Start the shared renderer before the first export, without rendering data. */
 export async function warmPdfBrowser() {
   await getBrowser();
-  if (activeRenders === 0) scheduleIdleClose();
+  if (activeRenders === 0) scheduleIdleClose(WARM_IDLE_CLOSE_MS);
 }
 
 /** The designs' Arabic labels in English, for documents printed in English. */

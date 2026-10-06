@@ -1,5 +1,4 @@
 import { assertPushEndpoint } from "@/lib/security";
-import webpush from "web-push";
 import { env } from "@/config/env";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
@@ -63,6 +62,7 @@ export function vapidKeys() {
   keys ??= (async () => {
     const stored = await readSetting<{ publicKey: string; privateKey: string } | null>("push.vapid", null);
     if (stored?.publicKey && stored.privateKey) return stored;
+    const { default: webpush } = await import("web-push");
     const made = webpush.generateVAPIDKeys();
     await writeSetting("push.vapid", made);
     return made;
@@ -179,6 +179,8 @@ export async function sendToUser(
   }
 
   const { publicKey, privateKey } = await vapidKeys();
+  // Loaded on first send, not at startup: the host's memory is small.
+  const { default: webpush } = await import("web-push");
   const body = JSON.stringify(payloadOf(m));
   let sent = 0;
   const failures: string[] = [];
