@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { AuthInitializer } from "@/components/providers/auth-initializer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LuluInstall } from "@/components/lulu/lulu-install";
@@ -53,6 +53,12 @@ function PageFallback() {
   );
 }
 
+/** The old edit link: the employee's page with the edit form open. */
+function EmployeeEditRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/employees/${encodeURIComponent(id ?? "")}?edit=1`} replace />;
+}
+
 export default function App() {
   const location = useLocation();
   if (/^\/print-templates\/?$/.test(location.pathname)) {
@@ -85,7 +91,7 @@ export default function App() {
                   <Route path="/employees/new" element={<Navigate to="/employees?new=true" replace />} />
                 </Route>
                 <Route element={<RequirePermission permission="employees.edit" />}>
-                  <Route path="/employees/:id/edit" element={<Navigate to="/employees/:id" replace />} />
+                  <Route path="/employees/:id/edit" element={<EmployeeEditRedirect />} />
                 </Route>
                 <Route element={<RequirePermission permission="employees.view" />}>
                   <Route path="/employees" element={<EmployeesListPage />} />

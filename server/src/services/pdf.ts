@@ -28,6 +28,21 @@ function printMarginTypography() {
   marginTypography = `<style>${css}\n${SITE_PRINT_TYPOGRAPHY}</style>`;
   return marginTypography;
 }
+/** The document with the site's fonts (IBM Plex Sans Arabic, Alexandria) embedded in its head. */
+export function withSiteFonts(html: string) {
+  const fonts = printMarginTypography();
+  if (!fonts) return html;
+  return /<\/head>/i.test(html) ? html.replace(/<\/head>/i, `${fonts}</head>`) : fonts + html;
+}
+
+// Lay the page out (which requests exactly the font weights it uses), then wait
+// for them. A slow host used to print after a fixed 5 s, before the fonts were
+// in, and the documents came out in the system's fallback fonts.
+async function waitForSiteFonts(page: Page) {
+  const loaded = page.evaluate("void document.body.offsetHeight, document.fonts.ready.then(() => true)");
+  await Promise.race([loaded, new Promise((resolve) => setTimeout(resolve, 30_000))]).catch(() => undefined);
+}
+
 export function bundledRenderResource(raw: string): { contentType: string; body: Buffer } | null {
   if (raw === PRINT_FONTS_HREF && bundledFontCss) return { contentType: "text/css; charset=utf-8", body: bundledFontCss };
   const filename = bundledFontManifest[raw];
@@ -39,12 +54,49 @@ export function bundledRenderResource(raw: string): { contentType: string; body:
 }
 
 let browserPromise: Promise<Browser> | null = null;
+// One document at a time: the host has 512 MB for Node and Chromium together, and
+// two renders at once were enough to get the whole service killed. Others wait in line.
 let activeRenders = 0;
+const renderQueue: (() => void)[] = [];
+const MAX_QUEUED_RENDERS = 6;
+const QUEUE_WAIT_MS = 90_000;
 async function withRenderBudget<T>(html: string, render: () => Promise<T>): Promise<T> {
   if (Buffer.byteLength(html) > 8 * 1024 * 1024) throw ApiError.badRequest("Print document is too large.");
-  if (activeRenders >= 2) throw ApiError.tooMany("Print service is busy. Retry shortly.");
+  if (activeRenders >= 1) {
+    if (renderQueue.length >= MAX_QUEUED_RENDERS) throw ApiError.tooMany("Print service is busy. Retry shortly.");
+    await new Promise<void>((resolve, reject) => {
+      const go = () => { clearTimeout(timer); resolve(); };
+      const timer = setTimeout(() => {
+        const i = renderQueue.indexOf(go);
+        if (i >= 0) renderQueue.splice(i, 1);
+        reject(ApiError.tooMany("Print service is busy. Retry shortly."));
+      }, QUEUE_WAIT_MS);
+      renderQueue.push(go);
+    });
+  }
   activeRenders++;
-  try { return await render(); } finally { activeRenders--; }
+  cancelIdleClose();
+  try { return await render(); } finally {
+    activeRenders--;
+    const next = renderQueue.shift();
+    if (next) next();
+    else scheduleIdleClose();
+  }
+}
+
+// An idle Chromium holds well over 100 MB; close it a minute after the last document.
+const IDLE_CLOSE_MS = 60_000;
+let idleTimer: NodeJS.Timeout | null = null;
+function cancelIdleClose() {
+  if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+}
+function scheduleIdleClose() {
+  cancelIdleClose();
+  idleTimer = setTimeout(() => {
+    idleTimer = null;
+    if (activeRenders === 0 && renderQueue.length === 0) void closePdfBrowser().catch(() => undefined);
+  }, IDLE_CLOSE_MS);
+  idleTimer.unref?.();
 }
 
 export function allowedRenderUrl(raw: string): boolean {
@@ -74,7 +126,24 @@ export async function secureRenderPage(page: Page) {
 function launchBrowser(): Promise<Browser> {
   const promise = puppeteer.launch({
     headless: true,
-    args: [...(env.PDF_DISABLE_SANDBOX ? ["--no-sandbox", "--disable-setuid-sandbox"] : []), "--font-render-hinting=medium"],
+    args: [
+      ...(env.PDF_DISABLE_SANDBOX ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),
+      "--font-render-hinting=medium",
+      // Low-memory profile for a small container: no GPU, no /dev/shm (64 MB on
+      // the host), no background services, one renderer process.
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-extensions",
+      "--disable-background-networking",
+      "--disable-component-update",
+      "--disable-default-apps",
+      "--disable-sync",
+      "--mute-audio",
+      "--no-first-run",
+      "--renderer-process-limit=1",
+      "--disable-features=Translate,BackForwardCache,MediaRouter,OptimizationHints,AcceptCHFrame,AutofillServerCommunication,CertificateTransparencyComponentUpdater,PaintHolding,DialMediaRouteProvider",
+      "--js-flags=--max-old-space-size=96",
+    ],
   });
   // A launch failure must not wedge every future PDF request behind the same
   // rejected promise forever — clear it so the next call retries a fresh launch.
@@ -98,16 +167,19 @@ async function getBrowser(): Promise<Browser> {
 }
 
 export async function closePdfBrowser() {
-  if (browserPromise) {
-    const browser = await browserPromise;
-    await browser.close().catch(() => undefined);
+  cancelIdleClose();
+  const cached = browserPromise;
+  if (cached) {
     browserPromise = null;
+    const browser = await cached.catch(() => null);
+    await browser?.close().catch(() => undefined);
   }
 }
 
 /** Start the shared renderer before the first export, without rendering data. */
 export async function warmPdfBrowser() {
   await getBrowser();
+  if (activeRenders === 0) scheduleIdleClose();
 }
 
 /** The designs' Arabic labels in English, for documents printed in English. */
@@ -168,17 +240,16 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // viewport, so it must match the paper or the first page comes out wrong.
     await page.setViewport({ width: 794, height: 1123 });
     await page.emulateMediaType("print");
-    await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20000 });
-    const fontsReady = await Promise.race([
-      Promise.all([
-        page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }),
-        page.evaluate("document.fonts.ready.then(() => true)"),
-      ]).then(() => true),
+    // The site's fonts travel inside the document, so nothing has to arrive over
+    // the network before they can be used.
+    await page.setContent(withSiteFonts(html), { waitUntil: "domcontentloaded", timeout: 20000 });
+    await waitForSiteFonts(page);
+    const settled = await Promise.race([
+      page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
     ]).catch(() => false);
-    // Stop resources that exceed the readiness budget, including an external
-    // stylesheet that has not yet registered its fonts with document.fonts.
-    if (!fontsReady) await page.evaluate("window.stop()");
+    // Stop anything still loading past the budget (a design's own extra font).
+    if (!settled) await page.evaluate("window.stop()").catch(() => undefined);
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { localized, localizedCity } from "@/lib/names";
 import { namePair } from "@/lib/names";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -49,7 +49,13 @@ export default function EmployeeProfilePage() {
   const { data: history } = useRecordHistory(id);
 
   const [docDialogOpen, setDocDialogOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  // "?edit=1" (the old /employees/:id/edit link) opens the edit form.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [editOpen, setEditOpenState] = useState(() => searchParams.get("edit") === "1" && hasPermission("employees.edit"));
+  const setEditOpen = (open: boolean) => {
+    setEditOpenState(open);
+    if (!open && searchParams.has("edit")) setSearchParams({}, { replace: true });
+  };
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [customAvatarId, setCustomAvatarId] = useState<string | null>(null);
 

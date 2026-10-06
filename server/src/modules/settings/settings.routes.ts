@@ -35,7 +35,8 @@ router.put(
   controller.updateCompany
 );
 
-router.get("/appearance", requirePermission("settings.view"), controller.getAppearance);
+// Every signed-in user's theme loads it (colors and toggles only); changing it still needs settings.edit.
+router.get("/appearance", controller.getAppearance);
 router.put(
   "/appearance",
   requirePermission("settings.edit"),
