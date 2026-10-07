@@ -9,6 +9,8 @@ import { requirePermission } from "@/middleware/rbac";
 import { validate } from "@/middleware/validate";
 import { auditLog } from "@/middleware/audit";
 import * as controller from "@/modules/settings/settings.controller";
+import { asyncHandler } from "@/utils/asyncHandler";
+import { DEFAULT_DOMESTIC_PROFESSIONS, getDomesticProfessions, setDomesticProfessions } from "@/services/domesticInsurance";
 import {
   appearanceSettingsSchema,
   companySettingsSchema,
@@ -23,6 +25,21 @@ import {
 
 const router = Router();
 router.use(requireAuth);
+
+// Domestic professions, whose medical insurance follows the iqama. Every signed-in
+// user reads them (the employee form suggests them); changing them needs settings.edit.
+router.get("/domestic-professions", asyncHandler(async (_req, res) => {
+  res.json({ data: { professions: await getDomesticProfessions(), defaults: DEFAULT_DOMESTIC_PROFESSIONS } });
+}));
+router.put(
+  "/domestic-professions",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ professions: z.array(z.string().trim().min(1).max(100)).max(100) }) }),
+  auditLog(AuditAction.UPDATE, "settings", { description: () => "Updated the domestic professions" }),
+  asyncHandler(async (req, res) => {
+    res.json({ data: { professions: await setDomesticProfessions(req.body.professions) }, message: "Saved." });
+  })
+);
 
 router.get("/branding", controller.getBranding);
 router.get("/branding/mark", controller.getBrandingMark);

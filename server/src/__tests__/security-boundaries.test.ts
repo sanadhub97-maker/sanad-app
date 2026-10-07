@@ -15,7 +15,7 @@ vi.mock("@/config/env", () => ({ env: {
   JWT_ACCESS_EXPIRES_IN: "15m", JWT_REFRESH_EXPIRES_IN: "30d",
 }, isProduction: true }));
 vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
-vi.mock("@/services/settingsStore", () => ({ getExpirationRules: vi.fn(async () => ({ expiringSoonThresholdDays: 30, notifyDaysBefore: [7, 30] })) }));
+vi.mock("@/services/settingsStore", () => ({ getExpirationRules: vi.fn(async () => ({ expiringSoonThresholdDays: 30, notifyDaysBefore: [7, 30] })), readSetting: vi.fn(async (_key: string, fallback: unknown) => fallback), writeSetting: vi.fn(async () => undefined) }));
 
 import { signAccessToken, verifyAccessToken } from "@/lib/jwt";
 import { authenticateAccessToken } from "@/middleware/auth";

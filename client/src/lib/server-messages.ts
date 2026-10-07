@@ -6,6 +6,8 @@ import i18n from "@/i18n";
  * Keep in sync when a server message is added or reworded — an unmapped
  * message is shown as is. */
 const EXACT: Record<string, string> = {
+  "This medical insurance follows the iqama. Renew or edit the iqama instead.": "التأمين الطبي ده مرتبط بالإقامة، وبيتجدد معاها. جدّد الإقامة أو عدّلها بدل كده.",
+  "Print service is busy. Retry shortly.": "في ملفات تانية بتتطبع دلوقتي. حاول تاني بعد شوية.",
   "This attachment is retained in document history and cannot be deleted.": "المرفق محفوظ ضمن سجل الوثائق ولا يمكن حذفه للحفاظ على النسخ السابقة.",
   "The original identifier is now used by another record. Restore cannot replace it.": "الرقم الأصلي مستخدم في سجل آخر. لا يمكن الاسترجاع مع وجود هذا التعارض.",
   "Restore the parent branch or employee first.": "استرجع المؤسسة أو الموظف المرتبط بالسجل أولًا.",

@@ -67,7 +67,7 @@ export async function bulkUpdate(auth: AuthContext, input: z.infer<typeof bulkSc
     const rows = await tx.employee.findMany({ where: { id: { in: input.ids }, deletedAt: null }, select: { id: true, employeeNumber: true } });
     if (rows.length !== input.ids.length) throw ApiError.badRequest("Some selected employees no longer exist. Refresh the list.");
     if (input.changes.branchId && !await tx.branch.findFirst({ where: { id: input.changes.branchId, deletedAt: null, status: "ACTIVE" } })) throw ApiError.badRequest("Select an active branch.");
-    const result = await tx.employee.updateMany({ where: { id: { in: input.ids }, deletedAt: null }, data: { ...input.changes, ...(input.changes.department ? { departmentEn: null } : {}) } });
+    const result = await tx.employee.updateMany({ where: { id: { in: input.ids }, deletedAt: null }, data: { ...input.changes, ...(input.changes.department ? { departmentEn: null } : {}), ...(input.changes.jobTitle ? { jobTitleEn: null } : {}) } });
     await tx.auditLog.createMany({ data: rows.map(e => ({ userId: auth.userId, action: "UPDATE" as const, module: "employees", recordId: e.id, description: `Bulk update ${e.employeeNumber}: ${JSON.stringify(input.changes)}` })) });
     return result;
   }, { isolationLevel: "Serializable" });

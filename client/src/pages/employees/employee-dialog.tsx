@@ -46,6 +46,7 @@ import { tr } from "@/i18n";
 import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import { transliterateArabicName } from "@/lib/arabic-transliteration";
 import type { Employee } from "@/types/models";
+import { useDomesticProfessions } from "@/lib/domestic";
 
 const makeSchema = () => z.object({
   employeeNumber: z.string().min(1, tr("رقم الموظف مطلوب", "Employee number is required")),
@@ -70,6 +71,7 @@ const makeSchema = () => z.object({
   notes: z.string().optional(),
   sponsorName: z.string().optional(),
   onSponsorship: z.enum(["yes", "no", ""]).optional(),
+  insuranceSeparate: z.boolean().optional(),
   iqamaNumber: z.string().optional(),
   iqamaIssueDate: z.string().optional(),
   iqamaExpiryDate: z.string().optional(),
@@ -118,6 +120,9 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
     defaultValues: DEFAULTS,
   });
+  // Domestic workers (private driver, housemaid…): their medical insurance follows the iqama.
+  const domestic = useDomesticProfessions(open);
+  const isDomestic = domestic.isDomestic(watch("jobTitle"), watch("jobTitleEn"));
   const auto = useAutoTranslate<FormValues>({ getValues, setValue }, [{ ar: "nationality", en: "nationalityEn", kind: "nationality" }, { ar: "city", en: "cityEn" }, { ar: "jobTitle", en: "jobTitleEn" }, { ar: "department", en: "departmentEn" }], open);
 
   // Auto-fetch next employee number if creating
@@ -148,6 +153,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
             branchId: employee.branchId ?? undefined,
             gender: employee.gender ?? undefined,
             onSponsorship: employee.onSponsorship === true ? "yes" : employee.onSponsorship === false ? "no" : "",
+            insuranceSeparate: employee.insuranceSeparate ?? false,
           }) as FormValues
         );
         if (employee.fullNameEn) {
@@ -502,10 +508,17 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               <FormField label={t("employees.fields.jobTitle")} icon={Briefcase}>
                 <Input
                   {...register("jobTitle", { onChange: auto.arChange("jobTitleEn") })}
-                  placeholder={isAr ? "مثال: مدير عمليات، مهندس، محاسب..." : "e.g. Operations Manager"}
+                  list="domestic-professions"
+                  placeholder={isAr ? "مثال: مدير عمليات، سائق خاص، عاملة منزلية..." : "e.g. Operations Manager"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
+
+              <datalist id="domestic-professions">
+                {domestic.arabic.map((p) => (
+                  <option key={p} value={p} />
+                ))}
+              </datalist>
 
               <FormField label={t("employees.fields.jobTitleEn")} icon={Briefcase}>
                 <EnglishInput
@@ -516,6 +529,19 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
+
+              {isDomestic && (
+                <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-sm">
+                  <b className="block text-sky-700 dark:text-sky-300">{isAr ? "عمالة منزلية: التأمين الطبي مرتبط بالإقامة" : "Domestic worker: the medical insurance follows the iqama"}</b>
+                  <span className="text-muted-foreground">
+                    {isAr ? "التأمين بياخد تاريخ الإقامة وحالتها تلقائيًا، ويتجدد معاها. مش محتاج تسجّله لوحده." : "It takes the iqama's dates and status and renews with it. No separate record is needed."}
+                  </span>
+                  <label className="mt-2 flex items-center gap-2 font-medium">
+                    <input type="checkbox" className="h-4 w-4 accent-sky-600" {...register("insuranceSeparate")} />
+                    {isAr ? "فصل التأمين عن الإقامة (تأمينه مختلف وهسجّله لوحده)" : "Keep the insurance separate (it differs; I'll record it myself)"}
+                  </label>
+                </div>
+              )}
 
               <FormField label={t("employees.fields.department")} icon={FolderKanban}>
                 <Input

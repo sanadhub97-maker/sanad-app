@@ -19,7 +19,7 @@ export async function reportSummary(auth: AuthContext) {
   const since = new Date(Date.now() - 30 * 86_400_000);
   const [documents, employees, activeEmployees, payments, activity] = await Promise.all([
     ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(key => hasPermission(auth, key)) ? (async () => {
-      const [items, rules] = await Promise.all([getTrackableItems(), getExpirationRules()]);
+      const [items, rules] = await Promise.all([getTrackableItems({ linkedInsurance: true }), getExpirationRules()]);
       const visible = items.filter(item => canViewSource(auth, item.sourceType));
       const statuses = visible.map(item => computeStatus(item.expiryDate, rules));
       return { total: visible.length, expired: statuses.filter(status => status === "EXPIRED").length, soon: statuses.filter(status => status === "EXPIRING_SOON").length };
@@ -80,7 +80,7 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
 
 export async function documentsReport(query: z.infer<typeof documentsReportQuerySchema>, auth: AuthContext) {
   const rules = await getExpirationRules();
-  let items = (await getTrackableItems()).filter((item) => canViewSource(auth, item.sourceType));
+  let items = (await getTrackableItems({ linkedInsurance: true })).filter((item) => canViewSource(auth, item.sourceType));
 
   if (query.sourceType) {
     // The employee documents page asks for EMPLOYEE_DOCUMENT with an iqama or passport category.

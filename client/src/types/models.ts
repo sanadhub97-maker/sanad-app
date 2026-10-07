@@ -73,6 +73,12 @@ export interface Employee {
   joiningDate?: string | null;
   sponsorName?: string | null;
   onSponsorship?: boolean | null;
+  /** A domestic worker (private driver, housemaid, nanny…), from the profession. */
+  domesticProfession?: boolean;
+  /** Their medical insurance follows the iqama (no document of its own). */
+  insuranceFollowsIqama?: boolean;
+  /** Set for the exceptions: the insurance stays its own document. */
+  insuranceSeparate?: boolean;
   employmentStatus: EmploymentStatus;
   notes?: string | null;
   iqamaNumber?: string | null;

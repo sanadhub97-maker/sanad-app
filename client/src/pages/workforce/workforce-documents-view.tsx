@@ -299,7 +299,7 @@ export function WorkforceDocumentsView({
           >
             <Eye className="h-3.5 w-3.5" />
           </Button>
-          {hasPermission("employees.edit") && (
+          {hasPermission("employees.edit") && !c.row.original.linkedToIqama && (
             <Button
               variant="ghost"
               size="icon"
@@ -310,7 +310,7 @@ export function WorkforceDocumentsView({
               <Edit className="h-3.5 w-3.5" />
             </Button>
           )}
-          {hasPermission("employees.delete") && (
+          {hasPermission("employees.delete") && !c.row.original.linkedToIqama && (
             <Button
               variant="ghost"
               size="icon"

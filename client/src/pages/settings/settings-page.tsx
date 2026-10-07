@@ -953,7 +953,72 @@ function ExpirationTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
           {t("common.save")}
         </Button>
       </div>
+      <DomesticProfessionsCard canEdit={canEdit} isRtl={isRtl} />
     </div>
+  );
+}
+
+/** Domestic professions: their medical insurance follows the iqama. */
+function DomesticProfessionsCard({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({ queryKey: ["settings", "domestic-professions"], queryFn: settingsApi.getDomesticProfessions });
+  const [items, setItems] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+  React.useEffect(() => {
+    if (data) setItems(data.professions);
+  }, [data]);
+  const mutation = useMutation({
+    mutationFn: settingsApi.saveDomesticProfessions,
+    onSuccess: () => {
+      toast.success(isRtl ? "اتحفظت قائمة المهن" : "Professions saved");
+      queryClient.invalidateQueries({ queryKey: ["settings", "domestic-professions"] });
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["workforce-documents-unified"] });
+    },
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
+  const add = () => {
+    const v = draft.trim();
+    if (v && !items.includes(v)) setItems([...items, v]);
+    setDraft("");
+  };
+  return (
+    <Card className="specular-border overflow-hidden border-border/80">
+      <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+        <CardTitle className="text-base sm:text-lg font-black text-foreground">{isRtl ? "المهن المنزلية" : "Domestic professions"}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {isRtl
+            ? "أي موظف مهنته من القائمة دي، تأمينه الطبي بيتربط بالإقامة: ساري لما الإقامة سارية، ومنتهي لما تنتهي، وبيتجدد معاها. تقدر تفصله لموظف معين من ملفه."
+            : "An employee with one of these professions has their medical insurance follow the iqama: valid, ended and renewed with it. It can be kept separate for one employee from their profile."}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4 pt-5">
+        <div className="flex flex-wrap gap-2">
+          {items.map((p) => (
+            <span key={p} className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-muted/40 px-3 py-1 text-sm">
+              {p}
+              {canEdit && (
+                <button type="button" className="text-muted-foreground hover:text-destructive" aria-label={isRtl ? `شيل ${p}` : `Remove ${p}`} onClick={() => setItems(items.filter((x) => x !== p))}>
+                  ×
+                </button>
+              )}
+            </span>
+          ))}
+          {!items.length && <span className="text-sm text-muted-foreground">{isRtl ? "القائمة فاضية" : "The list is empty"}</span>}
+        </div>
+        {canEdit && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Input className="max-w-xs" value={draft} maxLength={100} placeholder={isRtl ? "مهنة جديدة" : "New profession"} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
+            <Button type="button" variant="outline" onClick={add} disabled={!draft.trim()}>{isRtl ? "إضافة" : "Add"}</Button>
+            {data?.defaults && <Button type="button" variant="ghost" onClick={() => setItems(data.defaults)}>{isRtl ? "رجّع القائمة الأصلية" : "Restore the default list"}</Button>}
+            <Button type="button" onClick={() => mutation.mutate(items)} disabled={mutation.isPending}>
+              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : <Check className="h-4 w-4 me-2" />}
+              {isRtl ? "حفظ" : "Save"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

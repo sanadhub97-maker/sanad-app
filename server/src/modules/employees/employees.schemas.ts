@@ -36,6 +36,8 @@ export const createEmployeeSchema = z.object({
   // "" clears it on edit (null), unlike the other optional text fields.
   sponsorName: z.preprocess((v) => (v === "" ? null : v), z.string().max(150).nullable().optional()),
   onSponsorship: z.boolean().nullable().optional(),
+  // A domestic worker's insurance follows the iqama unless this is set (the exceptions).
+  insuranceSeparate: z.boolean().optional(),
 
   iqamaNumber: optStr(50),
   iqamaIssueDate: dateField,
@@ -56,6 +58,8 @@ export const listEmployeesQuerySchema = paginationSchema.extend({
   employmentStatus: employmentStatusEnum.optional(),
   department: z.string().optional(),
   expiryStatus: z.enum(["VALID", "EXPIRING_SOON", "EXPIRED"]).optional(),
+  // Only employees with no profession written (to fill them in).
+  noJobTitle: z.preprocess((v) => v === "true" || v === true, z.boolean()).optional(),
 });
 
 export const idParamSchema = z.object({ id: z.string().min(1) });

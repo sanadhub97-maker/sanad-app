@@ -114,15 +114,29 @@ export default function EmployeeDocumentDetailsPage() {
                 {term >= 365 ? (isAr ? `${Math.round(term / 365)} سنة` : `${Math.round(term / 365)} yr`) : isAr ? `${term} يوم` : `${term} days`}
               </span>
             )}
-            <span>
-              <FileText />
-              {doc.fileId ? (isAr ? "مرفق" : "Attached") : isAr ? "بدون مرفق" : "No file"}
-            </span>
+            {doc.linkedToIqama ? (
+              <span>
+                <small>{isAr ? "مرتبط بالإقامة" : "Follows the iqama"}</small>
+                {isAr ? "يتجدد مع الإقامة تلقائيًا" : "Renews with the iqama"}
+              </span>
+            ) : (
+              <span>
+                <FileText />
+                {doc.fileId ? (isAr ? "مرفق" : "Attached") : isAr ? "بدون مرفق" : "No file"}
+              </span>
+            )}
           </>
         }
         actions={
           <>
-            {canEdit && (
+            {/* A domestic worker's insurance changes with the iqama, not on its own. */}
+            {doc.linkedToIqama && canEdit && (
+              <button type="button" className="rc-btn pri" onClick={() => navigate(`/employee-documents/${emp.id}/IQAMA`)} style={{ height: 38 }}>
+                <Edit />
+                {isAr ? "افتح الإقامة" : "Open the iqama"}
+              </button>
+            )}
+            {!doc.linkedToIqama && canEdit && (
               <button type="button" className="rc-btn pri" onClick={() => setEditOpen(true)} style={{ height: 38 }}>
                 <Edit />
                 {days !== null && days <= 30 ? (isAr ? "تجديد الوثيقة" : "Renew") : isAr ? "تعديل" : "Edit"}
@@ -132,7 +146,7 @@ export default function EmployeeDocumentDetailsPage() {
               <Printer />
               {isAr ? "طباعة" : "Print"}
             </button>
-            {canEdit && (
+            {!doc.linkedToIqama && canEdit && (
               <button type="button" className="rc-btn" onClick={() => setDeleting(true)} style={{ height: 38, color: "var(--bad)" }}>
                 <Trash2 />
                 {isAr ? "حذف" : "Delete"}
@@ -163,7 +177,7 @@ export default function EmployeeDocumentDetailsPage() {
             </div>
           </DCard>
           <DCard title={isAr ? "المرفق" : "Attachment"} icon={FolderOpen} color="var(--teal)" i={4}>
-            <Attachment fileId={doc.fileId} fileName={`${doc.label} - ${name}.pdf`} onAdd={canEdit ? () => setEditOpen(true) : undefined} />
+            <Attachment fileId={doc.fileId} fileName={`${doc.label} - ${name}.pdf`} onAdd={canEdit && !doc.linkedToIqama ? () => setEditOpen(true) : undefined} />
           </DCard>
           {hasPermission("auditLogs.view") && (
             <DCard title={doc.embedded ? (isAr ? "سجل ملف الموظف" : "Employee record history") : isAr ? "سجل الوثيقة" : "Document history"} icon={Clock} color="var(--vio)" right={history ? (isAr ? `${history.data.length} أحداث` : `${history.data.length} events`) : undefined} i={5}>

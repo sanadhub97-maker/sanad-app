@@ -189,6 +189,9 @@ export const settingsApi = {
   getCompany: async () => (await api.get<{ data: CompanySettings }>("/settings/company")).data.data,
   updateCompany: async (input: CompanySettings) => (await api.put<{ data: CompanySettings; message: string }>("/settings/company", input)).data,
 
+  /** Domestic professions: their medical insurance follows the iqama. */
+  getDomesticProfessions: async () => (await api.get<{ data: { professions: string[]; defaults: string[] } }>("/settings/domestic-professions")).data.data,
+  saveDomesticProfessions: async (professions: string[]) => (await api.put<{ data: { professions: string[] } }>("/settings/domestic-professions", { professions })).data.data,
   getAppearance: async () => (await api.get<{ data: AppearanceSettings }>("/settings/appearance")).data.data,
   updateAppearance: async (input: AppearanceSettings) =>
     (await api.put<{ data: AppearanceSettings; message: string }>("/settings/appearance", input)).data,

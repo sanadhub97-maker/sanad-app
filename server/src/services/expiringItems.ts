@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { computeStatus, ExpirationRules } from "@/services/expiration";
 import { establishmentNameEn, loadBranchNames } from "@/services/establishmentNames";
+import { linkedInsuranceIds } from "@/services/domesticInsurance";
 
 // Normalizes every expiry-tracked record in the system into one shape, so
 // the dashboard, reports, and the daily cron scan (§21/§41) share a single
@@ -34,6 +35,8 @@ export interface TrackableItem {
   kind: string; // IQAMA, PASSPORT, an EmployeeDocument type or a CompanyDocument category
   kindAr: string;
   kindEn: string;
+  /** A domestic worker's medical insurance, dated by the iqama (no document of its own). */
+  linkedToIqama?: boolean;
 }
 
 /** The kind of every document, as the reports and exports name it. */
@@ -75,7 +78,12 @@ const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
   OTHER: ["مستند", "Document"],
 };
 
-export async function getTrackableItems(): Promise<TrackableItem[]> {
+/**
+ * linkedInsurance: also list each domestic worker's medical insurance (dated by the
+ * iqama) as its own item, for the views that show insurance next to the iqama. The
+ * alerts leave it out: the iqama's own alert names both.
+ */
+export async function getTrackableItems(opts: { linkedInsurance?: boolean } = {}): Promise<TrackableItem[]> {
   const [employees, employeeDocuments, companyDocuments, branchNames] = await Promise.all([
     prisma.employee.findMany({
       where: { deletedAt: null, OR: [{ iqamaExpiryDate: { not: null } }, { passportExpiryDate: { not: null } }] },
@@ -88,6 +96,9 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
         iqamaNumber: true,
         onSponsorship: true,
         passportNumber: true,
+        jobTitle: true,
+        jobTitleEn: true,
+        insuranceSeparate: true,
         branch: { select: { name: true, nameEn: true } },
       },
     }),
@@ -103,6 +114,10 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
   ]);
 
   const items: TrackableItem[] = [];
+  // Domestic workers' insurance follows the iqama: their own insurance documents are set aside.
+  const linked = await linkedInsuranceIds(employees);
+  // Without its own row, the iqama's entry names the insurance too (one alert for both).
+  const combined = (id: string) => !opts.linkedInsurance && linked.has(id);
 
   for (const emp of employees) {
     const name = emp.fullNameEn || emp.fullNameAr;
@@ -111,21 +126,46 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
       items.push({
         key: `employee-iqama-${emp.id}`,
         sourceType: "EMPLOYEE_IQAMA",
-        label: `${name} — Iqama`,
-        labelAr: `${nameAr} — إقامة`,
+        label: combined(emp.id) ? `${name} — Iqama and medical insurance` : `${name} — Iqama`,
+        labelAr: combined(emp.id) ? `${nameAr} — إقامة وتأمين طبي` : `${nameAr} — إقامة`,
         expiryDate: emp.iqamaExpiryDate,
         employeeId: emp.id,
         onSponsorship: emp.onSponsorship,
         employeeName: name,
         employeeNameAr: nameAr,
         recordId: emp.id,
-        documentAr: "الإقامة",
-        documentEn: "Iqama",
+        documentAr: combined(emp.id) ? "الإقامة والتأمين الطبي" : "الإقامة",
+        documentEn: combined(emp.id) ? "Iqama and medical insurance" : "Iqama",
         documentNumber: emp.iqamaNumber,
         branchName: emp.branch?.name,
         branchNameEn: emp.branch?.nameEn,
         ...kindOf("IQAMA", "إقامة", "Iqama"),
       });
+      if (opts.linkedInsurance && linked.has(emp.id)) {
+        items.push({
+          key: `employee-insurance-${emp.id}`,
+          sourceType: "EMPLOYEE_DOCUMENT",
+          label: `${name} — Medical insurance (follows the iqama)`,
+          labelAr: `${nameAr} — تأمين طبي (مرتبط بالإقامة)`,
+          expiryDate: emp.iqamaExpiryDate,
+          employeeId: emp.id,
+          onSponsorship: emp.onSponsorship,
+          employeeName: name,
+          employeeNameAr: nameAr,
+          // The page for it is the employee's "MEDICAL_INSURANCE" entry (there is no document id).
+          recordId: "MEDICAL_INSURANCE",
+          documentAr: "التأمين الطبي (مرتبط بالإقامة)",
+          documentEn: "Medical insurance (follows the iqama)",
+          documentNumber: emp.iqamaNumber,
+          branchName: emp.branch?.name,
+          branchNameEn: emp.branch?.nameEn,
+          docType: "MEDICAL_INSURANCE",
+          linkedToIqama: true,
+          kind: "MEDICAL_INSURANCE",
+          kindAr: "تأمين طبي (مرتبط بالإقامة)",
+          kindEn: "Medical insurance (follows the iqama)",
+        });
+      }
     }
     if (emp.passportExpiryDate) {
       items.push({
@@ -151,6 +191,7 @@ export async function getTrackableItems(): Promise<TrackableItem[]> {
 
   for (const doc of employeeDocuments) {
     if (!doc.expiryDate) continue;
+    if (doc.type === "MEDICAL_INSURANCE" && linked.has(doc.employeeId)) continue;
     const name = doc.employee.fullNameEn || doc.employee.fullNameAr;
     const nameAr = doc.employee.fullNameAr || name;
     items.push({

@@ -20,6 +20,8 @@ export interface EmpDoc {
   notes?: string | null;
   status?: DocumentStatus | null;
   createdAt?: string;
+  /** A domestic worker's medical insurance: dated by the iqama, renewed with it. */
+  linkedToIqama?: boolean;
 }
 
 const one = (type: string, isAr: boolean) => {
@@ -31,6 +33,9 @@ export function employeeDocs(emp: Employee, isAr: boolean): EmpDoc[] {
   const list: EmpDoc[] = [];
   if (emp.iqamaNumber || emp.iqamaExpiryDate)
     list.push({ key: "IQAMA", id: emp.id, embedded: true, type: "IQAMA", label: one("IQAMA", isAr), number: emp.iqamaNumber, authority: documentAuthority({ type: "IQAMA" }, isAr), issueDate: emp.iqamaIssueDate, expiryDate: emp.iqamaExpiryDate, fileId: emp.iqamaFileId, status: emp.iqamaStatus });
+  // A domestic worker's medical insurance follows the iqama: same dates, same status.
+  if (emp.insuranceFollowsIqama && emp.iqamaExpiryDate)
+    list.push({ key: "MEDICAL_INSURANCE", id: emp.id, embedded: true, linkedToIqama: true, type: "MEDICAL_INSURANCE", label: isAr ? "التأمين الطبي (مرتبط بالإقامة)" : "Medical insurance (follows the iqama)", number: emp.iqamaNumber, issueDate: emp.iqamaIssueDate, expiryDate: emp.iqamaExpiryDate, fileId: null, status: emp.iqamaStatus });
   if (emp.passportNumber || emp.passportExpiryDate)
     list.push({ key: "PASSPORT", id: emp.id, embedded: true, type: "PASSPORT", label: one("PASSPORT", isAr), number: emp.passportNumber, authority: documentAuthority({ type: "PASSPORT", passportCountry: emp.passportCountry }, isAr), issueDate: emp.passportIssueDate, expiryDate: emp.passportExpiryDate, fileId: emp.passportFileId, status: emp.passportStatus });
   (emp.documents ?? []).forEach((d) =>

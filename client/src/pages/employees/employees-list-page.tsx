@@ -155,6 +155,9 @@ export default function EmployeesListPage() {
   });
 
   const { data: branches } = useQuery({ queryKey: ["branches", "active"], queryFn: listActiveBranches });
+  // Employees with no profession: a domestic worker's insurance can only follow the iqama once it is filled in.
+  const { data: noJob } = useQuery({ queryKey: ["employees", "no-job-title"], queryFn: () => employeesApi.list({ noJobTitle: true, pageSize: 1 }), enabled: hasPermission("employees.edit") });
+  const noJobCount = noJob?.meta.total ?? 0;
 
   const { data: summary } = useQuery({
     queryKey: ["dashboard", "summary"],
@@ -354,6 +357,20 @@ export default function EmployeesListPage() {
           </>
         }
       />
+
+      {noJobCount > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate("/work-tools?tab=bulk&missing=job")}
+          className="mb-3 flex w-full flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-start text-sm"
+        >
+          <span>
+            <b className="text-sky-700 dark:text-sky-300">{isAr ? `${noJobCount} موظف من غير مهنة` : `${noJobCount} employees have no profession`}</b>
+            <span className="text-muted-foreground">{isAr ? " — حدّد مهنهم عشان تأمين العمالة المنزلية يترَبط بإقاماتهم تلقائيًا." : " — fill them in so domestic workers' insurance follows their iqamas."}</span>
+          </span>
+          <span className="font-semibold text-sky-700 dark:text-sky-300">{isAr ? "حدّد المهن" : "Fill them in"}</span>
+        </button>
+      )}
 
       <Kpis
         items={[

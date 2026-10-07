@@ -8,7 +8,8 @@ import { singleFlight } from "@/lib/singleFlight";
 
 // Summary, charts, attention and expiration widgets ask for the same records.
 // Share their overlapping database reads, then apply each caller's permissions.
-const readDashboardItems = singleFlight(getTrackableItems);
+// Domestic workers' insurance (dated by the iqama) counts as its own document here.
+const readDashboardItems = singleFlight(() => getTrackableItems({ linkedInsurance: true }));
 
 export async function getSummary(auth: AuthContext) {
   const [rules, records] = await Promise.all([getExpirationRules(), readDashboardItems()]);
@@ -126,7 +127,8 @@ function typeGroup(item: TrackableItem): string {
  * within 30 days, soonest first), expiries in each of the next six months,
  * documents by type, and the branches summary. */
 export async function getOverview(auth: AuthContext) {
-  const items = (await readDashboardItems()).filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
+  // The to-do list leaves out the insurance that follows an iqama: renewing the iqama renews it.
+  const items = (await readDashboardItems()).filter((item) => !item.linkedToIqama && hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
   const withDays = items.map((item) => ({ item, days: daysUntil(item.expiryDate) }));
 
   const due = withDays.filter((x) => x.days <= 30).sort((a, b) => a.days - b.days);

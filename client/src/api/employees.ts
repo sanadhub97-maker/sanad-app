@@ -3,6 +3,8 @@ import { createResourceApi } from "@/api/createResourceApi";
 import type { Employee, EmployeeDocument } from "@/types/models";
 
 export interface EmployeeInput {
+  /** Keeps a domestic worker's medical insurance as its own document (the exceptions). */
+  insuranceSeparate?: boolean;
   employeeNumber: string;
   fullNameAr: string;
   fullNameEn?: string;

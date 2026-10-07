@@ -7,6 +7,64 @@ import { computeStatus, daysUntil } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import type { ListWorkforceQuery } from "@/modules/workforceDocuments/workforceDocuments.schemas";
+import { linkedInsuranceIds } from "@/services/domesticInsurance";
+
+// ---------------------------------------------------------------------------
+// Domestic workers: their medical insurance follows the iqama (services/domesticInsurance).
+// It is listed with the insurance documents, dated by the iqama, and any insurance
+// document of their own is set aside unless they are marked insuranceSeparate.
+// ---------------------------------------------------------------------------
+const linkedSelect = {
+  id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, jobTitle: true, jobTitleEn: true, insuranceSeparate: true,
+  iqamaNumber: true, iqamaIssueDate: true, iqamaExpiryDate: true,
+  branch: { select: { id: true, name: true, nameEn: true, code: true } },
+} as const;
+
+/** Every employee whose insurance follows the iqama (ids), for setting their own insurance documents aside. */
+export async function linkedInsuranceEmployeeIds(): Promise<string[]> {
+  const emps = await prisma.employee.findMany({ where: { deletedAt: null }, select: { id: true, jobTitle: true, jobTitleEn: true, insuranceSeparate: true } });
+  return [...(await linkedInsuranceIds(emps))];
+}
+
+/** Their insurance as list rows, matching the search and establishment filters. */
+async function linkedInsuranceRows(query: { q?: string; branchId?: string }, rules: Awaited<ReturnType<typeof getExpirationRules>>) {
+  const { q, branchId } = query;
+  const emps = await prisma.employee.findMany({
+    where: {
+      deletedAt: null,
+      iqamaExpiryDate: { not: null },
+      ...(branchId ? { branchId } : {}),
+      ...(q ? { OR: [{ employeeNumber: { contains: q, mode: "insensitive" } }, { fullNameAr: { contains: q, mode: "insensitive" } }, { fullNameEn: { contains: q, mode: "insensitive" } }, { iqamaNumber: { contains: q, mode: "insensitive" } }] } : {}),
+    },
+    select: linkedSelect,
+  });
+  const linked = await linkedInsuranceIds(emps);
+  return emps.filter((emp) => linked.has(emp.id)).map((emp) => ({
+    id: `medical_insurance-${emp.id}`,
+    employeeId: emp.id,
+    employeeNumber: emp.employeeNumber,
+    fullNameAr: emp.fullNameAr,
+    fullNameEn: emp.fullNameEn,
+    jobTitle: emp.jobTitle,
+    jobTitleEn: emp.jobTitleEn,
+    branch: emp.branch,
+    employee: { id: emp.id, employeeNumber: emp.employeeNumber, fullNameAr: emp.fullNameAr, fullNameEn: emp.fullNameEn, branch: emp.branch },
+    type: EmployeeDocumentType.MEDICAL_INSURANCE as EmployeeDocumentType,
+    category: "MEDICAL_INSURANCE",
+    name: "تأمين طبي (مرتبط بالإقامة)",
+    documentNumber: emp.iqamaNumber,
+    issuingAuthority: null,
+    issueDate: emp.iqamaIssueDate,
+    startDate: null,
+    expiryDate: emp.iqamaExpiryDate,
+    daysRemaining: emp.iqamaExpiryDate ? daysUntil(emp.iqamaExpiryDate) : null,
+    fileId: null,
+    notes: null,
+    status: computeStatus(emp.iqamaExpiryDate, rules) ?? DocumentStatus.VALID,
+    isStatutory: false,
+    linkedToIqama: true,
+  }));
+}
 
 export interface WorkforceSummaryStats {
   total: number;
@@ -186,9 +244,12 @@ export async function listGeneralDocuments(
   const { page, pageSize, q, branchId, status } = query;
   const rules = await getExpirationRules();
 
+  const withInsurance = types.includes(EmployeeDocumentType.MEDICAL_INSURANCE);
+  const linkedIds = withInsurance ? await linkedInsuranceEmployeeIds() : [];
   const where: Prisma.EmployeeDocumentWhereInput = {
     deletedAt: null,
     type: { in: types },
+    ...(linkedIds.length ? { NOT: { type: EmployeeDocumentType.MEDICAL_INSURANCE, employeeId: { in: linkedIds } } } : {}),
     ...(branchId ? { employee: { branchId } } : {}),
     ...(q
       ? {
@@ -241,6 +302,10 @@ export async function listGeneralDocuments(
       status: computed,
     };
   });
+  if (withInsurance) {
+    enriched.push(...((await linkedInsuranceRows({ q, branchId }, rules)) as never[]));
+    enriched.sort((a, b) => (a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity) - (b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity));
+  }
 
   const stats: WorkforceSummaryStats = {
     total: enriched.length,
@@ -377,8 +442,10 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       : {}),
   };
 
+  const linkedIds = await linkedInsuranceEmployeeIds();
   const docWhere: Prisma.EmployeeDocumentWhereInput = {
     deletedAt: null,
+    ...(linkedIds.length ? { NOT: { type: EmployeeDocumentType.MEDICAL_INSURANCE, employeeId: { in: linkedIds } } } : {}),
     ...(branchId ? { employee: { branchId } } : {}),
     ...(q
       ? {
@@ -506,6 +573,7 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
       isStatutory: false,
     });
   }
+  allItems.push(...(await linkedInsuranceRows({ q, branchId }, rules)));
 
   const stats: WorkforceSummaryStats = {
     total: allItems.length,
@@ -534,7 +602,8 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
 }
 
 export async function getWorkforceCategoryCounts() {
-  const [iqamaCount, passportCount, docGroups] = await Promise.all([
+  const linkedIds = await linkedInsuranceEmployeeIds();
+  const [iqamaCount, passportCount, docGroups, superseded, linkedWithIqama] = await Promise.all([
     prisma.employee.count({
       where: {
         deletedAt: null,
@@ -552,6 +621,9 @@ export async function getWorkforceCategoryCounts() {
       where: { deletedAt: null },
       _count: { _all: true },
     }),
+    // Domestic workers' own insurance documents are set aside; their iqama stands in.
+    linkedIds.length ? prisma.employeeDocument.count({ where: { deletedAt: null, type: EmployeeDocumentType.MEDICAL_INSURANCE, employeeId: { in: linkedIds } } }) : Promise.resolve(0),
+    linkedIds.length ? prisma.employee.count({ where: { id: { in: linkedIds }, iqamaExpiryDate: { not: null } } }) : Promise.resolve(0),
   ]);
 
   const groupMap = Object.fromEntries(docGroups.map((g) => [g.type, g._count._all]));
@@ -565,7 +637,7 @@ export async function getWorkforceCategoryCounts() {
     IQAMA: iqamaCount,
     PASSPORT: passportCount,
     HEALTH_CERTIFICATE: groupMap[EmployeeDocumentType.HEALTH_CERTIFICATE] ?? 0,
-    MEDICAL_INSURANCE: groupMap[EmployeeDocumentType.MEDICAL_INSURANCE] ?? 0,
+    MEDICAL_INSURANCE: (groupMap[EmployeeDocumentType.MEDICAL_INSURANCE] ?? 0) - superseded + linkedWithIqama,
     VISA: visaCount,
     FLIGHT_TICKET: groupMap[EmployeeDocumentType.FLIGHT_TICKET] ?? 0,
   };
@@ -684,6 +756,8 @@ export async function createDocument(input: any, auth?: AuthContext) {
 }
 
 export async function updateDocument(id: string, input: any, auth?: AuthContext) {
+  // Domestic workers' insurance follows the iqama: it changes with the iqama, not on its own.
+  if (id.startsWith("medical_insurance-")) throw ApiError.badRequest("This medical insurance follows the iqama. Renew or edit the iqama instead.");
   const rules = await getExpirationRules();
 
   // Handle synthetic IDs for Iqamas
@@ -781,6 +855,8 @@ export async function updateDocument(id: string, input: any, auth?: AuthContext)
 }
 
 export async function removeDocument(id: string, type?: string, auth?: AuthContext) {
+  // Domestic workers' insurance follows the iqama: it changes with the iqama, not on its own.
+  if (id.startsWith("medical_insurance-")) throw ApiError.badRequest("This medical insurance follows the iqama. Renew or edit the iqama instead.");
   if (id.startsWith("iqama-")) {
     const empId = id.replace("iqama-", "");
     await updateTrackedDocument("employee", empId, { iqamaNumber: null, iqamaIssueDate: null, iqamaExpiryDate: null, iqamaFileId: null }, auth);

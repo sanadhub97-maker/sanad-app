@@ -7,7 +7,7 @@ export const scheduleSchema = z.object({
   language: z.enum(["ar", "en"]).default("ar"), enabled: z.boolean().default(true),
 });
 export const bulkSchema = z.object({ ids: z.array(idSchema).min(1).max(100).refine(v => new Set(v).size === v.length),
-  changes: z.object({ branchId: idSchema.optional(), employmentStatus: z.enum(["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED"]).optional(), department: z.string().trim().min(1).max(100).optional(), onSponsorship: z.boolean().optional() }).strict().refine(v => Object.keys(v).length > 0),
+  changes: z.object({ branchId: idSchema.optional(), employmentStatus: z.enum(["ACTIVE", "INACTIVE", "ON_LEAVE", "TERMINATED"]).optional(), department: z.string().trim().min(1).max(100).optional(), jobTitle: z.string().trim().min(1).max(150).optional(), onSponsorship: z.boolean().optional() }).strict().refine(v => Object.keys(v).length > 0),
 });
 export const ONBOARDING_STEPS = ["orientation", "equipment", "account", "training"] as const;
 export const onboardingSchema = z.object({ step: z.enum(ONBOARDING_STEPS), done: z.boolean() });

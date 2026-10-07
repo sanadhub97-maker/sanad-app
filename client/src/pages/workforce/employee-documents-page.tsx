@@ -266,15 +266,20 @@ export default function EmployeeDocumentsPage() {
                 expiryDate={doc.expiryDate}
                 hasFile={Boolean(doc.fileId)}
                 onView={() => navigate(empDocPath(doc))}
-                onRenew={hasPermission("employees.edit") ? () => setDialog({ open: true, docType: raw, document: doc }) : undefined}
+                onRenew={hasPermission("employees.edit") && !doc.linkedToIqama ? () => setDialog({ open: true, docType: raw, document: doc }) : undefined}
                 extra={
                   <>
+                    {doc.linkedToIqama && (
+                      <span className="rp-pill nodot" style={{ ["--c" as string]: "var(--sky)", ["--t" as string]: "var(--sky-s)" }} title={isAr ? "يتجدد مع الإقامة تلقائيًا" : "Renews with the iqama"}>
+                        {isAr ? "مرتبط بالإقامة" : "Follows the iqama"}
+                      </span>
+                    )}
                     {employeeId && (
                       <button type="button" className={cn("rc-btn icon")} onClick={() => navigate(`/employees/${employeeId}`)} title={isAr ? "ملف الموظف" : "Employee profile"} aria-label={isAr ? "ملف الموظف" : "Employee profile"}>
                         <User />
                       </button>
                     )}
-                    {hasPermission("employees.edit") && (
+                    {hasPermission("employees.edit") && !doc.linkedToIqama && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>

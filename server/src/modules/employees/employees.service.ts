@@ -7,6 +7,7 @@ import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { computeStatus } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
+import { domesticMatcher, insuranceFollowsIqama } from "@/services/domesticInsurance";
 import type { z } from "zod";
 import type { createEmployeeSchema, listEmployeesQuerySchema, updateEmployeeSchema } from "@/modules/employees/employees.schemas";
 
@@ -16,14 +17,18 @@ type ListQuery = z.infer<typeof listEmployeesQuerySchema>;
 
 const includeBranch = { branch: { select: { id: true, name: true, nameEn: true, code: true } } } as const;
 
-async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; passportExpiryDate: Date | null }>(
+async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; passportExpiryDate: Date | null; jobTitle?: string | null; jobTitleEn?: string | null; insuranceSeparate?: boolean | null }>(
   employee: T
 ) {
-  const rules = await getExpirationRules();
+  const [rules, isDomestic] = await Promise.all([getExpirationRules(), domesticMatcher()]);
   return {
     ...employee,
     iqamaStatus: computeStatus(employee.iqamaExpiryDate, rules),
     passportStatus: computeStatus(employee.passportExpiryDate, rules),
+    /** A domestic worker (private driver, housemaid, nanny…). */
+    domesticProfession: isDomestic(employee.jobTitle, employee.jobTitleEn),
+    /** Their medical insurance follows the iqama (no document of its own). */
+    insuranceFollowsIqama: insuranceFollowsIqama(employee, isDomestic),
   };
 }
 
@@ -39,7 +44,7 @@ function expiryStatusDateFilter(status: "VALID" | "EXPIRING_SOON" | "EXPIRED", t
 }
 
 export async function list(query: ListQuery) {
-  const { page, pageSize, sortBy, sortDir, q, branchId, employmentStatus, department, expiryStatus } = query;
+  const { page, pageSize, sortBy, sortDir, q, branchId, employmentStatus, department, expiryStatus, noJobTitle } = query;
   const rules = await getExpirationRules();
 
   const where: Prisma.EmployeeWhereInput = {
@@ -48,6 +53,7 @@ export async function list(query: ListQuery) {
     ...(employmentStatus ? { employmentStatus } : {}),
     ...(department ? { department } : {}),
     ...(expiryStatus ? { iqamaExpiryDate: expiryStatusDateFilter(expiryStatus, rules.expiringSoonThresholdDays) } : {}),
+    ...(noJobTitle ? { AND: [{ OR: [{ jobTitle: null }, { jobTitle: "" }] }] } : {}),
     ...(q
       ? {
           OR: [
@@ -86,9 +92,13 @@ export async function getById(id: string, auth?: AuthContext) {
   if (!employee) throw ApiError.notFound("Employee not found");
 
   const rules = await getExpirationRules();
-  const documents = employee.documents.map((doc) => ({ ...doc, status: computeStatus(doc.expiryDate, rules) }));
+  const shaped = await withComputedStatus(employee);
+  // An insurance document of their own is set aside while the insurance follows the iqama.
+  const documents = employee.documents
+    .filter((doc) => !(shaped.insuranceFollowsIqama && doc.type === "MEDICAL_INSURANCE"))
+    .map((doc) => ({ ...doc, status: computeStatus(doc.expiryDate, rules) }));
 
-  return { ...(await withComputedStatus(employee)), documents };
+  return { ...shaped, documents };
 }
 
 async function assertUniqueIdentifiers(input: Partial<CreateInput>, excludeId?: string) {

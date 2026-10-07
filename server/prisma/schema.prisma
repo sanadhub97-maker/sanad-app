@@ -427,6 +427,9 @@ model Employee {
   iqamaIssueDate   DateTime?
   iqamaExpiryDate  DateTime?
   iqamaFileId      String?
+  /// A domestic worker's medical insurance follows the iqama (see services/domesticInsurance);
+  /// true keeps it as its own document for the exceptions.
+  insuranceSeparate Boolean  @default(false)
 
   passportNumber       String?
   passportCountry      String?

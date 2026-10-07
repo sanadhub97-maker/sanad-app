@@ -23,6 +23,8 @@ export interface WorkforceDocumentItem {
   fileId?: string | null;
   notes?: string | null;
   status: "VALID" | "EXPIRING_SOON" | "EXPIRED";
+  /** A domestic worker's medical insurance, dated by the iqama (no document of its own). */
+  linkedToIqama?: boolean;
   employee?: {
     id: string;
     employeeNumber: string;
