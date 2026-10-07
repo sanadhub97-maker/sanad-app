@@ -78,7 +78,8 @@ export function EmployeePicker({
     isAr ? e.fullNameAr : e.fullNameEn || e.fullNameAr;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    // Modal: inside a dialog, the dialog's scroll lock otherwise swallows the mouse wheel over the list.
+    <Popover open={open} onOpenChange={setOpen} modal>
       {/* ── Trigger ── */}
       <PopoverTrigger asChild>
         <button
