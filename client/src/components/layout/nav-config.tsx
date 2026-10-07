@@ -34,8 +34,6 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   // Overview
   { label: "nav.dashboard", href: "/", icon: LayoutDashboard, dockLabel: "nav.dock.home", tone: "blue", section: "nav.overviewSection" },
-  { label: "nav.workTools", href: "/work-tools", icon: ListChecks, tone: "teal", section: "nav.overviewSection" },
-  { label: "nav.operations", href: "/operations", icon: Files, tone: "teal", section: "nav.overviewSection" },
   { label: "nav.dailyTasks", href: "/daily-tasks", dockLabel: "nav.dock.tasks", icon: ListChecks, tone: "emerald", permission: "tasks.view", section: "nav.overviewSection" },
 
   // Workforce

@@ -41,8 +41,6 @@ const AuditLogsPage = lazy(() => import("@/pages/auditLogs/audit-logs-page"));
 const SettingsPage = lazy(() => import("@/pages/settings/settings-page"));
 const ProfilePage = lazy(() => import("@/pages/profile/profile-page"));
 const MaintenancePage = lazy(() => import("@/pages/maintenance/maintenance-page"));
-const ProductivityPage = lazy(() => import("@/pages/productivity/productivity-page"));
-const OperationsPage = lazy(() => import("@/pages/operations/operations-page"));
 const AndroidAppPage = lazy(() => import("@/pages/android/android-app-page"));
 
 function PageFallback() {
@@ -84,8 +82,6 @@ export default function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/maintenance" element={<MaintenancePage />} />
-                <Route path="/work-tools" element={<ProductivityPage />} />
-                <Route path="/operations" element={<OperationsPage />} />
 
                 <Route element={<RequirePermission permission="employees.create" />}>
                   <Route path="/employees/new" element={<Navigate to="/employees?new=true" replace />} />

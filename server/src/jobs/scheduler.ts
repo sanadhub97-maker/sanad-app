@@ -6,7 +6,6 @@ import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/service
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
 import { runScheduledBackup, restoringSystem } from "@/modules/maintenance/backups.service";
-import { runScheduledReports } from "@/modules/productivity/scheduled-reports.service";
 
 let scheduledScanTask: ScheduledTask | null = null;
 
@@ -50,8 +49,6 @@ export async function rescheduleExpirationScan(timeStr?: string, timezone = "Asi
 }
 
 export async function startScheduledJobs() {
-  cron.schedule("* * * * *", () => void runScheduledReports().catch(err => logger.error({ err }, "Scheduled reports failed")));
-  if (env.NODE_ENV === "production") void runScheduledReports().catch(err => logger.error({ err }, "Report catch-up failed"));
   // Hourly catch-up also handles sleeping hosts; each Riyadh day runs at most once.
   cron.schedule("0 * * * *", () => void runScheduledBackup().catch(err => logger.error({ err }, "Scheduled backup failed")));
   if (env.NODE_ENV === "production") void runScheduledBackup().catch(err => logger.error({ err }, "Backup catch-up failed"));

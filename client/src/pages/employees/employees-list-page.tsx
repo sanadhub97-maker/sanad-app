@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { JobTitlesDialog } from "@/pages/employees/job-titles-dialog";
 import { localized } from "@/lib/names";
 import { namePair } from "@/lib/names";
 import { tr } from "@/i18n";
@@ -158,6 +159,7 @@ export default function EmployeesListPage() {
   // Employees with no profession: a domestic worker's insurance can only follow the iqama once it is filled in.
   const { data: noJob } = useQuery({ queryKey: ["employees", "no-job-title"], queryFn: () => employeesApi.list({ noJobTitle: true, pageSize: 1 }), enabled: hasPermission("employees.edit") });
   const noJobCount = noJob?.meta.total ?? 0;
+  const [jobTitlesOpen, setJobTitlesOpen] = useState(false);
 
   const { data: summary } = useQuery({
     queryKey: ["dashboard", "summary"],
@@ -319,8 +321,6 @@ export default function EmployeesListPage() {
         description={description}
         actions={
           <>
-            <Button variant="outline" onClick={() => navigate("/work-tools?tab=bulk")}>{isAr ? "إجراءات جماعية" : "Bulk actions"}</Button>
-            <Button variant="outline" onClick={() => navigate("/work-tools?tab=onboarding")}>{isAr ? "تجهيز الموظفين" : "Onboarding"}</Button>
             {hasPermission("importExport.import") && (
               <Button variant="outline" onClick={() => navigate("/import-export")}>
                 <FileUp className="h-4 w-4" /> {tr("استيراد من Excel", "Import from Excel")}
@@ -361,7 +361,7 @@ export default function EmployeesListPage() {
       {noJobCount > 0 && (
         <button
           type="button"
-          onClick={() => navigate("/work-tools?tab=bulk&missing=job")}
+          onClick={() => setJobTitlesOpen(true)}
           className="mb-3 flex w-full flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-start text-sm"
         >
           <span>
@@ -371,6 +371,8 @@ export default function EmployeesListPage() {
           <span className="font-semibold text-sky-700 dark:text-sky-300">{isAr ? "حدّد المهن" : "Fill them in"}</span>
         </button>
       )}
+
+      <JobTitlesDialog open={jobTitlesOpen} onOpenChange={setJobTitlesOpen} isAr={isAr} />
 
       <Kpis
         items={[

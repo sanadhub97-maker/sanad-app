@@ -12,7 +12,7 @@ import { notificationsApi } from "@/api/notifications";
 import { cn, formatDateTime } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
 import { notificationText } from "@/types/models";
-import { LiveAlerts } from "@/pages/productivity/productivity-page";
+import { LiveAlerts } from "@/pages/notifications/live-alerts";
 
 const SEVERITY_DOT: Record<string, string> = { CRITICAL: "bg-destructive", WARNING: "bg-warning", INFO: "bg-info" };
 

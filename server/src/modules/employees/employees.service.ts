@@ -156,6 +156,17 @@ export async function update(id: string, input: UpdateInput, auth?: AuthContext)
   return withComputedStatus(employee);
 }
 
+/** Sets one profession on many employees (the English one is cleared to be filled in again). */
+export async function setJobTitle(ids: string[], jobTitle: string, userId?: string) {
+  return prisma.$transaction(async (tx) => {
+    const rows = await tx.employee.findMany({ where: { id: { in: ids }, deletedAt: null }, select: { id: true, employeeNumber: true } });
+    if (rows.length !== ids.length) throw ApiError.badRequest("Some selected employees no longer exist. Refresh the list.");
+    const result = await tx.employee.updateMany({ where: { id: { in: ids }, deletedAt: null }, data: { jobTitle, jobTitleEn: null } });
+    await tx.auditLog.createMany({ data: rows.map((e) => ({ userId: userId ?? null, action: "UPDATE" as const, module: "employees", recordId: e.id, description: `Set profession of ${e.employeeNumber}: ${jobTitle}` })) });
+    return { count: result.count };
+  });
+}
+
 export async function softDelete(id: string) {
   const existing = await prisma.employee.findFirst({ where: { id, deletedAt: null } });
   if (!existing) throw ApiError.notFound("Employee not found");

@@ -5,7 +5,7 @@ import { requirePermission } from "@/middleware/rbac";
 import { validate } from "@/middleware/validate";
 import { auditLog } from "@/middleware/audit";
 import * as controller from "@/modules/employees/employees.controller";
-import { createEmployeeSchema, idParamSchema, listEmployeesQuerySchema, updateEmployeeSchema } from "@/modules/employees/employees.schemas";
+import { bulkJobTitleSchema, createEmployeeSchema, idParamSchema, listEmployeesQuerySchema, updateEmployeeSchema } from "@/modules/employees/employees.schemas";
 import employeeDocumentsRoutes from "@/modules/employeeDocuments/employeeDocuments.routes";
 
 const router = Router();
@@ -23,6 +23,8 @@ router.post(
   auditLog(AuditAction.CREATE, "employees"),
   controller.create
 );
+
+router.post("/job-title", requirePermission("employees.edit"), validate({ body: bulkJobTitleSchema }), controller.setJobTitle);
 
 router.put(
   "/:id",

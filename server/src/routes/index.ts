@@ -21,16 +21,14 @@ import pushRoutes from "@/modules/push/push.routes";
 import violationsRoutes from "@/modules/violations/violations.routes";
 import taxReturnsRoutes from "@/modules/taxReturns/taxReturns.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
-import productivityRoutes from "@/modules/productivity/productivity.routes";
-import operationsRoutes from "@/modules/operations/operations.routes";
+import alertsRoutes from "@/modules/alerts/alerts.routes";
 import { restoringSystem } from "@/modules/maintenance/backups.service";
 import { ApiError } from "@/utils/apiError";
 
 const router = Router();
 router.use((_req, _res, next) => restoringSystem ? next(new ApiError(503, "MAINTENANCE", "The system is restoring a backup. Please wait.")) : next());
 router.use("/maintenance", maintenanceRoutes);
-router.use("/productivity", productivityRoutes);
-router.use("/operations", operationsRoutes);
+router.use("/alerts", alertsRoutes);
 
 router.use("/auth", authRoutes);
 router.use("/branches", branchesRoutes);

@@ -63,3 +63,9 @@ export const listEmployeesQuerySchema = paginationSchema.extend({
 });
 
 export const idParamSchema = z.object({ id: z.string().min(1) });
+
+/** One profession for many employees at once (filling in the missing ones). */
+export const bulkJobTitleSchema = z.object({
+  ids: z.array(z.string().min(1).max(150)).min(1).max(100).refine((v) => new Set(v).size === v.length, "Duplicate employees"),
+  jobTitle: z.string().trim().min(1).max(150),
+});

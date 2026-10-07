@@ -12,8 +12,6 @@ const loaders: Record<string, () => Promise<unknown>> = {
   "/violations": () => import("@/pages/violations/violations-page"),
   "/settings": () => import("@/pages/settings/settings-page"),
   "/maintenance": () => import("@/pages/maintenance/maintenance-page"),
-  "/work-tools": () => import("@/pages/productivity/productivity-page"),
-  "/operations": () => import("@/pages/operations/operations-page"),
   "/users": () => import("@/pages/users/users-page"),
   "/roles": () => import("@/pages/roles/roles-page"),
   "/audit-logs": () => import("@/pages/auditLogs/audit-logs-page"),

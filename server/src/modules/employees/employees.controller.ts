@@ -44,3 +44,7 @@ export const exportPdf = asyncHandler(async (req: Request, res: Response) => {
   res.setHeader("Content-Disposition", pdfContentDisposition(`employee-${employee.employeeNumber}.pdf`));
   res.send(pdf);
 });
+
+export const setJobTitle = asyncHandler(async (req: Request, res: Response) => {
+  res.json({ data: await service.setJobTitle(req.body.ids, req.body.jobTitle, req.auth?.userId), message: "Professions saved." });
+});
