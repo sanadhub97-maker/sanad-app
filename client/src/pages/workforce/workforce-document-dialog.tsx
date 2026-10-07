@@ -18,7 +18,6 @@ import {
   Building,
   Loader2,
   CheckCircle2,
-  Search,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
+import { EmployeePicker } from "@/components/common/employee-picker";
 import { FileUpload } from "@/components/common/file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { workforceDocumentsApi, type WorkforceDocumentItem } from "@/api/workforceDocuments";
@@ -137,8 +137,6 @@ export function WorkforceDocumentDialog({
 
   const cfg = TYPE_CONFIG[selectedType] || TYPE_CONFIG.IQAMA;
 
-  const [employeeSearch, setEmployeeSearch] = useState("");
-
   const { data: employeesData } = useQuery({
     queryKey: ["employees-selector"],
     queryFn: () => employeesApi.list({ pageSize: 200 }),
@@ -146,15 +144,6 @@ export function WorkforceDocumentDialog({
   });
 
   const employees = employeesData?.data ?? [];
-  const filteredEmployees = employees.filter((emp) => {
-    if (!employeeSearch.trim()) return true;
-    const q = employeeSearch.toLowerCase();
-    return (
-      emp.fullNameAr.toLowerCase().includes(q) ||
-      (emp.fullNameEn && emp.fullNameEn.toLowerCase().includes(q)) ||
-      emp.employeeNumber.toLowerCase().includes(q)
-    );
-  });
 
   const {
     register,
@@ -206,7 +195,6 @@ export function WorkforceDocumentDialog({
           fileId: "",
           notes: "",
         });
-        setEmployeeSearch("");
       }
     }
   }, [open, document, reset]);
@@ -388,50 +376,7 @@ const TONE_STYLES: Record<string, { border: string; glow: string; topLine: strin
                 {t("workforce.dialog.selectEmployee")} <span className="text-destructive">*</span>
               </label>
 
-              {/* Employee search box */}
-              <div className="relative">
-                <Search className="absolute start-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t("workforce.dialog.selectEmployeePlaceholder")}
-                  value={employeeSearch}
-                  onChange={(e) => setEmployeeSearch(e.target.value)}
-                  className="ps-9 rounded-xl border-border/80 bg-muted/30 focus:bg-background transition-all"
-                />
-              </div>
-
-              {/* Employee Selection Box */}
-              <div className="max-h-36 overflow-y-auto space-y-1 rounded-xl border border-border/70 bg-card/40 p-1.5 scrollbar-thin">
-                {filteredEmployees.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-3">
-                    {isAr ? "لا توجد نتائج مطابقة" : "No matching employees"}
-                  </p>
-                ) : (
-                  filteredEmployees.slice(0, 15).map((emp) => {
-                    const isSelected = selectedEmployeeId === emp.id;
-                    return (
-                      <button
-                        key={emp.id}
-                        type="button"
-                        onClick={() => setValue("employeeId", emp.id, { shouldValidate: true })}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-start transition-all text-xs ${
-                          isSelected
-                            ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                            : "hover:bg-muted/80 text-foreground"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="truncate">{localized(emp.fullNameAr, emp.fullNameEn)}</span>
-                        </div>
-                        <span className={`font-mono text-[11px] px-1.5 py-0.5 rounded ${
-                          isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}>
-                          {emp.employeeNumber}
-                        </span>
-                      </button>
-                    );
-                  })
-                )}
-              </div>
+              <EmployeePicker employees={employees} value={selectedEmployeeId || undefined} onChange={(id) => setValue("employeeId", id ?? "", { shouldValidate: true })} invalid={Boolean(errors.employeeId)} />
               {errors.employeeId && (
                 <p className="text-[11px] text-destructive font-medium">{errors.employeeId.message}</p>
               )}
