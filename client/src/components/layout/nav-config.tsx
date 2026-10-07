@@ -8,6 +8,8 @@ import {
   Landmark,
   LayoutDashboard,
   ListChecks,
+  PackageCheck,
+  ShieldCheck as ClearanceIcon,
   BarChart3,
   ScrollText,
   Settings,
@@ -53,6 +55,8 @@ export const NAV_ITEMS: NavItem[] = [
     permission: "employees.view",
     section: "nav.workforceSection",
   },
+  { label: "nav.custody", href: "/custody", icon: PackageCheck, tone: "amber", permission: "custody.view", section: "nav.workforceSection" },
+  { label: "nav.clearances", href: "/clearances", icon: ClearanceIcon, tone: "amber", permission: "custody.view", section: "nav.workforceSection" },
 
   // Compliance & Assets
   { label: "nav.companyDocuments", href: "/company-documents", icon: FileText, tone: "amber", permission: "companyDocuments.view", section: "nav.complianceSection" },

@@ -22,6 +22,7 @@ import violationsRoutes from "@/modules/violations/violations.routes";
 import taxReturnsRoutes from "@/modules/taxReturns/taxReturns.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
 import alertsRoutes from "@/modules/alerts/alerts.routes";
+import custodyRoutes from "@/modules/custody/custody.routes";
 import { restoringSystem } from "@/modules/maintenance/backups.service";
 import { ApiError } from "@/utils/apiError";
 
@@ -51,5 +52,6 @@ router.use("/translate", translateRoutes);
 router.use("/tasks", tasksRoutes);
 router.use("/push", pushRoutes);
 router.use("/violations", violationsRoutes);
+router.use("/custody", custodyRoutes);
 
 export default router;

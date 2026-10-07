@@ -19,6 +19,7 @@ import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
 import type { Branch } from "@/types/models";
+import { BranchMedal } from "@/pages/branches/branch-logo";
 
 /* Establishments in the Royal design, as in the approved preview: a card per
    establishment with its English name, a ring of its valid documents, the
@@ -169,7 +170,7 @@ export default function BranchesPage() {
                 code={b.code}
                 status={b.status === "INACTIVE" ? (isAr ? "غير نشطة" : "Inactive") : isAr ? "نشطة" : "Active"}
                 statusColor={b.status === "INACTIVE" ? "#ff9a9a" : undefined}
-                seal={initialsOf(name)}
+                seal={b.logoFileId ? <BranchMedal fileId={b.logoFileId} name={name} className="in-seal" /> : initialsOf(name)}
                 title={name}
                 sub={other && other !== name ? <bdi>{other}</bdi> : undefined}
                 onOpen={open}

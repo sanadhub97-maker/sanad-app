@@ -4,6 +4,8 @@
     "enterpriseBadge": "مؤسسي"
   },
   "nav": {
+    "custody": "تسليم العهد",
+    "clearances": "إخلاء الطرف",
     "dashboard": "لوحة التحكم",
     "dailyTasks": "المهام اليومية",
     "violations": "المخالفات",
@@ -846,6 +848,7 @@
     "COMPANY_DOCUMENT": "مستند شركة"
   },
   "moduleNames": {
+    "custody": "العهد وإخلاء الطرف",
     "tasks": "المهام اليومية",
     "violations": "المخالفات",
     "employees": "الموظفون",

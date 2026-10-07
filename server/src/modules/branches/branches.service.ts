@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { assertBrandFile } from "@/modules/files/files.access";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
@@ -53,6 +54,7 @@ export async function getById(id: string) {
 }
 
 export async function create(input: CreateInput) {
+  await assertBrandFile(input.logoFileId, ["branch-logo"]);
   const existing = await prisma.branch.findFirst({ where: { code: input.code, deletedAt: null } });
   if (existing) throw ApiError.badRequest("A branch with this code already exists.");
   return prisma.branch.create({ data: { ...input, email: input.email || undefined } });
@@ -60,6 +62,7 @@ export async function create(input: CreateInput) {
 
 export async function update(id: string, input: UpdateInput) {
   await getById(id);
+  await assertBrandFile(input.logoFileId, ["branch-logo"]);
   if (input.code) {
     const existing = await prisma.branch.findFirst({ where: { code: input.code, id: { not: id }, deletedAt: null } });
     if (existing) throw ApiError.badRequest("A branch with this code already exists.");
@@ -98,5 +101,5 @@ export async function getNextCode(): Promise<string> {
 }
 
 export async function listAllActive() {
-  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true }, orderBy: { name: "asc" } });
+  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true, logoFileId: true }, orderBy: { name: "asc" } });
 }

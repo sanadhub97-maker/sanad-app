@@ -31,6 +31,7 @@ import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { Branch } from "@/types/models";
+import { BranchLogoField } from "@/pages/branches/branch-logo";
 
 const makeSchema = () =>
   z.object({
@@ -46,6 +47,7 @@ const makeSchema = () =>
     email: z.string().email(tr("البريد الإلكتروني غير صحيح", "Invalid email address")).optional().or(z.literal("")),
     status: z.enum(["ACTIVE", "INACTIVE"]),
     notes: z.string().optional(),
+    logoFileId: z.string().nullable().optional(),
   });
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
@@ -70,6 +72,7 @@ export function BranchDialog({
     reset,
     getValues,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(useMemo(makeSchema, [isAr])),
@@ -92,6 +95,7 @@ export function BranchDialog({
               address: branch.address ?? "",
               phone: branch.phone ?? "",
               notes: branch.notes ?? "",
+              logoFileId: branch.logoFileId ?? null,
             }
           : { status: "ACTIVE" }
       );
@@ -172,6 +176,8 @@ export function BranchDialog({
                 {isAr ? "الهوية الإدارية والحالة التشغيلية" : "Identity & operational status"}
               </span>
             </div>
+
+            <Controller control={control} name="logoFileId" render={({ field }) => <BranchLogoField fileId={field.value} name={watch("name") ?? ""} onChange={field.onChange} />} />
 
             <div className="grid gap-4 sm:grid-cols-12">
               <FormField label={t("branches.fields.name")} required error={errors.name?.message} icon={Building2} className="sm:col-span-6">

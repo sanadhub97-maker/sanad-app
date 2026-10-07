@@ -6,6 +6,21 @@ import i18n from "@/i18n";
  * Keep in sync when a server message is added or reworded — an unmapped
  * message is shown as is. */
 const EXACT: Record<string, string> = {
+  "Custody handover not found.": "محضر تسليم العهدة غير موجود.",
+  "Clearance not found.": "إخلاء الطرف غير موجود.",
+  "A custody item does not belong to this handover.": "في صنف مش تبع المحضر ده.",
+  "Returned custody items cannot be removed.": "الأصناف اللي رجعت ماينفعش تتشال من المحضر.",
+  "This custody item was already returned.": "الصنف ده رجع قبل كده.",
+  "This handover is part of a clearance and cannot be deleted.": "المحضر ده داخل في إخلاء طرف، فماينفعش يتحذف.",
+  "A custody item does not belong to this employee.": "في صنف مش في عهدة الموظف ده.",
+  "This employee already has an open clearance.": "الموظف ده عنده إخلاء طرف مفتوح بالفعل. كمّل عليه بدل ما تعمل واحد جديد.",
+  "An issued clearance cannot be changed.": "إخلاء الطرف اتصدرت شهادته، فماينفعش يتعدل.",
+  "This clearance was already issued.": "الشهادة دي اتصدرت قبل كده.",
+  "Every custody item must be returned before the clearance is issued.": "لازم كل العهد ترجع الأول قبل ما الشهادة تتصدر.",
+  "Every department must sign the clearance off before it is issued.": "لازم كل الأقسام تأكّد الأول قبل ما الشهادة تتصدر.",
+  "Custody handover deleted.": "تم حذف محضر التسليم.",
+  "Clearance deleted.": "تم حذف إخلاء الطرف.",
+  "Branding must reference an uploaded branding image.": "الشعار لازم يكون صورة PNG أو JPG مرفوعة.",
   "This medical insurance follows the iqama. Renew or edit the iqama instead.": "التأمين الطبي ده مرتبط بالإقامة، وبيتجدد معاها. جدّد الإقامة أو عدّلها بدل كده.",
   "Print service is busy. Retry shortly.": "في ملفات تانية بتتطبع دلوقتي. حاول تاني بعد شوية.",
   "This attachment is retained in document history and cannot be deleted.": "المرفق محفوظ ضمن سجل الوثائق ولا يمكن حذفه للحفاظ على النسخ السابقة.",

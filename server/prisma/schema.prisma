@@ -204,6 +204,8 @@ model User {
   createdViolations       Violation[]      @relation("ViolationCreator")
   violationEvents         ViolationEvent[]
   createdTaxReturns       TaxReturn[]      @relation("TaxReturnCreator")
+  createdCustodyHandovers CustodyHandover[] @relation("CustodyCreator")
+  createdClearances       Clearance[]       @relation("ClearanceCreator")
 
   @@index([isActive])
 }
@@ -365,6 +367,8 @@ model EmailVerificationToken {
 model Branch {
   ownerName String?
   vatRegistrationNumber String?
+  /// The establishment's own logo (module "branch-logo"): printed on its employees' documents.
+  logoFileId String?
   selectedTaxReturns TaxReturnBranch[]
   id        String       @id @default(cuid())
   name      String
@@ -448,6 +452,8 @@ model Employee {
   onboarding EmployeeOnboarding?
   assetHandovers AssetHandover[]
   offboarding EmployeeOffboarding?
+  custodyHandovers CustodyHandover[]
+  clearances Clearance[]
 
   @@index([branchId])
   @@index([employmentStatus])
@@ -1062,4 +1068,81 @@ model TaxReturnBranch {
   branch Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
   @@id([taxReturnId, branchId])
   @@index([branchId])
+}
+
+// ---------------------------------------------------------------------------
+// Custody handovers and end-of-service clearances. A handover record lists what
+// an employee received; each item is returned on its own or with a clearance,
+// which also gathers every department's sign-off before its certificate is issued.
+// Both print with the letterhead of the establishment the employee is on.
+// ---------------------------------------------------------------------------
+
+model CustodyHandover {
+  id           String    @id @default(cuid())
+  /// HO-<year>-<0001>
+  number       String    @unique
+  employeeId   String
+  date         DateTime  @db.Date
+  deliveredBy  String?
+  notes        String?
+  /// The signed record, scanned back in.
+  signedFileId String?
+  createdById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  employee  Employee      @relation(fields: [employeeId], references: [id])
+  createdBy User?         @relation("CustodyCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  items     CustodyItem[]
+
+  @@index([employeeId])
+  @@index([date])
+}
+
+model CustodyItem {
+  id              String    @id @default(cuid())
+  handoverId      String
+  kind            String
+  description     String?
+  serialNumber    String?
+  condition       String
+  value           Decimal   @default(0) @db.Decimal(12, 2)
+  returnedAt      DateTime? @db.Date
+  returnCondition String?
+  /// The clearance it came back with, if it did.
+  clearanceId     String?
+
+  handover  CustodyHandover @relation(fields: [handoverId], references: [id], onDelete: Cascade)
+  clearance Clearance?      @relation(fields: [clearanceId], references: [id], onDelete: SetNull)
+
+  @@index([handoverId])
+  @@index([clearanceId])
+}
+
+model Clearance {
+  id             String    @id @default(cuid())
+  /// CL-<year>-<0001>
+  number         String    @unique
+  employeeId     String
+  lastWorkingDay DateTime  @db.Date
+  reason         String
+  dues           Decimal   @default(0) @db.Decimal(12, 2)
+  notes          String?
+  /// Each department's sign-off: { hr: { done, by, at }, fin: …, it: …, store: …, mgr: … }
+  departments    Json      @default("{}")
+  /// OPEN, then ISSUED once every item is back and every department signed.
+  status         String    @default("OPEN")
+  issuedAt       DateTime?
+  createdById    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  employee  Employee      @relation(fields: [employeeId], references: [id])
+  createdBy User?         @relation("ClearanceCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  items     CustodyItem[]
+
+  @@index([employeeId])
+  @@index([status])
 }

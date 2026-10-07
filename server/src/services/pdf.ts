@@ -261,7 +261,32 @@ export function pickHalf(text: string) {
 // Every PDF is A4 portrait; wide report tables use a compact style instead.
 export interface RenderPdfOptions {
   footerLabel?: string;
+  /** The page draws its own full-bleed design: no theme header/footer, no margins. */
+  bare?: boolean;
+  /** A box of the page (top/bottom/side offsets set in px) whose content is shrunk to fit it, so a long document stays on one sheet. */
+  fitSelector?: string;
 }
+
+// Runs in the page (its own scripts are off): zooms the box down until its content fits,
+// keeping the box where it was by dividing its offsets by the same zoom.
+const FIT_TO_BOX = `(sel) => {
+  const el = document.querySelector(sel);
+  if (!el) return 1;
+  const cs = getComputedStyle(el);
+  const box = { top: parseFloat(cs.top), bottom: parseFloat(cs.bottom), left: parseFloat(cs.left), right: parseFloat(cs.right) };
+  const avail = el.clientHeight;
+  el.style.bottom = "auto";
+  const need = el.scrollHeight;
+  el.style.bottom = "";
+  if (need <= avail + 1) return 1;
+  const z = Math.max(0.5, avail / need);
+  el.style.zoom = String(z);
+  el.style.top = box.top / z + "px";
+  el.style.bottom = box.bottom / z + "px";
+  el.style.left = box.left / z + "px";
+  el.style.right = box.right / z + "px";
+  return z;
+}`;
 
 /**
  * 👑 Executive Corporate PDF Renderer
@@ -294,8 +319,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     // the network before they can be used.
     const headerHtml = running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate;
     const footerHtml = english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel);
-    const marginFonts = await marginTypographyFor(headerHtml + footerHtml);
-    await page.setContent(withSiteFonts(html, preloadMarginFonts(marginFonts)), { waitUntil: "domcontentloaded", timeout: 20000 });
+    const marginFonts = options.bare ? "" : await marginTypographyFor(headerHtml + footerHtml);
+    await page.setContent(withSiteFonts(html, marginFonts ? preloadMarginFonts(marginFonts) : ""), { waitUntil: "domcontentloaded", timeout: 20000 });
     await waitForSiteFonts(page);
     const settled = await Promise.race([
       page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
@@ -303,6 +328,10 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     ]).catch(() => false);
     // Stop anything still loading past the budget (a design's own extra font).
     if (!settled) await page.evaluate("window.stop()").catch(() => undefined);
+    if (options.bare) {
+      if (options.fitSelector) await page.evaluate(`(${FIT_TO_BOX})(${JSON.stringify(options.fitSelector)})`);
+      return Buffer.from(await page.pdf({ format: "A4", landscape: false, printBackground: true, waitForFonts: false, preferCSSPageSize: false, margin: { top: "0", bottom: "0", left: "0", right: "0" } }));
+    }
     const pdf = await page.pdf({
       format: "A4",
       landscape: false,

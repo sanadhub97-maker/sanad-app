@@ -17,6 +17,8 @@ export interface Paginated<T> {
 export interface Branch {
   vatRegistrationNumber?: string | null;
   ownerName?: string | null;
+  /** The establishment's own logo (printed on its employees' custody and clearance documents). */
+  logoFileId?: string | null;
   id: string;
   name: string;
   nameEn?: string | null;

@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 import { storage } from "@/lib/storage";
 import { logger } from "@/lib/logger";
-import { getPrintThemeSetting, getPrintSignatures } from "@/services/settingsStore";
+import { getPrintThemeSetting, getPrintSignatures, getAppearanceSettings } from "@/services/settingsStore";
 import type { SignatureDocument } from "@/services/settingsStore";
 import { PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 
@@ -19,9 +19,9 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   }
   return pending;
 }
-async function loadPrintLogo(printLogoId: string) {
+async function loadPrintLogo(printLogoId: string, module = "company-logo") {
   const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
-  if (!logoFile || logoFile.module !== "company-logo" || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
+  if (!logoFile || logoFile.module !== module || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
   const raw = await storage.read(logoFile.storedName);
   const buffer = await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png().toBuffer();
   return { buffer, mimeType: "image/png" };
@@ -133,6 +133,41 @@ export async function getBrandingContext(kind?: SignatureDocument) {
     })
   );
   return { company, logoDataUrl, printTheme, signatures, stampDataUrl, nameImages, brandColor };
+}
+
+/** An establishment's own logo (uploaded on the branches page) as a PNG, shrunk once and kept. */
+function readBranchLogo(fileId: string) {
+  const key = `branch:${fileId}`;
+  let pending = logoCache.get(key);
+  if (!pending) {
+    if (logoCache.size >= 32) logoCache.clear();
+    pending = loadPrintLogo(fileId, "branch-logo").catch(error => { logoCache.delete(key); throw error; });
+    logoCache.set(key, pending);
+  }
+  return pending;
+}
+
+/**
+ * The identity a document prints under: the employee's establishment (its name,
+ * logo and the logo's colour), falling back to the company's logo and colour
+ * when the establishment has no logo of its own.
+ */
+export async function getEstablishmentBranding(branchId: string | null | undefined) {
+  const [company, branch] = await Promise.all([
+    prisma.companySettings.findUnique({ where: { id: 1 } }),
+    branchId ? prisma.branch.findFirst({ where: { id: branchId, deletedAt: null } }) : null,
+  ]);
+  const own = branch?.logoFileId ? await readBranchLogo(branch.logoFileId).catch(() => null) : null;
+  const logo = own ?? (await readPrintLogo(company));
+  const logoId = own ? `branch:${branch!.logoFileId}` : company?.printLogoFileId || company?.logoFileId;
+  const [brandColor, stampDataUrl] = await Promise.all([brandColorOf(logoId, logo?.buffer), fileDataUrl(company?.stampFileId)]);
+  return {
+    company,
+    branch,
+    logoDataUrl: logo ? `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}` : null,
+    brandColor: brandColor ?? (await getAppearanceSettings()).primaryColor ?? null,
+    stampDataUrl,
+  };
 }
 
 export async function getSpreadsheetBranding() {

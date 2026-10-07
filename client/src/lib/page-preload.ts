@@ -10,6 +10,8 @@ const loaders: Record<string, () => Promise<unknown>> = {
   "/reports": () => import("@/pages/reports/reports-page"),
   "/daily-tasks": () => import("@/pages/tasks/daily-tasks-page"),
   "/violations": () => import("@/pages/violations/violations-page"),
+  "/custody": () => import("@/pages/custody/handovers-page"),
+  "/clearances": () => import("@/pages/custody/clearances-page"),
   "/settings": () => import("@/pages/settings/settings-page"),
   "/maintenance": () => import("@/pages/maintenance/maintenance-page"),
   "/users": () => import("@/pages/users/users-page"),
