@@ -3,7 +3,8 @@ import { downloadFile } from "@/lib/download";
 
 export type ReportFormat = "json" | "xlsx" | "pdf" | "csv";
 export interface ReportSummary {
-  documents: { total: number; expired: number; soon: number } | null;
+  /** sponsored*: the expired / ending-soon reports' scope — every establishment, and employees on the company's sponsorship. */
+  documents: { total: number; expired: number; soon: number; sponsoredExpired?: number; sponsoredSoon?: number } | null;
   employees: { total: number; active: number } | null;
   payments: { total: number; count: number } | null;
   activity: number | null;

@@ -11,7 +11,7 @@ it("returns aggregates without fetching full employee/payment/activity records",
   mocks.auditCount.mockResolvedValue(8000);
   mocks.items.mockResolvedValue([{ sourceType: "COMPANY_DOCUMENT", expiryDate: new Date("2000-01-01") }]);
   const result = await reportSummary({ isSuperAdmin: true } as any);
-  expect(result).toEqual({ documents: { total: 1, expired: 1, soon: 0 }, employees: { total: 1000, active: 900 }, payments: { total: 1234, count: 20 }, activity: 8000 });
+  expect(result).toEqual({ documents: { total: 1, expired: 1, soon: 0, sponsoredExpired: 1, sponsoredSoon: 0 }, employees: { total: 1000, active: 900 }, payments: { total: 1234, count: 20 }, activity: 8000 });
   expect(JSON.stringify(result).length).toBeLessThan(300);
 });
 it("does not query or disclose modules outside the user's permissions", async () => {

@@ -13,6 +13,8 @@ export const documentsReportQuerySchema = formatQuerySchema.extend({
   sourceType: z.enum(["EMPLOYEE", "EMPLOYEE_IQAMA", "EMPLOYEE_PASSPORT", "EMPLOYEE_DOCUMENT", "COMPANY_DOCUMENT"]).optional(),
   /** One kind of document: IQAMA, PASSPORT, HEALTH_CERTIFICATE, COMMERCIAL_REGISTRATION… */
   category: z.string().max(60).optional(),
+  /** "sponsored": every establishment document, and only the documents of employees on the company's sponsorship. */
+  scope: z.enum(["all", "sponsored"]).optional(),
 });
 
 export const paymentsReportQuerySchema = formatQuerySchema.extend({

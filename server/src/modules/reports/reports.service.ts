@@ -15,14 +15,18 @@ import type {
 } from "@/modules/reports/reports.schemas";
 
 const REPORT_ROW_CAP = 10_000;
+
+/** The expired and ending-soon reports: every establishment document, and employees' only when they are on the company's sponsorship. */
+export const inSponsoredScope = (item: { sourceType: string; onSponsorship?: boolean | null }) => item.sourceType === "COMPANY_DOCUMENT" || item.onSponsorship === true;
 export async function reportSummary(auth: AuthContext) {
   const since = new Date(Date.now() - 30 * 86_400_000);
   const [documents, employees, activeEmployees, payments, activity] = await Promise.all([
     ["employees.view", "employeeDocuments.view", "companyDocuments.view"].some(key => hasPermission(auth, key)) ? (async () => {
       const [items, rules] = await Promise.all([getTrackableItems({ linkedInsurance: true }), getExpirationRules()]);
       const visible = items.filter(item => canViewSource(auth, item.sourceType));
-      const statuses = visible.map(item => computeStatus(item.expiryDate, rules));
-      return { total: visible.length, expired: statuses.filter(status => status === "EXPIRED").length, soon: statuses.filter(status => status === "EXPIRING_SOON").length };
+      const statuses = visible.map(item => ({ status: computeStatus(item.expiryDate, rules), sponsored: inSponsoredScope(item) }));
+      const count = (status: string, sponsoredOnly = false) => statuses.filter(s => s.status === status && (!sponsoredOnly || s.sponsored)).length;
+      return { total: visible.length, expired: count("EXPIRED"), soon: count("EXPIRING_SOON"), sponsoredExpired: count("EXPIRED", true), sponsoredSoon: count("EXPIRING_SOON", true) };
     })() : null,
     hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null } }) : null,
     hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null, employmentStatus: "ACTIVE" } }) : null,
@@ -88,6 +92,7 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
     items = items.filter((i) => query.sourceType === "EMPLOYEE" ? i.sourceType.startsWith("EMPLOYEE_") : i.sourceType === query.sourceType || (iqamaOrPassport && i.kind === query.category));
   }
   if (query.category) items = items.filter((i) => i.kind === query.category);
+  if (query.scope === "sponsored") items = items.filter(inSponsoredScope);
   const withStatus = items.map((i) => ({ ...i, status: computeStatus(i.expiryDate, rules) }));
   const filtered = query.status ? withStatus.filter((i) => i.status === query.status) : withStatus;
 
@@ -115,6 +120,7 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
         branchEn: i.branchNameEn || i.branchName || null,
         employeeName: i.employeeNameAr ?? null,
         employeeNameEn: i.employeeName ?? null,
+        onSponsorship: i.onSponsorship ?? null,
         expiryDate: i.expiryDate,
         status: i.status,
       };

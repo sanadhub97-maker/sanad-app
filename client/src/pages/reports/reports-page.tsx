@@ -29,8 +29,8 @@ type ActivityRow = { date: string; user: string; action: string; module: string;
 type Report = "employees" | "documents" | "payments" | "activity";
 type TileId = "expired" | "soon" | "documents" | "employees" | "payments" | "activity";
 const TILE_LOOK: Record<TileId, { report: Report; icon: LucideIcon; c: string; title: [string, string]; text: [string, string] }> = {
-  expired: { report: "documents", icon: Bell, c: "var(--bad)", title: ["الوثائق المنتهية", "Expired documents"], text: ["كل وثيقة انتهت ويلزم تجديدها، مع صاحبها وتاريخ انتهائها", "Every document that has ended and needs renewing"] },
-  soon: { report: "documents", icon: Clock, c: "var(--warn)", title: ["القريبة من الانتهاء", "Ending soon"], text: ["ما ينتهي قريبًا لتبدأ تجديده قبل موعده", "What ends soon, so you can renew it in time"] },
+  expired: { report: "documents", icon: Bell, c: "var(--bad)", title: ["الوثائق المنتهية", "Expired documents"], text: ["وثائق المؤسسات، والموظفين اللي على الكفالة", "Establishments, and employees on the company's sponsorship"] },
+  soon: { report: "documents", icon: Clock, c: "var(--warn)", title: ["القريبة من الانتهاء", "Ending soon"], text: ["للمؤسسات والموظفين اللي على الكفالة، عشان تجدد في ميعادك", "Establishments and sponsored employees, so you renew in time"] },
   documents: { report: "documents", icon: FileText, c: "var(--sky)", title: ["كل الوثائق", "All documents"], text: ["وثائق الموظفين والشركة وحالة كل منها", "Employee and company documents with their status"] },
   employees: { report: "employees", icon: Users, c: "var(--pri)", title: ["بيانات الموظفين", "Employees"], text: ["المؤسسة والحالة وانتهاء الإقامة لكل موظف", "Establishment, status and iqama expiry for everyone"] },
   payments: { report: "payments", icon: Wallet, c: "var(--vio)", title: ["المدفوعات", "Payments"], text: ["ما صُرف في كل بند وكل مؤسسة، يومًا بيوم", "What was spent, day by day"] },
@@ -94,6 +94,9 @@ export default function ReportsPage() {
   const docCount = summary?.documents?.total ?? 0;
   const nExpired = summary?.documents?.expired ?? 0;
   const nSoon = summary?.documents?.soon ?? 0;
+  // The expired and ending-soon reports leave out employees who are not on the company's sponsorship.
+  const sExpired = summary?.documents?.sponsoredExpired ?? nExpired;
+  const sSoon = summary?.documents?.sponsoredSoon ?? nSoon;
   const employeeCount = summary?.employees?.total ?? 0;
   const activeEmployeeCount = summary?.employees?.active ?? 0;
   const paymentCount = summary?.payments?.count ?? 0;
@@ -104,12 +107,12 @@ export default function ReportsPage() {
   const look = open && open !== "tax" && open !== "violations" ? TILE_LOOK[open] : null;
   const report = look?.report;
   const query = useMemo(() => {
-    if (report === "documents") return { ...(docStatus ? { status: docStatus } : {}), ...(docSource ? { sourceType: docSource } : {}) };
+    if (report === "documents") return { ...(docStatus ? { status: docStatus } : {}), ...(docSource ? { sourceType: docSource } : {}), ...(open === "expired" || open === "soon" ? { scope: "sponsored" } : {}) };
     if (report === "employees") return { ...(branchId ? { branchId } : {}), ...(empStatus ? { employmentStatus: empStatus } : {}) };
     const range = { dateFrom: dayOf(from).toISOString(), dateTo: new Date(dayOf(to).getTime() + 86_399_999).toISOString() };
     if (report === "payments") return { ...range, ...(branchId ? { branchId } : {}) };
     return range;
-  }, [report, docStatus, docSource, branchId, empStatus, from, to]);
+  }, [report, open, docStatus, docSource, branchId, empStatus, from, to]);
   const { data: rowsRaw, isFetching } = useQuery({ queryKey: ["reports", report, query], queryFn: () => reportsApi[report!].fetch(query), enabled: !!report && canReadReport(report) });
   let rows = (rowsRaw as unknown[]) ?? [];
   if (report === "documents" && docSource === "EMPLOYEE") rows = (rows as DocumentRow[]).filter((r) => r.sourceType !== "COMPANY_DOCUMENT");
@@ -118,13 +121,13 @@ export default function ReportsPage() {
   const excel = () => report && void reportsApi[report].export(query, "xlsx").catch(() => undefined);
   const print = () => report && void openPdfInNewTab(`/reports/${report}`, { ...query, format: "pdf" }, `${report}-report.pdf`).catch(() => undefined);
   const tileExport = (id: TileId, format: "pdf" | "xlsx") => {
-    const p = id === "expired" ? { status: "EXPIRED" } : id === "soon" ? { status: "EXPIRING_SOON" } : {};
+    const p = id === "expired" ? { status: "EXPIRED", scope: "sponsored" } : id === "soon" ? { status: "EXPIRING_SOON", scope: "sponsored" } : {};
     void reportsApi[TILE_LOOK[id].report].export(p, format).catch(() => undefined);
   };
 
   const figure: Record<TileId, { value: string | number; sub: string; parts?: [number, string][] }> = {
-    expired: { value: nExpired, sub: L("وثيقة منتهية", "expired"), parts: [[nExpired, "var(--bad)"]] },
-    soon: { value: nSoon, sub: L("تنتهي خلال 30 يوم", "end within 30 days"), parts: [[nSoon, "var(--warn)"]] },
+    expired: { value: sExpired, sub: L("وثيقة منتهية", "expired"), parts: [[sExpired, "var(--bad)"]] },
+    soon: { value: sSoon, sub: L("تنتهي خلال 30 يوم", "end within 30 days"), parts: [[sSoon, "var(--warn)"]] },
     documents: { value: docCount, sub: L("وثيقة", "documents"), parts: [[nExpired, "var(--bad)"], [nSoon, "var(--warn)"], [docCount - nExpired - nSoon, "var(--ok)"]] },
     employees: { value: employeeCount, sub: L(`موظف · ${activeEmployeeCount} على رأس العمل`, `employees · ${activeEmployeeCount} on duty`) },
     payments: { value: formatCurrency(paid), sub: L(`${paymentCount} دفعة في آخر 30 يوم`, `${paymentCount} payments in 30 days`) },
@@ -139,8 +142,8 @@ export default function ReportsPage() {
 
       <Kpis
         items={[
-          { label: L("وثائق منتهية", "Expired documents"), value: summary?.documents ? nExpired : "—", sub: L("تحتاج تجديد فورًا", "Renew now"), hero: true, onClick: () => openTile("expired"), active: open === "expired" },
-          { label: L("تنتهي خلال 30 يوم", "Ending within 30 days"), value: summary?.documents ? nSoon : "—", sub: L("جهّز التجديد", "Get the renewal ready"), tone: "warn", onClick: () => openTile("soon"), active: open === "soon" },
+          { label: L("وثائق منتهية", "Expired documents"), value: summary?.documents ? sExpired : "—", sub: L("تحتاج تجديد فورًا", "Renew now"), hero: true, onClick: () => openTile("expired"), active: open === "expired" },
+          { label: L("تنتهي خلال 30 يوم", "Ending within 30 days"), value: summary?.documents ? sSoon : "—", sub: L("جهّز التجديد", "Get the renewal ready"), tone: "warn", onClick: () => openTile("soon"), active: open === "soon" },
           { label: L("الموظفون", "Employees"), value: summary?.employees ? employeeCount : "—", sub: L("في كل المؤسسات", "Across the establishments"), tone: "pri", onClick: () => openTile("employees"), active: open === "employees" },
           { label: L("مدفوعات آخر 30 يوم", "Payments, last 30 days"), value: summary?.payments ? formatCurrency(paid) : "—", sub: L(`${paymentCount} دفعة`, `${paymentCount} payments`), tone: "vio", onClick: () => openTile("payments"), active: open === "payments" },
         ]}
