@@ -1,6 +1,5 @@
 import { tr } from "@/i18n";
 import { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { FileText, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { filesApi } from "@/api/files";
@@ -16,7 +15,6 @@ interface FileUploadProps {
 }
 
 export function FileUpload({ fileId, fileName, module, onUploaded, onRemoved }: FileUploadProps) {
-  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -63,7 +61,7 @@ export function FileUpload({ fileId, fileName, module, onUploaded, onRemoved }: 
       />
       <Button type="button" variant="outline" size="sm" disabled={isUploading} onClick={() => inputRef.current?.click()}>
         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-        {t("common.import", { defaultValue: "Upload file" })}
+        {tr("رفع ملف", "Upload file")}
       </Button>
     </div>
   );
