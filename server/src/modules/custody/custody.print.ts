@@ -118,7 +118,7 @@ function foilText(text: string, size: number, opts: { head?: boolean; maxChars?:
   // Long names step down so they stay inside the band.
   const fit = opts.maxChars && text.length > opts.maxChars ? Math.max(0.6, opts.maxChars / text.length) : 1;
   const px = +(size * fit).toFixed(1);
-  const family = opts.head ? "'Alexandria', 'IBM Plex Sans Arabic', sans-serif" : "'IBM Plex Sans Arabic', sans-serif";
+  const family = "'Zain', sans-serif";
   return `<svg class="foil-svg" height="${Math.round(px * 1.5)}" aria-label="${esc(text)}"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9c7631"/><stop offset=".28" stop-color="#e8cf8b"/><stop offset=".46" stop-color="#c49a48"/><stop offset=".64" stop-color="#f7e7b0"/><stop offset=".82" stop-color="#b48a3c"/><stop offset="1" stop-color="#e2c37c"/></linearGradient></defs><text x="50%" y="${(px * 1.08).toFixed(1)}" text-anchor="middle" fill="url(#${id})" style="font-family: ${family} !important; font-size: ${px}px; font-weight: 700">${esc(text)}</text></svg>`;
 }
 
@@ -128,7 +128,7 @@ html, body { margin: 0; padding: 0; background: #fffdf7; }
 .n { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
 .foil-svg { display: block; width: 100%; overflow: visible; }
 .ry-tbl th span { color: #e8cf8b; }
-.ry { width: 794px; height: 1123px; background: #fffdf7; color: #1a2130; position: relative; overflow: hidden; font: 11.8px/1.6 'IBM Plex Sans Arabic', sans-serif;
+.ry { width: 794px; height: 1123px; background: #fffdf7; color: #1a2130; position: relative; overflow: hidden; font: 11.8px/1.6 'Zain', sans-serif;
   --foil: linear-gradient(135deg, #7a5a22 0%, #e8cf8b 28%, #b48a3c 46%, #f7e7b0 64%, #9c7631 82%, #e2c37c 100%); --gold: #b08a40; --gold-l: #e3cd97; --ink2: #3c4659; }
 .ry .edge { position: absolute; background-color: var(--deep); background-size: 18px 18px; }
 .ry .edge.t, .ry .edge.b { left: 0; right: 0; height: 18px; } .ry .edge.t { top: 0; } .ry .edge.b { bottom: 0; }

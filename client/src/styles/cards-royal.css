@@ -25,7 +25,7 @@
   --teal: var(--l-teal); --teal-s: var(--l-teal-t);
   --sky: var(--l-sky); --sky-s: var(--l-sky-t);
   --gold: var(--ry-gold, var(--l-amber)); --gold-s: var(--ry-gold-t, var(--l-amber-t));
-  --head: Alexandria, var(--font-head, sans-serif);
+  --head: Zain, var(--font-head, sans-serif);
   container-type: inline-size;
 }
 @keyframes rc-grow { from { transform: scaleX(0); } }

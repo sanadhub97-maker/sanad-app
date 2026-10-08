@@ -216,4 +216,45 @@
   font-display: swap;
   src: url(https://fonts.gstatic.com/s/alexandria/v6/UMBCrPdDqW66y0Y2usFeQCH18mulUxBvI9ocSabH.ttf) format('truetype');
 }
-
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/sykz-y9lm7soOBrstSo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/sykz-y9lm7soOH7vtSo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/syk8-y9lm7soANI.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/sykz-y9lm7soOG7otSo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/sykz-y9lm7soOHLrtSo.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Zain';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/zain/v4/sykz-y9lm7soOFbqtSo.ttf) format('truetype');
+}

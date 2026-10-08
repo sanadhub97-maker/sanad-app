@@ -11,8 +11,8 @@ export default {
         desk: { raw: "(min-width: 1024px) and (hover: hover) and (pointer: fine)" },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "IBM Plex Sans Arabic", "Plus Jakarta Sans", "Cairo", "sans-serif"],
-        head: ["var(--font-head)", "Alexandria", "sans-serif"],
+        sans: ["var(--font-sans)", "Zain", "sans-serif"],
+        head: ["var(--font-head)", "Zain", "sans-serif"],
       },
       boxShadow: {
         luxury: "0 10px 30px -10px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",

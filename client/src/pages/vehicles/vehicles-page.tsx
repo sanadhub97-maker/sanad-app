@@ -19,7 +19,6 @@ import "@/styles/vehicles.css";
    whose three dials sweep to the time left on its inspection, insurance and
    registration. */
 
-const FONT_ID = "vh-display-font";
 const reduceMotion = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const dmy = (v: string | null) => (v ? v.slice(0, 10).split("-").reverse().join("/") : "—");
 const stateOf = (d: number) => (d <= 0 ? "exp" : d <= 30 ? "soon" : "ok");
@@ -214,16 +213,6 @@ export default function VehiclesPage() {
   const [dialog, setDialog] = useState<{ open: boolean; vehicle?: Vehicle }>({ open: false });
   const [renewing, setRenewing] = useState<Vehicle | null>(null);
   const [deleting, setDeleting] = useState<Vehicle | null>(null);
-
-  // The display face is only used here, so it loads with the page.
-  useEffect(() => {
-    if (document.getElementById(FONT_ID)) return;
-    const link = document.createElement("link");
-    link.id = FONT_ID;
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&display=swap";
-    document.head.appendChild(link);
-  }, []);
 
   const query = { state, branchId: branchId || undefined, q: q || undefined, pageSize: 500 };
   const { data, isLoading } = useQuery({ queryKey: ["vehicles", "list", query], queryFn: () => vehiclesApi.list(query), placeholderData: keepPreviousData });

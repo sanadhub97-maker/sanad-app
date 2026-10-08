@@ -530,7 +530,7 @@ const SCOPED_CSS = `<style>
   .sc-sum div { padding: 8px 12px; background: #fffaf0; }
   .sc-sum div + div { border-inline-start: 1px solid #efe5cd; }
   .sc-sum small { display: block; color: #5d6a80; font-size: 8pt; }
-  .sc-sum b { font-size: 14pt; color: #0d1f3f; font-family: 'Alexandria', 'IBM Plex Sans Arabic', sans-serif !important; }
+  .sc-sum b { font-size: 14pt; color: #0d1f3f; font-family: 'Zain', sans-serif !important; }
   .sc-sec { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font-size: 11.5pt; font-weight: 700; color: #0d1f3f; break-after: avoid; }
   .sc-sec .dm { width: 8px; height: 8px; background: #b08a40; transform: rotate(45deg); flex: none; }
   .sc-sec .ln { flex: 1; height: 1px; background: #e6dcc4; }

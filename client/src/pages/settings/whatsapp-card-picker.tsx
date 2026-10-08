@@ -34,7 +34,7 @@ const STATES: { id: WhatsappPreviewState; ar: string; en: string; dot: string }[
   { id: "month", ar: "باقي 30 يومًا", en: "30 days left", dot: "bg-yellow-500" },
 ];
 
-const FONTS_HREF = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap";
+const FONTS_HREF = "https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&display=swap";
 
 /** One card, drawn live from the server's markup. A shadow root keeps its
  * stylesheet and the app's from touching each other. */

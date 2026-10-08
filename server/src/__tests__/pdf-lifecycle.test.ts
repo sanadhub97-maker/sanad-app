@@ -40,8 +40,7 @@ describe("PDF browser recovery and resource limits", () => {
     expect(mock.pdf).toHaveBeenCalledWith(expect.objectContaining({ waitForFonts: false, printBackground: true, format: "A4" }));
     const options = mock.pdf.mock.calls[0][0];
     for (const template of [options.headerTemplate, options.footerTemplate]) {
-      expect(template).toContain("IBM Plex Sans Arabic");
-      expect(template).toContain("Alexandria");
+      expect(template).toContain("Zain");
       expect(template).toContain("base64,");
     }
   });

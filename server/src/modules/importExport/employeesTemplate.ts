@@ -315,7 +315,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   if (logo) addLogoToSheet(workbook, sheet, logo);
   const cell1 = sheet.getCell(1, 1);
   cell1.value = L("🏢 نظام SanaD لإدارة الموارد البشرية والامتثال الحكومي", "🏢 SanaD HR & Compliance");
-  cell1.font = { name: "Alexandria", size: 13, bold: true, color: { argb: "FFFFFFFF" } };
+  cell1.font = { name: "Zain", size: 13, bold: true, color: { argb: "FFFFFFFF" } };
   cell1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   cell1.alignment = { vertical: "middle", horizontal: "center" };
 
@@ -325,7 +325,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   row2.height = 28;
   const cell2 = sheet.getCell(2, 1);
   cell2.value = L("📋 قالب استيراد وتحديث بيانات الموظفين المعتمد", "📋 Employee import template");
-  cell2.font = { name: "Alexandria", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+  cell2.font = { name: "Zain", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   cell2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A8A" } };
   cell2.alignment = { vertical: "middle", horizontal: "center" };
 
@@ -338,7 +338,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     "💡 تنبيه: الحقول ذات النجمة (*) إلزامية. التواريخ بصيغة (YYYY-MM-DD). الصف 5 نموذج توضيحي يمكن حذفه أو استبداله. راجع ورقة 'التعليمات' لمزيد من التفاصيل.",
     "💡 Fields marked * are required. Dates are YYYY-MM-DD. Row 5 is an example you can delete or replace. See the 'Guide' sheet for details."
   );
-  cell3.font = { name: "IBM Plex Sans Arabic", size: 9.5, italic: true, bold: true, color: { argb: "FF1E293B" } };
+  cell3.font = { name: "Zain", size: 9.5, italic: true, bold: true, color: { argb: "FF1E293B" } };
   cell3.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
   cell3.alignment = { vertical: "middle", horizontal: "center" };
   cell3.border = {
@@ -357,7 +357,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     const grp = GROUP_COLORS[col.group] ?? GROUP_COLORS.personal;
 
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: grp.bg } };
-    cell.font = { name: "Alexandria", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+    cell.font = { name: "Zain", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
     cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
     cell.border = {
       top: { style: "medium", color: { argb: "FF0F172A" } },
@@ -381,7 +381,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     const colNum = idx + 1;
     const cell = sheet.getCell(5, colNum);
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0FDF4" } }; // Soft light mint tint
-    cell.font = { name: "IBM Plex Sans Arabic", size: 9.5, italic: true, color: { argb: "FF334155" } };
+    cell.font = { name: "Zain", size: 9.5, italic: true, color: { argb: "FF334155" } };
     cell.alignment = { vertical: "middle", horizontal: idx < 3 ? (isEn() ? "left" : "right") : "center" };
     cell.border = {
       top: { style: "thin", color: { argb: "FFCBD5E1" } },
@@ -401,7 +401,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     for (let c = 1; c <= totalCols; c++) {
       const cell = sheet.getCell(r, c);
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgArgb } };
-      cell.font = { name: "IBM Plex Sans Arabic", size: 10, color: { argb: "FF0F172A" } };
+      cell.font = { name: "Zain", size: 10, color: { argb: "FF0F172A" } };
       cell.alignment = { vertical: "middle", horizontal: c === 2 || c === 3 || c === 21 ? (isEn() ? "left" : "right") : "center" };
       cell.border = {
         top: { style: "thin", color: { argb: "FFE2E8F0" } },
@@ -470,7 +470,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   instructions.mergeCells(1, 1, 1, 5);
   const insTitle = instructions.getCell(1, 1);
   insTitle.value = L("📖 دليل وضوابط تعبئة قالب استيراد وتحديث بيانات الموظفين", "📖 How to fill in the employee import template");
-  insTitle.font = { name: "Alexandria", size: 12, bold: true, color: { argb: "FFFFFFFF" } };
+  insTitle.font = { name: "Zain", size: 12, bold: true, color: { argb: "FFFFFFFF" } };
   insTitle.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   insTitle.alignment = { vertical: "middle", horizontal: "center" };
   instructions.getRow(1).height = 32;
@@ -478,7 +478,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   instructions.mergeCells(2, 1, 2, 5);
   const insSub = instructions.getCell(2, 1);
   insSub.value = L("يرجى قراءة التعليمات والالتزام بالصيغ المحددة لضمان اكتمال الاستيراد بنجاح وبدون أي أخطاء نظامية.", "Follow the formats below so the import goes through without errors.");
-  insSub.font = { name: "IBM Plex Sans Arabic", size: 10, italic: true, color: { argb: "FF334155" } };
+  insSub.font = { name: "Zain", size: 10, italic: true, color: { argb: "FF334155" } };
   insSub.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF1F5F9" } };
   insSub.alignment = { vertical: "middle", horizontal: "center" };
   instructions.getRow(2).height = 24;
@@ -488,7 +488,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   for (let c = 1; c <= 5; c++) {
     const cell = instructions.getCell(3, c);
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A8A" } };
-    cell.font = { name: "Alexandria", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+    cell.font = { name: "Zain", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
     cell.alignment = { vertical: "middle", horizontal: "center" };
   }
 
@@ -513,7 +513,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     for (let c = 1; c <= 5; c++) {
       const cell = instructions.getCell(r, c);
       cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgArgb } };
-      cell.font = { name: "IBM Plex Sans Arabic", size: 9.5, color: { argb: "FF0F172A" } };
+      cell.font = { name: "Zain", size: 9.5, color: { argb: "FF0F172A" } };
       cell.alignment = { vertical: "middle", horizontal: c === 1 || c === 5 ? (isEn() ? "left" : "right") : "center" };
       cell.border = {
         top: { style: "thin", color: { argb: "FFE2E8F0" } },
@@ -523,7 +523,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
       };
 
       if (c === 3 && isReq) {
-        cell.font = { name: "IBM Plex Sans Arabic", size: 9.5, bold: true, color: { argb: "FF16A34A" } }; // Green for required
+        cell.font = { name: "Zain", size: 9.5, bold: true, color: { argb: "FF16A34A" } }; // Green for required
       }
     }
   });
@@ -534,7 +534,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
   instructions.mergeCells(startRuleRow, 1, startRuleRow, 5);
   const ruleHeader = instructions.getCell(startRuleRow, 1);
   ruleHeader.value = L("⭐ القواعد والضوابط الذهبية لضمان نجاح الاستيراد الفوري:", "⭐ Rules for a clean import:");
-  ruleHeader.font = { name: "Alexandria", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+  ruleHeader.font = { name: "Zain", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
   ruleHeader.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F4C5C" } };
   ruleHeader.alignment = { vertical: "middle", horizontal: isEn() ? "left" : "right" };
   instructions.getRow(startRuleRow).height = 28;
@@ -562,7 +562,7 @@ export async function buildEmployeesImportTemplate(): Promise<Buffer> {
     instructions.mergeCells(r, 1, r, 5);
     const cell = instructions.getCell(r, 1);
     cell.value = rule;
-    cell.font = { name: "IBM Plex Sans Arabic", size: 9.5, bold: rIdx === 0 || rIdx === 1, color: { argb: "FF1E293B" } };
+    cell.font = { name: "Zain", size: 9.5, bold: rIdx === 0 || rIdx === 1, color: { argb: "FF1E293B" } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF8FAFC" } };
     cell.alignment = { vertical: "middle", horizontal: isEn() ? "left" : "right" };
     instructions.getRow(r).height = 22;

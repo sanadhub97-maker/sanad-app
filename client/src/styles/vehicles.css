@@ -13,7 +13,7 @@
   --vh-foil: linear-gradient(120deg, #8a6a32 0%, #f3dfae 22%, #c49a4e 40%, #fff1c9 55%, #a8803c 72%, #e9cf94 100%);
   --vh-ok: #15885a; --vh-warn: #c27406; --vh-bad: #d6304a;
   --vh-shadow: 0 24px 50px -30px rgba(80, 60, 20, .45);
-  --vh-display: "Reem Kufi", Alexandria, var(--font-head, sans-serif);
+  --vh-display: Zain, var(--font-head, sans-serif);
   display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; color: var(--vh-ink); container-type: inline-size;
 }
 /* a wide child (the filter strip) must scroll inside, not widen the page */

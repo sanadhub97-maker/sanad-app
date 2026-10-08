@@ -1,6 +1,6 @@
-// Match the site's body and heading families, regardless of the selected design.
+// Match the site's font (Zain), regardless of the selected design.
 export const SITE_PRINT_TYPOGRAPHY = `
-* { font-family: 'IBM Plex Sans Arabic', sans-serif !important; }
-h1, h2, h3, h4, h5, h6 { font-family: 'Alexandria', 'IBM Plex Sans Arabic', sans-serif !important; }
-.amount-val, .amount-val *, [class*="-title"] .n b, [class*="-title"] .n b *, .total-cell, .sig-date { font-family: 'Alexandria', 'IBM Plex Sans Arabic', sans-serif !important; font-variant-numeric: tabular-nums; }
+* { font-family: 'Zain', sans-serif !important; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Zain', sans-serif !important; }
+.amount-val, .amount-val *, [class*="-title"] .n b, [class*="-title"] .n b *, .total-cell, .sig-date { font-family: 'Zain', sans-serif !important; font-variant-numeric: tabular-nums; }
 `;

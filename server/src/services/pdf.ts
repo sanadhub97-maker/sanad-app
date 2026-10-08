@@ -17,11 +17,13 @@ try {
   bundledFontCss = readFileSync(path.join(bundledFontDir, "fonts.css"));
 } catch { logger.warn("Bundled print fonts unavailable; using font provider fallback"); }
 const bundledFontBuffers = new Map<string, Buffer>();
+/** The site's font faces documents carry: Zain in the weights they use (regular, bold, extra bold). */
+const isSiteFace = (block: string) => /font-family:\s*['"]Zain['"]/.test(block) && /font-weight:\s*(?:400|700|800)\b/.test(block);
 let marginTypography: string | undefined;
 function printMarginTypography() {
   if (marginTypography !== undefined) return marginTypography;
   const blocks = bundledFontCss?.toString("utf8").match(/@font-face\s*\{[^}]+\}/g) ?? [];
-  const css = blocks.filter(block => /font-family:\s*['"](?:IBM Plex Sans Arabic|Alexandria)['"]/.test(block)).map(block => block.replace(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g, (_match, url) => {
+  const css = blocks.filter(isSiteFace).map(block => block.replace(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g, (_match, url) => {
     const font = bundledRenderResource(url);
     return font ? `url(data:${font.contentType};base64,${font.body.toString("base64")})` : `url(${url})`;
   })).join("\n");
@@ -45,7 +47,7 @@ export async function marginTypographyFor(templatesHtml: string): Promise<string
   if (cached !== undefined) return cached;
   try {
     const { default: subsetFont } = await import("subset-font");
-    const blocks = (bundledFontCss?.toString("utf8").match(/@font-face\s*\{[^}]+\}/g) ?? []).filter((block) => /font-family:\s*['"](?:IBM Plex Sans Arabic|Alexandria)['"]/.test(block));
+    const blocks = (bundledFontCss?.toString("utf8").match(/@font-face\s*\{[^}]+\}/g) ?? []).filter(isSiteFace);
     const faces = await Promise.all(blocks.map(async (block) => {
       const url = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/.exec(block)?.[1];
       const font = url ? bundledRenderResource(url) : null;
@@ -63,7 +65,7 @@ export async function marginTypographyFor(templatesHtml: string): Promise<string
   }
 }
 
-/** The document with the site's fonts (IBM Plex Sans Arabic, Alexandria) embedded in its head.
+/** The document with the site's font (Zain: regular, bold, extra bold) embedded in its head.
  * `preload` is the header/footer's cut-down fonts: the page loads them first under another
  * name, so Chromium already has them when it draws the margins (it doesn't wait for them there). */
 export function withSiteFonts(html: string, preload = "") {

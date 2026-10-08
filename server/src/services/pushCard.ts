@@ -50,7 +50,7 @@ export function pushCardHtml(c: PushCard, iconUrl: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${CARD_FONTS_HREF}"><style>
 *{box-sizing:border-box;margin:0}
 html,body{width:1024px;height:512px;background:#eef1f8}
-body{font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;color:#121a2e;padding:28px;-webkit-font-smoothing:antialiased}
+body{font-family:"Zain",Tahoma,sans-serif;color:#121a2e;padding:28px;-webkit-font-smoothing:antialiased}
 .c{--k:${k};direction:rtl;position:relative;height:100%;border-radius:36px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px #e3e7f0,0 18px 40px -18px rgba(20,30,70,.35);display:grid;grid-template-rows:auto auto 1fr auto}
 .c::before{content:"";position:absolute;inset-inline:0;top:0;height:10px;background:var(--k)}
 .h{display:flex;align-items:center;gap:20px;padding:34px 38px 20px;background:linear-gradient(180deg,color-mix(in srgb,var(--k) 9%,#fff),#fff)}

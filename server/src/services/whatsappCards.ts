@@ -30,7 +30,7 @@ export function isWhatsappCardSetting(value: unknown): value is WhatsappCardSett
 
 export const CARD_WIDTH = 1080;
 export const CARD_HEIGHT = 1350;
-export const CARD_FONTS_HREF = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap";
+export const CARD_FONTS_HREF = "https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&display=swap";
 
 /** Company logo (trimmed) and, when it has one, its symbol on its own. */
 export interface CardAssets {
@@ -339,7 +339,7 @@ export function cardMarkup(id: WhatsappCardId, alert: AlertContext, companyEn: s
 }
 
 /** Shared stylesheet for the preview (the markup above goes inside a `.cardbox`). */
-export const CARD_PREVIEW_CSS = `:host { --font: "IBM Plex Sans Arabic", -apple-system, "Segoe UI", Tahoma, sans-serif; display: block; }
+export const CARD_PREVIEW_CSS = `:host { --font: "Zain", -apple-system, "Segoe UI", Tahoma, sans-serif; display: block; }
 ${CARD_CSS}
 ${CARD_CSS_LTR}`;
 
@@ -348,7 +348,7 @@ export function cardDocument(id: WhatsappCardId, alert: AlertContext, companyEn:
   return `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8">
 <link rel="stylesheet" href="${CARD_FONTS_HREF}">
 <style>
-:root { --font: "IBM Plex Sans Arabic", -apple-system, "Segoe UI", Tahoma, sans-serif; }
+:root { --font: "Zain", -apple-system, "Segoe UI", Tahoma, sans-serif; }
 html, body { margin: 0; background: #fff; }
 .cardbox { width: ${CARD_WIDTH}px; }
 ${CARD_CSS}
