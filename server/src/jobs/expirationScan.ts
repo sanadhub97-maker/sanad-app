@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { loadAuthContext } from "@/middleware/auth";
 import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
+import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
 import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
@@ -33,7 +34,7 @@ function severityFor(threshold: string): "CRITICAL" | "WARNING" | "INFO" {
 
 /** What the English message is about: the employee's document, or a company document's kind and establishment. */
 export function subjectEn(item: Pick<TrackableItem, "label" | "sourceType" | "kindEn">): string {
-  return item.sourceType === "COMPANY_DOCUMENT" && item.kindEn ? `${item.kindEn} of ${item.label}` : item.label;
+  return isEstablishmentSource(item.sourceType) && item.kindEn ? `${item.kindEn} of ${item.label}` : item.label;
 }
 
 export function messageFor(item: Pick<TrackableItem, "label" | "sourceType" | "kindEn">, threshold: string): string {
@@ -48,7 +49,7 @@ const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومي
 /** What the Arabic message is about: "الإقامة للموظف فلان", or the document's own name. */
 export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr"> & { sourceType?: string; kindAr?: string }): string {
   if (item.documentAr && item.employeeNameAr) return `${item.documentAr} للموظف ${item.employeeNameAr.trim()}`;
-  return item.sourceType === "COMPANY_DOCUMENT" && item.kindAr ? `${item.kindAr} لـ${item.labelAr}` : item.labelAr;
+  return item.sourceType && isEstablishmentSource(item.sourceType) && item.kindAr ? `${item.kindAr} لـ${item.labelAr}` : item.labelAr;
 }
 
 /** The Arabic twin of messageFor. */

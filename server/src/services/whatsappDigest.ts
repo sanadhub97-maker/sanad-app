@@ -7,7 +7,7 @@ import type { TrackableItem } from "@/services/expiringItems";
 
 export type DigestEntry = { item: TrackableItem; dedupeBase: string; text: string };
 export function whatsappEligible(item: TrackableItem) {
-  return item.sourceType === "COMPANY_DOCUMENT" || item.onSponsorship === true;
+  return item.sourceType === "COMPANY_DOCUMENT" || item.sourceType === "VEHICLE" || item.onSponsorship === true;
 }
 
 /** Keep whole entries together and leave room below provider text limits. */

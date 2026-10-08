@@ -1,5 +1,6 @@
 import {
   Building2,
+  Car,
   FileSpreadsheet,
   FileText,
   Files,
@@ -60,6 +61,7 @@ export const NAV_ITEMS: NavItem[] = [
 
   // Compliance & Assets
   { label: "nav.companyDocuments", href: "/company-documents", icon: FileText, tone: "amber", permission: "companyDocuments.view", section: "nav.complianceSection" },
+  { label: "nav.vehicles", href: "/vehicles", icon: Car, tone: "amber", permission: "vehicles.view", section: "nav.complianceSection" },
   { label: "nav.violations", href: "/violations", icon: Gavel, tone: "rose", permission: "violations.view", section: "nav.complianceSection" },
   { label: "nav.branches", href: "/branches", dockLabel: "nav.dock.branches", icon: Building2, tone: "cyan", permission: "branches.view", section: "nav.complianceSection" },
 

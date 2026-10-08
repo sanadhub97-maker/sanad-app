@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { computeStatus } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
 import { getTrackableItems } from "@/services/expiringItems";
+import { isEstablishmentSource } from "@/constants/documentSources";
 import type { z } from "zod";
 import type {
   activityReportQuerySchema,
@@ -17,7 +18,7 @@ import type {
 const REPORT_ROW_CAP = 10_000;
 
 /** The expired and ending-soon reports: every establishment document, and employees' only when they are on the company's sponsorship. */
-export const inSponsoredScope = (item: { sourceType: string; onSponsorship?: boolean | null }) => item.sourceType === "COMPANY_DOCUMENT" || item.onSponsorship === true;
+export const inSponsoredScope = (item: { sourceType: string; onSponsorship?: boolean | null }) => isEstablishmentSource(item.sourceType) || item.onSponsorship === true;
 export async function reportSummary(auth: AuthContext) {
   const since = new Date(Date.now() - 30 * 86_400_000);
   const [documents, employees, activeEmployees, payments, activity] = await Promise.all([
@@ -99,7 +100,7 @@ export async function documentsReport(query: z.infer<typeof documentsReportQuery
   return requireCompleteReport(filtered)
     .sort((a, b) => a.expiryDate.getTime() - b.expiryDate.getTime())
     .map((i) => {
-      const company = i.sourceType === "COMPANY_DOCUMENT";
+      const company = isEstablishmentSource(i.sourceType);
       return {
         // For the screen to open the record; the exports pick their own columns.
         recordId: i.recordId,

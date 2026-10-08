@@ -4,6 +4,7 @@
     "enterpriseBadge": "Enterprise"
   },
   "nav": {
+    "vehicles": "Vehicles",
     "custody": "Custody handover",
     "clearances": "Clearance",
     "dashboard": "Dashboard",
@@ -848,6 +849,7 @@
     "COMPANY_DOCUMENT": "Company Document"
   },
   "moduleNames": {
+    "vehicles": "Vehicles",
     "custody": "Custody & clearance",
     "tasks": "Daily Tasks",
     "violations": "Violations",

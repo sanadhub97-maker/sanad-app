@@ -24,14 +24,15 @@ export async function alertCenter(auth: AuthContext) {
       const key = `${i.key}:${i.expiryDate.toISOString()}`;
       return {
         key,
-        title: i.labelAr,
-        titleEn: i.label,
+        // A car carries three dates: say which one it is.
+        title: i.sourceType === "VEHICLE" ? `${i.kindAr} — ${i.labelAr}` : i.labelAr,
+        titleEn: i.sourceType === "VEHICLE" ? `${i.kindEn} — ${i.label}` : i.label,
         due: i.expiryDate,
         severity: status === "EXPIRED" ? "CRITICAL" : "WARNING",
         category: "document",
         status,
         acknowledged: acknowledged.has(key),
-        href: i.sourceType === "COMPANY_DOCUMENT" ? `/company-documents/${i.recordId}` : i.sourceType === "EMPLOYEE_DOCUMENT" ? `/employee-documents/${i.employeeId}/${i.recordId}` : `/employees/${i.employeeId}`,
+        href: i.sourceType === "VEHICLE" ? `/vehicles?focus=${i.recordId}` : i.sourceType === "COMPANY_DOCUMENT" ? `/company-documents/${i.recordId}` : i.sourceType === "EMPLOYEE_DOCUMENT" ? `/employee-documents/${i.employeeId}/${i.recordId}` : `/employees/${i.employeeId}`,
       };
     });
   const overdue = tasks.map((t) => {

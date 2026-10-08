@@ -4,6 +4,7 @@
     "enterpriseBadge": "مؤسسي"
   },
   "nav": {
+    "vehicles": "السيارات",
     "custody": "تسليم العهد",
     "clearances": "إخلاء الطرف",
     "dashboard": "لوحة التحكم",
@@ -848,6 +849,7 @@
     "COMPANY_DOCUMENT": "مستند شركة"
   },
   "moduleNames": {
+    "vehicles": "السيارات",
     "custody": "العهد وإخلاء الطرف",
     "tasks": "المهام اليومية",
     "violations": "المخالفات",

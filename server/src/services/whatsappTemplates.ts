@@ -36,6 +36,7 @@ const SOURCE_DOCUMENT: Record<TrackableItem["sourceType"], [string, string]> = {
   EMPLOYEE_PASSPORT: ["جواز السفر", "Passport"],
   EMPLOYEE_DOCUMENT: ["مستند موظف", "Employee document"],
   COMPANY_DOCUMENT: ["وثيقة المنشأة", "Company document"],
+  VEHICLE: ["السيارة", "Vehicle"],
 };
 
 /** Trimmed, or undefined when empty: a space before a closing "*" stops

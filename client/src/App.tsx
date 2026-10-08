@@ -30,6 +30,7 @@ const DailyTasksPage = lazy(() => import("@/pages/tasks/daily-tasks-page"));
 const ViolationsPage = lazy(() => import("@/pages/violations/violations-page"));
 const ViolationDetailsPage = lazy(() => import("@/pages/violations/violation-details-page"));
 const HandoversPage = lazy(() => import("@/pages/custody/handovers-page"));
+const VehiclesPage = lazy(() => import("@/pages/vehicles/vehicles-page"));
 const ClearancesPage = lazy(() => import("@/pages/custody/clearances-page"));
 const PaymentsPage = lazy(() => import("@/pages/payments/payments-page"));
 const TaxDeclarationsPage = lazy(() => import("@/pages/tax/tax-declarations-page"));
@@ -113,6 +114,9 @@ export default function App() {
                 <Route path="/licenses" element={<Navigate to="/company-documents" replace />} />
                 <Route element={<RequirePermission permission="tasks.view" />}>
                   <Route path="/daily-tasks" element={<DailyTasksPage />} />
+                </Route>
+                <Route element={<RequirePermission permission="vehicles.view" />}>
+                  <Route path="/vehicles" element={<VehiclesPage />} />
                 </Route>
                 <Route element={<RequirePermission permission="custody.view" />}>
                   <Route path="/custody" element={<HandoversPage />} />

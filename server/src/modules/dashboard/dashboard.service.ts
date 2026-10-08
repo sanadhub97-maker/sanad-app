@@ -3,6 +3,7 @@ import { canViewSource, hasPermission, notificationVisibility } from "@/lib/secu
 import { prisma } from "@/lib/prisma";
 import { getExpirationRules } from "@/services/settingsStore";
 import { getTrackableItems, bucketByStatus, bucketByWindow, type TrackableItem } from "@/services/expiringItems";
+import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
 import { singleFlight } from "@/lib/singleFlight";
 
@@ -16,8 +17,8 @@ export async function getSummary(auth: AuthContext) {
   const items = records.filter((item) => canViewSource(auth, item.sourceType));
   const statusBuckets = bucketByStatus(items, rules);
   // The same counts split by owner, for the sidebar's two document sections.
-  const companyBuckets = bucketByStatus(items.filter((i) => i.sourceType === "COMPANY_DOCUMENT"), rules);
-  const employeeBuckets = bucketByStatus(items.filter((i) => i.sourceType !== "COMPANY_DOCUMENT"), rules);
+  const companyBuckets = bucketByStatus(items.filter((i) => isEstablishmentSource(i.sourceType)), rules);
+  const employeeBuckets = bucketByStatus(items.filter((i) => !isEstablishmentSource(i.sourceType)), rules);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -117,6 +118,7 @@ export async function getRecentActivity(auth: AuthContext) {
 function typeGroup(item: TrackableItem): string {
   if (item.sourceType === "EMPLOYEE_IQAMA") return "IQAMA";
   if (item.sourceType === "EMPLOYEE_PASSPORT") return "PASSPORT";
+  if (item.sourceType === "VEHICLE") return "VEHICLE";
   if (item.sourceType === "COMPANY_DOCUMENT") return "COMPANY";
   if (item.docType === "HEALTH_CERTIFICATE") return "HEALTH_CERTIFICATE";
   if (item.docType === "MEDICAL_INSURANCE") return "MEDICAL_INSURANCE";
@@ -128,7 +130,7 @@ function typeGroup(item: TrackableItem): string {
  * documents by type, and the branches summary. */
 export async function getOverview(auth: AuthContext) {
   // The to-do list leaves out the insurance that follows an iqama: renewing the iqama renews it.
-  const items = (await readDashboardItems()).filter((item) => !item.linkedToIqama && hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : "employees.view"));
+  const items = (await readDashboardItems()).filter((item) => !item.linkedToIqama && canViewSource(auth, item.sourceType));
   const withDays = items.map((item) => ({ item, days: daysUntil(item.expiryDate) }));
 
   const due = withDays.filter((x) => x.days <= 30).sort((a, b) => a.days - b.days);
@@ -177,8 +179,8 @@ export async function getOverview(auth: AuthContext) {
       nameAr: item.employeeNameAr ?? item.labelAr,
       nameEn: item.employeeName ?? item.label,
       // A company document's own name is the establishment's; its kind says what it is.
-      documentAr: item.sourceType === "COMPANY_DOCUMENT" ? item.kindAr : (item.documentAr ?? item.labelAr),
-      documentEn: item.sourceType === "COMPANY_DOCUMENT" ? item.kindEn : (item.documentEn ?? item.label),
+      documentAr: isEstablishmentSource(item.sourceType) ? item.kindAr : (item.documentAr ?? item.labelAr),
+      documentEn: isEstablishmentSource(item.sourceType) ? item.kindEn : (item.documentEn ?? item.label),
       documentNumber: item.documentNumber ?? null,
       branchName: item.branchName ?? null,
       branchNameEn: item.branchNameEn || item.branchName || null,

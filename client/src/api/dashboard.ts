@@ -44,7 +44,7 @@ export interface RecentActivity {
 
 export interface DashboardAttentionItem {
   key: string;
-  sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT";
+  sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT" | "VEHICLE";
   recordId: string;
   employeeId: string | null;
   nameAr: string;

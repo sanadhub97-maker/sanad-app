@@ -196,6 +196,7 @@ export default function DashboardLulu() {
     ["HEALTH_CERTIFICATE", "الشهادات الصحية", "Health certificates", "teal"],
     ["MEDICAL_INSURANCE", "التأمين الطبي", "Medical insurance", "violet"],
     ["COMPANY", "وثائق الشركة", "Company documents", "sky"],
+    ["VEHICLE", "السيارات", "Vehicles", "amber"],
   ];
   const byType = overview?.byType ?? {};
   const typeMax = Math.max(1, ...types.map(([k]) => byType[k] ?? 0));
@@ -207,7 +208,7 @@ export default function DashboardLulu() {
   const stOf = (d: number) => (d <= 7 ? "bad" : d <= 30 ? "warn" : "ok");
   const leftText = (d: number) => (d < 0 ? (isAr ? `انتهت منذ ${daysAr(-d)}` : `Expired ${-d}d ago`) : d === 0 ? (isAr ? "تنتهي اليوم" : "Ends today") : isAr ? `بعد ${daysAr(d)}` : `In ${d} days`);
   const toneOfDoc = (item: DashboardAttentionItem) => (item.sourceType === "COMPANY_DOCUMENT" ? "sky" : item.sourceType === "EMPLOYEE_PASSPORT" ? "amber" : /تأمين/.test(item.documentAr) ? "violet" : /صحي/.test(item.documentAr) ? "teal" : "indigo");
-  const openItem = (item: DashboardAttentionItem) => navigate(item.employeeId ? `/employees/${item.employeeId}` : "/company-documents");
+  const openItem = (item: DashboardAttentionItem) => navigate(item.employeeId ? `/employees/${item.employeeId}` : item.sourceType === "VEHICLE" ? `/vehicles?focus=${item.recordId}` : "/company-documents");
   const hijriOf = (days: number) => {
     const d = new Date();
     d.setDate(d.getDate() + days);

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
-import { escapeHtml, hasPermission } from "@/lib/security";
+import { canViewSource, escapeHtml, hasPermission } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
 import { assertBrandFile, PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 import * as service from "@/modules/settings/settings.service";
@@ -34,7 +34,7 @@ import {
  * the system has none yet. */
 async function sampleAlertContext(companyName: string | null | undefined, companyEn?: string | null, auth?: AuthContext): Promise<{ context: AlertContext; real: boolean }> {
   const ranked = (await getTrackableItems())
-    .filter((item) => hasPermission(auth, item.sourceType === "COMPANY_DOCUMENT" ? "companyDocuments.view" : item.sourceType === "EMPLOYEE_DOCUMENT" ? "employeeDocuments.view" : "employees.view"))
+    .filter((item) => canViewSource(auth, item.sourceType))
     .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
     .sort(
       (a, b) =>

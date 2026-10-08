@@ -14,7 +14,7 @@ import { linkedInsuranceIds } from "@/services/domesticInsurance";
 // here — see README "Architecture Decisions".
 export interface TrackableItem {
   key: string; // stable id used for notification dedupe keys
-  sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT";
+  sourceType: "EMPLOYEE_IQAMA" | "EMPLOYEE_PASSPORT" | "EMPLOYEE_DOCUMENT" | "COMPANY_DOCUMENT" | "VEHICLE";
   label: string; // English; backs the in-app/email notification text
   labelAr: string; // Arabic, for Arabic reports and the WhatsApp alert
   expiryDate: Date;
@@ -60,7 +60,12 @@ export const DOCUMENT_KINDS: Record<string, [string, string]> = {
   TWENTY_FOUR_HOUR_PERMIT: ["تصريح 24 ساعة", "24-hour permit"],
   ENTERTAINMENT_AUTHORITY_PERMIT: ["تصريح هيئة الترفيه", "Entertainment authority permit"],
   TOBACCO_LICENSE: ["ترخيص تبغ", "Tobacco license"],
+  VEHICLE_INSPECTION: ["فحص دوري", "Periodic inspection"],
+  VEHICLE_INSURANCE: ["تأمين سيارة", "Vehicle insurance"],
+  VEHICLE_REGISTRATION: ["استمارة سيارة", "Vehicle registration"],
 };
+
+export { isEstablishmentSource } from "@/constants/documentSources";
 const kindOf = (code: string, fallbackAr: string, fallbackEn: string) => {
   const k = DOCUMENT_KINDS[code];
   return { kind: code, kindAr: k?.[0] ?? fallbackAr, kindEn: k?.[1] ?? fallbackEn };
@@ -84,7 +89,7 @@ const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
  * alerts leave it out: the iqama's own alert names both.
  */
 export async function getTrackableItems(opts: { linkedInsurance?: boolean } = {}): Promise<TrackableItem[]> {
-  const [employees, employeeDocuments, companyDocuments, branchNames] = await Promise.all([
+  const [employees, employeeDocuments, companyDocuments, branchNames, vehicles] = await Promise.all([
     prisma.employee.findMany({
       where: { deletedAt: null, OR: [{ iqamaExpiryDate: { not: null } }, { passportExpiryDate: { not: null } }] },
       select: {
@@ -111,6 +116,7 @@ export async function getTrackableItems(opts: { linkedInsurance?: boolean } = {}
       include: { branch: { select: { name: true, nameEn: true } } },
     }),
     loadBranchNames(),
+    prisma.vehicle.findMany({ where: { deletedAt: null }, include: { branch: { select: { name: true, nameEn: true } } } }),
   ]);
 
   const items: TrackableItem[] = [];
@@ -232,6 +238,29 @@ export async function getTrackableItems(opts: { linkedInsurance?: boolean } = {}
       branchNameEn: doc.branch?.nameEn,
       ...kindOf(doc.category, "وثيقة منشأة", "Company document"),
     });
+  }
+
+  // Each car carries three dates: its periodic inspection, insurance and registration.
+  for (const v of vehicles) {
+    const plate = `${v.plateLetters} ${v.plateNumber}`;
+    const dates: [string, Date | null][] = [["VEHICLE_INSPECTION", v.inspectionExpiry], ["VEHICLE_INSURANCE", v.insuranceExpiry], ["VEHICLE_REGISTRATION", v.registrationExpiry]];
+    for (const [code, date] of dates) {
+      if (!date) continue;
+      items.push({
+        key: `vehicle-${code}-${v.id}`,
+        sourceType: "VEHICLE",
+        label: `${v.make} (${plate})`,
+        labelAr: `${v.make} (${plate})`,
+        expiryDate: date,
+        recordId: v.id,
+        documentAr: `${DOCUMENT_KINDS[code][0]} — ${v.make}`,
+        documentEn: `${DOCUMENT_KINDS[code][1]} — ${v.make}`,
+        documentNumber: plate,
+        branchName: v.branch?.name,
+        branchNameEn: v.branch?.nameEn,
+        ...kindOf(code, "سيارة", "Vehicle"),
+      });
+    }
   }
 
   return items;

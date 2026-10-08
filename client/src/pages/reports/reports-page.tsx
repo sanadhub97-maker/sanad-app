@@ -46,7 +46,7 @@ const daysAgo = (n: number) => {
   return d;
 };
 const docPath = (r: DocumentRow) =>
-  r.sourceType === "COMPANY_DOCUMENT" ? `/company-documents/${r.recordId}` : r.employeeId ? `/employee-documents/${r.employeeId}/${r.sourceType === "EMPLOYEE_IQAMA" ? "IQAMA" : r.sourceType === "EMPLOYEE_PASSPORT" ? "PASSPORT" : r.recordId}` : null;
+  r.sourceType === "VEHICLE" ? `/vehicles?focus=${r.recordId}` : r.sourceType === "COMPANY_DOCUMENT" ? `/company-documents/${r.recordId}` : r.employeeId ? `/employee-documents/${r.employeeId}/${r.sourceType === "EMPLOYEE_IQAMA" ? "IQAMA" : r.sourceType === "EMPLOYEE_PASSPORT" ? "PASSPORT" : r.recordId}` : null;
 
 export default function ReportsPage() {
   const { t, i18n } = useTranslation();
@@ -117,7 +117,7 @@ export default function ReportsPage() {
   }, [report, open, docStatus, docSource, branchId, empStatus, from, to]);
   const { data: rowsRaw, isFetching } = useQuery({ queryKey: ["reports", report, query], queryFn: () => reportsApi[report!].fetch(query), enabled: !!report && canReadReport(report) });
   let rows = (rowsRaw as unknown[]) ?? [];
-  if (report === "documents" && docSource === "EMPLOYEE") rows = (rows as DocumentRow[]).filter((r) => r.sourceType !== "COMPANY_DOCUMENT");
+  if (report === "documents" && docSource === "EMPLOYEE") rows = (rows as DocumentRow[]).filter((r) => r.sourceType !== "COMPANY_DOCUMENT" && r.sourceType !== "VEHICLE");
 
   const pdf = () => report && void reportsApi[report].export(query, "pdf").catch(() => undefined);
   const excel = () => report && void reportsApi[report].export(query, "xlsx").catch(() => undefined);
@@ -342,7 +342,7 @@ function DocumentsBody({ rows, isAr, onOpen }: { rows: DocumentRow[]; isAr: bool
               <span>{isAr ? `${list.length} وثيقة` : `${list.length} documents`}</span>
             </div>
             {list.map((r) => {
-              const company = r.sourceType === "COMPANY_DOCUMENT";
+              const company = r.sourceType === "COMPANY_DOCUMENT" || r.sourceType === "VEHICLE";
               const Icon = (company ? COMPANY_DOCUMENT_CATEGORY_ICONS[r.kind] : EMPLOYEE_DOCUMENT_TYPE_ICONS[r.kind]) ?? FileText;
               const branch = localized(r.branch, r.branchEn);
               return (

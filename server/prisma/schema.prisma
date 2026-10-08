@@ -206,6 +206,8 @@ model User {
   createdTaxReturns       TaxReturn[]      @relation("TaxReturnCreator")
   createdCustodyHandovers CustodyHandover[] @relation("CustodyCreator")
   createdClearances       Clearance[]       @relation("ClearanceCreator")
+  createdVehicles         Vehicle[]         @relation("VehicleCreator")
+  vehicleRenewals         VehicleRenewal[]  @relation("VehicleRenewalBy")
 
   @@index([isActive])
 }
@@ -392,6 +394,7 @@ model Branch {
   payments         Payment[]
   assets           ManagedAsset[]
   violations       Violation[]
+  vehicles         Vehicle[]
   taxReturns       TaxReturn[]
 
   @@index([status])
@@ -454,6 +457,7 @@ model Employee {
   offboarding EmployeeOffboarding?
   custodyHandovers CustodyHandover[]
   clearances Clearance[]
+  drivenVehicles Vehicle[] @relation("VehicleDriver")
 
   @@index([branchId])
   @@index([employmentStatus])
@@ -1145,4 +1149,65 @@ model Clearance {
 
   @@index([employeeId])
   @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Vehicles: each car with the three dates that expire on it (periodic
+// inspection, insurance, registration). They join the document expiry alerts
+// and reports as source "VEHICLE"; each renewal is kept in VehicleRenewal.
+// ---------------------------------------------------------------------------
+
+model Vehicle {
+  id                   String    @id @default(cuid())
+  /// The plate as written: Arabic letters (أ ب ج) and up to four digits.
+  plateLetters         String
+  plateNumber          String
+  /// The registration card's serial number.
+  serialNumber         String?
+  ownerName            String?
+  make                 String
+  year                 Int?
+  color                String?
+  branchId             String?
+  driverId             String?
+  inspectionExpiry     DateTime  @db.Date
+  insuranceExpiry      DateTime  @db.Date
+  registrationExpiry   DateTime? @db.Date
+  insurer              String?
+  /// COMPREHENSIVE or THIRD_PARTY
+  insuranceType        String?
+  inspectionFileId     String?
+  insuranceFileId      String?
+  registrationFileId   String?
+  notes                String?
+  createdById          String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+
+  branch    Branch?          @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  driver    Employee?        @relation("VehicleDriver", fields: [driverId], references: [id], onDelete: SetNull)
+  createdBy User?            @relation("VehicleCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  renewals  VehicleRenewal[]
+
+  @@index([branchId])
+  @@index([inspectionExpiry])
+  @@index([insuranceExpiry])
+}
+
+model VehicleRenewal {
+  id          String    @id @default(cuid())
+  vehicleId   String
+  /// INSPECTION, INSURANCE or REGISTRATION
+  kind        String
+  previous    DateTime? @db.Date
+  next        DateTime  @db.Date
+  paymentId   String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("VehicleRenewalBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([vehicleId])
 }

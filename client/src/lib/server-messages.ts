@@ -6,6 +6,11 @@ import i18n from "@/i18n";
  * Keep in sync when a server message is added or reworded — an unmapped
  * message is shown as is. */
 const EXACT: Record<string, string> = {
+  "Vehicle not found.": "السيارة دي مش موجودة.",
+  "Vehicle deleted.": "اتحذفت السيارة.",
+  "A vehicle with this plate is already registered.": "في سيارة متسجلة بنفس رقم اللوحة ده.",
+  "Establishment not found.": "المؤسسة دي مش موجودة.",
+  "Payment permission is required to record the renewal cost.": "تسجيل تكلفة التجديد محتاج صلاحية إضافة المدفوعات.",
   "Custody handover not found.": "محضر تسليم العهدة غير موجود.",
   "Clearance not found.": "إخلاء الطرف غير موجود.",
   "A custody item does not belong to this handover.": "في صنف مش تبع المحضر ده.",

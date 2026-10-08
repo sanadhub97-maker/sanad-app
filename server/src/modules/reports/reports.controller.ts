@@ -150,7 +150,7 @@ async function scopedDocumentsPdf(res: Response, rows: Awaited<ReturnType<typeof
   const emps = new Map<string, ScopedEmployeeGroup>();
   for (const r of rows) {
     const name = estName(r.branch, r.branchEn);
-    if (r.sourceType === "COMPANY_DOCUMENT") {
+    if (r.sourceType === "COMPANY_DOCUMENT" || r.sourceType === "VEHICLE") {
       const b = r.branch ? byName.get(r.branch) : undefined;
       if (!ests.has(name)) ests.set(name, { name, owner: b?.ownerName ?? null, cr: (b && crOf.get(b.id)) || null, vat: b?.vatRegistrationNumber ?? null, docs: [] });
       ests.get(name)!.docs.push(doc(r));

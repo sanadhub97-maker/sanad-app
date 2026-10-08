@@ -13,7 +13,7 @@ export const FILE_MODULE_PERMISSIONS: Record<string, string> = {
   "company-logo": "settings.view", "company-favicon": "settings.view", "company-stamp": "settings.view", "company-signature": "settings.view",
   "signature-name": "settings.view",
   "user-avatar": "users.view", violation: "violations.view", "tax-return": "payments.view",
-  "branch-logo": "branches.view", custody: "custody.view",
+  "branch-logo": "branches.view", custody: "custody.view", vehicle: "vehicles.view",
 };
 
 export function assertFileAccess(file: { module: string | null; uploadedById: string | null; relatedId: string | null }, auth: AuthContext | undefined, action: "view" | "download" | "delete" = "view") {

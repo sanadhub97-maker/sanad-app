@@ -3,6 +3,7 @@ import { canViewSource } from "@/lib/security";
 import type { AuthContext } from "@/types/express";
 import { ApiError } from "@/utils/apiError";
 import { getTrackableItems } from "@/services/expiringItems";
+import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
 import { daysAr } from "@/services/whatsappTemplates";
 import type { CreateTaskInput, UpdateTaskInput } from "@/modules/tasks/tasks.schemas";
@@ -146,7 +147,7 @@ export async function suggestions(auth: AuthContext) {
   );
   const daysEn = (n: number) => (n === 1 ? "1 day" : `${n} days`);
   return items.map(({ item, days }) => {
-    const company = item.sourceType === "COMPANY_DOCUMENT";
+    const company = isEstablishmentSource(item.sourceType);
     // A company document's own name is its establishment's: renew "<kind> — <establishment>".
     const docAr = company ? item.kindAr : (item.documentAr ?? item.kindAr);
     const docEn = company ? item.kindEn : (item.documentEn ?? item.kindEn);

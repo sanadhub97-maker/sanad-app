@@ -27,6 +27,8 @@ export function itemPath(item: Pick<TrackableItem, "sourceType" | "recordId" | "
   switch (item.sourceType) {
     case "COMPANY_DOCUMENT":
       return `/company-documents/${item.recordId}`;
+    case "VEHICLE":
+      return `/vehicles?focus=${item.recordId}`;
     case "EMPLOYEE_IQAMA":
       return `/employee-documents/${item.recordId}/IQAMA`;
     case "EMPLOYEE_PASSPORT":
@@ -57,7 +59,7 @@ export function expiryMessage(item: TrackableItem, threshold: string): PushMessa
       card: { k: C.exp, ic: "id", kind, who, tag: "منتهي", no: item.documentNumber || "—", date: dmy(item.expiryDate), ring: [String(late), late === 0 ? "اليوم" : "يوم متأخر"], pct: 100, used: 100, life: late === 0 ? "انتهت اليوم" : `انتهت من ${daysAr(late)}` },
       actions: [
         { action: "open", title: "تجديد الآن", url },
-        ...(employeeUrl ? [{ action: "emp", title: "ملف الموظف", url: employeeUrl }] : [{ action: "all", title: "كل الوثائق", url: item.sourceType === "COMPANY_DOCUMENT" ? "/company-documents" : "/employee-documents" }]),
+        ...(employeeUrl ? [{ action: "emp", title: "ملف الموظف", url: employeeUrl }] : [{ action: "all", title: "كل الوثائق", url: item.sourceType === "VEHICLE" ? "/vehicles" : item.sourceType === "COMPANY_DOCUMENT" ? "/company-documents" : "/employee-documents" }]),
       ],
     };
   }
@@ -73,7 +75,7 @@ export function expiryMessage(item: TrackableItem, threshold: string): PushMessa
     card: { k: C.soon, ic: "clock", kind, who, tag: "قريب", no: item.documentNumber || "—", date: dmy(item.expiryDate), ring: [String(left), "يوم باقي"], pct: share, used: share, life: `تنتهي ${dayName(item.expiryDate)}` },
     actions: [
       { action: "open", title: "ابدأ التجديد", url },
-      { action: "all", title: "كل القريبة", url: item.sourceType === "COMPANY_DOCUMENT" ? "/company-documents" : "/employee-documents" },
+      { action: "all", title: "كل القريبة", url: item.sourceType === "VEHICLE" ? "/vehicles" : item.sourceType === "COMPANY_DOCUMENT" ? "/company-documents" : "/employee-documents" },
     ],
   };
 }

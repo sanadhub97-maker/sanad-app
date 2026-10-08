@@ -10,13 +10,14 @@ import { z } from "zod";
 export const uploadFile = asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) throw ApiError.badRequest("No file was uploaded.");
   if (!req.auth) throw ApiError.unauthorized();
-  const module = z.enum(["employee", "employee-document", "employee-documents", "company-document", "payment", "company-logo", "company-favicon", "company-stamp", "company-signature", "branch-logo", "custody"]).parse(req.body.module);
+  const module = z.enum(["employee", "employee-document", "employee-documents", "company-document", "payment", "company-logo", "company-favicon", "company-stamp", "company-signature", "branch-logo", "custody", "vehicle"]).parse(req.body.module);
   const relatedId = z.string().min(1).max(100).optional().parse(req.body.relatedId);
   const permission = FILE_MODULE_PERMISSIONS[module];
   if (!hasPermission(req.auth, permission)) throw ApiError.forbidden("You cannot upload to this module.");
   if (module.startsWith("company-") && module !== "company-document" && !hasPermission(req.auth, "settings.edit")) throw ApiError.forbidden("Settings edit permission is required.");
   if (module === "branch-logo" && !hasPermission(req.auth, "branches.edit") && !hasPermission(req.auth, "branches.create")) throw ApiError.forbidden("You cannot upload to this module.");
   if (module === "custody" && !hasPermission(req.auth, "custody.edit") && !hasPermission(req.auth, "custody.create")) throw ApiError.forbidden("You cannot upload to this module.");
+  if (module === "vehicle" && !hasPermission(req.auth, "vehicles.edit") && !hasPermission(req.auth, "vehicles.create")) throw ApiError.forbidden("You cannot upload to this module.");
 
   const file = await service.saveFile({
     buffer: req.file.buffer,

@@ -5,7 +5,7 @@ import type { Prisma } from "@prisma/client";
 export const SOURCE_PERMISSIONS: Record<string, string> = {
   EMPLOYEE_IQAMA: "employees.view", EMPLOYEE_PASSPORT: "employees.view", EMPLOYEE_DOCUMENT: "employeeDocuments.view",
   COMPANY_DOCUMENT: "companyDocuments.view", PAYMENT: "payments.view", DAILY_TASK: "tasks.view",
-  VIOLATION: "violations.view", TAX_RETURN: "payments.view",
+  VIOLATION: "violations.view", TAX_RETURN: "payments.view", VEHICLE: "vehicles.view",
 };
 
 export function canViewSource(auth: AuthContext | null | undefined, source: string) {
