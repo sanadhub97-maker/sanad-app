@@ -2,8 +2,7 @@
    Maison (ميزون), as in the approved preview: midnight and champagne,
    luxury watch-making restraint. Loaded last, over the Royal look: the
    layout stays, this file gives every page the Maison finish — pearl or
-   midnight ground, a floating glass rail with a gliding gold indicator,
-   the page title as a midnight band with a turning gold emblem, engraved
+   midnight ground (the side menu keeps its own look), the page title as a midnight band with a turning gold emblem, engraved
    figure plaques, glass cards with a gold hairline, champagne buttons,
    and the curtain between pages (the shell draws it).
    Arabic is set in the owner's font; digits and Latin fall to Zain.
@@ -108,21 +107,9 @@ html:root body, .lu-app { background: hsl(var(--background)); }
 .lu-app::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 10%), var(--mz-glow), transparent 70%); }
 .lu-main { position: relative; z-index: 1; }
 
-/* ---------------- the rail: floating glass, one gliding gold indicator ---------------- */
-.lu-side, .lu-side.rail { margin: 12px; margin-inline-end: 0; height: calc(100vh - 24px); top: 12px; border: 1px solid var(--l-line); border-radius: 28px; background: var(--l-glass); backdrop-filter: blur(18px) saturate(1.2); box-shadow: var(--l-shadow); }
-.lu-glide { display: block !important; border-radius: 16px; background: color-mix(in srgb, var(--mz-gold) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mz-gold) 30%, transparent); transition: transform 0.5s cubic-bezier(0.3, 1.25, 0.45, 1), height 0.5s, width 0.5s !important; }
-.lu-glide::after { content: ""; position: absolute; inset-inline-start: -8px; top: 24%; bottom: 24%; width: 3px; border-radius: 3px; background: var(--mz-champ); box-shadow: 0 0 12px var(--mz-gold2); }
-.lu-nav { --nc: var(--mz-gold) !important; background: transparent !important; }
-.lu-nav .i::before, .lu-nav .i::after { opacity: 0; }
-.lu-nav .i svg { color: var(--l-ink2); stroke: currentColor; }
-.lu-nav:hover .i svg { color: var(--mz-gold); }
-.lu-nav.on .i::before { opacity: 1; background: var(--mz-champ) !important; }
-.lu-nav.on .i svg { color: #1a1408; }
-.lu-nav.on .i { box-shadow: 0 10px 22px -10px rgba(201, 166, 99, 0.95); border-radius: 14px; }
-.lu-grp-h { letter-spacing: 0.06em; }
-.lu-brand { filter: drop-shadow(0 0 18px rgba(220, 192, 138, 0.3)); }
+/* The side menu keeps its original look (coloured icons, white panel); only the top bar takes the glass. */
 .lu-top .lu-btn, .ry-me { background: var(--l-glass); backdrop-filter: blur(14px); border: 1px solid var(--l-line); }
-.lu-btn .dot, .lu-nav .lu-badge { box-shadow: 0 0 10px #ff3b30; }
+.lu-btn .dot { box-shadow: 0 0 10px #ff3b30; }
 
 /* ---------------- the page title: a midnight band with a turning emblem ---------------- */
 .ry-head { position: relative; isolation: isolate; overflow: hidden; align-items: center; padding: 30px 32px 28px; border-radius: 30px; color: #efeae1; background: radial-gradient(90% 120% at 15% 0%, #1b2440, transparent 60%), radial-gradient(70% 90% at 100% 100%, #1a1406, transparent 60%), linear-gradient(160deg, #0b1122, #05070d); border: 1px solid rgba(222, 196, 140, 0.22); box-shadow: 0 50px 90px -50px #000, inset 0 1px 0 rgba(255, 245, 225, 0.08); }
@@ -200,7 +187,6 @@ html:root body, .lu-app { background: hsl(var(--background)); }
 @keyframes mz-seal { 0%, 22% { opacity: 0; transform: scale(0.6) rotate(-45deg); } 50% { opacity: 1; transform: scale(1) rotate(0); } 78%, 100% { opacity: 0; transform: scale(1.25) rotate(25deg); } }
 
 @media (max-width: 767px) {
-  .lu-side, .lu-side.rail { margin: 0; height: auto; border-radius: 0; }
   .ry-head { padding: 22px 18px; border-radius: 24px; }
   .ry-head h1, .ry-head .lux-title { font-size: 30px !important; }
   .ry-title-ico { width: 66px !important; height: 66px !important; }
@@ -229,3 +215,8 @@ html:root body, .lu-app { background: hsl(var(--background)); }
 .lu-app .cu-hero, .lu-app .cu-dhead { background: radial-gradient(90% 120% at 15% 0%, #1b2440, transparent 60%), radial-gradient(70% 90% at 100% 100%, #1a1406, transparent 60%), linear-gradient(160deg, #0b1122, #05070d); border: 1px solid rgba(222, 196, 140, 0.22); }
 .lu-app .cu-hero::before, .lu-app .cu-dhead::before { opacity: 0.05; }
 .lu-app .cu-hero h1 { font-size: 34px; font-weight: 800; }
+
+/* ---------------- the side menu in its original colours ---------------- */
+html:root:not(.dark) .lu-side { --l-surface: #ffffff; --l-ground: #f7f8fc; --l-line: #e6e9f2; --l-ink: #0f1b3d; --l-ink2: #34405e; --l-muted: #6a7593; --l-faint: #9aa3bc; }
+html:root.dark .lu-side { --l-surface: #151b2b; --l-ground: #0d1220; --l-line: #232b3e; --l-ink: #e8edf7; --l-ink2: #c9d1e3; --l-muted: #9aa5b8; --l-faint: #66708a; }
+.lu-side, .lu-side * { font-family: var(--font-sans); }
