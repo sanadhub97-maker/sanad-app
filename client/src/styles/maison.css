@@ -17,7 +17,8 @@
 }
 
 html:root {
-  --font-sans: "ZainPC", "Zain", -apple-system, "Segoe UI", sans-serif;
+  /* Reading text in Zain (clear at small sizes); the owner's font for headings. */
+  --font-sans: "Zain", -apple-system, "Segoe UI", sans-serif;
   --font-head: "ZainPC", "Zain", sans-serif;
   --mz-night: #070b16;
   --mz-night2: #0d1426;
@@ -26,6 +27,9 @@ html:root {
 /* The font is drawn bold already: the browser must not thicken it again. */
 html:root body, html:root body * { font-synthesis: none; }
 .lu-app, .lu-app * { font-family: var(--font-sans); }
+/* The owner's font: titles, headings, figure labels, table headers and names in bold. */
+.lu-app :is(h1, h2, h3, h4, .lux-title, .font-head, th, .rp-kpis .l, .ry-me b, td b, .rc-lic h3, .cu-card-head, .vh-who b),
+[role="dialog"] :is(h1, h2, h3, .vh-sec, .cu-sec) { font-family: var(--font-head); }
 .lu-app .font-mono, .lu-app .rp-mono, .lu-app kbd, .lu-app code { font-family: ui-monospace, Menlo, monospace; }
 
 /* ---------------- palette: pearl by day, midnight by night ---------------- */
