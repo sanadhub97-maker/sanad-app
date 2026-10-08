@@ -278,7 +278,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
         <div className="ry-promo">
           <b>{isAr ? `${docsAr(needs)} تحتاج تجديدًا` : `${needs} documents need renewal`}</b>
           <p>{isAr ? "منتهية أو تنتهي خلال الثلاثين يومًا القادمة." : "Expired or ending within 30 days."}</p>
-          <button type="button" onClick={() => navigate("/employee-documents?status=EXPIRING_SOON")}>
+          <button type="button" onClick={() => navigate("/notifications")}>
             {isAr ? "راجعها الآن" : "Review now"}
           </button>
         </div>

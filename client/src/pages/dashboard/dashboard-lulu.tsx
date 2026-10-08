@@ -236,7 +236,7 @@ export default function DashboardLulu() {
 
   const stats = [
     { icon: Users, tone: "indigo", label: isAr ? "الموظفون" : "Employees", value: summary?.totalEmployees ?? 0, unit: "", note: isAr ? `${summary?.activeEmployees ?? 0} على رأس العمل` : `${summary?.activeEmployees ?? 0} on duty`, kind: "ok", href: "/employees", spark: [] as number[] },
-    { icon: FileText, tone: "teal", label: isAr ? "الوثائق المتابعة" : "Tracked documents", value: tracked, unit: "", note: isAr ? `${valid} سارية` : `${valid} valid`, kind: "ok", href: "/employee-documents", spark: [] },
+    { icon: FileText, tone: "teal", label: isAr ? "الوثائق المتابعة" : "Tracked documents", value: tracked, unit: "", note: isAr ? `${valid} سارية` : `${valid} valid`, kind: "ok", href: "/reports?tab=documents", spark: [] },
     {
       icon: Clock,
       tone: "amber",
@@ -245,7 +245,7 @@ export default function DashboardLulu() {
       unit: "",
       note: nearest ? (isAr ? `أقربها ${leftText(nearest.days)}` : `Nearest ${leftText(nearest.days).toLowerCase()}`) : isAr ? "لا شيء قريب" : "Nothing soon",
       kind: soon ? "warn" : "ok",
-      href: "/employee-documents?status=EXPIRING_SOON",
+      href: "/reports?tab=documents&status=EXPIRING_SOON&scope=all",
       spark: (overview?.upcoming ?? []).map((m) => m.count),
     },
     {
@@ -321,7 +321,7 @@ export default function DashboardLulu() {
               )}
             </p>
             <div className="btns">
-              <button type="button" className="ry-btn white" onClick={() => navigate("/employee-documents?status=EXPIRING_SOON")}>
+              <button type="button" className="ry-btn white" onClick={() => navigate("/notifications")}>
                 <Bell /> {isAr ? "راجع التنبيهات" : "Review alerts"}
               </button>
               <button type="button" className="ry-btn glass" onClick={() => navigate("/employee-documents")}>
@@ -573,7 +573,7 @@ export default function DashboardLulu() {
               <h3>{isAr ? "وثائق تنتهي قريبًا" : "Documents ending soon"}</h3>
               <small>{isAr ? "مرتبة من الأقرب · اضغط على أي صف لفتحه" : "Soonest first · open any row"}</small>
             </div>
-            <button type="button" className="ry-link" onClick={() => navigate("/employee-documents?status=EXPIRING_SOON")}>
+            <button type="button" className="ry-link" onClick={() => navigate("/notifications")}>
               {isAr ? "عرض الكل" : "View all"}
             </button>
           </div>

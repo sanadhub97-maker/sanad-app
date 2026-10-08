@@ -59,14 +59,16 @@ export default function ReportsPage() {
   const initial = ((): TileId | null => {
     const tab = params.get("tab");
     const status = params.get("status");
-    if (tab === "documents") return status === "EXPIRED" ? "expired" : status === "EXPIRING_SOON" ? "soon" : "documents";
+    // scope=all: every document in that state (the dashboard links), not just the sponsored-scope cards.
+    if (tab === "documents") return params.get("scope") === "all" ? "documents" : status === "EXPIRED" ? "expired" : status === "EXPIRING_SOON" ? "soon" : "documents";
     return TILES.includes(tab as TileId) ? (tab as TileId) : null;
   })();
   const [open, setOpen] = useState<TileId | "tax" | "violations" | null>(initial);
   const panel = useRef<HTMLDivElement>(null);
 
   // Filters of the open report
-  const [docStatus, setDocStatus] = useState<"" | "EXPIRED" | "EXPIRING_SOON" | "VALID">(initial === "expired" ? "EXPIRED" : initial === "soon" ? "EXPIRING_SOON" : "");
+  const linkedStatus = params.get("status");
+  const [docStatus, setDocStatus] = useState<"" | "EXPIRED" | "EXPIRING_SOON" | "VALID">(initial === "expired" ? "EXPIRED" : initial === "soon" ? "EXPIRING_SOON" : initial === "documents" && (linkedStatus === "EXPIRED" || linkedStatus === "EXPIRING_SOON" || linkedStatus === "VALID") ? linkedStatus : "");
   const [docSource, setDocSource] = useState<"" | "COMPANY_DOCUMENT" | "EMPLOYEE">("");
   const [branchId, setBranchId] = useState("");
   const [empStatus, setEmpStatus] = useState("");
