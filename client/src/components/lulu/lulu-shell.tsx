@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, Suspense } from "react";
+import { Emblem, GoldDust, PageCurtain, useCursorLight } from "@/components/lulu/maison";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -371,9 +372,12 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
         <LuluNotifications open={open} anchor={bell} onClose={close} />
       </header>
       <div className="ry-head no-print">
+        <GoldDust />
+        <span className="mz-sweep" aria-hidden="true" />
         <div className="t">
           {current && (
             <span className="ry-title-ico" key={current.href} aria-hidden="true" style={{ ["--nc" as string]: current.color }}>
+              <Emblem />
               <current.icon />
             </span>
           )}
@@ -483,8 +487,10 @@ export function LuluShell() {
   const pageColor = colorOf(location.pathname);
   const dark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
   const [cmd, setCmd] = useState(false);
+  const app = useRef<HTMLDivElement>(null);
 
   useLuluEffects(main, animationsEnabled);
+  useCursorLight(app);
 
   // A tap on a push notification opens its page here (lib/push.ts), and a
   // device that already receives them is tied to whoever is signed in now.
@@ -513,7 +519,7 @@ export function LuluShell() {
 
   return (
     <PageHeaderSlotProvider>
-      <div className={cn("lu-app font-sans", !animationsEnabled && "lu-still")} style={{ ["--page-c" as string]: pageColor, ["--primary" as string]: colorAsPrimary(pageColor, dark), ["--ring" as string]: colorAsPrimary(pageColor, dark) }}>
+      <div ref={app} className={cn("lu-app font-sans", !animationsEnabled && "lu-still")} style={{ ["--page-c" as string]: pageColor, ["--primary" as string]: colorAsPrimary(pageColor, dark), ["--ring" as string]: colorAsPrimary(pageColor, dark) }}>
         <div className="lu-mesh" aria-hidden="true">
           <i className="m1" />
           <i className="m2" />
@@ -521,6 +527,7 @@ export function LuluShell() {
           <i className="m4" />
         </div>
         <RouteProgressBar />
+        <PageCurtain />
         <Sidebar items={items} />
         <main ref={main} className="lu-main">
           <div className="lu-wrap">

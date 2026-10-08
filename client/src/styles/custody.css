@@ -34,7 +34,7 @@ html.dark .cu { --cu-deep: #0a1530; }
 .cu-hero .icon svg { width: 26px; height: 26px; }
 .cu-hero .tt { flex: 1; min-width: 220px; }
 .cu-hero .eyebrow { font-size: 10.5px; font-weight: 600; letter-spacing: .3em; color: #d9bf86; text-transform: uppercase; }
-.cu-hero h1 { margin: 2px 0 0; font: 700 26px/1.3 var(--head, Zain, sans-serif); }
+.cu-hero h1 { margin: 2px 0 0; font: 700 26px/1.3 var(--head, ZainPC, Zain, sans-serif); }
 .cu-hero p { margin: 4px 0 0; color: #b9c4d9; font-size: 13px; }
 .cu-hero .acts { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -58,7 +58,7 @@ html.dark .cu { --cu-deep: #0a1530; }
 .cu-medal.lg { width: 78px; height: 78px; }
 .cu-medal.sm { width: 34px; height: 34px; }
 .cu-medal-img { width: 74%; height: 74%; object-fit: contain; }
-.cu-medal-ini { font: 700 15px var(--head, Zain, sans-serif); color: var(--cu-gold); }
+.cu-medal-ini { font: 700 15px var(--head, ZainPC, Zain, sans-serif); color: var(--cu-gold); }
 .cu-medal.lg .cu-medal-ini { font-size: 24px; }
 /* inside an establishment card's seal */
 .cu-medal.in-seal { width: 100%; height: 100%; box-shadow: none; background: #fff; }
@@ -71,7 +71,7 @@ html.dark .cu { --cu-deep: #0a1530; }
 .cu-kpi::before { content: ""; position: absolute; top: 0; inset-inline: 18px; height: 1.5px; background: linear-gradient(90deg, transparent, var(--cu-gold), transparent); opacity: .8; }
 .cu-kpi span { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--cu-muted); font-weight: 600; }
 .cu-kpi span::before { content: ""; width: 8px; height: 8px; transform: rotate(45deg); background: var(--c, var(--cu-gold)); flex: none; }
-.cu-kpi b { display: block; margin-top: 4px; font: 700 26px/1.2 var(--head, Zain, sans-serif); font-variant-numeric: tabular-nums; background: var(--cu-foil); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.cu-kpi b { display: block; margin-top: 4px; font: 700 26px/1.2 var(--head, ZainPC, Zain, sans-serif); font-variant-numeric: tabular-nums; background: var(--cu-foil); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 .cu-kpi small { display: block; color: var(--cu-muted); font-size: 12px; }
 button.cu-kpi { cursor: pointer; }
 button.cu-kpi[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--cu-gold); }
@@ -89,7 +89,7 @@ button.cu-kpi[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--cu-gold); }
 /* ---------- list ---------- */
 .cu-card { position: relative; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--cu-gold) 28%, var(--cu-line)); background: var(--cu-surf); overflow: hidden; }
 .cu-card::before { content: ""; position: absolute; top: 0; inset-inline: 18px; height: 1.5px; background: linear-gradient(90deg, transparent, var(--cu-gold), transparent); opacity: .8; }
-.cu-card-head { display: flex; align-items: center; gap: 9px; padding: 14px 18px 10px; font: 700 15px var(--head, Zain, sans-serif); }
+.cu-card-head { display: flex; align-items: center; gap: 9px; padding: 14px 18px 10px; font: 700 15px var(--head, ZainPC, Zain, sans-serif); }
 .cu-card-head::before { content: ""; width: 8px; height: 8px; background: var(--cu-foil); transform: rotate(45deg); flex: none; }
 .cu-card-head small { margin-inline-start: auto; font: 500 12.5px var(--font-sans, sans-serif); color: var(--cu-muted); }
 .cu-row { display: grid; grid-template-columns: 44px minmax(0, 1.6fr) minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 12px 18px; border-top: 1px solid var(--cu-line); cursor: pointer; transition: background .15s; }
@@ -110,7 +110,7 @@ button.cu-kpi[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--cu-gold); }
 .cu-dhead::before { content: ""; position: absolute; inset: 0; background-image: var(--cu-tile); background-size: 34px 34px; opacity: .12; pointer-events: none; }
 .cu-dhead::after { content: ""; position: absolute; bottom: 0; inset-inline: 0; height: 2.5px; background: var(--cu-foil); }
 .cu-dhead > * { position: relative; }
-.cu-dhead h2 { margin: 0; font: 700 20px var(--head, Zain, sans-serif); }
+.cu-dhead h2 { margin: 0; font: 700 20px var(--head, ZainPC, Zain, sans-serif); }
 .cu-dhead .sub { color: #b9c4d9; margin-top: 3px; font-size: 13px; }
 .cu-dbody { padding: 18px 20px 20px; display: grid; gap: 14px; }
 .cu-dfoot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--cu-line); background: color-mix(in srgb, var(--cu-gold-s) 35%, var(--cu-surf)); position: sticky; bottom: 0; z-index: 2; }
@@ -125,7 +125,7 @@ textarea.cu-in { height: auto; min-height: 70px; padding: 9px 12px; resize: vert
 .cu-prints-as { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--cu-gold-s) 80%, var(--cu-surf)); border: 1px solid color-mix(in srgb, var(--cu-gold) 30%, transparent); font-size: 13px; }
 .cu-prints-as b { font-weight: 700; }
 .cu-prints-as small { display: block; color: var(--cu-muted); font-size: 12px; }
-.cu-sec { display: flex; align-items: center; gap: 8px; font: 700 14px var(--head, Zain, sans-serif); }
+.cu-sec { display: flex; align-items: center; gap: 8px; font: 700 14px var(--head, ZainPC, Zain, sans-serif); }
 .cu-sec::before { content: ""; width: 8px; height: 8px; background: var(--cu-foil); transform: rotate(45deg); flex: none; }
 .cu-sec::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--cu-gold-l), transparent); }
 [dir="rtl"] .cu-sec::after { background: linear-gradient(270deg, var(--cu-gold-l), transparent); }

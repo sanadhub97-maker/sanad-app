@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { Odometer } from "@/components/lulu/maison";
 import { isRtlLanguage } from "@/i18n";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -136,7 +137,7 @@ export function Kpis({ items, i = 1 }: { items: Kpi[]; i?: number }) {
               {k.label}
             </span>
             <span className="v" style={!k.hero && k.tone && k.tone !== "pri" ? ({ ["--vc" as string]: "var(--c)" } as CSSProperties) : undefined}>
-              {k.value}
+              <Odometer value={k.value} />
             </span>
             {k.sub && <span className="s">{k.sub}</span>}
           </>
