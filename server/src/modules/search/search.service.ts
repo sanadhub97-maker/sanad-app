@@ -3,7 +3,7 @@ import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 
 export interface SearchResultItem {
-  type: "employee" | "employeeDocument" | "companyDocument" | "payment" | "branch" | "task";
+  type: "employee" | "employeeDocument" | "companyDocument" | "payment" | "branch" | "task" | "vehicle" | "custody" | "clearance" | "violation";
   id: string;
   title: string; // Arabic where the record has one
   titleEn?: string | null; // shown when the UI is in English
@@ -17,7 +17,8 @@ export interface SearchResultItem {
 export async function globalSearch(q: string, auth: AuthContext): Promise<SearchResultItem[]> {
   const insensitive = { contains: q, mode: "insensitive" as const };
 
-  const [employees, companyDocuments, payments, employeeDocuments, tasks, branches] = await Promise.all([
+  const compact = q.replace(/s+/g, " ").trim();
+  const [employees, companyDocuments, payments, employeeDocuments, tasks, branches, vehicles, handovers, clearances, violations] = await Promise.all([
     hasPermission(auth, "employees.view") ? prisma.employee.findMany({
       where: {
         deletedAt: null,
@@ -49,6 +50,16 @@ export async function globalSearch(q: string, auth: AuthContext): Promise<Search
       where: { deletedAt: null, OR: [{ name: insensitive }, { nameEn: insensitive }, { code: insensitive }] },
       take: 5,
     }) : Promise.resolve([]),
+    hasPermission(auth, "vehicles.view") ? prisma.vehicle.findMany({
+      where: { deletedAt: null, OR: [{ plateNumber: insensitive }, { plateLetters: { contains: compact, mode: "insensitive" } }, { serialNumber: insensitive }, { ownerName: insensitive }, { make: insensitive }] },
+      take: 5,
+    }) : Promise.resolve([]),
+    hasPermission(auth, "custody.view") ? prisma.custodyHandover.findMany({
+      where: { deletedAt: null, OR: [{ number: insensitive }, { items: { some: { OR: [{ serialNumber: insensitive }, { kind: insensitive }] } } }] },
+      include: { employee: { select: { fullNameAr: true } } }, take: 5, orderBy: { date: "desc" },
+    }) : Promise.resolve([]),
+    hasPermission(auth, "custody.view") ? prisma.clearance.findMany({ where: { deletedAt: null, number: insensitive }, include: { employee: { select: { fullNameAr: true } } }, take: 5 }) : Promise.resolve([]),
+    hasPermission(auth, "violations.view") ? prisma.violation.findMany({ where: { deletedAt: null, OR: [{ number: insensitive }, { reason: insensitive }] }, take: 5, orderBy: { date: "desc" } }) : Promise.resolve([]),
   ]);
 
   const results: SearchResultItem[] = [];
@@ -74,6 +85,11 @@ export async function globalSearch(q: string, auth: AuthContext): Promise<Search
   }
   for (const d of employeeDocuments) results.push({ type: "employeeDocument", id: d.id, title: d.name || d.type, subtitle: `${d.employee.fullNameAr} · ${d.documentNumber || ""}`, href: `/employee-documents/${d.employeeId}/${d.id}` });
   for (const task of tasks) results.push({ type: "task", id: task.id, title: task.title, subtitle: task.date.toISOString().slice(0, 10), href: `/daily-tasks?date=${task.date.toISOString().slice(0, 10)}` });
+
+  for (const v of vehicles) results.push({ type: "vehicle", id: v.id, title: `${v.make} (${v.plateLetters} ${v.plateNumber})`, subtitle: v.ownerName ?? v.serialNumber ?? undefined, href: `/vehicles?focus=${v.id}` });
+  for (const h of handovers) results.push({ type: "custody", id: h.id, title: h.number, subtitle: h.employee.fullNameAr, href: "/custody" });
+  for (const c of clearances) results.push({ type: "clearance", id: c.id, title: c.number, subtitle: c.employee.fullNameAr, href: "/clearances" });
+  for (const v of violations) results.push({ type: "violation", id: v.id, title: v.reason, subtitle: v.number ?? undefined, href: `/violations/${v.id}` });
 
   return results;
 }

@@ -16,6 +16,7 @@ export const idParamSchema = z.object({ id: z.string().min(1) });
 export const listQuerySchema = paginationSchema.extend({
   state: z.enum(["all", "expired", "soon", "INSPECTION", "INSURANCE", "REGISTRATION"]).default("all"),
   branchId: z.string().optional(),
+  driverId: z.string().optional(),
   pageSize: z.coerce.number().int().min(1).max(500).default(200),
 });
 

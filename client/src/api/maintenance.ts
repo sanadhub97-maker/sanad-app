@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 export type SessionItem = { familyId: string; userAgent: string | null; ipAddress: string | null; createdAt: string; lastUsedAt: string; expiresAt: string; current: boolean };
-export type TrashKind = "employee" | "companyDocument" | "employeeDocument" | "payment" | "branch" | "user";
+export type TrashKind = "employee" | "companyDocument" | "employeeDocument" | "payment" | "branch" | "user" | "vehicle" | "custodyHandover" | "clearance" | "violation";
 export type DeletedItem = { id: string; name: string; reference: string; deletedAt: string };
 export type Revision = { id: string; subjectType: string; subjectId: string; subjectName: string; documentKind: string; actorName: string; before: Record<string, unknown>; after: Record<string, unknown>; createdAt: string };
 export type BackupItem = { id: string; status: "READY" | "RUNNING" | "FAILED"; recordCount: number; fileCount: number; totalBytes: number; error: string | null; createdAt: string; completedAt: string | null };

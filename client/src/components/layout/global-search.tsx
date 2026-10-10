@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { localized } from "@/lib/names";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, FileText, Search, User, Wallet } from "lucide-react";
+import { Building2, Car, FileText, Gavel, PackageCheck, Search, ShieldCheck, User, Wallet } from "lucide-react";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { globalSearch } from "@/api/search";
 import type { SearchResultItem } from "@/api/search";
@@ -15,6 +15,10 @@ const ICON_BY_TYPE: Record<SearchResultItem["type"], typeof User> = {
   companyDocument: FileText,
   payment: Wallet,
   branch: Building2,
+  vehicle: Car,
+  custody: PackageCheck,
+  clearance: ShieldCheck,
+  violation: Gavel,
 };
 
 const TYPE_LABEL: Record<SearchResultItem["type"], { en: string; ar: string }> = {
@@ -24,6 +28,10 @@ const TYPE_LABEL: Record<SearchResultItem["type"], { en: string; ar: string }> =
   companyDocument: { en: "Document", ar: "مستند" },
   payment: { en: "Payment", ar: "دفعة" },
   branch: { en: "Establishment", ar: "مؤسسة" },
+  vehicle: { en: "Vehicle", ar: "سيارة" },
+  custody: { en: "Custody handover", ar: "محضر تسليم عهدة" },
+  clearance: { en: "Clearance", ar: "إخلاء طرف" },
+  violation: { en: "Violation", ar: "مخالفة" },
 };
 
 /** Opens the search (also Ctrl K). "pill" shows the wide search field of the

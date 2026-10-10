@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Building2, Calendar, Clock, Edit, FileText, Hash, Mail, MapPin, Phone, Plus, Printer, StickyNote, Trash2, User, Users, Wallet } from "lucide-react";
+import { Bell, Building2, Car, Calendar, Clock, Edit, FileText, Hash, Mail, MapPin, Phone, Plus, Printer, StickyNote, Trash2, User, Users, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
@@ -14,6 +14,8 @@ import { branchesApi } from "@/api/branches";
 import { employeesApi } from "@/api/employees";
 import { companyDocumentsApi, COMPANY_DOCUMENT_CATEGORIES } from "@/api/companyDocuments";
 import { paymentsApi } from "@/api/payments";
+import { vehiclesApi } from "@/api/vehicles";
+import { Pill } from "@/components/royal/rp";
 import { daysFromToday, dmy, weekday } from "@/components/royal/rp";
 import { BigRing, CoverHero, DCard, DetailBar, Fact, History, MiniDoc, Ticker, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory, useReminderDays } from "@/components/royal/cards";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
@@ -41,6 +43,7 @@ export default function BranchDetailsPage() {
   const { data: staff } = useQuery({ queryKey: ["employees", { branchId: id, pageSize: 100 }], queryFn: () => employeesApi.list({ branchId: id, pageSize: 100 }), enabled: Boolean(id) && hasPermission("employees.view") });
   const { data: docsRes } = useQuery({ queryKey: ["companyDocuments", "branch", id], queryFn: () => companyDocumentsApi.list({ branchId: id, pageSize: 100 }), enabled: Boolean(id) && hasPermission("companyDocuments.view") });
   const { data: pays } = useQuery({ queryKey: ["payments", "byBranch", id], queryFn: () => paymentsApi.list({ branchId: id, pageSize: 6, sortBy: "paymentDate", sortOrder: "desc" }), enabled: Boolean(id) && hasPermission("payments.view") });
+  const { data: cars } = useQuery({ queryKey: ["vehicles", "list", { branchId: id }], queryFn: () => vehiclesApi.list({ branchId: id, pageSize: 50 }), enabled: Boolean(id) && hasPermission("vehicles.view") });
   const { data: history } = useRecordHistory(id);
 
   if (isLoading) return <div className="p-6 text-sm text-muted-foreground">{t("common.loading")}</div>;
@@ -227,6 +230,22 @@ export default function BranchDetailsPage() {
               ) : (
                 <div className="rc-none">{isAr ? "لا توجد مدفوعات" : "No payments"}</div>
               )}
+            </DCard>
+          )}
+          {hasPermission("vehicles.view") && cars && cars.data.length > 0 && (
+            <DCard title={isAr ? "السيارات" : "Vehicles"} icon={Car} color="var(--gold)" right={cars.meta.total} i={3}>
+              <div className="rc-rows">
+                {cars.data.map((v) => (
+                  <button key={v.id} type="button" onClick={() => navigate(`/vehicles?focus=${v.id}`)}>
+                    <span className="d"><Car size={16} /></span>
+                    <span className="min-w-0">
+                      <b>{v.make} · <span className="rp-mono">{v.plateLetters} {v.plateNumber}</span></b>
+                      <small>{isAr ? "الفحص" : "Inspection"} {dmy(v.inspectionExpiry)} · {isAr ? "التأمين" : "Insurance"} {dmy(v.insuranceExpiry)}</small>
+                    </span>
+                    <Pill tone={v.nearestDays <= 0 ? "bad" : v.nearestDays <= 30 ? "warn" : "ok"}>{v.nearestDays <= 0 ? (isAr ? "فيها حاجة منتهية" : "Something expired") : v.nearestDays <= 30 ? (isAr ? "قريب" : "Soon") : isAr ? "ساري" : "Valid"}</Pill>
+                  </button>
+                ))}
+              </div>
             </DCard>
           )}
           {upcoming.length > 0 && (

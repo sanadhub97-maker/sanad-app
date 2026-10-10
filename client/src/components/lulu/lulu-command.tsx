@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, ChevronLeft, FileText, Search, Users, Wallet } from "lucide-react";
+import { Building2, Car, ChevronLeft, FileText, Gavel, PackageCheck, Search, ShieldCheck, Users, Wallet } from "lucide-react";
 import { globalSearch, type SearchResultItem } from "@/api/search";
 import { localized } from "@/lib/names";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,10 @@ const TYPE: Record<SearchResultItem["type"], { icon: typeof Users; tone: LuluTon
   companyDocument: { icon: FileText, tone: "amber", ar: "المستندات", en: "Documents" },
   payment: { icon: Wallet, tone: "violet", ar: "المدفوعات", en: "Payments" },
   branch: { icon: Building2, tone: "teal", ar: "المؤسسات", en: "Establishments" },
+  vehicle: { icon: Car, tone: "amber", ar: "السيارات", en: "Vehicles" },
+  custody: { icon: PackageCheck, tone: "amber", ar: "تسليم العهد", en: "Custody" },
+  clearance: { icon: ShieldCheck, tone: "amber", ar: "إخلاء الطرف", en: "Clearances" },
+  violation: { icon: Gavel, tone: "rose", ar: "المخالفات", en: "Violations" },
 };
 
 interface Item {

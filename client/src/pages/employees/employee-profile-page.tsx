@@ -5,13 +5,15 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, Briefcase, Gavel, Building2, Calendar, CheckCircle2, Clock, Edit, Globe, Hash, IdCard, Mail, MapPin, Phone, Plus, Printer, ShieldCheck, Sparkles, StickyNote, User, UserCheck, Wallet } from "lucide-react";
+import { AlertTriangle, Briefcase, Car, Gavel, PackageCheck, Building2, Calendar, CheckCircle2, Clock, Edit, Globe, Hash, IdCard, Mail, MapPin, Phone, Plus, Printer, ShieldCheck, Sparkles, StickyNote, User, UserCheck, Wallet } from "lucide-react";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
 import { AvatarPickerDialog } from "@/components/avatars/avatar-picker-dialog";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
 import { employeesApi, employeePdfUrl } from "@/api/employees";
 import { paymentsApi } from "@/api/payments";
 import { violationsApi } from "@/api/violations";
+import { custodyApi } from "@/api/custody";
+import { vehiclesApi } from "@/api/vehicles";
 import { STATE_LOOK } from "@/lib/violations";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency } from "@/lib/utils";
@@ -46,6 +48,9 @@ export default function EmployeeProfilePage() {
     queryFn: () => violationsApi.list({ employeeId: id, pageSize: 20 }),
     enabled: Boolean(id) && hasPermission("violations.view"),
   });
+  // What the employee holds: custody items still out, and the cars they drive.
+  const { data: custodyItems } = useQuery({ queryKey: ["custody", "employee-items", id], queryFn: () => custodyApi.employeeItems(id!), enabled: Boolean(id) && hasPermission("custody.view") });
+  const { data: cars } = useQuery({ queryKey: ["vehicles", "list", { driverId: id }], queryFn: () => vehiclesApi.list({ driverId: id, pageSize: 20 }), enabled: Boolean(id) && hasPermission("vehicles.view") });
   const { data: history } = useRecordHistory(id);
 
   const [docDialogOpen, setDocDialogOpen] = useState(false);
@@ -279,6 +284,41 @@ export default function EmployeeProfilePage() {
               ) : (
                 <div className="rc-none">{isAr ? "مفيش مخالفات ولا جزاءات على الموظف" : "No violations or penalties"}</div>
               )}
+            </DCard>
+          )}
+          {hasPermission("custody.view") && (
+            <DCard title={isAr ? "العهد اللي معاه" : "Custody held"} icon={PackageCheck} color="var(--gold)" right={custodyItems?.length ?? 0} i={3}>
+              {custodyItems && custodyItems.length > 0 ? (
+                <div className="rc-rows">
+                  {custodyItems.map((it) => (
+                    <button key={it.id} type="button" onClick={() => navigate("/custody")}>
+                      <span className="d">{it.kind.trim().charAt(0)}</span>
+                      <span className="min-w-0">
+                        <b>{it.kind}{it.value ? <> · <span className="rp-num">{formatCurrency(it.value)}</span></> : null}</b>
+                        <small>{[it.description, it.serialNumber, it.handover ? `${it.handover.number} · ${dmy(it.handover.date)}` : null].filter(Boolean).join(" · ")}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rc-none">{isAr ? "مفيش عهد مع الموظف" : "No custody held"}</div>
+              )}
+            </DCard>
+          )}
+          {hasPermission("vehicles.view") && cars && cars.data.length > 0 && (
+            <DCard title={isAr ? "السيارات اللي بيسوقها" : "Vehicles driven"} icon={Car} color="var(--gold)" right={cars.data.length} i={3}>
+              <div className="rc-rows">
+                {cars.data.map((v) => (
+                  <button key={v.id} type="button" onClick={() => navigate(`/vehicles?focus=${v.id}`)}>
+                    <span className="d"><Car size={16} /></span>
+                    <span className="min-w-0">
+                      <b>{v.make} · <span className="rp-mono">{v.plateLetters} {v.plateNumber}</span></b>
+                      <small>{isAr ? "الفحص" : "Inspection"} {dmy(v.inspectionExpiry)} · {isAr ? "التأمين" : "Insurance"} {dmy(v.insuranceExpiry)}</small>
+                    </span>
+                    <Pill tone={v.nearestDays <= 0 ? "bad" : v.nearestDays <= 30 ? "warn" : "ok"}>{v.nearestDays <= 0 ? (isAr ? "فيها حاجة منتهية" : "Something expired") : v.nearestDays <= 30 ? (isAr ? "قريب" : "Soon") : isAr ? "ساري" : "Valid"}</Pill>
+                  </button>
+                ))}
+              </div>
             </DCard>
           )}
           {e.branch && (

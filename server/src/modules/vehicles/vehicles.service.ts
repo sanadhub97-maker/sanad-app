@@ -51,6 +51,7 @@ async function all(branchId?: string) {
 export async function list(query: ListQuery) {
   const q = query.q?.trim().replace(/\s+/g, "").toLowerCase();
   const rows = (await all(query.branchId))
+    .filter((v) => !query.driverId || v.driverId === query.driverId)
     .filter((v) => matchesState(v, query.state))
     .filter((v) => !q || [v.plateLetters + v.plateNumber, v.plateNumber, v.serialNumber, v.ownerName, v.make, v.driver?.fullNameAr, v.driver?.fullNameEn].some((x) => x?.replace(/\s+/g, "").toLowerCase().includes(q)))
     .sort((a, b) => a.nearestDays - b.nearestDays);

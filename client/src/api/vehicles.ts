@@ -68,6 +68,7 @@ export interface VehicleInput {
 export interface VehicleQuery {
   state?: VehicleState;
   branchId?: string;
+  driverId?: string;
   q?: string;
   page?: number;
   pageSize?: number;
