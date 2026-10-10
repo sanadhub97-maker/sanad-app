@@ -528,6 +528,9 @@ export function LuluShell() {
         </div>
         <RouteProgressBar />
         <PageCurtain />
+        <div className="mz-ground" aria-hidden="true" />
+        <GoldDust sky />
+        <span className="mz-skysweep" aria-hidden="true" />
         <Sidebar items={items} />
         <main ref={main} className="lu-main">
           <div className="lu-wrap">

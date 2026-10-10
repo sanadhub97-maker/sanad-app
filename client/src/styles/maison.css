@@ -105,7 +105,8 @@ html:root.dark {
 .lu-app { --page-c: #c9a663 !important; --primary: var(--mz-primary) !important; --ring: var(--mz-primary) !important; }
 html:root:not(.dark) .lu-app { --mz-primary: 38 44% 44%; }
 html:root.dark .lu-app { --mz-primary: 39 56% 70%; }
-html:root body, .lu-app { background: hsl(var(--background)); }
+html:root body { background: hsl(var(--background)); }
+.lu-app { background: transparent !important; }
 
 /* a soft light following the pointer across the ground (cards stay still) */
 .lu-app::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 10%), var(--mz-glow), transparent 70%); }
@@ -224,3 +225,20 @@ html:root body, .lu-app { background: hsl(var(--background)); }
 html:root:not(.dark) .lu-side { --l-surface: #ffffff; --l-ground: #f7f8fc; --l-line: #e6e9f2; --l-ink: #0f1b3d; --l-ink2: #34405e; --l-muted: #6a7593; --l-faint: #9aa3bc; }
 html:root.dark .lu-side { --l-surface: #151b2b; --l-ground: #0d1220; --l-line: #232b3e; --l-ink: #e8edf7; --l-ink2: #c9d1e3; --l-muted: #9aa5b8; --l-faint: #66708a; }
 .lu-side, .lu-side * { font-family: var(--font-sans); }
+
+/* ---------------- the moving background behind the whole site ----------------
+   Night: the title band's sky (midnight, a touch of blue above, gold below).
+   Day: the same motion over pearl, so text on the ground stays readable. */
+.mz-ground, .mz-sky, .mz-skysweep { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.mz-sky { width: 100%; height: 100%; }
+.mz-ground { background: radial-gradient(70% 60% at 15% 0%, rgba(60, 90, 160, 0.10), transparent 65%), radial-gradient(60% 60% at 100% 100%, rgba(200, 160, 80, 0.14), transparent 60%), linear-gradient(160deg, #faf7f1, #f1ebe0); }
+html.dark .mz-ground { background: radial-gradient(70% 60% at 15% 0%, rgba(27, 36, 64, 0.95), transparent 65%), radial-gradient(60% 60% at 100% 100%, rgba(26, 20, 6, 0.95), transparent 60%), linear-gradient(160deg, #0b1122, #05070d); }
+.mz-skysweep { inset: -40% -20%; background: linear-gradient(100deg, transparent 42%, rgba(200, 160, 80, 0.07) 50%, transparent 58%); animation: mz-sweep 14s ease-in-out infinite; }
+html.dark .mz-skysweep { background: linear-gradient(100deg, transparent 42%, rgba(246, 231, 196, 0.06) 50%, transparent 58%); }
+.lu-side { z-index: 2; }
+/* night: cards and the side menu sit as glass over the sky */
+html.dark .lu-app { --l-surface: rgba(14, 19, 33, 0.66); --l-glass: rgba(14, 19, 33, 0.62); }
+html.dark .lu-side { --l-surface: rgba(21, 27, 43, 0.82); }
+html.dark .ry-head { background: rgba(8, 12, 24, 0.45); backdrop-filter: blur(6px); }
+.lu-still .mz-skysweep { animation: none; }
+@media (prefers-reduced-motion: reduce) { .mz-skysweep { animation: none; } }

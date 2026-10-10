@@ -50,8 +50,8 @@ export function Emblem() {
   );
 }
 
-/** Gold dust drifting up through the title band. */
-export function GoldDust() {
+/** Gold dust drifting up: through the title band, or (sky) behind the whole site. */
+export function GoldDust({ sky = false }: { sky?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const motion = useMotion();
   useEffect(() => {
@@ -65,17 +65,20 @@ export function GoldDust() {
       const r = cv.getBoundingClientRect();
       W = cv.width = r.width * dpr;
       H = cv.height = r.height * dpr;
-      dots = Array.from({ length: Math.round(r.width / 11) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: (Math.random() * 1.5 + 0.3) * dpr, v: Math.random() * 0.22 + 0.05, a: Math.random() * 6.3 }));
+      dots = Array.from({ length: Math.round(r.width / (sky ? 14 : 11)) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: (Math.random() * 1.5 + 0.3) * dpr, v: Math.random() * 0.22 + 0.05, a: Math.random() * 6.3 }));
     };
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
+      // On the pearl ground of day mode the dust is a deeper gold, or it would not show.
+      const day = sky && !document.documentElement.classList.contains("dark");
+      const [c, glow] = day ? ["176, 136, 62", "rgba(176, 136, 62, .55)"] : ["243, 223, 174", "rgba(243, 223, 174, .9)"];
       for (const d of dots) {
         if (motion) { d.y -= d.v * dpr; d.a += 0.02; }
         if (d.y < -5) { d.y = H + 5; d.x = Math.random() * W; }
         ctx.beginPath();
         ctx.arc(d.x + Math.sin(d.a) * 3, d.y, d.r, 0, 7);
-        ctx.fillStyle = `rgba(243, 223, 174, ${0.45 + Math.sin(d.a) * 0.25})`;
-        ctx.shadowColor = "rgba(243, 223, 174, .9)";
+        ctx.fillStyle = `rgba(${c}, ${(day ? 0.38 : 0.45) + Math.sin(d.a) * 0.22})`;
+        ctx.shadowColor = glow;
         ctx.shadowBlur = 8 * dpr;
         ctx.fill();
       }
@@ -88,7 +91,7 @@ export function GoldDust() {
     document.addEventListener("visibilitychange", restart);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", size); document.removeEventListener("visibilitychange", restart); };
   }, [motion]);
-  return <canvas ref={ref} className="mz-dust" aria-hidden="true" />;
+  return <canvas ref={ref} className={sky ? "mz-sky" : "mz-dust"} aria-hidden="true" />;
 }
 
 /** The curtain that closes and opens on a gold seal between pages. */
