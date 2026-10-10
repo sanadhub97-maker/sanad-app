@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { PxTabs } from "@/components/royal/px";
 import { localizeServerMessage } from "@/lib/server-messages";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -94,7 +95,7 @@ export default function SettingsPage() {
   const Current = current.Tab;
 
   return (
-    <div className="rp pb-12">
+    <div className="px pb-12">
       <PageHeader
         title={t("settings.title")}
         description={t("settings.subtitle")}
@@ -109,19 +110,14 @@ export default function SettingsPage() {
         }
       />
 
-      <div className="rp-set">
-        <nav className="rp-card rp-sn rp-rise no-print" style={{ ["--i" as string]: 1 }} aria-label={t("settings.title")}>
-          {SECTIONS.map((x) => (
-            <button key={x.key} type="button" aria-pressed={x.key === current.key} aria-current={x.key === current.key ? "page" : undefined} onClick={() => navigate(`/settings/${x.key}`, { replace: true })}>
-              <x.icon />
-              {t(`settings.tabs.${x.key}`)}
-            </button>
-          ))}
-        </nav>
-        <section key={current.key} className="min-w-0 rp-rise" style={{ ["--i" as string]: 2 }}>
-          <Current canEdit={canEdit} isRtl={isRtl} />
-        </section>
-      </div>
+      <section className="px-card no-print" style={{ ["--i" as string]: 1 }}>
+        <div className="px-toolbar" style={{ borderBottom: 0 }}>
+          <PxTabs label={t("settings.title")} value={current.key} onChange={(k) => navigate(`/settings/${k}`, { replace: true })} items={SECTIONS.map((x) => ({ key: x.key, label: t(`settings.tabs.${x.key}`) }))} />
+        </div>
+      </section>
+      <section key={current.key} className="px-setbody min-w-0" style={{ ["--i" as string]: 2 }}>
+        <Current canEdit={canEdit} isRtl={isRtl} />
+      </section>
     </div>
   );
 }

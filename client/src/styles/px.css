@@ -198,3 +198,27 @@ table.px-t { width: 100%; border-collapse: collapse; font-size: 14px; }
 .px-plate > span + span { border-inline-start: 1px solid #0f172a; }
 .px-plate b { display: grid; place-items: center; font: 800 13px/1 var(--font-sans); border-bottom: 1px solid #0f172a; }
 .px-plate i { display: grid; place-items: center; font: 700 10.5px/1 var(--font-sans); font-style: normal; letter-spacing: 0.05em; }
+
+/* settings: each panel is a card with the luxury edge */
+.px-setbody { display: grid; gap: 16px; }
+.lu-app .px-setbody :is(.rounded-3xl, [class*="rounded-3xl"]):where(:not(button)) {
+  border: 1px solid transparent !important;
+  background: linear-gradient(var(--l-surface), var(--l-surface)) padding-box,
+    linear-gradient(155deg, color-mix(in srgb, var(--lx) 34%, var(--l-line)), var(--l-line) 35%, var(--l-line) 70%, color-mix(in srgb, var(--lx-gold) 40%, var(--l-line))) border-box !important;
+  border-radius: 14px !important; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 22px 44px -28px rgba(16, 24, 40, 0.3) !important; backdrop-filter: none !important;
+}
+.lu-app .px-setbody [class*="bg-gradient-to-r"][class*="h-1"] { background: linear-gradient(90deg, var(--lx-gold), var(--lx)) !important; }
+
+/* reports: the preview's report cards — soft icon tile, the figure in the card's colour, plain footer */
+.lu-app .rc-rp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lu-app .rc-rp::before { display: none; }
+.lu-app .rc-rp-hd { background: none; padding: 18px 20px 6px; }
+.lu-app .rc-rp-ico { width: 40px; height: 40px; border-radius: 10px; color: var(--c); background: linear-gradient(135deg, color-mix(in srgb, var(--c) 24%, transparent), color-mix(in srgb, var(--c) 7%, transparent)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 28%, transparent); }
+.lu-app .rc-rp-hd b { font: 800 16px/1.35 var(--font-sans); }
+.lu-app .rc-rp-fig { padding: 4px 20px 12px; }
+.lu-app .rc-rp-fig b { font: 800 34px/1.1 var(--font-sans); }
+.lu-app .rc-rp-bar { margin: 0 20px 14px; }
+.lu-app .rc-rp-ft { background: none; padding: 12px 20px 16px; }
+.lu-app .rc-rp:hover { transform: translateY(-4px); box-shadow: 0 28px 50px -26px color-mix(in srgb, var(--c) 55%, transparent); }
+@media (max-width: 1150px) { .lu-app .rc-rp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .lu-app .rc-rp-grid { grid-template-columns: minmax(0, 1fr); } }

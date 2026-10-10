@@ -5,9 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Clock, FileSpreadsheet, Plus, Printer, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
-import { LuPager } from "@/components/lulu/lulu-ui";
+import { PxBadge, PxPager, PxTabs, type BadgeTone } from "@/components/royal/px";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Kpis, Pill } from "@/components/royal/rp";
-import { Seg } from "@/components/royal/cards";
 import { violationsApi, type Violation, type ViolationKind, type ViolationQuery } from "@/api/violations";
 import { AUTHORITIES, STATE_LOOK, authorityOf, daysAr, nextDeadline } from "@/lib/violations";
 import { downloadFile, openPdfInNewTab } from "@/lib/download";
@@ -122,7 +122,7 @@ export default function ViolationsPage() {
   ];
 
   return (
-    <div className="rp rc">
+    <div className="px">
       <PageHeader
         title={isAr ? "المخالفات" : "Violations"}
         description={isAr ? "مخالفات الجهات الحكومية على المنشآت، وجزاءات الموظفين." : "Government authority fines on the establishments, and staff penalties."}
@@ -171,9 +171,9 @@ export default function ViolationsPage() {
         ]}
       />
 
-      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 2 }}>
-        <div className="vio-tabs">
-          <Seg
+      <section className="px-card" style={{ ["--i" as string]: 5 }}>
+        <div className="px-toolbar no-print">
+          <PxTabs
             value={kind}
             onChange={(k) => {
               setKind(k);
@@ -182,79 +182,149 @@ export default function ViolationsPage() {
               setPage(1);
             }}
             items={[
-              { value: "AUTHORITY", label: isAr ? "مخالفات الجهات" : "Authority violations", count: stats?.authorityTotal },
-              { value: "STAFF", label: isAr ? "جزاءات الموظفين" : "Staff penalties", count: stats?.staffTotal },
+              { key: "AUTHORITY", label: isAr ? "مخالفات الجهات" : "Authority violations", count: stats?.authorityTotal },
+              { key: "STAFF", label: isAr ? "جزاءات الموظفين" : "Staff penalties", count: stats?.staffTotal },
             ]}
           />
-          <Seg
+          <PxTabs
             value={state}
             onChange={(s) => {
               setState(s);
               setPage(1);
             }}
-            items={states}
+            items={states.map((s) => ({ key: s.value, label: s.label }))}
           />
+          <span className="sp" />
           {kind === "AUTHORITY" && (
-            <select
-              className="vio-select"
-              style={{ width: "auto", height: 38, borderRadius: 99 }}
-              value={authority}
-              aria-label={isAr ? "الجهة" : "Authority"}
-              onChange={(e) => {
-                setAuthority(e.target.value);
+            <Select
+              value={authority || "all"}
+              onValueChange={(v) => {
+                setAuthority(v === "all" ? "" : v);
                 setPage(1);
               }}
             >
-              <option value="">{isAr ? "كل الجهات" : "All authorities"}</option>
-              {AUTHORITIES.map((a) => (
-                <option key={a.key} value={a.key}>
-                  {isAr ? a.ar : a.en}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-[38px] w-44 shrink-0 rounded-[10px] border-[var(--l-line)] bg-[var(--l-surface)] text-[13px] font-semibold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{isAr ? "كل الجهات" : "All authorities"}</SelectItem>
+                {AUTHORITIES.map((a) => (
+                  <SelectItem key={a.key} value={a.key}>
+                    {isAr ? a.ar : a.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
+          <label className="px-search">
+            <Search />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+              placeholder={isAr ? "الرقم أو السبب أو الفرع أو الموظف" : "Number, reason, establishment or employee"}
+              aria-label={isAr ? "بحث" : "Search"}
+            />
+          </label>
         </div>
-        <label className="rp-search">
-          <Search />
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-            }}
-            placeholder={isAr ? "رقم المخالفة أو السبب أو الفرع أو الموظف" : "Number, reason, establishment or employee"}
-            aria-label={isAr ? "بحث" : "Search"}
-          />
-        </label>
-      </div>
-
-      {isLoading ? (
-        <div className="vio-grid">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[170px] animate-pulse rounded-[22px] bg-[var(--l-surface)]" />
-          ))}
+        <div className="px-tw">
+          <table className="px-t">
+            <thead>
+              <tr>
+                <th>{kind === "STAFF" ? (isAr ? "الموظف" : "Employee") : isAr ? "الجهة" : "Authority"}</th>
+                <th>{isAr ? "السبب" : "Reason"}</th>
+                <th className="hm">{isAr ? "المؤسسة" : "Establishment"}</th>
+                <th>{kind === "STAFF" ? (isAr ? "الجزاء" : "Penalty") : isAr ? "المبلغ" : "Amount"}</th>
+                <th>{isAr ? "الميعاد الجاي" : "Next deadline"}</th>
+                <th>{isAr ? "الحالة" : "Status"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6}>
+                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                    </td>
+                  </tr>
+                ))}
+              {!isLoading && items.length === 0 && (
+                <tr>
+                  <td colSpan={6}>
+                    <div className="px-empty">
+                      <b>{q || state !== "all" || authority ? (isAr ? "مفيش مخالفات بالفلتر ده" : "No violations match") : kind === "AUTHORITY" ? (isAr ? "مفيش مخالفات مسجلة" : "No violations yet") : isAr ? "مفيش جزاءات مسجلة" : "No penalties yet"}</b>
+                      {hasPermission("violations.create") && !q && state === "all" && (
+                        <div className="mt-3">
+                          <Button onClick={() => setAdding(true)}>
+                            <Plus className="h-4 w-4" /> {isAr ? "سجّل أول مخالفة" : "Record the first one"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!isLoading &&
+                items.map((v, j) => {
+                  const look = STATE_LOOK[v.state];
+                  const staff = v.kind === "STAFF";
+                  const a = authorityOf(v.authority);
+                  const next = nextDeadline(v);
+                  const name = staff ? (isAr ? v.employee?.fullNameAr : v.employee?.fullNameEn || v.employee?.fullNameAr) ?? "—" : v.authorityLabel ?? "—";
+                  const branch = v.branch ? (isAr ? v.branch.name : v.branch.nameEn || v.branch.name) : "—";
+                  const what = next?.which === "objection" ? (isAr ? "الاعتراض" : "Objection") : isAr ? "السداد" : "Payment";
+                  const tone: BadgeTone = look.tone === "bad" ? "bad" : look.tone === "warn" ? "warn" : look.tone === "ok" ? "ok" : "mut";
+                  return (
+                    <tr key={v.id} className="click" style={{ ["--j" as string]: j }} onClick={() => navigate(`/violations/${v.id}`)}>
+                      <td>
+                        <div className="px-who">
+                          <span className="px-av" style={staff ? undefined : { color: "#fff", background: a.color }}>
+                            {staff ? name.trim().charAt(0) : a.short}
+                          </span>
+                          <div>
+                            <b>{name}</b>
+                            <small className="mono">{staff ? v.employee?.employeeNumber : v.number}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ whiteSpace: "normal", minWidth: 200 }}>{v.reason}</td>
+                      <td className="hm">{branch}</td>
+                      <td className="mono">
+                        {staff ? (
+                          <>
+                            <b>{v.penalty}</b>
+                            {v.amount > 0 && <small className="block text-[12px] text-[var(--l-muted)]">{formatCurrency(v.amount)}</small>}
+                          </>
+                        ) : (
+                          <b>{formatCurrency(v.amount)}</b>
+                        )}
+                      </td>
+                      <td>
+                        {next ? (
+                          <PxBadge tone={next.days < 0 ? "bad" : next.days <= 7 ? "warn" : "ok"}>
+                            {what} ·{" "}
+                            {next.days < 0 ? (isAr ? `فات من ${daysAr(next.days)}` : `${-next.days}d ago`) : next.days === 0 ? (isAr ? "اليوم" : "today") : isAr ? `باقي ${daysAr(next.days)}` : `${next.days}d left`}
+                          </PxBadge>
+                        ) : v.payment ? (
+                          <span className="mono">{v.payment.paymentNumber}</span>
+                        ) : (
+                          <span className="mono">{v.date.split("-").reverse().join("/")}</span>
+                        )}
+                      </td>
+                      <td>
+                        <PxBadge tone={tone}>{isAr ? look.ar : look.en}</PxBadge>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
         </div>
-      ) : items.length === 0 ? (
-        <div className="rp-card rp-empty rp-rise">
-          <b>{q || state !== "all" || authority ? (isAr ? "مفيش مخالفات بالفلتر ده" : "No violations match") : kind === "AUTHORITY" ? (isAr ? "مفيش مخالفات مسجلة" : "No violations yet") : isAr ? "مفيش جزاءات مسجلة" : "No penalties yet"}</b>
-          {hasPermission("violations.create") && !q && state === "all" && (
-            <div className="mt-3">
-              <Button onClick={() => setAdding(true)}>
-                <Plus className="h-4 w-4" /> {isAr ? "سجّل أول مخالفة" : "Record the first one"}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="vio-grid">
-          {items.map((v) => (
-            <ViolationCard key={v.id} v={v} onOpen={() => navigate(`/violations/${v.id}`)} />
-          ))}
-        </div>
-      )}
-
-      <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
+        <PxPager page={page} pages={pages} total={total} pageSize={pageSize} onChange={setPage} />
+      </section>
 
       <ViolationDialog open={adding} onOpenChange={setAdding} kind={kind} onSaved={(v) => navigate(`/violations/${v.id}`)} />
     </div>

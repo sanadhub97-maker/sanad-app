@@ -2,30 +2,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEven
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  CalendarDays,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Columns3,
-  FileSpreadsheet,
-  FileText,
-  List,
-  Loader2,
-  Plus,
-  Printer,
-  Sparkles,
-  Star,
-  Trash2,
-  User,
-  Users,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Clock, Columns3, FileSpreadsheet, FileText, List, Loader2, Plus, Printer, Sparkles, Star, Trash2, User, Users, Wallet, type LucideIcon, AlertTriangle, CheckCircle2, ListChecks } from "lucide-react";
+import { PxStat } from "@/components/royal/px";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/common/page-header";
 import { luluPop } from "@/components/lulu/lulu-effects";
@@ -381,7 +359,6 @@ export default function DailyTasksPage() {
   const Prev = isRtl ? ChevronRight : ChevronLeft;
   const Next = isRtl ? ChevronLeft : ChevronRight;
   const Carry = isRtl ? ArrowLeft : ArrowRight;
-  const C = 2 * Math.PI * 30;
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(anchor, i));
   const suggestions = suggestionsQuery.data ?? [];
@@ -624,63 +601,26 @@ export default function DailyTasksPage() {
 
       <div className="tk">
         {/* The numbers of the week (or month) on screen */}
-        <div className="tk-card tk-band tk-rise" style={{ ["--i" as string]: 0 }}>
-          <div className="tk-ring">
-            <div className="r">
-              <svg viewBox="0 0 74 74" aria-hidden="true">
-                <circle cx="37" cy="37" r="30" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="8" />
-                <circle className="v" cx="37" cy="37" r="30" fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${(C * pct) / 100} ${C}`} />
-              </svg>
-              <b>{pct}%</b>
-            </div>
-            <div>
-              <h3>{tr(`إنجاز ${scopeWord}`, `This ${scopeWord}'s progress`)}</h3>
-              <p>
-                {tr(`${scopedDone} من ${scoped.length} مهمة منجزة`, `${scopedDone} of ${scoped.length} tasks done`)} · {dm(scope.from)} – {dm(scope.to)}
-              </p>
-            </div>
+        <section className="px-welcome" style={{ marginBottom: 16 }}>
+          <svg className="px-ring" viewBox="0 0 64 64" aria-hidden="true">
+            <circle className="tr" cx="32" cy="32" r="27" fill="none" strokeWidth="6" />
+            <circle className="v" cx="32" cy="32" r="27" fill="none" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(2 * Math.PI * 27 * pct) / 100} ${2 * Math.PI * 27}`} transform="rotate(-90 32 32)" />
+            <text x="32" y="37" textAnchor="middle">
+              {pct}%
+            </text>
+          </svg>
+          <div className="tx">
+            <h2>{tr(`إنجاز ${scopeWord}`, `This ${scopeWord}'s progress`)}</h2>
+            <p>
+              {tr(`${scopedDone} من ${scoped.length} مهمة منجزة`, `${scopedDone} of ${scoped.length} tasks done`)} · {dm(scope.from)} – {dm(scope.to)}
+            </p>
           </div>
-          <div>
-            <span className="l">
-              <i style={{ background: "hsl(var(--primary))" }} />
-              {tr("مهام اليوم", "Today's tasks")}
-            </span>
-            <span className="v">
-              {todayList.filter((t) => !t.done).length}
-              <small> / {todayList.length}</small>
-            </span>
-            <span className="s">{tr("متبقية من إجمالي اليوم", "Open of today's total")}</span>
-          </div>
-          <div>
-            <span className="l">
-              <i style={{ background: "var(--l-violet)" }} />
-              {tr("متأخرة", "Overdue")}
-            </span>
-            <span className="v" style={{ color: overdue ? "var(--l-violet)" : undefined }}>
-              {overdue}
-            </span>
-            <span className="s">{overdue ? tr("من أيام سابقة ولم تُنجز", "From earlier days, still open") : tr("لا شيء متأخر", "Nothing overdue")}</span>
-          </div>
-          <div>
-            <span className="l">
-              <i style={{ background: "var(--l-rose)" }} />
-              {tr(`عاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`)}
-            </span>
-            <span className="v" style={{ color: urgentOpen ? "var(--l-rose)" : undefined }}>
-              {urgentOpen}
-            </span>
-            <span className="s">{tr("لم تُنجز بعد", "Not done yet")}</span>
-          </div>
-          <div>
-            <span className="l">
-              <i style={{ background: "var(--l-green)" }} />
-              {tr("تم إنجازها", "Done")}
-            </span>
-            <span className="v" style={{ color: "var(--l-green)" }}>
-              {scopedDone}
-            </span>
-            <span className="s">{tr(`هذا ${scopeWord}`, `This ${scopeWord}`)}</span>
-          </div>
+        </section>
+        <div className="px-stats" style={{ marginBottom: 16 }}>
+          <PxStat i={1} label={tr("مهام اليوم", "Today's tasks")} value={todayList.filter((t) => !t.done).length} unit={`/ ${todayList.length}`} icon={ListChecks} color="#2563eb" sub={tr("متبقية من إجمالي اليوم", "Open of today's total")} />
+          <PxStat i={2} label={tr("متأخرة", "Overdue")} value={overdue} icon={Clock} color="#7c3aed" sub={overdue ? tr("من أيام سابقة ولم تُنجز", "From earlier days, still open") : tr("لا شيء متأخر", "Nothing overdue")} />
+          <PxStat i={3} label={tr(`عاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`)} value={urgentOpen} icon={AlertTriangle} color="#dc2626" sub={tr("لم تُنجز بعد", "Not done yet")} />
+          <PxStat i={4} label={tr("تم إنجازها", "Done")} value={scopedDone} icon={CheckCircle2} color="#16a34a" sub={tr(`هذا ${scopeWord}`, `This ${scopeWord}`)} />
         </div>
 
         {can.create && (

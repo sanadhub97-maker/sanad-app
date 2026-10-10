@@ -257,3 +257,14 @@ html:root body { background: hsl(var(--background)); }
 .ry-go:hover { box-shadow: 0 18px 30px -14px var(--lx); }
 .ry-go::after { animation: lx-sheen 4.5s ease-in-out infinite; }
 .ry-brand img { box-shadow: 0 0 0 2px color-mix(in srgb, var(--lx-gold) 55%, transparent), 0 8px 18px -10px var(--lx-gold); }
+
+/* task boards, settings panels and the remaining cards: the same gradient edge and accent buttons */
+.lu-app :is(.tk-card, .vio-card, .rp-day, .rc-dcard, .rc-lic) {
+  border: 1px solid transparent !important;
+  background: linear-gradient(var(--l-surface), var(--l-surface)) padding-box,
+    linear-gradient(155deg, color-mix(in srgb, var(--lx) 34%, var(--l-line)), var(--l-line) 35%, var(--l-line) 70%, color-mix(in srgb, var(--lx-gold) 40%, var(--l-line))) border-box !important;
+  border-radius: 14px;
+  box-shadow: var(--l-shadow);
+}
+.lu-app .tk-btn.pri, .lu-app .vh-btn.gold, .lu-app .cu-btn.gold { color: #fff; border-color: transparent; background: linear-gradient(135deg, color-mix(in srgb, var(--lx) 80%, #fff), var(--lx) 50%, color-mix(in srgb, var(--lx) 72%, #000)); box-shadow: 0 10px 22px -12px var(--lx), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+.lu-app .tk-btn, .lu-app .ry-btn { border-radius: 10px; }
