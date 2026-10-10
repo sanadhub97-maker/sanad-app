@@ -15,6 +15,7 @@ import "@/styles/royal.css";
 import "@/styles/pages-royal.css";
 import "@/styles/cards-royal.css";
 import "@/styles/lux.css";
+import "@/styles/px.css";
 
 // Show the interface immediately with its system-font fallback while the
 // external font stylesheet downloads. Apply the original fonts when ready.

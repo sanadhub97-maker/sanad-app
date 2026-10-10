@@ -1,118 +1,36 @@
 import { useState } from "react";
 import { JobTitlesDialog } from "@/pages/employees/job-titles-dialog";
-import { localized } from "@/lib/names";
-import { namePair } from "@/lib/names";
+import { localized, namePair } from "@/lib/names";
 import { tr } from "@/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createColumnHelper } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, Eye, FileDown, FileUp, LayoutGrid, List, MoreHorizontal, Plus, Printer, Search, Trash2, Pencil } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Clock, Eye, FileDown, FileUp, Filter, MoreHorizontal, Pencil, Plus, Printer, Search, Trash2, UserCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
-import { DataTable } from "@/components/common/data-table";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { StatusBadge, EmploymentStatusBadge } from "@/components/common/status-badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EmployeeDialog } from "@/pages/employees/employee-dialog";
+import { EmployeePeek } from "@/pages/employees/employee-peek";
 import { employeesApi, employeePdfUrl } from "@/api/employees";
 import { listActiveBranches } from "@/api/branches";
 import { reportsApi } from "@/api/reports";
 import { dashboardApi } from "@/api/dashboard";
 import { openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
-import { formatDate, cn } from "@/lib/utils";
 import type { Employee } from "@/types/models";
 import { useAuthStore } from "@/stores/authStore";
-import { DESK_QUERY } from "@/lib/use-desk";
 import { SaudiAvatar } from "@/components/avatars/saudi-avatar";
-import { Kpis, dmy, daysFromToday } from "@/components/royal/rp";
-import { LicCard, Ticker, estColor } from "@/components/royal/cards";
+import { dmy } from "@/components/royal/rp";
+import { PxBadge, PxStat, PxTabs, type BadgeTone } from "@/components/royal/px";
 
-const columnHelper = createColumnHelper<Employee>();
-
-/** One employee as a licence card, as in the approved preview: the band with
- * the number and status, the avatar seal, the facts, the figures, how many
- * documents are valid, and the rotating ticker of what ends soon. */
-function EmployeeCard({ employee: e, index, isAr, onOpen, onEdit, onPrint, onDelete }: { employee: Employee; index: number; isAr: boolean; onOpen: () => void; onEdit?: () => void; onPrint: () => void; onDelete?: () => void }) {
-  const { t } = useTranslation();
-  const { primary: name } = namePair(e.fullNameAr, e.fullNameEn, isAr);
-  const job = localized(e.jobTitle, e.jobTitleEn);
-  const nat = isAr ? e.nationality || e.nationalityEn : e.nationalityEn || e.nationality;
-  const docs = [
-    { key: "iq", label: isAr ? "الإقامة" : "Iqama", date: e.iqamaExpiryDate, has: Boolean(e.iqamaNumber || e.iqamaExpiryDate) },
-    { key: "pp", label: isAr ? "جواز السفر" : "Passport", date: e.passportExpiryDate, has: Boolean(e.passportNumber || e.passportExpiryDate) },
-  ].filter((d) => d.has);
-  const valid = docs.filter((d) => (daysFromToday(d.date) ?? 999) > 30).length;
-  const due = docs.length - valid;
-  const pct = docs.length ? Math.round((valid / docs.length) * 100) : 0;
-  const months = e.joiningDate ? Math.max(0, Math.round((Date.now() - new Date(e.joiningDate).getTime()) / 864e5 / 30)) : null;
-  const stc = e.employmentStatus === "ACTIVE" ? "#7cf0b5" : e.employmentStatus === "ON_LEAVE" ? "#ffd27a" : "#ff9a9a";
-  const worst = docs.length ? Math.min(...docs.map((d) => daysFromToday(d.date) ?? 999)) : 999;
-  return (
-    <LicCard
-      i={index}
-      color={estColor(e.branch?.code || e.branchId)}
-      code={[e.employeeNumber, e.iqamaNumber && `IQ ${e.iqamaNumber}`].filter(Boolean).join(" · ")}
-      status={t(`status.${e.employmentStatus}`, { defaultValue: e.employmentStatus })}
-      statusColor={stc}
-      round
-      seal={<SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />}
-      title={name}
-      sub={[job, nat].filter(Boolean).join(" · ") || e.employeeNumber}
-      onOpen={onOpen}
-      facts={[
-        [isAr ? "المؤسسة" : "Establishment", localized(e.branch?.name, e.branch?.nameEn)],
-        [isAr ? "تاريخ الالتحاق" : "Joined", e.joiningDate ? <span className="rp-num">{dmy(e.joiningDate)}</span> : null],
-        [isAr ? "المسمى الوظيفي" : "Job title", job],
-        [isAr ? "الجوال" : "Mobile", e.mobile ? <span className="rp-num">{e.mobile}</span> : null],
-      ]}
-      stats={[
-        { value: docs.length, label: isAr ? "وثيقة" : "documents" },
-        { value: months ?? "—", label: isAr ? "شهر خدمة" : "months" },
-        { value: due, label: isAr ? "تحتاج متابعة" : "to follow up", color: worst < 0 ? "var(--bad)" : due ? "var(--warn)" : "var(--ok)" },
-      ]}
-      comp={docs.length ? { pct, title: isAr ? "اكتمال المستندات" : "Documents in order", sub: isAr ? `${valid} من ${docs.length} سارية` : `${valid} of ${docs.length} valid` } : undefined}
-      ticker={<Ticker items={docs.map((d) => ({ key: d.key, label: d.label, date: d.date }))} />}
-      actions={
-        <>
-          <button type="button" className="rc-btn" onClick={onOpen}>
-            <Eye />
-            {isAr ? "الملف" : "Profile"}
-          </button>
-          {onEdit && (
-            <button type="button" className="rc-btn" onClick={onEdit}>
-              <Pencil />
-              {isAr ? "تعديل" : "Edit"}
-            </button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>
-                <MoreHorizontal />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-              <DropdownMenuItem onSelect={onPrint} className="rounded-2xl text-xs font-medium">
-                <Printer className="me-2 h-4 w-4 text-muted-foreground" /> {t("employees.menu.printProfile")}
-              </DropdownMenuItem>
-              {onDelete && (
-                <DropdownMenuItem onSelect={onDelete} className="rounded-2xl text-xs font-medium text-destructive">
-                  <Trash2 className="me-2 h-4 w-4" /> {t("employees.menu.delete")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </>
-      }
-    />
-  );
-}
+/* The employees page as in the approved luxury preview: four figure cards,
+   then one card with the tabs, search and establishment filter over the
+   table and its pages; a row opens the employee's side panel. */
 
 type Chip = "all" | "active" | "soon" | "expired";
-const CHIP_TONE: Record<Chip, string> = { all: "rp-pri", active: "rp-ok", soon: "rp-warn", expired: "rp-bad" };
 
 export default function EmployeesListPage() {
   const { t, i18n } = useTranslation();
@@ -129,16 +47,7 @@ export default function EmployeesListPage() {
   const [employmentStatus, setEmploymentStatus] = useState<string>("");
   const [expiryStatus, setExpiryStatus] = useState<"" | "EXPIRING_SOON" | "EXPIRED">("");
   const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
-  const [view, setView] = useState<"cards" | "table">(() => {
-    try {
-      const saved = localStorage.getItem("employees.view");
-      if (saved === "table" || saved === "cards") return saved;
-      // Computers open on the table, phones and tablets on the cards.
-      return window.matchMedia?.(DESK_QUERY).matches ? "table" : "cards";
-    } catch {
-      return "cards";
-    }
-  });
+  const [peek, setPeek] = useState<Employee | null>(null);
   const pageSize = 20;
 
   const params = {
@@ -185,15 +94,6 @@ export default function EmployeesListPage() {
     setExpiryStatus(c === "soon" ? "EXPIRING_SOON" : c === "expired" ? "EXPIRED" : "");
     setPage(1);
   }
-  function changeView(v: "cards" | "table") {
-    setView(v);
-    try {
-      localStorage.setItem("employees.view", v);
-    } catch {
-      /* private mode: the choice lasts for this visit */
-    }
-  }
-
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
@@ -206,116 +106,29 @@ export default function EmployeesListPage() {
     }
   }
 
-  const columns = [
-    columnHelper.accessor("employeeNumber", {
-      header: t("employees.table.employeeNumber"),
-      cell: (c) => <span className="inline-block rounded-full bg-secondary px-3 py-1 font-mono text-xs font-semibold text-foreground">{c.getValue()}</span>,
-    }),
-    columnHelper.accessor((row) => row.fullNameEn || row.fullNameAr, {
-      id: "name",
-      header: t("employees.table.fullName"),
-      cell: (c) => {
-        const row = c.row.original;
-        const { primary: name, secondary } = namePair(row.fullNameAr, row.fullNameEn, isAr);
-        return (
-          <div className="flex items-center gap-3">
-            <SaudiAvatar
-              gender={row.gender}
-              size="md"
-              className="h-10 w-10 rounded-2xl shadow-sm border border-border/40 shrink-0"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">{name}</p>
-              {secondary && <p className="truncate text-[11px] text-muted-foreground">{secondary}</p>}
-            </div>
-          </div>
-        );
-      },
-    }),
-    columnHelper.accessor((row) => localized(row.jobTitle, row.jobTitleEn), {
-      id: "jobTitle",
-      header: t("employees.table.jobTitle"),
-      cell: (c) => <span className="text-[13px] text-foreground">{c.getValue() ?? "—"}</span>,
-    }),
-    columnHelper.accessor((row) => localized(row.branch?.name, row.branch?.nameEn), {
-      id: "branch",
-      header: t("employees.table.branch"),
-      cell: (c) => <span className="text-[13px] text-muted-foreground">{c.getValue() ?? "—"}</span>,
-    }),
-    columnHelper.accessor("employmentStatus", {
-      header: t("employees.table.status"),
-      cell: (c) => <EmploymentStatusBadge status={c.getValue()} />,
-    }),
-    columnHelper.accessor("iqamaExpiryDate", {
-      header: t("employees.table.iqamaExpiry"),
-      cell: (c) => (
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-foreground">{formatDate(c.getValue())}</span>
-          <StatusBadge status={c.row.original.iqamaStatus} />
-        </div>
-      ),
-    }),
-    columnHelper.display({
-      id: "actions",
-      header: t("common.actions"),
-      cell: (c) => (
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-primary" onClick={() => navigate(`/employees/${c.row.original.id}`)} title={t("common.viewDetails")}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label={t("common.actions")}>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-              <DropdownMenuItem onSelect={() => navigate(`/employees/${c.row.original.id}`)} className="rounded-2xl text-xs font-medium">
-                <Eye className="me-2 h-4 w-4 text-primary" /> {t("employees.menu.viewProfile")}
-              </DropdownMenuItem>
-              {hasPermission("employees.edit") && (
-                <DropdownMenuItem
-                  onSelect={() => {
-                    setEditTarget(c.row.original);
-                    setDialogOpen(true);
-                  }}
-                  className="rounded-2xl text-xs font-medium"
-                >
-                  {t("employees.menu.edit")}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onSelect={() => openPdfInNewTab(employeePdfUrl(c.row.original.id))} className="rounded-2xl text-xs font-medium">
-                <Printer className="me-2 h-4 w-4 text-muted-foreground" /> {t("employees.menu.printProfile")}
-              </DropdownMenuItem>
-              {hasPermission("employees.delete") && (
-                <DropdownMenuItem onSelect={() => setDeleteTarget(c.row.original)} className="rounded-2xl text-xs font-medium text-destructive">
-                  <Trash2 className="me-2 h-4 w-4" /> {t("employees.menu.delete")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      ),
-    }),
-  ];
-
   const total = summary?.totalEmployees ?? data?.meta.total ?? 0;
   const branchCount = branches?.length ?? 0;
   const attention = (soonCount?.meta.total ?? 0) + (expiredCount?.meta.total ?? 0);
-  const chips: { key: Chip; label: string; n?: number; tone: string }[] = [
-    { key: "all", label: tr("الكل", "All"), n: summary?.totalEmployees, tone: "sky" },
-    { key: "active", label: tr("على رأس العمل", "On duty"), n: summary?.activeEmployees, tone: "green" },
-    { key: "soon", label: tr("تنتهي قريبًا", "Ending soon"), n: soonCount?.meta.total, tone: "amber" },
-    { key: "expired", label: tr("منتهية", "Expired"), n: expiredCount?.meta.total, tone: "rose" },
+  const tabs: { key: Chip; label: string; count?: number }[] = [
+    { key: "all", label: tr("الكل", "All"), count: summary?.totalEmployees },
+    { key: "active", label: tr("على رأس العمل", "On duty"), count: summary?.activeEmployees },
+    { key: "soon", label: tr("تنتهي قريبًا", "Ending soon"), count: soonCount?.meta.total },
+    { key: "expired", label: tr("منتهية", "Expired"), count: expiredCount?.meta.total },
   ];
-  const pages = Math.max(1, Math.ceil((data?.meta.total ?? 0) / pageSize));
+  const rows = data?.data ?? [];
+  const matched = data?.meta.total ?? 0;
+  const pages = Math.max(1, Math.ceil(matched / pageSize));
+  const pageList = Array.from({ length: pages }, (_, k) => k + 1).filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 1);
+  const fromRow = matched ? (page - 1) * pageSize + 1 : 0;
+  const toRow = Math.min(matched, page * pageSize);
+  const iqTone = (s?: string | null): BadgeTone => (s === "EXPIRED" ? "bad" : s === "EXPIRING_SOON" ? "warn" : s === "VALID" ? "ok" : "mut");
 
   const description = isAr
     ? `${total} ${total === 1 ? "موظف" : "موظفين"} في ${branchCount} مؤسسات${attention ? ` · ${attention} ${attention === 1 ? "إقامة تحتاج" : "إقامات تحتاج"} انتباهك` : ""}`
     : `${total} employees in ${branchCount} branches${attention ? ` · ${attention} iqamas need your attention` : ""}`;
 
   return (
-    <div className="rp rc">
+    <div className="px">
       <PageHeader
         title={t("employees.title")}
         description={description}
@@ -362,7 +175,7 @@ export default function EmployeesListPage() {
         <button
           type="button"
           onClick={() => setJobTitlesOpen(true)}
-          className="mb-3 flex w-full flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-start text-sm"
+          className="flex w-full flex-wrap items-center justify-between gap-2 rounded-2xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-start text-sm"
         >
           <span>
             <b className="text-sky-700 dark:text-sky-300">{isAr ? `${noJobCount} موظف من غير مهنة` : `${noJobCount} employees have no profession`}</b>
@@ -374,130 +187,183 @@ export default function EmployeesListPage() {
 
       <JobTitlesDialog open={jobTitlesOpen} onOpenChange={setJobTitlesOpen} isAr={isAr} />
 
-      <Kpis
-        items={[
-          { label: tr("إجمالي الموظفين", "All employees"), value: summary?.totalEmployees ?? "—", sub: tr(`على رأس العمل ${summary?.activeEmployees ?? 0}`, `${summary?.activeEmployees ?? 0} on duty`), hero: true, onClick: () => pickChip("all"), active: chip === "all" },
-          { label: tr("على رأس العمل", "On duty"), value: summary?.activeEmployees ?? "—", sub: tr("موظفون نشطون", "Active employees"), tone: "ok", onClick: () => pickChip("active"), active: chip === "active" },
-          { label: tr("إقامات تنتهي خلال 30 يوم", "Iqamas ending in 30 days"), value: soonCount?.meta.total ?? "—", sub: tr("تحتاج تجديد قريب", "Renew soon"), tone: "warn", onClick: () => pickChip("soon"), active: chip === "soon" },
-          { label: tr("إقامات منتهية", "Expired iqamas"), value: expiredCount?.meta.total ?? "—", sub: tr("راجعها اليوم", "Review today"), tone: "bad", onClick: () => pickChip("expired"), active: chip === "expired" },
-        ]}
-      />
-
-      {/* Search, quick filters and the cards/table switch */}
-      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 2 }}>
-        <label className="rp-search">
-          <Search />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            aria-label={tr("بحث", "Search")}
-            placeholder={tr("الاسم أو الرقم أو الإقامة", "Name, number or iqama")}
-          />
-        </label>
-        {chips.map((c) => (
-          <button key={c.key} type="button" onClick={() => pickChip(c.key)} aria-pressed={chip === c.key} className={cn("rp-chip", CHIP_TONE[c.key])}>
-            <i />
-            {c.label} {c.n !== undefined && <span>{c.n}</span>}
-          </button>
-        ))}
-        <Select
-          value={branchId || "all"}
-          onValueChange={(v) => {
-            setBranchId(v === "all" ? "" : v);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="h-[38px] w-48 shrink-0 rounded-[11px] border-[var(--l-line)] bg-[var(--l-surface)] text-[13px] font-semibold">
-            <SelectValue placeholder={t("common.branch")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("employees.filters.allBranches")}</SelectItem>
-            {(branches ?? []).map((b) => (
-              <SelectItem key={b.id} value={b.id}>
-                <bdi>{localized(b.name, b.nameEn)}</bdi>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <span className="sp" />
-        <div role="group" aria-label={tr("طريقة العرض", "View")} className="rp-views">
-          {(["cards", "table"] as const).map((v) => (
-            <button key={v} type="button" aria-pressed={view === v} onClick={() => changeView(v)}>
-              {v === "cards" ? <LayoutGrid /> : <List />}
-              {v === "cards" ? tr("بطاقات", "Cards") : tr("جدول", "Table")}
-            </button>
-          ))}
-        </div>
+      <div className="px-stats">
+        <PxStat i={1} label={tr("الكل", "All employees")} value={summary?.totalEmployees ?? 0} icon={Users} color="#2563eb" sub={tr(`في ${branchCount} مؤسسات`, `in ${branchCount} branches`)} onClick={() => pickChip("all")} active={chip === "all"} />
+        <PxStat i={2} label={tr("على رأس العمل", "On duty")} value={summary?.activeEmployees ?? 0} icon={UserCheck} color="#7c3aed" sub={total ? tr(`${Math.round(((summary?.activeEmployees ?? 0) / total) * 100)}% من الموظفين`, `${Math.round(((summary?.activeEmployees ?? 0) / total) * 100)}% of employees`) : undefined} onClick={() => pickChip("active")} active={chip === "active"} />
+        <PxStat i={3} label={tr("إقامات منتهية", "Expired iqamas")} value={expiredCount?.meta.total ?? 0} icon={AlertTriangle} color="#dc2626" sub={tr("تحتاج تجديد", "Renew now")} onClick={() => pickChip("expired")} active={chip === "expired"} />
+        <PxStat i={4} label={tr("قريبة الانتهاء", "Ending soon")} value={soonCount?.meta.total ?? 0} icon={Clock} color="#d97706" sub={tr("خلال 30 يوم", "within 30 days")} onClick={() => pickChip("soon")} active={chip === "soon"} />
       </div>
 
-      {view === "cards" ? (
-        <>
-          {isLoading ? (
-            <div className="rc-lic-grid">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-[440px] animate-pulse rounded-[24px] bg-[var(--l-surface)]" />
+      <section className="px-card" style={{ ["--i" as string]: 5 }}>
+        <div className="px-toolbar no-print">
+          <PxTabs items={tabs} value={chip} onChange={pickChip} label={tr("التصفية", "Filter")} />
+          <span className="sp" />
+          <label className="px-search">
+            <Search />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              aria-label={tr("بحث", "Search")}
+              placeholder={tr("ابحث بالاسم أو الرقم أو الإقامة", "Name, number or iqama")}
+            />
+          </label>
+          <Select
+            value={branchId || "all"}
+            onValueChange={(v) => {
+              setBranchId(v === "all" ? "" : v);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="h-[38px] w-48 shrink-0 rounded-[10px] border-[var(--l-line)] bg-[var(--l-surface)] text-[13px] font-semibold">
+              <Filter className="h-4 w-4 opacity-60" />
+              <SelectValue placeholder={t("common.branch")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("employees.filters.allBranches")}</SelectItem>
+              {(branches ?? []).map((b) => (
+                <SelectItem key={b.id} value={b.id}>
+                  <bdi>{localized(b.name, b.nameEn)}</bdi>
+                </SelectItem>
               ))}
-            </div>
-          ) : (data?.data ?? []).length === 0 ? (
-            <div className="rp-card rp-empty rp-rise">
-              <b>{t("employees.emptyTitle")}</b>
-              {t("employees.emptyDescription")}
-            </div>
-          ) : (
-            <div className="rc-lic-grid">
-              {(data?.data ?? []).map((emp, i) => (
-                <EmployeeCard
-                  key={emp.id}
-                  employee={emp}
-                  index={i}
-                  isAr={isAr}
-                  onOpen={() => navigate(`/employees/${emp.id}`)}
-                  onPrint={() => openPdfInNewTab(employeePdfUrl(emp.id))}
-                  onEdit={
-                    hasPermission("employees.edit")
-                      ? () => {
-                          setEditTarget(emp);
-                          setDialogOpen(true);
-                        }
-                      : undefined
-                  }
-                  onDelete={hasPermission("employees.delete") ? () => setDeleteTarget(emp) : undefined}
-                />
-              ))}
-            </div>
-          )}
-          {pages > 1 && (
-            <div className="rp-pager no-print">
-              <Button variant="outline" size="icon" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label={tr("السابق", "Previous")}>
-                <ChevronRight className="h-4 w-4 ltr:rotate-180" />
-              </Button>
-              <span>
-                {page} / {pages}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="px-tw">
+          <table className="px-t">
+            <thead>
+              <tr>
+                <th>{tr("الموظف", "Employee")}</th>
+                <th className="hm">{t("employees.table.jobTitle")}</th>
+                <th className="hm">{t("employees.table.branch")}</th>
+                <th className="hm">{tr("رقم الإقامة", "Iqama number")}</th>
+                <th>{t("employees.table.iqamaExpiry")}</th>
+                <th>{t("employees.table.status")}</th>
+                <th style={{ width: 50 }} />
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={7}>
+                        <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                      </td>
+                    </tr>
+                  ))
+                : rows.length === 0 && (
+                    <tr>
+                      <td colSpan={7}>
+                        <div className="px-empty">
+                          <b>{t("employees.emptyTitle")}</b>
+                          {t("employees.emptyDescription")}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+              {!isLoading &&
+                rows.map((e, j) => {
+                  const { primary: name } = namePair(e.fullNameAr, e.fullNameEn, isAr);
+                  return (
+                    <tr key={e.id} className="click" style={{ ["--j" as string]: j }} onClick={() => setPeek(e)}>
+                      <td>
+                        <div className="px-who">
+                          <span className="px-av">
+                            <SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />
+                          </span>
+                          <div>
+                            <b>{name}</b>
+                            <small className="mono">{e.employeeNumber}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="hm">{localized(e.jobTitle, e.jobTitleEn) ?? "—"}</td>
+                      <td className="hm">{localized(e.branch?.name, e.branch?.nameEn) ?? "—"}</td>
+                      <td className="hm mono">{e.iqamaNumber ?? "—"}</td>
+                      <td className="mono">{e.iqamaExpiryDate ? dmy(e.iqamaExpiryDate) : "—"}</td>
+                      <td>
+                        <PxBadge tone={iqTone(e.iqamaStatus)}>{e.iqamaStatus ? t(`status.${e.iqamaStatus}`, { defaultValue: e.iqamaStatus }) : tr("غير مسجّلة", "Not recorded")}</PxBadge>
+                      </td>
+                      <td onClick={(ev) => ev.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button type="button" className="px-iconbtn" aria-label={t("common.actions")}>
+                              <MoreHorizontal />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
+                            <DropdownMenuItem onSelect={() => navigate(`/employees/${e.id}`)} className="rounded-2xl text-xs font-medium">
+                              <Eye className="me-2 h-4 w-4 text-primary" /> {t("employees.menu.viewProfile")}
+                            </DropdownMenuItem>
+                            {hasPermission("employees.edit") && (
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  setEditTarget(e);
+                                  setDialogOpen(true);
+                                }}
+                                className="rounded-2xl text-xs font-medium"
+                              >
+                                <Pencil className="me-2 h-4 w-4 text-muted-foreground" /> {t("employees.menu.edit")}
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onSelect={() => openPdfInNewTab(employeePdfUrl(e.id))} className="rounded-2xl text-xs font-medium">
+                              <Printer className="me-2 h-4 w-4 text-muted-foreground" /> {t("employees.menu.printProfile")}
+                            </DropdownMenuItem>
+                            {hasPermission("employees.delete") && (
+                              <DropdownMenuItem onSelect={() => setDeleteTarget(e)} className="rounded-2xl text-xs font-medium text-destructive">
+                                <Trash2 className="me-2 h-4 w-4" /> {t("employees.menu.delete")}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="px-pager no-print">
+          {isAr ? `عرض ${fromRow} إلى ${toRow} من ${matched}` : `Showing ${fromRow} to ${toRow} of ${matched}`}
+          <span className="sp" />
+          <div className="pg">
+            <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label={tr("السابق", "Previous")}>
+              <ChevronRight className="h-4 w-4 ltr:rotate-180" />
+            </button>
+            {pageList.map((p, k) => (
+              <span key={p} className="contents">
+                {k > 0 && p - pageList[k - 1] > 1 && <button type="button" disabled>…</button>}
+                <button type="button" aria-current={p === page ? "page" : undefined} onClick={() => setPage(p)}>
+                  {p}
+                </button>
               </span>
-              <Button variant="outline" size="icon" disabled={page >= pages} onClick={() => setPage(page + 1)} aria-label={tr("التالي", "Next")}>
-                <ChevronLeft className="h-4 w-4 ltr:rotate-180" />
-              </Button>
-            </div>
-          )}
-        </>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={data?.data ?? []}
-          isLoading={isLoading}
-          page={page}
-          pageSize={pageSize}
-          total={data?.meta.total ?? 0}
-          onPageChange={setPage}
-          onRowClick={(row) => navigate(`/employees/${row.id}`)}
-          emptyTitle={t("employees.emptyTitle")}
-          emptyDescription={t("employees.emptyDescription")}
-        />
-      )}
+            ))}
+            <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} aria-label={tr("التالي", "Next")}>
+              <ChevronLeft className="h-4 w-4 ltr:rotate-180" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <EmployeePeek
+        employee={peek}
+        isAr={isAr}
+        onClose={() => setPeek(null)}
+        onEdit={
+          hasPermission("employees.edit")
+            ? (e) => {
+                setPeek(null);
+                setEditTarget(e);
+                setDialogOpen(true);
+              }
+            : undefined
+        }
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

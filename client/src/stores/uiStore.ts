@@ -46,6 +46,9 @@ export const useUiStore = create<UiState>()(
       partialize: ({ themeMode: _theme, ...rest }) => rest,
       // Ignore a theme saved by older versions, so every visit starts on the default.
       merge: (persisted, current) => ({ ...current, ...(persisted as Partial<UiState>), themeMode: current.themeMode }),
+      // Version 1, the luxury edition: the side menu opens expanded once, as in the approved preview.
+      version: 1,
+      migrate: (persisted, from) => (from < 1 ? { ...(persisted as Partial<UiState>), sidebarCollapsed: false } : persisted) as UiState,
     }
   )
 );
