@@ -191,3 +191,10 @@ table.px-t { width: 100%; border-collapse: collapse; font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .px-welcome::before, .px-welcome h2, .px-spark .l, .px-chart .ln, .px-chart .br, .px-chart .ar { animation: none !important; stroke-dashoffset: 0; } }
 .lu-still .px-welcome::before, .lu-still .px-welcome h2 { animation: none !important; }
+
+/* a Saudi plate in a table row */
+.px-plate { display: inline-grid; grid-template-columns: 1fr 1fr; width: 116px; height: 40px; border: 1.5px solid #0f172a; border-radius: 5px; overflow: hidden; background: #fff; color: #0f172a; vertical-align: middle; }
+.px-plate > span { display: grid; grid-template-rows: 1fr 1fr; }
+.px-plate > span + span { border-inline-start: 1px solid #0f172a; }
+.px-plate b { display: grid; place-items: center; font: 800 13px/1 var(--font-sans); border-bottom: 1px solid #0f172a; }
+.px-plate i { display: grid; place-items: center; font: 700 10.5px/1 var(--font-sans); font-style: normal; letter-spacing: 0.05em; }

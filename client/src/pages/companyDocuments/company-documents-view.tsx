@@ -3,15 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, CalendarDays, Edit, FileDown, FileText, LayoutGrid, MoreHorizontal, Plus, Search, Trash2 } from "lucide-react";
+import { Edit, FileDown, FileText, MoreHorizontal, Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LuPager } from "@/components/lulu/lulu-ui";
-import { Kpis, daysFromToday, type Tone } from "@/components/royal/rp";
-import { DocCard, KindLanes, MonthCards, Seg, kindColor, type ListDoc } from "@/components/royal/cards";
+import { PxPager, PxTabs } from "@/components/royal/px";
+import { Kpis, LeftPill, daysFromToday, dmy, leftTone, type Tone } from "@/components/royal/rp";
+import { kindColor } from "@/components/royal/cards";
 import { reportsApi } from "@/api/reports";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
@@ -35,7 +35,6 @@ interface Props {
 }
 
 type Status = "ALL" | "EXPIRED" | "EXPIRING_SOON" | "VALID";
-type View = "doc" | "kind" | "month";
 
 const statusOf = (d: CompanyDocument): Exclude<Status, "ALL"> => {
   const n = daysFromToday(d.expiryDate);
@@ -54,7 +53,6 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState<Status>("ALL");
-  const [view, setView] = useState<View>("doc");
   const [dialog, setDialog] = useState<{ open: boolean; document?: CompanyDocument }>({ open: false });
   const [deleteTarget, setDeleteTarget] = useState<CompanyDocument | null>(null);
   const pageSize = 100;
@@ -86,7 +84,6 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
   const pages = Math.max(1, Math.ceil((data?.meta.total ?? 0) / pageSize));
   const establishments = new Set(docs.map((d) => d.branchId || d.name.trim())).size;
   const kindLabel = (c: string) => t(`documentCategories.${c}`);
-  const listDocs: ListDoc[] = docs.map((d) => ({ key: d.id, kind: kindLabel(d.category), kindCode: d.category, icon: COMPANY_DOCUMENT_CATEGORY_ICONS[d.category] ?? FileText, owner: owner(d), date: d.expiryDate, onOpen: () => open(d) }));
 
   const kpis: [Status, string, number, string, Tone][] = [
     ["ALL", isAr ? "إجمالي المستندات" : "All documents", data?.meta.total ?? docs.length, isAr ? `لـ ${establishments} مؤسسات` : `For ${establishments} establishments`, "pri"],
@@ -96,7 +93,7 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
   ];
 
   return (
-    <div className="rp rc">
+    <div className="px">
       <PageHeader
         title={title}
         description={description}
@@ -128,147 +125,150 @@ export function CompanyDocumentsView({ title, description, api, categories, quer
 
       <Kpis items={kpis.map(([v, label, count, sub, tone], k) => ({ label, value: count, sub, tone, hero: k === 0, active: status === v, onClick: () => setStatus(v) }))} />
 
-      <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 2 }}>
-        <label className="rp-search">
-          <Search />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder={isAr ? "اسم المؤسسة أو رقم المستند" : "Establishment or document number"}
-            aria-label={isAr ? "بحث" : "Search"}
-          />
-        </label>
-        {view === "doc" && (
-          <Seg
-            label={isAr ? "الحالة" : "Status"}
-            value={status}
-            onChange={setStatus}
-            items={[
-              { value: "ALL", label: isAr ? "الكل" : "All", count: docs.length },
-              { value: "EXPIRED", label: isAr ? "منتهية" : "Expired", count: n.EXPIRED },
-              { value: "EXPIRING_SOON", label: isAr ? "قريبة" : "Soon", count: n.EXPIRING_SOON },
-              { value: "VALID", label: isAr ? "سارية" : "Valid", count: n.VALID },
-            ]}
-          />
-        )}
-        <Seg
-          label={isAr ? "طريقة العرض" : "View"}
-          value={view}
-          onChange={setView}
-          items={[
-            { value: "doc", label: isAr ? "كل مستند" : "Each document", icon: FileText },
-            { value: "kind", label: isAr ? "حسب النوع" : "By kind", icon: LayoutGrid },
-            { value: "month", label: isAr ? "حسب الشهر" : "By month", icon: CalendarDays },
-          ]}
-        />
-      </div>
-      {categories.length > 1 && (
-        <div className="rp-tools rp-rise no-print" style={{ ["--i" as string]: 3 }}>
-          <button
-            type="button"
-            aria-pressed={!category}
-            onClick={() => {
-              setCategory("");
-              setPage(1);
-            }}
-            className="rp-chip rp-pri"
-          >
-            <i />
-            {t("companyDocuments.filters.allCategories")} <span>{totalCount}</span>
-          </button>
-          {categories
-            .filter((cat) => (counts?.[cat] ?? 0) > 0 || category === cat)
-            .map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                aria-pressed={category === cat}
-                onClick={() => {
-                  setCategory(cat);
-                  setPage(1);
-                }}
-                className="rp-chip"
-                style={{ ["--c" as string]: kindColor(cat), ["--t" as string]: `color-mix(in srgb, ${kindColor(cat)} 12%, var(--surf))` }}
-              >
-                <i />
-                {kindLabel(cat)} <span>{counts?.[cat] ?? 0}</span>
-              </button>
-            ))}
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="rc-dc-grid">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-[330px] animate-pulse rounded-[22px] bg-[var(--l-surface)]" />
-          ))}
-        </div>
-      ) : docs.length === 0 ? (
-        <div className="rp-card rp-empty rp-rise">
-          <b>{t("companyDocuments.emptyTitle")}</b>
-          {hasPermission(p("create")) && (
-            <div className="mt-3">
-              <Button onClick={() => setDialog({ open: true })}>
-                <Plus className="h-4 w-4" /> {t("companyDocuments.addDocument")}
-              </Button>
-            </div>
-          )}
-        </div>
-      ) : view === "kind" ? (
-        <KindLanes docs={listDocs} kinds={categories.map((c) => ({ code: c, label: kindLabel(c), icon: COMPANY_DOCUMENT_CATEGORY_ICONS[c] ?? FileText }))} />
-      ) : view === "month" ? (
-        <MonthCards docs={listDocs} unit={["مستند", "documents"]} />
-      ) : (
-        <div className="rc-dc-grid">
-          {shown.map((d, i) => (
-            <DocCard
-              key={d.id}
-              i={i}
-              kind={kindLabel(d.category)}
-              kindCode={d.category}
-              icon={COMPANY_DOCUMENT_CATEGORY_ICONS[d.category] ?? FileText}
-              owner={owner(d)}
-              ownerIcon={Building2}
-              number={d.documentNumber || d.licenseNumber}
-              authority={d.issuingAuthority}
-              issueDate={d.issueDate || d.startDate}
-              expiryDate={d.expiryDate}
-              hasFile={Boolean(d.fileId)}
-              onView={() => open(d)}
-              onRenew={hasPermission(p("edit")) ? () => setDialog({ open: true, document: d }) : undefined}
-              extra={
-                (hasPermission(p("edit")) || hasPermission(p("delete"))) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button type="button" className="rc-btn icon" aria-label={t("common.actions")}>
-                        <MoreHorizontal />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
-                      {hasPermission(p("edit")) && (
-                        <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, document: d })}>
-                          <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
-                        </DropdownMenuItem>
-                      )}
-                      {hasPermission(p("delete")) && (
-                        <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(d)}>
-                          <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              }
+      <section className="px-card" style={{ ["--i" as string]: 5 }}>
+        <div className="px-toolbar no-print">
+          {categories.length > 1 ? (
+            <PxTabs
+              label={isAr ? "النوع" : "Type"}
+              value={category}
+              onChange={(c) => {
+                setCategory(c);
+                setPage(1);
+              }}
+              items={[{ key: "", label: t("companyDocuments.filters.allCategories"), count: totalCount }, ...categories.filter((cat) => (counts?.[cat] ?? 0) > 0 || category === cat).map((cat) => ({ key: cat, label: kindLabel(cat), count: counts?.[cat] ?? 0 }))]}
             />
-          ))}
-          {!shown.length && <div className="rp-card rp-empty rc-empty">{isAr ? "لا توجد مستندات بهذا الفلتر" : "No documents match this filter"}</div>}
+          ) : (
+            <PxTabs
+              label={isAr ? "الحالة" : "Status"}
+              value={status}
+              onChange={setStatus}
+              items={[
+                { key: "ALL", label: isAr ? "الكل" : "All", count: docs.length },
+                { key: "EXPIRED", label: isAr ? "منتهية" : "Expired", count: n.EXPIRED },
+                { key: "EXPIRING_SOON", label: isAr ? "قريبة" : "Soon", count: n.EXPIRING_SOON },
+                { key: "VALID", label: isAr ? "سارية" : "Valid", count: n.VALID },
+              ]}
+            />
+          )}
+          <span className="sp" />
+          <label className="px-search">
+            <Search />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder={isAr ? "اسم المؤسسة أو رقم المستند" : "Establishment or document number"}
+              aria-label={isAr ? "بحث" : "Search"}
+            />
+          </label>
         </div>
-      )}
-      <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
+        <div className="px-tw">
+          <table className="px-t">
+            <thead>
+              <tr>
+                <th>{isAr ? "نوع المستند" : "Document"}</th>
+                <th>{isAr ? "المؤسسة" : "Establishment"}</th>
+                <th className="hm">{isAr ? "الرقم" : "Number"}</th>
+                <th className="hm">{isAr ? "الجهة المصدرة" : "Issued by"}</th>
+                <th>{isAr ? "تاريخ الانتهاء" : "Expiry"}</th>
+                <th className="hm">{isAr ? "المتبقي" : "Left"}</th>
+                <th>{isAr ? "الحالة" : "Status"}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={8}>
+                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                    </td>
+                  </tr>
+                ))}
+              {!isLoading && shown.length === 0 && (
+                <tr>
+                  <td colSpan={8}>
+                    <div className="px-empty">
+                      <b>{docs.length ? (isAr ? "لا توجد مستندات بهذا الفلتر" : "No documents match this filter") : t("companyDocuments.emptyTitle")}</b>
+                      {!docs.length && hasPermission(p("create")) && (
+                        <div className="mt-3">
+                          <Button onClick={() => setDialog({ open: true })}>
+                            <Plus className="h-4 w-4" /> {t("companyDocuments.addDocument")}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!isLoading &&
+                shown.map((d, j) => {
+                  const days = daysFromToday(d.expiryDate);
+                  const tone = leftTone(days);
+                  const Icon = COMPANY_DOCUMENT_CATEGORY_ICONS[d.category] ?? FileText;
+                  return (
+                    <tr key={d.id} className="click" style={{ ["--j" as string]: j }} onClick={() => open(d)}>
+                      <td>
+                        <div className="px-who">
+                          <span className="px-av" style={{ color: kindColor(d.category) }}>
+                            <Icon style={{ width: 16, height: 16 }} />
+                          </span>
+                          <b>{kindLabel(d.category)}</b>
+                        </div>
+                      </td>
+                      <td>{owner(d)}</td>
+                      <td className="hm mono">{d.documentNumber || d.licenseNumber || "—"}</td>
+                      <td className="hm">{d.issuingAuthority || "—"}</td>
+                      <td className="mono">{d.expiryDate ? dmy(d.expiryDate) : "—"}</td>
+                      <td className="hm">
+                        <div className="px-bar" style={{ ["--c" as string]: `var(--l-${tone === "bad" ? "rose" : tone === "warn" ? "amber" : tone === "ok" ? "green" : "faint"})` }}>
+                          <u style={{ width: `${days === null ? 0 : days <= 0 ? 100 : Math.max(4, Math.min(100, (days / 365) * 100))}%` }} />
+                        </div>
+                      </td>
+                      <td>
+                        <LeftPill days={days} />
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          {hasPermission(p("edit")) && (
+                            <button type="button" className="px-btn" onClick={() => setDialog({ open: true, document: d })}>
+                              <RefreshCw /> {isAr ? "تجديد" : "Renew"}
+                            </button>
+                          )}
+                          {(hasPermission(p("edit")) || hasPermission(p("delete"))) && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button type="button" className="px-iconbtn" aria-label={t("common.actions")}>
+                                  <MoreHorizontal />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
+                                {hasPermission(p("edit")) && (
+                                  <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, document: d })}>
+                                    <Edit className="me-2 h-4 w-4" /> {t("common.edit")}
+                                  </DropdownMenuItem>
+                                )}
+                                {hasPermission(p("delete")) && (
+                                  <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleteTarget(d)}>
+                                    <Trash2 className="me-2 h-4 w-4" /> {t("common.delete")}
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+        <PxPager page={page} pages={pages} total={data?.meta.total ?? 0} pageSize={pageSize} onChange={setPage} />
+      </section>
 
       <CompanyDocumentDialog api={api} categories={categories} queryKey={queryKey} open={dialog.open} document={dialog.document} onOpenChange={(open) => setDialog({ open })} />
       <ConfirmDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)} title={t("companyDocuments.deleteConfirmTitle")} onConfirm={handleDelete} />

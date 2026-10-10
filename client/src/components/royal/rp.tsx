@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactNode } from "react";
-import { Odometer } from "@/components/lulu/maison";
+import type { ReactNode } from "react";
+import { Activity, AlertTriangle, CheckCircle2, Circle, Clock, Info, Layers, Sparkles, Wallet, type LucideIcon } from "lucide-react";
+import { PxStat } from "@/components/royal/px";
 import { isRtlLanguage } from "@/i18n";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -124,33 +125,15 @@ export function LeftMeter({ days }: { days: number | null }) {
 }
 
 export type Kpi = { label: string; value: ReactNode; sub?: ReactNode; tone?: Tone; hero?: boolean; onClick?: () => void; active?: boolean };
-/** The summary band: the first figure on royal blue, the rest beside it. */
+const KPI_COLOR: Record<Tone, string> = { ok: "#16a34a", warn: "#d97706", bad: "#dc2626", pri: "var(--lx)", vio: "#7c3aed", teal: "#0d9488", sky: "#0284c7", gold: "#a8792f", mut: "#64748b" };
+const KPI_ICON: Record<Tone, LucideIcon> = { ok: CheckCircle2, warn: Clock, bad: AlertTriangle, pri: Layers, vio: Sparkles, teal: Activity, sky: Info, gold: Wallet, mut: Circle };
+/** The summary figures, as cards with an icon in their colour (the luxury preview). */
 export function Kpis({ items, i = 1 }: { items: Kpi[]; i?: number }) {
   return (
-    <div className="rp-card rp-kpis rp-rise" style={{ ["--i" as string]: i }}>
+    <div className="px-stats">
       {items.map((k, n) => {
-        const cls = cn(k.hero && "hero", k.tone && `rp-${k.tone}`, k.onClick && "rp-kpi");
-        const body = (
-          <>
-            <span className="l">
-              <i />
-              {k.label}
-            </span>
-            <span className="v" style={!k.hero && k.tone && k.tone !== "pri" ? ({ ["--vc" as string]: "var(--c)" } as CSSProperties) : undefined}>
-              <Odometer value={k.value} />
-            </span>
-            {k.sub && <span className="s">{k.sub}</span>}
-          </>
-        );
-        return k.onClick ? (
-          <button key={n} type="button" className={cls} onClick={k.onClick} aria-pressed={k.active}>
-            {body}
-          </button>
-        ) : (
-          <div key={n} className={cls}>
-            {body}
-          </div>
-        );
+        const tone: Tone = k.tone ?? (k.hero ? "pri" : "pri");
+        return <PxStat key={n} i={i + n} label={k.label} value={k.value} sub={k.sub} icon={KPI_ICON[tone]} color={KPI_COLOR[tone]} onClick={k.onClick} active={k.onClick ? k.active : undefined} />;
       })}
     </div>
   );

@@ -57,7 +57,7 @@ export function Spark({ values, color }: { values: number[]; color: string }) {
 export type ChipTone = "up" | "dn" | "warn" | "mut";
 export interface PxStatProps {
   label: string;
-  value: number | string;
+  value: ReactNode;
   unit?: string;
   icon: LucideIcon;
   color: string;
@@ -79,7 +79,7 @@ export function PxStat({ label, value, unit, icon: Icon, color, chip, sub, spark
         </span>
       </span>
       <b className="v">
-        <Count to={value} />
+        {typeof value === "number" || typeof value === "string" ? <Count to={value} /> : value}
         {unit && <small>{unit}</small>}
       </b>
       <span className="d">
@@ -322,5 +322,39 @@ export function PxDrawer({ open, onClose, label, children }: { open: boolean; on
       </aside>
     </>,
     document.body
+  );
+}
+
+/** "Showing 1 to 20 of 54" and the page numbers, with arrows. */
+export function PxPager({ page, pages, total, pageSize, onChange }: { page: number; pages: number; total: number; pageSize: number; onChange: (p: number) => void }) {
+  const ar = rtl();
+  const from = total ? (page - 1) * pageSize + 1 : 0;
+  const to = Math.min(total, page * pageSize);
+  const list = Array.from({ length: pages }, (_, k) => k + 1).filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 1);
+  return (
+    <div className="px-pager no-print">
+      {ar ? `عرض ${from} إلى ${to} من ${total}` : `Showing ${from} to ${to} of ${total}`}
+      <span className="sp" />
+      <div className="pg">
+        <button type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label={ar ? "السابق" : "Previous"}>
+          {ar ? "›" : "‹"}
+        </button>
+        {list.map((p, k) => (
+          <span key={p} className="contents">
+            {k > 0 && p - list[k - 1] > 1 && (
+              <button type="button" disabled>
+                …
+              </button>
+            )}
+            <button type="button" aria-current={p === page ? "page" : undefined} onClick={() => onChange(p)}>
+              {p}
+            </button>
+          </span>
+        ))}
+        <button type="button" disabled={page >= pages} onClick={() => onChange(page + 1)} aria-label={ar ? "التالي" : "Next"}>
+          {ar ? "‹" : "›"}
+        </button>
+      </div>
+    </div>
   );
 }

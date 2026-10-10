@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Activity, ArrowDownToLine, Bell, Building2, ChevronLeft, Clock, FileSpreadsheet, FileText, Printer, User, Users, Wallet, type LucideIcon } from "lucide-react";
+import { PxStat } from "@/components/royal/px";
+import { Activity, AlertTriangle, ArrowDownToLine, Bell, Building2, ChevronLeft, Clock, FileSpreadsheet, FileText, Printer, User, Users, Wallet, type LucideIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/common/page-header";
 import { reportsApi, fetchReportSummary } from "@/api/reports";
@@ -11,7 +12,7 @@ import { listActiveBranches } from "@/api/branches";
 import { openPdfInNewTab } from "@/lib/download";
 import { formatCurrency } from "@/lib/utils";
 import { localized } from "@/lib/names";
-import { DayHeader, Initials, Kpis, LeftPill, daysFromToday, dayKey, dayOf, dmy, groupByDay, hijri, weekday } from "@/components/royal/rp";
+import { DayHeader, Initials, LeftPill, daysFromToday, dayKey, dayOf, dmy, groupByDay, hijri, weekday } from "@/components/royal/rp";
 import { Seg, actionLook, kindColor, timeOf } from "@/components/royal/cards";
 import { COMPANY_DOCUMENT_CATEGORY_ICONS, EMPLOYEE_DOCUMENT_TYPE_ICONS } from "@/lib/document-type-icons";
 import { useAuthStore } from "@/stores/authStore";
@@ -142,14 +143,12 @@ export default function ReportsPage() {
     <div className="rp rc">
       <PageHeader title={L("التقارير", "Reports")} description={L("اختر تقريرًا لتعرض بياناته وتطبعه أو تصدّره", "Pick a report to see its data, print or export it")} />
 
-      <Kpis
-        items={[
-          { label: L("وثائق منتهية", "Expired documents"), value: summary?.documents ? sExpired : "—", sub: L("تحتاج تجديد فورًا", "Renew now"), hero: true, onClick: () => openTile("expired"), active: open === "expired" },
-          { label: L("تنتهي خلال 30 يوم", "Ending within 30 days"), value: summary?.documents ? sSoon : "—", sub: L("جهّز التجديد", "Get the renewal ready"), tone: "warn", onClick: () => openTile("soon"), active: open === "soon" },
-          { label: L("الموظفون", "Employees"), value: summary?.employees ? employeeCount : "—", sub: L("في كل المؤسسات", "Across the establishments"), tone: "pri", onClick: () => openTile("employees"), active: open === "employees" },
-          { label: L("مدفوعات آخر 30 يوم", "Payments, last 30 days"), value: summary?.payments ? formatCurrency(paid) : "—", sub: L(`${paymentCount} دفعة`, `${paymentCount} payments`), tone: "vio", onClick: () => openTile("payments"), active: open === "payments" },
-        ]}
-      />
+      <div className="px-stats">
+        <PxStat i={1} label={L("وثائق منتهية", "Expired documents")} value={summary?.documents ? sExpired : 0} icon={AlertTriangle} color="#dc2626" sub={L("تحتاج تجديد فورًا", "Renew now")} onClick={() => openTile("expired")} active={open === "expired"} />
+        <PxStat i={2} label={L("تنتهي خلال 30 يوم", "Ending within 30 days")} value={summary?.documents ? sSoon : 0} icon={Clock} color="#d97706" sub={L("جهّز التجديد", "Get the renewal ready")} onClick={() => openTile("soon")} active={open === "soon"} />
+        <PxStat i={3} label={L("الموظفون", "Employees")} value={summary?.employees ? employeeCount : 0} icon={Users} color="#2563eb" sub={L("في كل المؤسسات", "Across the establishments")} onClick={() => openTile("employees")} active={open === "employees"} />
+        <PxStat i={4} label={L("مدفوعات آخر 30 يوم", "Payments, last 30 days")} value={summary?.payments ? Math.round(paid) : 0} unit={L("ر.س", "SAR")} icon={Wallet} color="#16a34a" sub={L(`${paymentCount} دفعة`, `${paymentCount} payments`)} onClick={() => openTile("payments")} active={open === "payments"} />
+      </div>
 
       <div className="rc-rp-grid">
         {TILES.filter(id => canReadReport(TILE_LOOK[id].report)).map((id, j) => {

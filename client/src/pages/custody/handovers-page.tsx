@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit, MoreHorizontal, PackageCheck, Plus, Printer, Search, Trash2, Undo2 } from "lucide-react";
+import { Clock, Edit, MoreHorizontal, PackageCheck, Plus, Printer, Search, ShieldCheck, Trash2, Undo2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { tr } from "@/i18n";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
-import { LuPager } from "@/components/lulu/lulu-ui";
+import { PageHeader } from "@/components/common/page-header";
+import { Button } from "@/components/ui/button";
+import { PxBadge, PxPager, PxStat, PxTabs } from "@/components/royal/px";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { custodyApi, type CustodyHandover, type CustodyQuery } from "@/api/custody";
-import { CuHero, CuKpis, CuPill, CuSeg, EmployeeCell, dmy, money } from "@/pages/custody/custody-shared";
+import { EmployeeCell, dmy, money } from "@/pages/custody/custody-shared";
 import { HandoverDialog, ReturnDialog, printHandover } from "@/pages/custody/handover-dialog";
 
 /* Custody handovers, as in the approved preview: the royal band, the figures,
@@ -20,8 +21,6 @@ import { HandoverDialog, ReturnDialog, printHandover } from "@/pages/custody/han
 type State = NonNullable<CustodyQuery["state"]>;
 
 export default function HandoversPage() {
-  const { i18n } = useTranslation();
-  const isAr = (i18n.language || "ar").startsWith("ar");
   const qc = useQueryClient();
   const has = useAuthStore((s) => s.hasPermission);
   const [state, setState] = useState<State>("all");
@@ -57,116 +56,144 @@ export default function HandoversPage() {
   };
 
   return (
-    <div className="cu">
-      <CuHero
-        icon={PackageCheck}
-        eyebrow="Custody Handover"
+    <div className="px cu">
+      <PageHeader
         title={tr("تسليم العهد", "Custody handover")}
-        sub={tr("سجّل اللي استلمه كل موظف من أجهزة وأدوات، واطبع المحضر بترويسة منشأته وشعارها.", "Record what each employee received and print the record on their establishment's letterhead.")}
+        description={tr("سجّل اللي استلمه كل موظف من أجهزة وأدوات، واطبع المحضر بترويسة منشأته وشعارها.", "Record what each employee received and print the record on their establishment's letterhead.")}
         actions={
           has("custody.create") && (
-            <button type="button" className="cu-btn gold" onClick={() => setDialog({ open: true })}>
-              <Plus /> {tr("تسليم عهدة", "Hand over custody")}
-            </button>
+            <Button onClick={() => setDialog({ open: true })}>
+              <Plus className="h-4 w-4" /> {tr("تسليم عهدة", "Hand over custody")}
+            </Button>
           )
         }
       />
 
-      <CuKpis
-        items={[
-          { label: tr("محاضر التسليم", "Handover records"), value: stats?.handovers ?? "—", sub: tr("كل المحاضر المسجلة", "All records"), onClick: () => filter("all"), active: state === "all" },
-          { label: tr("أصناف لسه مع الموظفين", "Items still out"), value: stats?.itemsOut ?? "—", sub: tr("ماترجعتش لسه", "Not returned yet"), color: "var(--l-amber, #d97706)", onClick: () => filter("open"), active: state === "open" },
-          { label: tr("قيمة العهد الحالية", "Value still out"), value: stats ? money(stats.valueOut) : "—", sub: tr("ريال سعودي", "Saudi riyals"), color: "var(--l-sky, #0284c7)" },
-          { label: tr("إخلاءات طرف مفتوحة", "Open clearances"), value: stats?.openClearances ?? "—", sub: tr(`${stats?.issuedClearances ?? 0} شهادة صدرت`, `${stats?.issuedClearances ?? 0} issued`), color: "var(--l-violet, #7c3aed)" },
-        ]}
-      />
-
-      <div className="cu-tools no-print">
-        <CuSeg
-          value={state}
-          onChange={filter}
-          items={[
-            { value: "all", label: tr("الكل", "All") },
-            { value: "open", label: tr("فيها عهد لسه برّه", "Items out") },
-            { value: "returned", label: tr("رجعت كلها", "All returned") },
-          ]}
-        />
-        <label className="cu-search">
-          <Search />
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setPage(1);
-            }}
-            placeholder={tr("اسم الموظف أو رقمه أو رقم المحضر أو الصنف", "Employee, record number, item or serial")}
-            aria-label={tr("بحث", "Search")}
-          />
-        </label>
+      <div className="px-stats">
+        <PxStat i={1} label={tr("محاضر التسليم", "Handover records")} value={stats?.handovers ?? 0} icon={PackageCheck} color="#c2410c" sub={tr("كل المحاضر المسجلة", "All records")} onClick={() => filter("all")} active={state === "all"} />
+        <PxStat i={2} label={tr("أصناف لسه مع الموظفين", "Items still out")} value={stats?.itemsOut ?? 0} icon={Clock} color="#d97706" sub={tr("ماترجعتش لسه", "Not returned yet")} onClick={() => filter("open")} active={state === "open"} />
+        <PxStat i={3} label={tr("قيمة العهد الحالية", "Value still out")} value={stats ? Math.round(stats.valueOut) : 0} unit={tr("ر.س", "SAR")} icon={Wallet} color="#2563eb" sub={tr("ريال سعودي", "Saudi riyals")} />
+        <PxStat i={4} label={tr("إخلاءات طرف مفتوحة", "Open clearances")} value={stats?.openClearances ?? 0} icon={ShieldCheck} color="#7c3aed" sub={tr(`${stats?.issuedClearances ?? 0} شهادة صدرت`, `${stats?.issuedClearances ?? 0} issued`)} />
       </div>
 
-      <section className="cu-card">
-        <div className="cu-card-head">
-          {tr("المحاضر", "Records")}
-          <small>{tr(`${total} محضر`, `${total} records`)}</small>
+      <section className="px-card" style={{ ["--i" as string]: 5 }}>
+        <div className="px-toolbar no-print">
+          <PxTabs
+            value={state}
+            onChange={filter}
+            items={[
+              { key: "all", label: tr("الكل", "All") },
+              { key: "open", label: tr("فيها عهد لسه برّه", "Items out") },
+              { key: "returned", label: tr("رجعت كلها", "All returned") },
+            ]}
+          />
+          <span className="sp" />
+          <label className="px-search">
+            <Search />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+              placeholder={tr("اسم الموظف أو رقم المحضر أو الصنف", "Employee, record number or item")}
+              aria-label={tr("بحث", "Search")}
+            />
+          </label>
         </div>
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => <div key={i} className="cu-row"><div className="h-10 w-10 animate-pulse rounded-full bg-muted" /><div className="h-4 w-40 animate-pulse rounded bg-muted" /></div>)
-        ) : rows.length === 0 ? (
-          <div className="cu-empty">
-            <b>{q || state !== "all" ? tr("مفيش محاضر بالفلتر ده", "No records match") : tr("لسه مفيش عهد مسلّمة", "No custody handed over yet")}</b>
-            {!q && state === "all" && tr("ابدأ بأول محضر: اختار الموظف وضيف اللي استلمه.", "Start with the first record: choose the employee and add what they received.")}
-          </div>
-        ) : (
-          rows.map((h) => (
-            <div key={h.id} className="cu-row" role="button" tabIndex={0} onClick={() => has("custody.edit") && setDialog({ open: true, handover: h })} onKeyDown={(e) => e.key === "Enter" && has("custody.edit") && setDialog({ open: true, handover: h })}>
-              <EmployeeCell e={h.employee} />
-              <div className="mid">
-                <b>{h.items.slice(0, 3).map((i) => i.kind).join("، ")}{h.items.length > 3 ? tr(` و${h.items.length - 3} كمان`, ` +${h.items.length - 3}`) : ""}</b>
-                <small><span className="num">{h.number}</span> · {dmy(h.date)} · <span dir="ltr">{money(h.totalValue)}</span> {tr("ر.س", "SAR")}</small>
-              </div>
-              <span className="hide-sm">
-                {h.itemsOut === 0 ? <CuPill color="var(--l-green, #16a34a)">{tr("رجعت كلها", "All returned")}</CuPill> : <CuPill color="var(--l-amber, #d97706)">{tr(`${h.itemsOut} من ${h.itemCount} مع الموظف`, `${h.itemsOut} of ${h.itemCount} out`)}</CuPill>}
-              </span>
-              <div className="acts" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                {has("custody.export") && (
-                  <button type="button" className="cu-btn sm" onClick={() => printHandover(h)}>
-                    <Printer /> <span className="hide-sm">{tr("طباعة", "Print")}</span>
-                  </button>
-                )}
-                {(has("custody.edit") || has("custody.delete")) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button type="button" className="cu-btn icon" aria-label={tr("إجراءات", "Actions")}>
-                        <MoreHorizontal />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-                      {has("custody.edit") && (
-                        <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, handover: h })}>
-                          <Edit className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
-                        </DropdownMenuItem>
-                      )}
-                      {has("custody.edit") && h.itemsOut > 0 && (
-                        <DropdownMenuItem className="rounded-2xl" onSelect={() => setReturning(h)}>
-                          <Undo2 className="me-2 h-4 w-4" /> {tr("استرجاع أصناف", "Return items")}
-                        </DropdownMenuItem>
-                      )}
-                      {has("custody.delete") && (
-                        <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(h)}>
-                          <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </div>
-          ))
-        )}
+        <div className="px-tw">
+          <table className="px-t">
+            <thead>
+              <tr>
+                <th>{tr("رقم المحضر", "Record")}</th>
+                <th>{tr("الموظف", "Employee")}</th>
+                <th className="hm">{tr("الأصناف", "Items")}</th>
+                <th className="hm">{tr("القيمة", "Value")}</th>
+                <th>{tr("التاريخ", "Date")}</th>
+                <th>{tr("الحالة", "Status")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={7}>
+                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                    </td>
+                  </tr>
+                ))}
+              {!isLoading && rows.length === 0 && (
+                <tr>
+                  <td colSpan={7}>
+                    <div className="px-empty">
+                      <b>{q || state !== "all" ? tr("مفيش محاضر بالفلتر ده", "No records match") : tr("لسه مفيش عهد مسلّمة", "No custody handed over yet")}</b>
+                      {!q && state === "all" && tr("ابدأ بأول محضر: اختار الموظف وضيف اللي استلمه.", "Start with the first record: choose the employee and add what they received.")}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!isLoading &&
+                rows.map((h, j) => (
+                  <tr key={h.id} className={has("custody.edit") ? "click" : undefined} style={{ ["--j" as string]: j }} onClick={() => has("custody.edit") && setDialog({ open: true, handover: h })}>
+                    <td className="mono">
+                      <b>{h.number}</b>
+                    </td>
+                    <td>
+                      <EmployeeCell e={h.employee} />
+                    </td>
+                    <td className="hm">
+                      {h.items.slice(0, 3).map((i) => i.kind).join("، ")}
+                      {h.items.length > 3 ? tr(` و${h.items.length - 3} كمان`, ` +${h.items.length - 3}`) : ""}
+                    </td>
+                    <td className="hm mono">
+                      {money(h.totalValue)} {tr("ر.س", "SAR")}
+                    </td>
+                    <td className="mono">{dmy(h.date)}</td>
+                    <td>{h.itemsOut === 0 ? <PxBadge tone="ok">{tr("رجعت كلها", "All returned")}</PxBadge> : <PxBadge tone="warn">{tr(`${h.itemsOut} من ${h.itemCount} مع الموظف`, `${h.itemsOut} of ${h.itemCount} out`)}</PxBadge>}</td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        {has("custody.export") && (
+                          <button type="button" className="px-btn" onClick={() => printHandover(h)}>
+                            <Printer /> {tr("طباعة", "Print")}
+                          </button>
+                        )}
+                        {(has("custody.edit") || has("custody.delete")) && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button type="button" className="px-iconbtn" aria-label={tr("إجراءات", "Actions")}>
+                                <MoreHorizontal />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
+                              {has("custody.edit") && (
+                                <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, handover: h })}>
+                                  <Edit className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
+                                </DropdownMenuItem>
+                              )}
+                              {has("custody.edit") && h.itemsOut > 0 && (
+                                <DropdownMenuItem className="rounded-2xl" onSelect={() => setReturning(h)}>
+                                  <Undo2 className="me-2 h-4 w-4" /> {tr("استرجاع أصناف", "Return items")}
+                                </DropdownMenuItem>
+                              )}
+                              {has("custody.delete") && (
+                                <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(h)}>
+                                  <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+        <PxPager page={page} pages={pages} total={total} pageSize={pageSize} onChange={setPage} />
       </section>
-      <LuPager page={page} pages={pages} onChange={setPage} isAr={isAr} />
 
       <HandoverDialog open={dialog.open} handover={dialog.handover} onOpenChange={(open) => setDialog({ open })} />
       <ReturnDialog handover={returning} onOpenChange={(o) => !o && setReturning(null)} />
