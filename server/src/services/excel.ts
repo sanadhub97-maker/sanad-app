@@ -94,7 +94,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const titleCell = sheet.getCell(1, 1);
   titleCell.value = `🏛️  ${companyTitle}  —  ${reportTitle}`;
   titleCell.font = { name: "Zain", size: 13, bold: true, color: { argb: "FFFFFFFF" } };
-  titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B1B3D" } };
+  titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
   titleCell.alignment = { vertical: "middle", horizontal: "center" };
 
   // 🌟 Row 2: Sovereign Gold Accent Stripe
@@ -102,7 +102,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const accentRow = sheet.getRow(2);
   accentRow.height = 4.5;
   const accentCell = sheet.getCell(2, 1);
-  accentCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC59A45" } };
+  accentCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFA8792F" } };
 
   // 📋 Row 3: Metadata & Executive Stats Banner
   sheet.mergeCells(3, 1, 3, totalCols);
@@ -122,7 +122,7 @@ export async function buildWorkbook<T extends Record<string, unknown>>(
   const headerRow = sheet.getRow(4);
   headerRow.height = 32;
   headerRow.font = { name: "Zain", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
-  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E293B" } };
+  headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F2937" } };
   headerRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
 
   columns.forEach((col, idx) => {

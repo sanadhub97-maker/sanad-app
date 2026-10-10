@@ -23,6 +23,8 @@ interface Design {
 
 // Keep in sync with server/src/services/printThemes.ts.
 export const DESIGNS: Design[] = [
+  // The print side of the site's luxury edition: navy ink and royal gold.
+  { id: "fakhir", nameAr: "الفاخر — تصميم الموقع", nameEn: "Fakhir — the site's design", descAr: "ترويسة بشعار الشركة في إطار دهبي فوق كل صفحة، وخط دهبي، وبطاقات أرقام، وجدول هادي بحالات ملونة.", descEn: "A letterhead with the logo in a gold-edged tile on every page, a gold rule, figure tiles and a calm table with status pills.", paper: "#ffffff", accent: "#0f172a", metal: "#a8792f", layout: "band", ink: 2, fresh: true },
   // Colours from the company logo; the letterhead repeats on every page.
   { id: "shafaq", nameAr: "الشفق", nameEn: "Dawn", descAr: "تدرّج من ألوان شعار الشركة، وترويسة منحنية فوق كل صفحة، ولوحة رسوم بنسب الوثائق.", descEn: "A gradient from the company logo's colours, a curved letterhead on every page and a status dashboard.", paper: "#ffffff", accent: "#167ea3", metal: "#00b0ee", layout: "band", ink: 3, fresh: true },
   // Modern Saudi: deep green, teal and lime; the letterhead repeats on every page.

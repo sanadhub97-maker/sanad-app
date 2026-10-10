@@ -1,5 +1,6 @@
 import { SIGNATURE_THEMES } from "@/services/printThemesSignature";
 import { shafaq } from "@/services/printThemeShafaq";
+import { fakhir } from "@/services/printThemeFakhir";
 
 // Print designs for every server-rendered PDF (reports, payment voucher,
 // employee profile). "classic" is the original design; the others are the
@@ -17,10 +18,10 @@ export const PRINT_THEME_IDS = ["classic", "royal", "emerald", "executive", "bur
   "pearl", "passport", "airmail", "bauhaus", "palm", "circuit", "topo", "marble", "ticket", "calligraphy",
   "studio_executive", "studio_heritage", "studio_editorial", "studio_minimal", "studio_blueprint", "studio_royal", "studio_ledger", "studio_atelier", "studio_modern", "studio_archive",
   "munassa", "janib", "bitaqa", "qutri", "fatih",
-  "shafaq",
+  "shafaq", "fakhir",
 ] as const;
 export type PrintThemeId = (typeof PRINT_THEME_IDS)[number];
-export const DEFAULT_PRINT_THEME: PrintThemeId = "classic";
+export const DEFAULT_PRINT_THEME: PrintThemeId = "fakhir";
 
 export function isPrintThemeId(v: unknown): v is PrintThemeId {
   return typeof v === "string" && (PRINT_THEME_IDS as readonly string[]).includes(v);
@@ -2151,6 +2152,7 @@ const THEMES: Record<PrintThemeId, PrintTheme> = { classic, royal, emerald, exec
   studio_archive: studioTheme("studio_archive", "#303d53", "#8994a7", "archive"),
   ...SIGNATURE_THEMES,
   shafaq,
+  fakhir,
 };
 
 export function getPrintTheme(id: string | null | undefined): PrintTheme {

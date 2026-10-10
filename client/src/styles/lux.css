@@ -1,0 +1,259 @@
+/* =====================================================================
+   The luxury edition (as in the approved preview): a calm white ground,
+   a deep navy side menu with gold details, cards edged in a fine gradient,
+   one accent colour the viewer chooses (gold by default), soft glow.
+   Loaded last, over the Royal look; the layout stays as it is.
+   ===================================================================== */
+
+html:root {
+  --font-sans: "Zain", -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Zain", -apple-system, "Segoe UI", sans-serif;
+  --lx-gold: #d8b46a;
+}
+html:root body, html:root body * { font-synthesis: none; }
+.lu-app, .lu-app * { font-family: var(--font-sans); }
+.lu-app .font-mono, .lu-app .rp-mono, .lu-app kbd, .lu-app code { font-family: ui-monospace, Menlo, monospace; }
+
+/* ---------------- palette ---------------- */
+html:root:not(.dark) {
+  --background: 228 33% 97%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --border: 228 22% 92%;
+  --input: 228 20% 88%;
+  --muted: 220 33% 96%;
+  --muted-foreground: 215 16% 47%;
+  --primary: 37 57% 42%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 37 57% 42%;
+  --secondary: 220 33% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --l-surface: #ffffff;
+  --l-ground: #f1f4f9;
+  --l-line: #e6e8ef;
+  --l-ink: #0f172a;
+  --l-ink2: #334155;
+  --l-muted: #64748b;
+  --l-faint: #94a3b8;
+  --l-glass: rgba(255, 255, 255, 0.74);
+  --l-glass-strong: #ffffff;
+  --l-edge: #e6e8ef;
+  --l-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 22px 44px -28px rgba(16, 24, 40, 0.3);
+  --ry-lift: 0 1px 2px rgba(16, 24, 40, 0.05), 0 30px 54px -26px rgba(16, 24, 40, 0.38);
+  --ry-track: #eef1f6;
+}
+html:root.dark {
+  --background: 222 47% 7%;
+  --foreground: 220 13% 91%;
+  --card: 221 39% 11%;
+  --card-foreground: 220 13% 91%;
+  --popover: 221 39% 11%;
+  --popover-foreground: 220 13% 91%;
+  --border: 215 28% 17%;
+  --input: 215 25% 22%;
+  --muted: 220 36% 15%;
+  --muted-foreground: 215 20% 65%;
+  --primary: 37 57% 58%;
+  --primary-foreground: 222 47% 7%;
+  --ring: 37 57% 58%;
+  --secondary: 220 36% 15%;
+  --secondary-foreground: 220 13% 91%;
+  --l-surface: #111827;
+  --l-ground: #172033;
+  --l-line: #1f2937;
+  --l-ink: #e5e7eb;
+  --l-ink2: #cbd5e1;
+  --l-muted: #94a3b8;
+  --l-faint: #64748b;
+  --l-glass: rgba(17, 24, 39, 0.74);
+  --l-glass-strong: #111827;
+  --l-edge: #1f2937;
+  --l-shadow: 0 22px 44px -28px rgba(0, 0, 0, 0.75);
+  --ry-lift: 0 30px 54px -26px rgba(0, 0, 0, 0.85);
+  --ry-track: #1a2333;
+}
+html:root { --lx: var(--lx-acc, #a8792f); }
+/* the accent: --lx (hex) and --primary (hsl) both come from the viewer's choice (the shell sets them) */
+.lu-app { --lx: var(--lx-acc, #a8792f); --page-c: var(--lx); }
+html:root body { background: hsl(var(--background)); }
+.lu-app {
+  background: radial-gradient(900px 520px at 100% -10%, color-mix(in srgb, var(--lx) 10%, transparent), transparent 60%),
+    radial-gradient(700px 520px at 0% 110%, color-mix(in srgb, var(--lx-gold) 8%, transparent), transparent 60%), hsl(var(--background)) !important;
+  background-attachment: fixed !important;
+}
+
+/* ---------------- the side menu: deep navy, gold details ---------------- */
+.lu-side, .lu-side.rail {
+  --l-surface: rgba(255, 255, 255, 0.04); --l-ground: rgba(255, 255, 255, 0.06); --l-line: rgba(255, 255, 255, 0.08); --l-edge: rgba(255, 255, 255, 0.08);
+  --l-ink: #ffffff; --l-ink2: rgba(255, 255, 255, 0.78); --l-muted: rgba(255, 255, 255, 0.52); --l-faint: rgba(255, 255, 255, 0.38);
+  background: linear-gradient(185deg, color-mix(in srgb, var(--lx) 22%, #060a16), #070b17 72%) !important;
+  border-inline-end: 0 !important; color: #e7e9f3; box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.05);
+}
+[dir="rtl"] .lu-side { box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05); }
+.lu-side::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(260px 220px at 80% 0%, color-mix(in srgb, var(--lx-gold) 16%, transparent), transparent 70%); }
+.lu-side > * { position: relative; }
+.lu-brand img { box-shadow: 0 0 0 2px color-mix(in srgb, var(--lx-gold) 55%, transparent), 0 10px 22px -10px var(--lx-gold); }
+.lu-brand b { color: #fff; }
+.lu-collapse { color: rgba(255, 255, 255, 0.6); }
+.lu-collapse:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+.lu-grp-h { color: rgba(255, 255, 255, 0.38); letter-spacing: 0.05em; }
+.lu-grp-h:hover { color: rgba(255, 255, 255, 0.6); }
+.lu-nav { min-height: 46px; color: rgba(255, 255, 255, 0.74); }
+.lu-nav:hover { background: rgba(255, 255, 255, 0.06) !important; color: #fff; }
+.lu-nav.on, html.dark .lu-nav.on { color: #fff; background: linear-gradient(270deg, color-mix(in srgb, var(--lx) 42%, transparent), rgba(255, 255, 255, 0.03)) !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+[dir="ltr"] .lu-nav.on { background: linear-gradient(90deg, color-mix(in srgb, var(--lx) 42%, transparent), rgba(255, 255, 255, 0.03)) !important; }
+.lu-nav.on::before { display: block !important; content: ""; position: absolute; inset-inline-start: -9px; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--lx-gold); box-shadow: 0 0 14px var(--lx-gold); animation: none !important; }
+.lu-side.rail .lu-nav.on::before { inset-inline-start: -8px; }
+/* icons: the page's colour on glass */
+.lu-side .lu-nav .i, .lu-side .lu-nav:not(.on) .i, .lu-side .lu-nav.on .i { width: 34px; height: 34px; filter: none; color: color-mix(in srgb, var(--nc) 55%, #fff); }
+.lu-side .lu-nav .i::before { background: color-mix(in srgb, var(--nc) 26%, transparent); }
+.lu-side .lu-nav .i::after { background: none; box-shadow: none; }
+.lu-side .lu-nav .i svg { width: 18px; height: 18px; filter: none; stroke-width: 2; }
+.lu-side .lu-nav.on .i::before { background: color-mix(in srgb, var(--nc) 45%, transparent); }
+.lu-side .lu-nav.on .i { color: #fff; }
+.lu-side.rail .lu-nav { min-height: 64px; }
+.lu-side.rail .lu-nav .i { width: 38px; height: 38px; }
+.lu-nav .lu-badge { background: linear-gradient(135deg, #fb7185, #dc2626); box-shadow: 0 0 12px rgba(244, 63, 94, 0.55); }
+.lu-me { background: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.08) !important; box-shadow: none !important; color: #fff; }
+.lu-me:hover { background: rgba(255, 255, 255, 0.09) !important; }
+.lu-me .on-dot { box-shadow: 0 0 0 2px #0a0f1f; }
+.ry-promo { background: linear-gradient(150deg, color-mix(in srgb, var(--lx) 40%, #0b1020), #0b1020); border: 1px solid color-mix(in srgb, var(--lx-gold) 32%, transparent); }
+.ry-promo::after { border-color: color-mix(in srgb, var(--lx-gold) 38%, transparent); }
+.ry-promo button { background: linear-gradient(135deg, #f6e3b0, var(--lx-gold) 50%, #b8893b); color: #1a1205; }
+
+/* ---------------- the top bar ---------------- */
+.lu-top { background: color-mix(in srgb, hsl(var(--background)) 74%, transparent) !important; backdrop-filter: blur(18px) saturate(1.5); border-bottom: 1px solid var(--l-line) !important; }
+.lu-top .lu-btn, .ry-me { background: var(--l-surface); border: 1px solid var(--l-line); }
+.lu-btn .dot { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 10px rgba(244, 63, 94, 0.6); }
+
+/* ---------------- the page title: plain, with a gold line under it ---------------- */
+.ry-head { padding: 6px 0 2px; align-items: flex-end; }
+.ry-head .t { display: flex; align-items: center; gap: 14px; }
+.ry-head h1, .ry-head .lux-title { font-size: 28px !important; font-weight: 800 !important; line-height: 1.3 !important; letter-spacing: -0.01em; color: var(--l-ink) !important; }
+.ry-head [data-slot="title"] h1::after, .ry-head h1::after { content: ""; display: block; width: 46px; height: 3px; margin-top: 7px; border-radius: 3px; background: linear-gradient(90deg, var(--lx-gold), transparent); }
+[dir="rtl"] .ry-head h1::after { background: linear-gradient(270deg, var(--lx-gold), transparent); }
+.ry-head p { color: var(--l-muted) !important; }
+.ry-title-ico { width: 48px; height: 48px; }
+/* pages with a hero of their own (vehicles, custody) show theirs alone */
+.lu-wrap:has(.vh-hero, .cu-hero) .ry-head { display: none; }
+@media (max-width: 599px) { .ry-head h1, .ry-head .lux-title { font-size: 23px !important; } }
+
+/* ---------------- cards: white, edged in a fine gradient ---------------- */
+.lu-app :is(.rp-card:not(.rp-kpis), .rc-lic, .rc-dcard, .rc-rp, .ry-card:not(.ry-welcome), .lux-glass, .lu-cc, .lu-row, .cu-card, .cu-kpi) {
+  border: 1px solid transparent !important;
+  background: linear-gradient(var(--l-surface), var(--l-surface)) padding-box,
+    linear-gradient(155deg, color-mix(in srgb, var(--lx) 36%, var(--l-line)), var(--l-line) 35%, var(--l-line) 70%, color-mix(in srgb, var(--lx-gold) 42%, var(--l-line))) border-box !important;
+  box-shadow: var(--l-shadow);
+}
+.lu-app :is(.rc-lic, .rc-rp, .ry-card, .lu-cc, .lu-row):hover { box-shadow: var(--ry-lift); }
+
+/* figures: separate cards with a soft glow in their colour */
+.lu-app .rp-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; padding: 0; background: none !important; border: 0 !important; box-shadow: none !important; overflow: visible; }
+.lu-app .rp-kpis > * {
+  position: relative; overflow: hidden; display: grid; gap: 4px; align-content: start; padding: 18px 20px; border-radius: 16px; text-align: start;
+  border: 1px solid transparent !important; color: var(--l-ink);
+  background: linear-gradient(var(--l-surface), var(--l-surface)) padding-box,
+    linear-gradient(155deg, color-mix(in srgb, var(--c, var(--lx)) 40%, var(--l-line)), var(--l-line) 40%, var(--l-line) 70%, color-mix(in srgb, var(--lx-gold) 40%, var(--l-line))) border-box !important;
+  box-shadow: var(--l-shadow); transition: transform 0.25s, box-shadow 0.25s;
+}
+.lu-app .rp-kpis > *::after { content: ""; position: absolute; width: 170px; height: 170px; border-radius: 50%; inset-inline-end: -70px; top: -84px; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--c, var(--lx)) 16%, transparent), transparent 70%); }
+.lu-app .rp-kpis > button:hover { transform: translateY(-4px); box-shadow: 0 28px 50px -26px color-mix(in srgb, var(--c, var(--lx)) 60%, transparent); }
+.lu-app .rp-kpis > [aria-pressed="true"] { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c, var(--lx)) 60%, transparent), var(--l-shadow); }
+.lu-app .rp-kpis .l { font-size: 14px; font-weight: 700; color: var(--l-muted); }
+.lu-app .rp-kpis .l i { width: 9px; height: 9px; background: var(--c, var(--lx)); box-shadow: 0 0 8px var(--c, var(--lx)); }
+.lu-app .rp-kpis .v { font: 800 30px/1.2 var(--font-sans); color: var(--l-ink); }
+.lu-app .rp-kpis .s { font-size: 13px; color: var(--l-muted); }
+.lu-app .rp-kpis .hero { background: linear-gradient(118deg, #070b17, color-mix(in srgb, var(--lx) 55%, #070b17) 70%, color-mix(in srgb, var(--lx) 80%, #000)) padding-box, linear-gradient(155deg, color-mix(in srgb, var(--lx-gold) 50%, transparent), transparent) border-box !important; color: #fff; }
+.lu-app .rp-kpis .hero .l, .lu-app .rp-kpis .hero .s { color: rgba(255, 255, 255, 0.78); }
+.lu-app .rp-kpis .hero .v { color: #f6e3b0; }
+.lu-app .rp-kpis .hero .l i { background: var(--lx-gold); box-shadow: 0 0 10px var(--lx-gold); }
+@media (max-width: 599px) { .lu-app .rp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .lu-app .rp-kpis > * { padding: 14px; } .lu-app .rp-kpis .v { font-size: 24px; } }
+
+/* the rolling digits of the figures */
+.mz-odo { display: inline-flex; direction: ltr; height: 1.2em; line-height: 1.2em; overflow: hidden; vertical-align: bottom; }
+.mz-odo .dg { display: block; width: 0.58em; height: 1.2em; overflow: hidden; text-align: center; }
+.mz-odo .sep { display: block; min-width: 0.28em; text-align: center; }
+.mz-odo .col { display: flex; flex-direction: column; transition: transform 1.6s cubic-bezier(0.2, 0.9, 0.2, 1); }
+.lu-app .mz-odo .col .d { display: block !important; width: auto !important; height: 1.2em !important; line-height: 1.2em !important; margin: 0 !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+.lu-app .mz-odo .dg, .lu-app .mz-odo .sep { line-height: 1.2em !important; }
+
+/* ---------------- the dashboard welcome: deep, with a gold light ---------------- */
+.lu-app .ry-welcome { overflow: hidden; color: #fff; border: 1px solid rgba(255, 255, 255, 0.08) !important; background: linear-gradient(118deg, #070b17, color-mix(in srgb, var(--lx) 50%, #070b17) 58%, color-mix(in srgb, var(--lx) 78%, #000)) !important; box-shadow: 0 34px 64px -34px color-mix(in srgb, var(--lx) 70%, #000) !important; }
+.lu-app .ry-welcome::before { content: ""; position: absolute; z-index: 0; width: 460px; height: 460px; border-radius: 50%; inset-inline-start: 30%; top: -260px; pointer-events: none; background: radial-gradient(circle, color-mix(in srgb, var(--lx-gold) 42%, transparent), transparent 66%); animation: lx-float 10s ease-in-out infinite; }
+.lu-app .ry-welcome > * { position: relative; z-index: 1; }
+@keyframes lx-float { 50% { transform: translate(-60px, 40px) scale(1.1); } }
+.lu-app .ry-welcome h2 { font-weight: 800; background: linear-gradient(90deg, #fff 20%, #f3dca3 45%, var(--lx-gold) 55%, #fff 80%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; animation: lx-gold 7s linear infinite; }
+@keyframes lx-gold { to { background-position: -220% 0; } }
+.lu-app .ry-welcome p { color: rgba(255, 255, 255, 0.78); }
+.lu-app .ry-welcome p b { color: #f6e3b0; }
+.lu-app .ry-welcome .chipw { background: rgba(255, 255, 255, 0.1); color: #f6e3b0; }
+.lu-app .ry-welcome .ry-btn.white { background: linear-gradient(135deg, #f6e3b0, var(--lx-gold) 50%, #b8893b); color: #1a1205; border: 0; box-shadow: 0 10px 24px -12px var(--lx-gold); }
+.lu-app .ry-welcome .ry-btn.glass { background: rgba(255, 255, 255, 0.12); color: #fff; border: 1px solid rgba(255, 255, 255, 0.26); }
+.ry-welcome-over { background: linear-gradient(118deg, #070b17, color-mix(in srgb, var(--lx) 50%, #070b17)) !important; color: #f6e3b0 !important; }
+
+/* custody and vehicle bands in the same deep tone */
+.lu-app .cu { --cu-deep: #070b17; }
+.lu-app .cu-hero, .lu-app .cu-dhead { background: linear-gradient(118deg, #070b17, color-mix(in srgb, var(--lx) 45%, #070b17) 70%); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+/* ---------------- buttons ---------------- */
+.lu-app .lux-cta, .lu-app .lu-go, .lu-app .bg-primary:is(button, a), [role="dialog"] .lux-cta, [role="dialog"] .bg-primary:is(button, a) {
+  position: relative; overflow: hidden; border-color: transparent !important; color: #fff !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lx, #a8792f) 80%, #fff), var(--lx, #a8792f) 50%, color-mix(in srgb, var(--lx, #a8792f) 72%, #000)) !important;
+  box-shadow: 0 10px 22px -12px var(--lx, #a8792f), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+.lu-app .lux-cta::after, .lu-app .lu-go::after, .lu-app .bg-primary:is(button, a)::after, [role="dialog"] .bg-primary:is(button, a)::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.36) 50%, transparent 65%); transform: translateX(-130%); animation: lx-sheen 4.5s ease-in-out infinite !important; }
+@keyframes lx-sheen { 55%, 100% { transform: translateX(130%); } }
+.lu-app .rc-btn.pri { background: linear-gradient(135deg, color-mix(in srgb, var(--lx) 80%, #fff), var(--lx) 50%, color-mix(in srgb, var(--lx) 72%, #000)) !important; color: #fff !important; border: 0 !important; }
+/* segmented choices: the chosen one lifts, with a gold ring */
+.lu-app .rc-seg button[aria-pressed="true"], .lu-app .rp-seg button[aria-pressed="true"], .lu-app .rp-views button[aria-pressed="true"] { background: var(--l-surface) !important; color: var(--l-ink) !important; box-shadow: 0 2px 8px -2px rgba(16, 24, 40, 0.2), inset 0 0 0 1px color-mix(in srgb, var(--lx-gold) 40%, transparent) !important; }
+
+/* ---------------- tables ---------------- */
+.lu-app table thead th { background: color-mix(in srgb, var(--l-ground) 60%, transparent); letter-spacing: 0.02em; }
+.lu-app table tbody tr { transition: background 0.15s; }
+.lu-app table tbody tr:hover { background: color-mix(in srgb, var(--lx) 5%, transparent); }
+.lu-app table tbody tr:hover > td:first-child { box-shadow: inset -3px 0 0 var(--lx-gold); }
+[dir="ltr"] .lu-app table tbody tr:hover > td:first-child { box-shadow: inset 3px 0 0 var(--lx-gold); }
+
+/* ---------------- dialogs, menus and toasts ---------------- */
+[role="dialog"] { border-color: color-mix(in srgb, var(--lx-gold) 28%, hsl(var(--border))) !important; }
+[data-sonner-toast] { background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; border: 1px solid color-mix(in srgb, var(--lx-gold) 40%, hsl(var(--border))) !important; box-shadow: 0 16px 34px -14px rgba(16, 24, 40, 0.35) !important; }
+
+/* the accent picker in the account menu */
+.lx-accs { display: flex; gap: 8px; padding: 6px 10px 10px; }
+.lx-accs button { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; background: var(--sw); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3); transition: transform 0.15s; }
+.lx-accs button:hover { transform: scale(1.12); }
+.lx-accs button[aria-pressed="true"] { border-color: hsl(var(--card)); box-shadow: 0 0 0 2px var(--sw); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lu-app .ry-welcome::before, .lu-app .ry-welcome h2, .lu-app .lux-cta::after, .lu-app .bg-primary:is(button, a)::after { animation: none !important; }
+}
+.lu-still .ry-welcome::before, .lu-still .ry-welcome h2, .lu-still .lux-cta::after, .lu-still .bg-primary:is(button, a)::after { animation: none !important; }
+
+/* ---------------- sign-in: a deep panel with a gold light ---------------- */
+.ry-la { background: radial-gradient(620px 420px at 85% 0%, color-mix(in srgb, var(--lx-gold) 34%, transparent), transparent 60%), radial-gradient(500px 400px at 0% 100%, color-mix(in srgb, var(--lx) 40%, transparent), transparent 60%), linear-gradient(165deg, #060a16, color-mix(in srgb, var(--lx) 40%, #060a16)); }
+.ry-la .o1 { background: radial-gradient(closest-side, color-mix(in srgb, var(--lx-gold) 30%, transparent), transparent); }
+.ry-la .o2 { background: radial-gradient(closest-side, color-mix(in srgb, var(--lx) 45%, transparent), transparent); }
+.ry-kicker { color: #f3dca3; }
+.ry-copy h2 { background: linear-gradient(90deg, #fff, #f3dca3 60%, var(--lx-gold)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; font-weight: 800; font-size: 36px; }
+[dir="rtl"] .ry-copy h2 { background: linear-gradient(270deg, #fff, #f3dca3 60%, var(--lx-gold)); -webkit-background-clip: text; background-clip: text; }
+.ry-copy ul { color: rgba(255, 255, 255, 0.8); }
+.ry-copy li svg { background: linear-gradient(135deg, #f6e3b0, var(--lx-gold)); color: #1a1205; }
+.ry-mock { background: rgba(255, 255, 255, 0.06); color: #fff; border: 1px solid color-mix(in srgb, var(--lx-gold) 32%, transparent); backdrop-filter: blur(8px); }
+.ry-mock .mt { color: rgba(255, 255, 255, 0.6); }
+.ry-mock .mt i { background: rgba(255, 255, 255, 0.2); }
+.ry-mock .mk div { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.7); }
+.ry-mock .mk b { color: #f3dca3; }
+.ry-mock .mc { border-bottom-color: rgba(255, 255, 255, 0.12); }
+.ry-mock .mc i, .ry-mock .mc i:nth-child(odd) { background: rgba(243, 220, 163, 0.28); }
+.ry-mock .mc i:last-child { background: linear-gradient(180deg, #f6e3b0, var(--lx-gold)); }
+.ry-form h1 { font-weight: 800; }
+.ry-fl input:focus { border-color: var(--lx); box-shadow: 0 0 0 4px color-mix(in srgb, var(--lx) 16%, transparent); }
+.ry-check input { accent-color: var(--lx); }
+.ry-row a, .ry-lfoot a:hover { color: var(--lx); }
+.ry-go { background: linear-gradient(135deg, color-mix(in srgb, var(--lx) 80%, #fff), var(--lx) 50%, color-mix(in srgb, var(--lx) 72%, #000)); box-shadow: 0 12px 24px -12px var(--lx), inset 0 1px 0 rgba(255, 255, 255, 0.28); }
+.ry-go:hover { box-shadow: 0 18px 30px -14px var(--lx); }
+.ry-go::after { animation: lx-sheen 4.5s ease-in-out infinite; }
+.ry-brand img { box-shadow: 0 0 0 2px color-mix(in srgb, var(--lx-gold) 55%, transparent), 0 8px 18px -10px var(--lx-gold); }

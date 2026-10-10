@@ -107,7 +107,7 @@ export type PrintThemeId =
   | "pearl" | "passport" | "airmail" | "bauhaus" | "palm" | "circuit" | "topo" | "marble" | "ticket" | "calligraphy"
   | "studio_executive" | "studio_heritage" | "studio_editorial" | "studio_minimal" | "studio_blueprint" | "studio_royal" | "studio_ledger" | "studio_atelier" | "studio_modern" | "studio_archive"
   | "munassa" | "janib" | "bitaqa" | "qutri" | "fatih"
-  | "shafaq";
+  | "shafaq" | "fakhir";
 
 export interface WhatsappMessageItem {
   id: string;

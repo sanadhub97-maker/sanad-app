@@ -7,6 +7,9 @@ interface UiState {
   themeMode: ThemeMode;
   sidebarCollapsed: boolean;
   animationsEnabled: boolean;
+  /** The site's accent colour (hex), chosen from the account menu. */
+  accent: string;
+  setAccent: (hex: string) => void;
   setThemeMode: (mode: ThemeMode) => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
@@ -29,6 +32,8 @@ export const useUiStore = create<UiState>()(
       themeMode: "system",
       sidebarCollapsed: false,
       animationsEnabled: true,
+      accent: "#a8792f",
+      setAccent: (hex) => set({ accent: hex }),
       setThemeMode: (mode) => set({ themeMode: mode }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
