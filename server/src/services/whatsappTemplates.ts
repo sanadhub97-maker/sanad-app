@@ -115,105 +115,104 @@ function view(c: AlertContext) {
 const optional = (...lines: (string | false | null | undefined)[]) => lines.filter((l): l is string => Boolean(l));
 
 // ---------- Designs ----------
+// WhatsApp's own markup, so each provider shows them as designed: *bold*,
+// _italic_, `monospace` for numbers, "> " for a quoted block (drawn as a
+// framed panel in the chat) and "- " for a bulleted list.
+
+/** A number in monospace, so its digits never mix with the Arabic around it. */
+const mono = (s: string) => `\`${s}\``;
+const fullDate = (d: Date) => `${weekdayAr(d)} ${dateStr(d)}`;
+/** Of ten steps, how many are filled: more as the date nears, all once it has passed. */
+const filled = (daysLeft: number) => (daysLeft <= 0 ? 10 : Math.min(10, Math.max(1, Math.round(10 * (1 - daysLeft / 30)))));
+const bar = (daysLeft: number, on = "▰", off = "▱") => on.repeat(filled(daysLeft)) + off.repeat(10 - filled(daysLeft));
+const headline = (c: AlertContext) =>
+  c.daysLeft <= 0 ? L("وثيقة منتهية الصلاحية", "Document expired") : c.daysLeft <= 7 ? L("وثيقة تنتهي خلال أيام", "Document ending within days") : L("وثيقة تقترب من الانتهاء", "Document ending soon");
+const signature = () => L("_SanaD · إدارة الوثائق والتراخيص_", "_SanaD · Documents & Licenses_");
 
 const RENDER: Record<WhatsappTemplateId, (c: AlertContext) => string[]> = {
-  // Headed letter: every field on its own line, the status last.
+  // A formal letter: the company, the status in a framed panel, the details, the request.
   classic: (c) => {
     const lv = level(c.daysLeft);
     const v = view(c);
     return [
-      `🔔 *${c.daysLeft <= 0 ? L("تنبيه: وثيقة منتهية الصلاحية", "Alert: document expired") : L("تنبيه قرب انتهاء وثيقة", "Alert: document ending soon")}*`,
-      `*${v.company}*`,
+      `🔔 *${headline(c)}*`,
+      `_${v.company}_`,
+      "",
+      `> ${lv.emoji} *${statusL(c.daysLeft)}*`,
+      `> 📅 ${fullDate(c.expiryDate)}`,
       "",
       ...optional(
         v.employee && `👤 ${L("الموظف", "Employee")}: *${v.employee}*`,
         `📄 ${L("الوثيقة", "Document")}: *${v.document}*`,
-        c.number && `🔢 ${L("الرقم", "Number")}: *${c.number}*`,
-        v.branch && `📍 ${L("الفرع", "Branch")}: *${v.branch}*`
+        c.number && `🔢 ${L("الرقم", "Number")}: ${mono(c.number)}`,
+        v.branch && `📍 ${L("الفرع", "Branch")}: ${v.branch}`
       ),
-      `📅 ${L("تاريخ الانتهاء", "Expiry date")}: *${weekdayAr(c.expiryDate)} ${dateStr(c.expiryDate)}*`,
-      `${lv.emoji} ${L("الحالة", "Status")}: *${statusL(c.daysLeft)}*`,
       "",
       actionAr(c.daysLeft),
-      L("_نظام SanaD لإدارة الوثائق والتراخيص_", "_SanaD · Documents & Licenses_"),
+      signature(),
     ];
   },
 
-  // A framed card: company banner, then aligned fields.
+  // The whole alert inside one framed panel, like a card in the chat.
   card: (c) => {
     const lv = level(c.daysLeft);
     const v = view(c);
-    const rule = "━━━━━━━━━━━━━━━";
     return [
-      rule,
       `🏢 *${v.company}*`,
-      rule,
-      `${lv.emoji} *${c.daysLeft <= 0 ? L("وثيقة منتهية الصلاحية", "Document expired") : L("وثيقة قاربت على الانتهاء", "Document ending soon")}*`,
       "",
-      ...optional(
-        v.employee && `▫️ *${L("الموظف", "Employee")}:* ${v.employee}`,
-        `▫️ *${L("الوثيقة", "Document")}:* ${v.document}`,
-        c.number && `▫️ *${L("الرقم", "Number")}:* ${c.number}`,
-        v.branch && `▫️ *${L("الفرع", "Branch")}:* ${v.branch}`
-      ),
-      `▫️ *${L("الانتهاء", "Expires")}:* ${dateStr(c.expiryDate)}`,
-      `▫️ *${L("الحالة", "Status")}:* ${statusL(c.daysLeft)}`,
-      rule,
-      L("_SanaD · إدارة الوثائق والتراخيص_", "_SanaD · Documents & Licenses_"),
+      `> ${lv.emoji} *${v.document}* · ${statusL(c.daysLeft)}`,
+      ...optional(v.employee && `> 👤 *${v.employee}*`),
+      ...optional(c.number && `> 🔢 ${mono(c.number)}`, v.branch && `> 📍 ${v.branch}`),
+      `> 📅 ${fullDate(c.expiryDate)}`,
+      `> ${bar(c.daysLeft)}`,
+      "",
+      signature(),
     ];
   },
 
-  // Three lines: readable straight from the phone's notification.
+  // Two lines that read whole in the phone's notification.
   compact: (c) => {
     const lv = level(c.daysLeft);
     const v = view(c);
+    return [`${lv.emoji} *${v.document}${v.employee ? ` · ${v.employee}` : ""}* — ${statusL(c.daysLeft)}`, `📅 ${dateStr(c.expiryDate)} · _${v.company}_`];
+  },
+
+  // Urgency first: the level, a bar that fills as the date nears, then the details as a list.
+  priority: (c) => {
+    const lv = level(c.daysLeft);
+    const v = view(c);
     return [
-      `${lv.emoji} *${v.document}${v.employee ? ` — ${v.employee}` : ""}*`,
-      `${statusL(c.daysLeft)} · ${dateStr(c.expiryDate)}`,
+      `${lv.emoji} *${lv.priorityAr}* · ${statusL(c.daysLeft)}`,
+      bar(c.daysLeft, lv.square, "⬜"),
+      "",
+      `*${v.employee ?? v.document}*`,
+      ...optional(
+        v.employee && `- ${v.document}${c.number ? ` · ${mono(c.number)}` : ""}`,
+        !v.employee && c.number && `- ${mono(c.number)}`,
+        v.branch && `- ${v.branch}`
+      ),
+      `- ${fullDate(c.expiryDate)}`,
+      "",
       `_${v.company}_`,
     ];
   },
 
-  // Urgency first: a coloured bar that fills as the date gets closer.
-  priority: (c) => {
-    const lv = level(c.daysLeft);
-    const v = view(c);
-    const filled = c.daysLeft <= 0 ? 10 : Math.min(10, Math.max(1, Math.round(10 * (1 - c.daysLeft / 30))));
-    return [
-      `${lv.emoji} *${lv.priorityAr} — ${statusL(c.daysLeft)}*`,
-      lv.square.repeat(filled) + "⬜".repeat(10 - filled),
-      "",
-      `*${v.employee ?? v.document}*`,
-      ...optional(
-        v.employee && `📄 ${v.document}${c.number ? ` · ${c.number}` : ""}`,
-        !v.employee && c.number && `🔢 ${c.number}`,
-        v.branch && `📍 ${v.branch}`
-      ),
-      `📅 ${weekdayAr(c.expiryDate)} ${dateStr(c.expiryDate)}`,
-      "",
-      `_${v.company} · SanaD_`,
-    ];
-  },
-
-  // An Arabic block, then the same in English. Each line stays in one
+  // An Arabic panel, then the same in English. Each line stays in one
   // language: a line mixing both reads out of order in a right-to-left chat.
   bilingual: (c) => {
     const lv = level(c.daysLeft);
     const employeeEn = c.employeeEn ?? c.employeeAr;
     return [
-      "🔔 *تنبيه انتهاء وثيقة*",
-      `*${c.company}*`,
-      ...optional(c.employeeAr && `👤 ${c.employeeAr}`),
-      `📄 ${c.documentAr}`,
-      ...optional(c.number && `🔢 ${c.number}`),
-      `📅 ${dateStr(c.expiryDate)}`,
-      `${lv.emoji} ${statusAr(c.daysLeft)}`,
-      "───────────────",
-      "🔔 *Document Expiry Alert*",
-      ...optional(employeeEn && `👤 ${employeeEn}`),
-      `📄 ${c.documentEn}`,
-      `📅 ${dateStr(c.expiryDate)}`,
-      `${lv.emoji} ${statusEn(c.daysLeft)}`,
+      `🔔 *${c.company}*`,
+      "",
+      `> ${lv.emoji} *${statusAr(c.daysLeft)}*`,
+      ...optional(c.employeeAr && `> 👤 ${c.employeeAr}`),
+      `> 📄 ${c.documentAr}${c.number ? ` · ${mono(c.number)}` : ""}`,
+      `> 📅 ${dateStr(c.expiryDate)}`,
+      "",
+      `> ${lv.emoji} *${statusEn(c.daysLeft)}*`,
+      ...optional(employeeEn && `> 👤 ${employeeEn}`),
+      `> 📄 ${c.documentEn}`,
       "",
       "_SanaD · Documents & Licenses_",
     ];
@@ -222,4 +221,49 @@ const RENDER: Record<WhatsappTemplateId, (c: AlertContext) => string[]> = {
 
 export function renderWhatsappAlert(template: WhatsappTemplateId, context: AlertContext): string {
   return RENDER[template](context).join("\n");
+}
+
+// ---------- The daily summary, in the same design ----------
+
+/** One document in the daily summary, in the short form of the chosen design. */
+const ENTRY: Record<WhatsappTemplateId, (c: AlertContext) => string[]> = {
+  classic: (c) => {
+    const v = view(c);
+    return [`${level(c.daysLeft).emoji} *${v.document}*${v.employee ? ` — ${v.employee}` : ""}`, `${statusL(c.daysLeft)} · ${dateStr(c.expiryDate)}${c.number ? ` · ${mono(c.number)}` : ""}`];
+  },
+  card: (c) => {
+    const v = view(c);
+    return [`> ${level(c.daysLeft).emoji} *${v.document}* · ${statusL(c.daysLeft)}`, ...optional(v.employee && `> ${v.employee}`), `> ${dateStr(c.expiryDate)}${c.number ? ` · ${mono(c.number)}` : ""}`];
+  },
+  compact: (c) => {
+    const v = view(c);
+    return [`${level(c.daysLeft).emoji} ${v.document}${v.employee ? ` · ${v.employee}` : ""} — *${statusL(c.daysLeft)}*`];
+  },
+  priority: (c) => {
+    const v = view(c);
+    return [`${level(c.daysLeft).emoji} *${statusL(c.daysLeft)}* · ${v.document}${v.employee ? ` — ${v.employee}` : ""}`, `${bar(c.daysLeft)} ${dateStr(c.expiryDate)}`];
+  },
+  bilingual: (c) => [
+    `${level(c.daysLeft).emoji} *${c.documentAr}*${c.employeeAr ? ` — ${c.employeeAr}` : ""} · ${statusAr(c.daysLeft)}`,
+    `${c.documentEn}${(c.employeeEn ?? c.employeeAr) ? ` — ${c.employeeEn ?? c.employeeAr}` : ""} · ${statusEn(c.daysLeft)}`,
+  ],
+};
+
+export function renderWhatsappEntry(template: WhatsappTemplateId, context: AlertContext): string {
+  return ENTRY[template](context).join("\n");
+}
+
+/** The summary's opening: the title, the company, the day, and the count at each level. */
+export function renderWhatsappDigestHeader(template: WhatsappTemplateId, company: string, contexts: Pick<AlertContext, "daysLeft">[], today = new Date()): string {
+  const expired = contexts.filter((c) => c.daysLeft <= 0).length;
+  const week = contexts.filter((c) => c.daysLeft > 0 && c.daysLeft <= 7).length;
+  const month = contexts.length - expired - week;
+  const counts = optional(
+    expired > 0 && `🔴 ${expired} ${L("منتهية", "expired")}`,
+    week > 0 && `🟠 ${week} ${L("خلال أسبوع", "within a week")}`,
+    month > 0 && `🟡 ${month} ${L("خلال شهر", "within a month")}`
+  ).join("  ·  ");
+  // One language per line: a line mixing both reads out of order in a right-to-left chat.
+  const title = template === "bilingual" ? "📋 *ملخص الوثائق اليومي*\n📋 *Daily documents summary*" : `📋 *${L("ملخص الوثائق اليومي", "Daily documents summary")}*`;
+  return [title, `_${company}_ · ${fullDate(today)}`, ...optional(counts && "", counts && (template === "card" ? `> ${counts}` : counts))].join("\n");
 }

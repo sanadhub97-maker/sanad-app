@@ -25,6 +25,8 @@ import {
   WHATSAPP_TEMPLATE_IDS,
   alertContext,
   renderWhatsappAlert,
+  renderWhatsappDigestHeader,
+  renderWhatsappEntry,
   type AlertContext,
   type WhatsappTemplateId,
 } from "@/services/whatsappTemplates";
@@ -58,6 +60,12 @@ async function sampleAlertContext(companyName: string | null | undefined, compan
   };
 }
 
+/** The morning summary in a design: its opening, then the sample document in each state. */
+function dailyPreview(id: WhatsappTemplateId, context: AlertContext) {
+  const contexts = Object.values(PREVIEW_STATES).map((days) => ({ ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }));
+  return [renderWhatsappDigestHeader(id, context.company, contexts), ...contexts.map((c) => renderWhatsappEntry(id, c))].join("\n\n");
+}
+
 // The same document in each state, so the designs can be compared as it nears expiry.
 const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
 
@@ -72,7 +80,7 @@ export const getWhatsappTemplate = asyncHandler(async (req: Request, res: Respon
         Object.entries(PREVIEW_STATES).map(([state, days]) => [
           state,
           renderWhatsappAlert(id, { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }),
-        ])
+        ]).concat([["daily", dailyPreview(id, context)]])
       ),
     ])
   ));

@@ -11,10 +11,10 @@ export function whatsappEligible(item: TrackableItem) {
 }
 
 /** Keep whole entries together and leave room below provider text limits. */
-export function digestParts(entries: DigestEntry[], header: string) {
+export function digestParts(entries: DigestEntry[], header: string, bullet = "• ") {
   const parts: { text: string; entries: DigestEntry[] }[] = [];
   for (const entry of entries) {
-    const line = `• ${entry.text.slice(0, 2400)}`;
+    const line = `${bullet}${entry.text.slice(0, 2400)}`;
     let part = parts[parts.length - 1];
     if (!part || part.text.length + line.length + 2 > 3500) {
       part = { text: header.slice(0, 400), entries: [] };
@@ -102,7 +102,7 @@ export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>
     normalized.set(key, [...unique.values()]);
   }
   for (const [phone, entries] of normalized) {
-    const parts = entries.length ? digestParts(entries, header).map((p) => p.text) : [`${header.slice(0, 400)}\n\n${emptyText}`];
+    const parts = entries.length ? digestParts(entries, header, "").map((p) => p.text) : [`${header.slice(0, 400)}\n\n${emptyText}`];
     for (const [n, text] of parts.entries()) {
       const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
       if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;

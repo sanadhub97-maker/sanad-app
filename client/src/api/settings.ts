@@ -125,7 +125,8 @@ export interface WhatsappTemplateSettings {
   template: WhatsappTemplateId;
   /** False when the system has no documents yet and the previews use an example. */
   sampleIsReal: boolean;
-  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState, string>>;
+  /** Each design for one alert in each state, and "daily": the morning summary in that design. */
+  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState | "daily", string>>;
 }
 
 export type WhatsappCardId =

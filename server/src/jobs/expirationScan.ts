@@ -5,7 +5,9 @@ import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappTemplateSetting } from "@/services/settingsStore";
+import { alertContext, renderWhatsappDigestHeader, renderWhatsappEntry } from "@/services/whatsappTemplates";
+import { withLang } from "@/services/lang";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
@@ -45,18 +47,6 @@ export function messageFor(item: Pick<TrackableItem, "label" | "sourceType" | "k
 export const NOTIFICATION_TITLE = { en: "Document Expiration Alert", ar: "تنبيه انتهاء وثيقة" };
 
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
-
-/** One line of the daily WhatsApp summary: ended, ending today, or ending in N days. */
-export function dailyLine(item: TrackableItem, days: number, language: "ar" | "en"): string {
-  const expiry = item.expiryDate.toISOString().slice(0, 10);
-  if (language === "en") {
-    const when = days < 0 ? `expired ${-days} day${days === -1 ? "" : "s"} ago` : days === 0 ? "expires today" : `expires in ${days} day${days === 1 ? "" : "s"}`;
-    return `${subjectEn(item)} ${when}.\nExpiry: ${expiry}`;
-  }
-  const subject = subjectAr(item);
-  const when = days < 0 ? `انتهت صلاحية ${subject} منذ ${daysAr(-days)}` : days === 0 ? `تنتهي صلاحية ${subject} اليوم` : `تنتهي صلاحية ${subject} خلال ${daysAr(days)}`;
-  return `${days < 0 ? "🔴" : days <= 7 ? "🟠" : "🟡"} ${when}.\nتاريخ الانتهاء: ${expiry}`;
-}
 
 /** What the Arabic message is about: "الإقامة للموظف فلان", or the document's own name. */
 export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr"> & { sourceType?: string; kindAr?: string }): string {
@@ -135,16 +125,21 @@ async function performExpirationScan() {
   const due: Parameters<typeof pushDueItems>[0] = [];
 
   // WhatsApp: every morning, everything already expired or ending within the "ending soon"
-  // window, most urgent first — it keeps coming until the document is renewed.
+  // window, most urgent first — it keeps coming until the document is renewed. It is
+  // written in the design chosen in Settings → WhatsApp, in the alerts' language.
+  let dailyHeader = "";
   if (whatsappSettings?.enabled) {
     const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
     const phones = fallback ? recipients.flatMap((r) => (r.phone ? [r.phone] : [])) : whatsappPhones;
+    const template = await getWhatsappTemplateSetting();
     const lang = language === "en" ? "en" : "ar";
-    const daily = items
-      .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
-      .filter(({ item, days }) => days <= rules.expiringSoonThresholdDays && whatsappEligible(item))
-      .sort((a, b) => a.days - b.days)
-      .map(({ item, days }) => ({ item, dedupeBase: `${item.key}:daily`, text: dailyLine(item, days, lang) }));
+    const dueToday = items
+      .filter((item) => daysUntil(item.expiryDate) <= rules.expiringSoonThresholdDays && whatsappEligible(item))
+      .map((item) => ({ item, context: alertContext(item, companyName, branding.company?.nameEn) }))
+      .sort((a, b) => a.context.daysLeft - b.context.daysLeft);
+    const daily = withLang(lang, () => dueToday.map(({ item, context }) => ({ item, dedupeBase: `${item.key}:daily`, text: renderWhatsappEntry(template, context) })));
+    const company = (lang === "en" ? branding.company?.nameEn : undefined) || companyName || "SanaD";
+    dailyHeader = withLang(lang, () => renderWhatsappDigestHeader(template, company, dueToday.map((d) => d.context)));
     for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
   }
 
@@ -193,10 +188,9 @@ async function performExpirationScan() {
       }
     }
   }
-  const digestTitle = language === "en" ? "Document expiration summary" : "ملخص تنبيهات انتهاء الوثائق";
   await sendDailyWhatsappDigest(
     whatsappGroups,
-    digestTitle + (companyName ? "\n" + companyName : ""),
+    dailyHeader,
     language === "en" ? "✅ No document has expired or ends soon." : "✅ لا توجد وثائق منتهية أو قريبة من الانتهاء اليوم."
   );
 

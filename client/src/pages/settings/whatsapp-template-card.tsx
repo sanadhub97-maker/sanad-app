@@ -15,43 +15,44 @@ const DESIGNS: { id: WhatsappTemplateId; nameAr: string; nameEn: string; descAr:
     id: "classic",
     nameAr: "الرسمي",
     nameEn: "Classic",
-    descAr: "خطاب مرتب: كل بيان في سطر، والحالة في النهاية.",
-    descEn: "A tidy letter: one detail per line, the status last.",
+    descAr: "خطاب رسمي: الحالة في لوحة بارزة، ثم البيانات، ثم المطلوب.",
+    descEn: "A formal letter: the status in a framed panel, the details, then the request.",
   },
   {
     id: "card",
     nameAr: "البطاقة",
     nameEn: "Card",
-    descAr: "اسم المنشأة داخل إطار، والبيانات تحته في نقاط.",
-    descEn: "The company in a frame, the details as a list below.",
+    descAr: "التنبيه كله داخل لوحة مؤطرة، وشريط يمتلئ كلما قرب الميعاد.",
+    descEn: "The whole alert in one framed panel, with a bar that fills as the date nears.",
   },
   {
     id: "compact",
     nameAr: "المختصر",
     nameEn: "Compact",
-    descAr: "ثلاثة أسطر تُقرأ من الإشعار دون فتح الرسالة.",
-    descEn: "Three lines, readable straight from the notification.",
+    descAr: "سطران يُقرآن من الإشعار دون فتح الرسالة.",
+    descEn: "Two lines, readable straight from the notification.",
   },
   {
     id: "priority",
     nameAr: "حسب الأولوية",
     nameEn: "Priority",
-    descAr: "درجة الاستعجال أولاً، وشريط ملوّن يمتلئ كلما اقترب التاريخ.",
-    descEn: "Urgency first, with a coloured bar that fills as the date nears.",
+    descAr: "درجة الاستعجال أولاً، وشريط ملوّن، والبيانات في قائمة نقطية.",
+    descEn: "Urgency first, a coloured bar, and the details as a bulleted list.",
   },
   {
     id: "bilingual",
     nameAr: "ثنائي اللغة",
     nameEn: "Bilingual",
-    descAr: "عربي وإنجليزي في الرسالة نفسها.",
-    descEn: "Arabic and English in the same message.",
+    descAr: "لوحة بالعربي ثم لوحة بالإنجليزي في الرسالة نفسها.",
+    descEn: "An Arabic panel, then the same in English.",
   },
 ];
 
-const STATES: { id: WhatsappPreviewState; ar: string; en: string; dot: string }[] = [
+const STATES: { id: WhatsappPreviewState | "daily"; ar: string; en: string; dot: string }[] = [
   { id: "expired", ar: "منتهية", en: "Expired", dot: "bg-red-500" },
   { id: "week", ar: "باقي 7 أيام", en: "7 days left", dot: "bg-orange-500" },
   { id: "month", ar: "باقي 30 يومًا", en: "30 days left", dot: "bg-yellow-500" },
+  { id: "daily", ar: "الملخص اليومي", en: "Daily summary", dot: "bg-amber-300" },
 ];
 
 /** Settings → WhatsApp: the design of the expiry alert, previewed on a real document. */
@@ -59,7 +60,7 @@ export function WhatsappTemplateCard({ canEdit, isRtl }: { canEdit: boolean; isR
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["settings", "whatsapp", "template"], queryFn: settingsApi.getWhatsappTemplate });
   const [choice, setChoice] = useState<WhatsappTemplateId | null>(null);
-  const [state, setState] = useState<WhatsappPreviewState>("week");
+  const [state, setState] = useState<WhatsappPreviewState | "daily">("week");
   useEffect(() => {
     if (data) setChoice(data.template);
   }, [data]);
