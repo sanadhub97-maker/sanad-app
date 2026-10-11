@@ -39,6 +39,7 @@ import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
 import { toDateInputValue, nullsToUndefined, todayInputValue } from "@/lib/utils";
 import type { Payment } from "@/types/models";
+import { LiveAside, LiveVoucher } from "@/components/royal/live-cards";
 
 // Keep in sync with server/src/modules/payments/payments.schemas.ts.
 const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
@@ -134,6 +135,10 @@ export function PaymentDialog({
   const amount = watch("amount") || 0;
   const vat = watch("vat") || 0;
   const total = (Number(amount) + Number(vat)).toFixed(2);
+  // The live voucher beside the form follows what is typed.
+  const live = watch();
+  const liveBranch = branches?.find((b) => b.id === live.branchId);
+  const liveEmployee = employees.find((e) => e.id === live.employeeId);
 
   useEffect(() => {
     if (open) {
@@ -168,7 +173,7 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[92vh] flex flex-col">
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-xl p-0 shadow-2xl w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[92vh] flex flex-col">
         {/* 🌟 Ambient Top Glow */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-rose-500/20 via-pink-500/10 to-transparent blur-3xl pointer-events-none" />
 
@@ -204,7 +209,8 @@ export function PaymentDialog({
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending || uploadingAttachments ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
+        <form id="payment-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending || uploadingAttachments ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="rx-split flex-1 overflow-y-auto p-6 sm:p-8 pb-12">
+          <div className="min-w-0 space-y-6">
           {/* 💰 Section 1: Financial Calculations */}
           <div className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -514,6 +520,23 @@ export function PaymentDialog({
               <MultiFileUpload fileIds={watch("fileIds") ?? []} onChange={ids => { setValue("fileIds", ids, { shouldDirty: true }); setValue("fileId", undefined); }} onBusyChange={setUploadingAttachments} />
             </div>
           </div>
+          </div>
+          <LiveAside label={isAr ? "معاينة السند" : "Voucher preview"}>
+            <LiveVoucher
+              number={live.paymentNumber}
+              company={liveBranch ? localized(liveBranch.name, liveBranch.nameEn) ?? undefined : undefined}
+              rows={[
+                [isAr ? "البند" : "Category", live.category ? t(`paymentCategories.${live.category}`) : undefined],
+                ...(liveEmployee ? [[isAr ? "الموظف" : "Employee", localized(liveEmployee.fullNameAr, liveEmployee.fullNameEn) ?? undefined] as [string, string | undefined]] : []),
+                [isAr ? "المستفيد" : "Payee", live.supplierName],
+                [isAr ? "طريقة الدفع" : "Method", live.method ? t(`paymentMethods.${live.method}`) : undefined],
+                [isAr ? "التاريخ" : "Date", live.paymentDate],
+                [isAr ? "الوصف" : "Description", live.description],
+              ]}
+              amount={Number(amount) || 0}
+              vat={Number(vat) || 0}
+            />
+          </LiveAside>
         </form>
 
         {/* 🌟 Deluxe Action Buttons Footer */}

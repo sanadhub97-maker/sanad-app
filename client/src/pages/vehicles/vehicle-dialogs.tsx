@@ -10,6 +10,7 @@ import { getErrorMessage } from "@/lib/api";
 import { listActiveBranches } from "@/api/branches";
 import { employeesApi } from "@/api/employees";
 import { useAuthStore } from "@/stores/authStore";
+import { LiveAside, LiveDates, LivePlate } from "@/components/royal/live-cards";
 import { DATE_LOOK, vehiclesApi, type InsuranceType, type Vehicle, type VehicleDate } from "@/api/vehicles";
 
 const day = (v?: string | null) => (v ? v.slice(0, 10) : "");
@@ -91,12 +92,13 @@ export function VehicleDialog({ open, onOpenChange, vehicle }: { open: boolean; 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="vh vh-dlg w-full sm:max-w-3xl max-h-[92vh]">
+      <DialogContent className="vh vh-dlg w-full sm:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[92vh]">
         <div className="vh-dh">
           <DialogTitle asChild><h2 className="vh-foil">{vehicle ? tr("تعديل السيارة", "Edit vehicle") : tr("إضافة سيارة", "Add a vehicle")}</h2></DialogTitle>
           <DialogDescription asChild><p>{tr("بيانات السيارة، والفحص الدوري، والتأمين، والاستمارة.", "The car, its periodic inspection, insurance and registration.")}</p></DialogDescription>
         </div>
-        <div className="vh-db">
+        <div className="rx-split vh-split">
+        <div className="vh-db min-w-0">
           <div className="vh-sec">{tr("اللوحة والسيارة", "Plate and car")}</div>
           <div className="vh-g3">
             <div className="vh-f"><label htmlFor="v-letters">{tr("حروف اللوحة", "Plate letters")} <i>*</i></label><input id="v-letters" className={cls("plateLetters")} value={f.plateLetters} onChange={(e) => set("plateLetters", e.target.value)} placeholder="أ ب ج" maxLength={12} /></div>
@@ -149,6 +151,15 @@ export function VehicleDialog({ open, onOpenChange, vehicle }: { open: boolean; 
             {file("registrationFileId", tr("صورة الاستمارة", "Registration card"))}
           </div>
           <div className="vh-f"><label htmlFor="v-notes">{tr("ملاحظات", "Notes")}</label><textarea id="v-notes" className="vh-in" rows={2} value={f.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000} /></div>
+        </div>
+        <LiveAside>
+          <LivePlate letters={f.plateLetters} number={f.plateNumber} />
+          <div className="rx-car">
+            <b>{f.make.trim() || tr("نوع السيارة", "Make and model")}</b>
+            <small>{[f.year, f.color, branches.find((b) => b.id === f.branchId) ? branchName(branches.find((b) => b.id === f.branchId)!) : ""].filter(Boolean).join(" · ") || "—"}</small>
+          </div>
+          <LiveDates items={[{ label: tr("الفحص الدوري", "Inspection"), date: f.inspectionExpiry }, { label: tr("التأمين", "Insurance"), date: f.insuranceExpiry }, { label: tr("الاستمارة", "Registration"), date: f.registrationExpiry }]} />
+        </LiveAside>
         </div>
         <div className="vh-df">
           <button type="button" className="vh-btn" onClick={() => onOpenChange(false)}>{tr("إلغاء", "Cancel")}</button>

@@ -47,6 +47,7 @@ import { toDateInputValue, nullsToUndefined } from "@/lib/utils";
 import { transliterateArabicName } from "@/lib/arabic-transliteration";
 import type { Employee } from "@/types/models";
 import { useDomesticProfessions } from "@/lib/domestic";
+import { LiveAside, LiveIdCard } from "@/components/royal/live-cards";
 
 const makeSchema = () => z.object({
   employeeNumber: z.string().min(1, tr("رقم الموظف مطلوب", "Employee number is required")),
@@ -192,6 +193,11 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
+  // The live card beside the form follows what is typed.
+  const live = watch();
+  const liveBranch = branches?.find((b) => b.id === live.branchId);
+  const STATUS: Record<string, [string, string]> = { ACTIVE: ["على رأس العمل", "Active"], INACTIVE: ["موقوف", "Inactive"], ON_LEAVE: ["في إجازة", "On leave"], TERMINATED: ["منتهي الخدمة", "Terminated"] };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -201,7 +207,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-2xl p-0 shadow-2xl w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl max-h-[92vh] flex flex-col">
+      <DialogContent className="overflow-hidden rounded-3xl border border-border/80 bg-background/95 backdrop-blur-2xl p-0 shadow-2xl w-full sm:max-w-4xl md:max-w-5xl lg:max-w-6xl xl:max-w-[1320px] max-h-[92vh] flex flex-col">
         {/* 🌟 Ambient Top Glow */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-44 w-96 rounded-full bg-gradient-to-b from-blue-500/20 via-indigo-500/10 to-transparent blur-3xl pointer-events-none" />
 
@@ -265,7 +271,8 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
         </DialogHeader>
 
         {/* 📝 Scrollable Form Body */}
-        <form id="employee-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 pb-12">
+        <form id="employee-dialog-form" onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="rx-split flex-1 overflow-y-auto p-6 sm:p-8 pb-12">
+          <div className="min-w-0 space-y-6">
           {/* 👤 Section 1: Personal & Identity Information */}
           <div id="emp-sec-identity" className="rounded-2xl border border-border/70 bg-muted/20 backdrop-blur-sm p-4 sm:p-5 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -666,6 +673,27 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               </FormField>
             </div>
           </div>
+          </div>
+          <LiveAside>
+            <LiveIdCard
+              nameAr={live.fullNameAr}
+              nameEn={live.fullNameEn}
+              number={live.employeeNumber}
+              job={isAr ? live.jobTitle : live.jobTitleEn || live.jobTitle}
+              branch={liveBranch ? localized(liveBranch.name, liveBranch.nameEn) ?? undefined : undefined}
+              nationality={isAr ? live.nationality : live.nationalityEn || live.nationality}
+              iqama={live.iqamaNumber}
+              iqamaExpiry={live.iqamaExpiryDate}
+              status={STATUS[live.employmentStatus]?.[isAr ? 0 : 1]}
+              checks={[
+                { label: isAr ? "الاسم بالعربي والإنجليزي" : "Name in Arabic and English", ok: !!live.fullNameAr?.trim() && !!live.fullNameEn?.trim() },
+                { label: isAr ? "الجوال أو البريد" : "Mobile or email", ok: !!live.mobile?.trim() || !!live.email?.trim() },
+                { label: isAr ? "رقم الإقامة وتاريخ انتهائها" : "Iqama number and expiry", ok: !!live.iqamaNumber?.trim() && !!live.iqamaExpiryDate },
+                { label: isAr ? "الجواز" : "Passport", ok: !!live.passportNumber?.trim() },
+                { label: isAr ? "المسمى والمؤسسة" : "Title and establishment", ok: !!live.jobTitle?.trim() && !!live.branchId },
+              ]}
+            />
+          </LiveAside>
         </form>
 
         {/* 🌟 Deluxe Action Buttons Footer */}
