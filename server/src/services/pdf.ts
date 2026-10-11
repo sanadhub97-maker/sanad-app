@@ -177,13 +177,16 @@ export async function secureRenderPage(page: Page) {
 /** On Vercel the functions have no Chrome: a compact Chromium built for serverless is unpacked to /tmp. */
 async function serverlessChromium(): Promise<{ executablePath: string; args: string[] } | null> {
   if (!process.env.VERCEL) return null;
-  const { default: chromium } = await import("@sparticuz/chromium");
+  // ES-only package: a real import(), which TypeScript would otherwise turn into require().
+  const importEsm = new Function("s", "return import(s)") as (s: string) => Promise<typeof import("@sparticuz/chromium")>;
+  const { default: chromium } = await importEsm("@sparticuz/chromium");
   return { executablePath: await chromium.executablePath(), args: chromium.args };
 }
 
 function launchBrowser(): Promise<Browser> {
   // The library is loaded with the first document, not at startup: the host's memory is small.
-  const promise = Promise.all([import("puppeteer"), serverlessChromium()]).then(([{ default: puppeteer }, lambda]) => puppeteer.launch(lambda ? { headless: true, executablePath: lambda.executablePath, args: [...lambda.args, "--font-render-hinting=medium"] } : {
+  const importPuppeteer = new Function("s", "return import(s)") as (s: string) => Promise<typeof import("puppeteer")>;
+  const promise = Promise.all([importPuppeteer("puppeteer").catch(() => import("puppeteer")), serverlessChromium()]).then(([{ default: puppeteer }, lambda]) => puppeteer.launch(lambda ? { headless: true, executablePath: lambda.executablePath, args: [...lambda.args, "--font-render-hinting=medium"] } : {
     headless: true,
     args: [
       ...(env.PDF_DISABLE_SANDBOX ? ["--no-sandbox", "--disable-setuid-sandbox"] : []),

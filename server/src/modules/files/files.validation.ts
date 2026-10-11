@@ -1,4 +1,5 @@
-import { fileTypeFromBuffer } from "file-type";
+// file-type is ES-only: a real import(), which TypeScript would otherwise turn into require().
+const importEsm = new Function("s", "return import(s)") as (s: string) => Promise<typeof import("file-type")>;
 import { ApiError } from "@/utils/apiError";
 import type { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
@@ -6,6 +7,8 @@ import path from "node:path";
 
 export async function validateFileContent(buffer: Buffer, mimeType: string, originalName: string) {
   if (!buffer.length || originalName.length > 200) throw ApiError.badRequest("Invalid file.");
+  // (The test runner has no native import() hook; it falls back to its own.)
+  const { fileTypeFromBuffer } = await importEsm("file-type").catch(() => import("file-type"));
   const detected = await fileTypeFromBuffer(buffer).catch(() => undefined);
   const ext = path.extname(originalName).toLowerCase();
   const extensions: Record<string, string[]> = {

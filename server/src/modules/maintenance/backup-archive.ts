@@ -1,4 +1,7 @@
-import { ZipArchive } from "archiver";
+import type { ZipArchive as ZipArchiveT } from "archiver";
+// archiver is ES-only: a real import(), which TypeScript would otherwise turn into require().
+const importEsm = new Function("s", "return import(s)") as (s: string) => Promise<{ ZipArchive: typeof ZipArchiveT }>;
+const loadArchiver = () => importEsm("archiver").catch(() => import("archiver"));
 import yauzl from "yauzl";
 import type { Response } from "express";
 import { once } from "node:events";
@@ -9,6 +12,7 @@ import { checksum, openBackup } from "./backup-format";
 import { readManifest, validateManifest, acquireLease, type BackupManifest } from "./backups.service";
 async function streamBackup(id: string, res: Response) {
   const { manifest, bytes } = await readManifest(id);
+  const { ZipArchive } = await loadArchiver();
   const archive = new ZipArchive({ store: true });
   archive.on("error", error => res.destroy(error)); res.on("close", () => archive.abort());
   res.setHeader("Content-Type", "application/zip"); res.setHeader("Content-Disposition", `attachment; filename="sanad-backup-${id}.zip"`);
