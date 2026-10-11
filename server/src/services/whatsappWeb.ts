@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 import { env } from "@/config/env";
+import { ApiError } from "@/utils/apiError";
 
 // Links one WhatsApp number to the system by QR code (the same mechanism as
 // WhatsApp Web) and sends alerts from it to any number. Not an official Meta
@@ -252,6 +253,8 @@ export async function startWhatsappWeb(pairPhone?: string) {
  * 8-character pairing code for the given number. Any half-finished attempt
  * is dropped first so switching between the two methods works. */
 export async function beginLinking(pairPhone?: string) {
+  // Linking waits minutes for a phone to scan; a serverless function lives seconds.
+  if (process.env.VERCEL) throw ApiError.badRequest("Linking a new WhatsApp number needs the always-on server. The number linked before keeps sending.");
   if (state.status === "connected" && sock) return;
   if (state.status === "finishing") return; // already completing a link
   const current = sock;
@@ -269,6 +272,15 @@ export async function logoutWhatsappWeb() {
   if (current) await current.logout().catch(() => current.end(undefined));
   await clearSession();
   Object.assign(state, { status: "disconnected", qr: null, pairingCode: null, phone: null, lastError: null });
+}
+
+/** Serverless: wait for the session keys to be saved, then close the socket before the function freezes. */
+export async function flushWhatsappWeb() {
+  await saveChain.catch(() => undefined);
+  const current = sock;
+  sock = null;
+  if (current) current.end(undefined);
+  await saveChain.catch(() => undefined);
 }
 
 export function getWhatsappWebStatus() {

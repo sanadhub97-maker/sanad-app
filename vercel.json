@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci --include=dev",
+  "buildCommand": "npx prisma generate --config=server/prisma.config.ts && npx prisma migrate deploy --config=server/prisma.config.ts && npm run build:client && npm run build:server",
+  "outputDirectory": "client/dist",
+  "framework": null,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "memory": 2048,
+      "includeFiles": "{server/assets/**,node_modules/@sparticuz/chromium/bin/**,node_modules/.prisma/client/**}"
+    },
+    "api/cron.js": {
+      "maxDuration": 300,
+      "memory": 2048,
+      "includeFiles": "{server/assets/**,node_modules/@sparticuz/chromium/bin/**,node_modules/.prisma/client/**}"
+    }
+  },
+  "crons": [{ "path": "/api/cron", "schedule": "0 5 * * *" }],
+  "rewrites": [
+    { "source": "/api/cron", "destination": "/api/cron" },
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/((?!assets/|api/).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
+    { "source": "/sw.js", "headers": [{ "key": "Cache-Control", "value": "no-cache" }] }
+  ]
+}

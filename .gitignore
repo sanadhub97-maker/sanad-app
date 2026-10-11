@@ -20,3 +20,4 @@ server/src/build_*.ts
 server/src/crop_*.ts
 server/src/list_*.ts
 server/src/check_*.ts
+.vercel
