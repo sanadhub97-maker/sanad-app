@@ -8,7 +8,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   CLIENT_URL: z.string().url().default("http://localhost:5173"),
-  TRUSTED_ORIGINS: z.string().default("https://sept.cloud,https://sanad-hr.sept.cloud"),
+  // The front end on Vercel (its /api is proxied here) is always trusted, whatever the host sets.
+  TRUSTED_ORIGINS: z.string().default("https://sept.cloud,https://sanad-hr.sept.cloud").transform((v) => [v, "https://sanad-app-omega.vercel.app"].filter(Boolean).join(",")),
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
   PDF_DISABLE_SANDBOX: booleanEnv(false),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
