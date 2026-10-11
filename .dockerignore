@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+!deploy/oracle/env.example
+uploads
+server/uploads
+android
+*.log
+.git
+.cache
+.print-preview
+.security-audit
+client/public/upgrade-preview
