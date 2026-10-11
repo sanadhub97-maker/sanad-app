@@ -200,7 +200,8 @@ table.px-t { width: 100%; border-collapse: collapse; font-size: 14px; }
 .px-plate i { display: grid; place-items: center; font: 700 10.5px/1 var(--font-sans); font-style: normal; letter-spacing: 0.05em; }
 
 /* settings: each panel is a card with the luxury edge */
-.px-setbody { display: grid; gap: 16px; }
+.px-setbody { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.px-setbody > * { min-width: 0; }
 .lu-app .px-setbody :is(.rounded-3xl, [class*="rounded-3xl"]):where(:not(button)) {
   border: 1px solid transparent !important;
   background: linear-gradient(var(--l-surface), var(--l-surface)) padding-box,
