@@ -81,3 +81,47 @@ export async function sendWhatsappDigests(groups: Map<string, DigestEntry[]>, he
     }
   }
 }
+
+/** The Riyadh calendar day (yyyy-mm-dd) a moment falls on. */
+export function riyadhDay(at: Date = new Date()) {
+  return new Date(at.getTime() + 3 * 60 * 60_000).toISOString().slice(0, 10);
+}
+
+/**
+ * The morning summary, sent every day: each recipient gets today's list once,
+ * whatever was sent on earlier days (so an expired or ending document stays in
+ * view until it is renewed). A failed part is retried by a later run that day.
+ */
+export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>, header: string, emptyText: string, day = riyadhDay()) {
+  const normalized = new Map<string, DigestEntry[]>();
+  for (const [phone, entries] of groups) {
+    const key = normalizePhone(phone);
+    if (!key) continue;
+    const unique = new Map((normalized.get(key) ?? []).map((e) => [e.dedupeBase, e]));
+    for (const entry of entries) if (whatsappEligible(entry.item)) unique.set(entry.dedupeBase, entry);
+    normalized.set(key, [...unique.values()]);
+  }
+  for (const [phone, entries] of normalized) {
+    const parts = entries.length ? digestParts(entries, header).map((p) => p.text) : [`${header.slice(0, 400)}\n\n${emptyText}`];
+    for (const [n, text] of parts.entries()) {
+      const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
+      if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;
+      const meta = { recipient: phone, message: text, templateCode: "DIGEST" };
+      try {
+        const result = await sendWhatsapp(phone, text);
+        if (!result.sent) throw new Error(result.reason ?? "Send failed");
+        await prisma.notificationLog.upsert({ where: { dedupeKey },
+          update: { ...meta, status: "SENT", sentAt: new Date(), errorMessage: null },
+          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "SENT", sentAt: new Date() },
+        });
+      } catch (err) {
+        logger.error({ err, dedupeKey }, "Daily WhatsApp summary failed");
+        await prisma.notificationLog.upsert({ where: { dedupeKey },
+          update: { ...meta, status: "FAILED", errorMessage: (err as Error).message },
+          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "FAILED", errorMessage: (err as Error).message },
+        }).catch(() => undefined);
+        break;
+      }
+    }
+  }
+}

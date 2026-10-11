@@ -8,7 +8,7 @@ import { daysUntil } from "@/services/expiration";
 import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
-import { sendWhatsappDigests, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
+import { sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
 import { getActiveRecipients } from "@/services/whatsappRecipients";
 import { pushDueItems } from "@/services/pushAlerts";
 import { runViolationReminders } from "@/services/violationReminders";
@@ -45,6 +45,18 @@ export function messageFor(item: Pick<TrackableItem, "label" | "sourceType" | "k
 export const NOTIFICATION_TITLE = { en: "Document Expiration Alert", ar: "تنبيه انتهاء وثيقة" };
 
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
+
+/** One line of the daily WhatsApp summary: ended, ending today, or ending in N days. */
+export function dailyLine(item: TrackableItem, days: number, language: "ar" | "en"): string {
+  const expiry = item.expiryDate.toISOString().slice(0, 10);
+  if (language === "en") {
+    const when = days < 0 ? `expired ${-days} day${days === -1 ? "" : "s"} ago` : days === 0 ? "expires today" : `expires in ${days} day${days === 1 ? "" : "s"}`;
+    return `${subjectEn(item)} ${when}.\nExpiry: ${expiry}`;
+  }
+  const subject = subjectAr(item);
+  const when = days < 0 ? `انتهت صلاحية ${subject} منذ ${daysAr(-days)}` : days === 0 ? `تنتهي صلاحية ${subject} اليوم` : `تنتهي صلاحية ${subject} خلال ${daysAr(days)}`;
+  return `${days < 0 ? "🔴" : days <= 7 ? "🟠" : "🟡"} ${when}.\nتاريخ الانتهاء: ${expiry}`;
+}
 
 /** What the Arabic message is about: "الإقامة للموظف فلان", or the document's own name. */
 export function subjectAr(item: Pick<TrackableItem, "labelAr" | "documentAr" | "employeeNameAr"> & { sourceType?: string; kindAr?: string }): string {
@@ -122,6 +134,20 @@ async function performExpirationScan() {
   let dueCount = 0;
   const due: Parameters<typeof pushDueItems>[0] = [];
 
+  // WhatsApp: every morning, everything already expired or ending within the "ending soon"
+  // window, most urgent first — it keeps coming until the document is renewed.
+  if (whatsappSettings?.enabled) {
+    const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
+    const phones = fallback ? recipients.flatMap((r) => (r.phone ? [r.phone] : [])) : whatsappPhones;
+    const lang = language === "en" ? "en" : "ar";
+    const daily = items
+      .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
+      .filter(({ item, days }) => days <= rules.expiringSoonThresholdDays && whatsappEligible(item))
+      .sort((a, b) => a.days - b.days)
+      .map(({ item, days }) => ({ item, dedupeBase: `${item.key}:daily`, text: dailyLine(item, days, lang) }));
+    for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
+  }
+
   for (const item of items) {
     const threshold = matchedThreshold(item, rules.notifyDaysBefore);
     if (!threshold) continue;
@@ -166,21 +192,13 @@ async function performExpirationScan() {
         });
       }
     }
-
-    if (whatsappSettings?.enabled && whatsappEligible(item)) {
-      const phones = whatsappPhones.length > 0 || ["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "")
-        ? whatsappPhones : itemRecipients.flatMap(r => r.phone ? [r.phone] : []);
-      const expiry = item.expiryDate.toISOString().slice(0, 10);
-      const text = language === "en" ? message : messageAr;
-      for (const phone of new Set(phones)) {
-        const group = whatsappGroups.get(phone) ?? [];
-        group.push({ item, dedupeBase, text: text + "\n" + (language === "en" ? "Expiry: " : "تاريخ الانتهاء: ") + expiry });
-        whatsappGroups.set(phone, group);
-      }
-    }
   }
   const digestTitle = language === "en" ? "Document expiration summary" : "ملخص تنبيهات انتهاء الوثائق";
-  await sendWhatsappDigests(whatsappGroups, digestTitle + (companyName ? "\n" + companyName : ""));
+  await sendDailyWhatsappDigest(
+    whatsappGroups,
+    digestTitle + (companyName ? "\n" + companyName : ""),
+    language === "en" ? "✅ No document has expired or ends soon." : "✅ لا توجد وثائق منتهية أو قريبة من الانتهاء اليوم."
+  );
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));

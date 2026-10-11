@@ -16,7 +16,7 @@
       "includeFiles": "{server/assets/**,node_modules/@sparticuz/chromium/bin/**,node_modules/.prisma/client/**}"
     }
   },
-  "crons": [{ "path": "/api/cron", "schedule": "0 5 * * *" }],
+  "crons": [{ "path": "/api/cron", "schedule": "0 5 * * *" }, { "path": "/api/cron?job=payments", "schedule": "0 18 * * *" }],
   "rewrites": [
     { "source": "/api/cron", "destination": "/api/cron" },
     { "source": "/api/:path*", "destination": "/api" },

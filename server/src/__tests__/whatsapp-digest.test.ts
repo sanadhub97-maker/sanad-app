@@ -10,7 +10,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
 vi.mock("@/services/whatsapp", () => ({ sendWhatsapp: mock.send }));
 vi.mock("@/services/whatsappRecipients", () => ({ normalizePhone: (p: string) => p.replace(/[\s()-]/g, "") }));
 vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn() } }));
-import { digestParts, sendWhatsappDigests, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
+import { digestParts, sendDailyWhatsappDigest, sendWhatsappDigests, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
 import type { TrackableItem } from "@/services/expiringItems";
 function entry(key: string, onSponsorship: boolean | null = true, sourceType: TrackableItem["sourceType"] = "EMPLOYEE_IQAMA"): DigestEntry {
   return { dedupeBase: `${key}:expired`, text: `Expired ${key}`, item: { key, sourceType, onSponsorship, recordId: key, label: key, labelAr: key, expiryDate: new Date("2026-01-01"), kind: "IQAMA", kindAr: "إقامة", kindEn: "Iqama" } };
@@ -53,5 +53,24 @@ describe("WhatsApp sponsorship and grouped delivery", () => {
   it("sends nothing if no eligible or pending items exist", async () => {
     await sendWhatsappDigests(new Map([["+96650", [entry("no", false)]]]), "Summary");
     expect(mock.send).not.toHaveBeenCalled();
+  });
+});
+describe("the daily WhatsApp summary", () => {
+  it("sends the same list again on a new day, but only once a day", async () => {
+    const group = new Map([["+966 50", [entry("a"), entry("b", false)]]]);
+    await sendDailyWhatsappDigest(group, "Summary", "Nothing", "2026-10-12");
+    await sendDailyWhatsappDigest(group, "Summary", "Nothing", "2026-10-12");
+    await sendDailyWhatsappDigest(group, "Summary", "Nothing", "2026-10-13");
+    expect(mock.send.mock.calls.map((c) => c[0])).toEqual(["+96650", "+96650"]);
+    expect(mock.send.mock.calls[1][1]).toContain("Expired a");
+    expect(mock.send.mock.calls[1][1]).not.toContain("Expired b");
+  });
+  it("sends the all-clear line when nothing is due, and retries a failed send the same day", async () => {
+    mock.send.mockResolvedValueOnce({ sent: false, reason: "offline" }).mockResolvedValue({ sent: true });
+    const group = new Map([["+96650", [] as DigestEntry[]]]);
+    await sendDailyWhatsappDigest(group, "Summary", "All clear", "2026-10-12");
+    await sendDailyWhatsappDigest(group, "Summary", "All clear", "2026-10-12");
+    expect(mock.send).toHaveBeenCalledTimes(2);
+    expect(mock.send.mock.calls[1][1]).toBe("Summary\n\nAll clear");
   });
 });

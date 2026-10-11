@@ -2,6 +2,7 @@ import cron, { type ScheduledTask } from "node-cron";
 import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 import { runExpirationScan } from "@/jobs/expirationScan";
+import { runDailyPaymentsDigest } from "@/services/paymentsDigest";
 import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/services/settingsStore";
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
@@ -55,6 +56,8 @@ export async function startScheduledJobs() {
   resumeWhatsappWebOnBoot().catch((err) => logger.error({ err }, "Resume WhatsApp Web on boot failed"));
 
   // Push: the morning brief at 08:00, and each task at its own time.
+  // The evening WhatsApp message with the day's payments.
+  cron.schedule("0 21 * * *", () => { if (!restoringSystem) void runDailyPaymentsDigest().catch((err) => logger.error({ err }, "Payments WhatsApp message failed")); }, { timezone: "Asia/Riyadh" });
   cron.schedule("0 8 * * *", () => { if (!restoringSystem) void pushMorningBrief().catch((err) => logger.error({ err }, "Morning brief push failed")); }, { timezone: "Asia/Riyadh" });
   cron.schedule("* * * * *", () => { if (!restoringSystem) void pushTaskReminders().catch((err) => logger.error({ err }, "Task reminder push failed")); });
 

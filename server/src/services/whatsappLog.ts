@@ -6,7 +6,7 @@ import { listRecipients, normalizePhone } from "@/services/whatsappRecipients";
 // the system sends (expiration alerts and test messages) with its text,
 // recipient and delivery result, read from NotificationLog.
 
-const visibleMessage = { OR: [{ templateCode: null }, { templateCode: { not: "DIGEST_ITEM" } }] };
+const visibleMessage = { OR: [{ templateCode: null }, { templateCode: { notIn: ["DIGEST_ITEM", "PAYMENT_ITEM"] } }] };
 
 export type WhatsappLogKind = "ALERT" | "TEST";
 
