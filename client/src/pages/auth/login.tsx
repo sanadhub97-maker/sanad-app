@@ -194,7 +194,7 @@ export default function LoginPage() {
           <Svg d={I.arrow} w={2.4} />
         </button>
         {passkeysSupported() && <>
-          <button type="button" className="ry-go" style={{ background: "transparent", color: "inherit", border: "1px solid currentColor", marginTop: 12 }} disabled={isSubmitting || welcome || biometricBusy} onClick={biometricLogin}>
+          <button type="button" className="ry-go alt" style={{ marginTop: 12 }} disabled={isSubmitting || welcome || biometricBusy} onClick={biometricLogin}>
             <span>{biometricBusy ? (isAr ? "جاري التحقق…" : "Verifying…") : (isAr ? "الدخول بالبصمة أو الوجه" : "Sign in with fingerprint or face")}</span>
             {biometricBusy ? <Loader2 size={20} className="animate-spin" /> : <Fingerprint size={20} />}
           </button>

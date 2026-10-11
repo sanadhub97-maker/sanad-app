@@ -7,7 +7,7 @@
     var isRtl = !savedLang || savedLang.indexOf("en") !== 0;
     document.documentElement.dir = isRtl ? "rtl" : "ltr";
     document.documentElement.lang = isRtl ? "ar" : "en";
-    // The design opens light; the app then applies Settings → Appearance once it loads.
-    document.documentElement.classList.remove("dark");
+    // The Royale design is dark by design, from the first frame.
+    document.documentElement.classList.add("dark");
   } catch (e) {}
 })();

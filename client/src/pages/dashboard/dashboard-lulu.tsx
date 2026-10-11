@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,6 +12,7 @@ import { violationsApi } from "@/api/violations";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxArea, PxBadge, PxBars, PxCard, PxDonut, PxStat } from "@/components/royal/px";
+import { Medal } from "@/components/royal/royale-fx";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
    welcome with a stack of documents, the compliance gauge, four stat cards,
@@ -26,16 +27,6 @@ const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "و
 const v = (o: Record<string, string | number>) => o as CSSProperties;
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
-/** Waits two frames so gauges and bars grow from zero. */
-function useArmed() {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => setOn(true)));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return on;
-}
-
 export default function DashboardLulu() {
   const { t, i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
@@ -46,7 +37,6 @@ export default function DashboardLulu() {
   const canTasks = hasPermission("tasks.view");
   const canEditTask = hasPermission("tasks.edit");
   const today = localIso();
-  const armed = useArmed();
   const locale = isAr ? "ar-EG-u-nu-latn" : "en-GB";
 
   const { data: summary } = useQuery({ queryKey: ["dashboard", "summary"], queryFn: dashboardApi.summary });
@@ -125,7 +115,6 @@ export default function DashboardLulu() {
     const [yy, mm] = m.month.split("-").map(Number);
     return new Date(yy, mm - 1, 1).toLocaleDateString(locale, { month: "long" });
   });
-  const ringLen = 2 * Math.PI * 27;
 
   return (
     <div className="px">
@@ -149,13 +138,7 @@ export default function DashboardLulu() {
       />
 
       <section className="px-welcome" style={v({ "--i": 0 })}>
-        <svg className="px-ring" viewBox="0 0 64 64" aria-hidden="true">
-          <circle className="tr" cx="32" cy="32" r="27" fill="none" strokeWidth="6" />
-          <circle className="v" cx="32" cy="32" r="27" fill="none" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${armed ? score * ringLen : 0} ${ringLen}`} transform="rotate(-90 32 32)" />
-          <text x="32" y="37" textAnchor="middle">
-            {pct}%
-          </text>
-        </svg>
+        <Medal>{pct}%</Medal>
         <div className="tx">
           <h2>
             {greeting}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Plus, Search, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,8 @@ import { PageHeaderSlotProvider, usePageHeaderSlots } from "@/components/layout/
 import { RouteProgressBar } from "@/components/layout/route-progress-bar";
 import { LuluCommand } from "@/components/lulu/lulu-command";
 import { LuluNotifications, useNotificationsBell } from "@/components/lulu/lulu-notifications";
-import { useLuluEffects, luluSwapTheme, lastPointer } from "@/components/lulu/lulu-effects";
+import { useLuluEffects } from "@/components/lulu/lulu-effects";
+import { useRoyaleFx } from "@/components/royal/royale-fx";
 import { openInstall, useCanInstall } from "@/components/lulu/lulu-install";
 import { colorAsPrimary, colorOf, isOnPath, toneOf, useLuluNav, type LuluNavItem } from "@/components/lulu/lulu-nav";
 import { settingsApi } from "@/api/settings";
@@ -60,14 +61,7 @@ function useBranding() {
   return { mark: mark || "/brand/sanad-mark.webp", name: name || "SanaD" };
 }
 
-/** The accent colours offered in the account menu (as in the approved preview). */
-export const ACCENTS: { hex: string; ar: string; en: string }[] = [
-  { hex: "#a8792f", ar: "ذهبي ملكي", en: "Royal gold" },
-  { hex: "#2f54c9", ar: "ياقوتي", en: "Sapphire" },
-  { hex: "#0f7a55", ar: "زمردي", en: "Emerald" },
-  { hex: "#8a2846", ar: "عنابي", en: "Burgundy" },
-  { hex: "#5b3fb8", ar: "بنفسجي ملكي", en: "Royal violet" },
-];
+const ROYALE_GOLD = "#c9a464";
 
 /** Profile, language, light/dark, the site colour and sign-out. */
 function AccountMenu({ children }: { children: ReactNode }) {
@@ -76,12 +70,8 @@ function AccountMenu({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
-  useUiStore((s) => s.themeMode);
-  const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
   const role = user?.isSuperAdmin ? "Super Admin" : user?.roles?.[0];
   const canInstall = useCanInstall();
-  const accent = useUiStore((s) => s.accent);
-  const setAccent = useUiStore((s) => s.setAccent);
 
   async function signOut() {
     await logoutRequest().catch(() => undefined);
@@ -117,16 +107,6 @@ function AccountMenu({ children }: { children: ReactNode }) {
         <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setTimeout(() => luluSwapTheme(lastPointer()), 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
-          {isDark ? <Sun className="h-4 w-4 text-muted-foreground" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
-          {isDark ? (isAr ? "الوضع النهاري" : "Light mode") : isAr ? "الوضع الليلي" : "Dark mode"}
-        </DropdownMenuItem>
-        <DropdownMenuLabel className="px-3 pb-0 pt-2 text-xs font-semibold text-muted-foreground">{isAr ? "لون الموقع" : "Site colour"}</DropdownMenuLabel>
-        <div className="lx-accs">
-          {ACCENTS.map((a) => (
-            <button key={a.hex} type="button" style={{ ["--sw" as string]: a.hex }} aria-pressed={accent === a.hex} aria-label={isAr ? a.ar : a.en} title={isAr ? a.ar : a.en} onClick={() => setAccent(a.hex)} />
-          ))}
-        </div>
         {canInstall && (
           <DropdownMenuItem onSelect={() => setTimeout(openInstall, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
             <Download className="h-4 w-4 text-muted-foreground" /> {isAr ? "تثبيت التطبيق" : "Install the app"}
@@ -320,25 +300,6 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   );
 }
 
-/** Light and dark: the sun turns into the moon, and the new colours grow from the button. */
-function ThemeSwitch({ isAr }: { isAr: boolean }) {
-  useUiStore((s) => s.themeMode);
-  const dark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
-  return (
-    <button
-      type="button"
-      className="lu-btn lu-theme"
-      onClick={(e) => luluSwapTheme(e)}
-      aria-label={dark ? (isAr ? "الوضع النهاري" : "Light mode") : isAr ? "الوضع الليلي" : "Dark mode"}
-      title={dark ? (isAr ? "الوضع النهاري" : "Light mode") : isAr ? "الوضع الليلي" : "Dark mode"}
-      data-dark={dark}
-    >
-      <Sun className="sun" />
-      <Moon className="moon" />
-    </button>
-  );
-}
-
 function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNavItem }) {
   const { i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
@@ -366,7 +327,6 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
         <button type="button" className="lu-btn lang" onClick={() => i18.changeLanguage(isAr ? "en" : "ar")} aria-label={isAr ? "English" : "العربية"}>
           {isAr ? "EN" : "ع"}
         </button>
-        <ThemeSwitch isAr={isAr} />
         <button type="button" ref={setBell} className="lu-btn" onClick={() => setOpen((v) => !v)} aria-label={isAr ? "الإشعارات" : "Notifications"} aria-expanded={open}>
           <Bell />
           {unread > 0 && <span className="dot">{unread > 9 ? "9+" : unread}</span>}
@@ -497,11 +457,13 @@ export function LuluShell() {
   const animationsEnabled = useUiStore((s) => s.animationsEnabled);
   useUiStore((s) => s.themeMode);
   const { items, current } = useLuluNav();
-  const accent = useUiStore((s) => s.accent) || "#a8792f";
-  const dark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
+  // The Royale look is one committed palette: black velvet and gold.
+  const accent = ROYALE_GOLD;
+  const dark = true;
   const [cmd, setCmd] = useState(false);
 
   useLuluEffects(main, animationsEnabled);
+  useRoyaleFx(main, animationsEnabled);
   // The chosen colour also reaches what opens outside the shell (dialogs, the sign-in page).
   useEffect(() => {
     const s = document.documentElement.style;

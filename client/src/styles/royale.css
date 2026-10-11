@@ -1,0 +1,319 @@
+/* =====================================================================
+   The Royale edition (as in the approved preview "سند رويال"): one
+   committed dark look — black velvet with a fine grain, jewel-box cards
+   with a double gold hairline and engraved corners, gold-foil figures and
+   titles, one font (Zain) in its weights — and the motion layer of
+   components/royal/royale-fx.tsx: gold motes, a beam running round card
+   frames, a spotlight under the pointer, the gliding menu marker, the
+   curtain between pages and the turning rosette. Loaded last.
+   ===================================================================== */
+
+html:root, html:root.dark, html:root:not(.dark) {
+  --background: 240 18% 3%;
+  --foreground: 40 50% 90%;
+  --card: 228 14% 7%;
+  --card-alpha: 1;
+  --card-foreground: 40 50% 90%;
+  --popover: 228 14% 8%;
+  --popover-alpha: 0.98;
+  --popover-foreground: 40 50% 90%;
+  --secondary: 230 12% 10%;
+  --secondary-alpha: 1;
+  --secondary-foreground: 40 50% 90%;
+  --muted: 230 12% 10%;
+  --muted-alpha: 1;
+  --muted-foreground: 40 12% 56%;
+  --accent: 38 30% 14%;
+  --accent-foreground: 41 74% 82%;
+  --border: 38 26% 17%;
+  --input: 38 24% 21%;
+  --primary: 38 48% 59%;
+  --primary-foreground: 39 59% 7%;
+  --ring: 38 48% 59%;
+  --ink: 40 50% 90%;
+  --ink-foreground: 240 18% 3%;
+  --glass-shadow: 0 30px 60px -36px #000;
+  --glass-edge: rgba(214, 182, 120, 0.18);
+
+  --l-surface: #0f1014;
+  --l-ground: #16171d;
+  --l-line: rgba(214, 182, 120, 0.16);
+  --l-ink: #f1e9d8;
+  --l-ink2: #d9cfbb;
+  --l-muted: #9d937f;
+  --l-faint: #6f685a;
+  --l-glass: rgba(12, 12, 16, 0.82);
+  --l-glass-strong: #101116;
+  --l-edge: rgba(214, 182, 120, 0.18);
+  --l-shadow: 0 30px 60px -36px #000, 0 0 0 1px rgba(214, 182, 120, 0.04);
+  --ry-lift: 0 30px 70px -30px #000, 0 0 50px -18px rgba(201, 164, 100, 0.5);
+  --ry-track: rgba(255, 255, 255, 0.06);
+  --l-brand: #c9a464;
+
+  --l-indigo: #aeb2f5; --l-indigo-t: rgba(174, 178, 245, 0.12); --l-indigo-d: rgba(174, 178, 245, 0.2);
+  --l-sky: #9fbbe6; --l-sky-t: rgba(159, 187, 230, 0.12); --l-sky-d: rgba(159, 187, 230, 0.2);
+  --l-rose: #ee8f86; --l-rose-t: rgba(238, 143, 134, 0.12); --l-rose-d: rgba(238, 143, 134, 0.2);
+  --l-amber: #e6b964; --l-amber-t: rgba(230, 185, 100, 0.12); --l-amber-d: rgba(230, 185, 100, 0.2);
+  --l-teal: #7fd6c8; --l-teal-t: rgba(127, 214, 200, 0.12); --l-teal-d: rgba(127, 214, 200, 0.2);
+  --l-violet: #c4b0f5; --l-violet-t: rgba(196, 176, 245, 0.12); --l-violet-d: rgba(196, 176, 245, 0.2);
+  --l-green: #7ccfa2; --l-green-t: rgba(124, 207, 162, 0.12); --l-green-d: rgba(124, 207, 162, 0.2);
+
+  --lx-gold: #d8b675;
+  --rx-gold: #c9a464;
+  --rx-gold2: #f3dfae;
+  --rx-foil: linear-gradient(115deg, #7d5d27 0%, #f3dfae 22%, #c9a464 40%, #fff3d6 55%, #a5803f 72%, #e8cc8e 88%, #8a6a35 100%);
+  color-scheme: dark;
+}
+@keyframes rx-shimmer { to { background-position: -220% 0; } }
+
+/* ---------------- the ground: black velvet with a grain and a gold light ---------------- */
+html:root body { background: #07070a; }
+.lu-app, .ry-auth {
+  background: radial-gradient(900px 600px at 85% -10%, rgba(201, 164, 100, 0.13), transparent 60%), radial-gradient(700px 500px at 0% 110%, rgba(120, 90, 40, 0.12), transparent 60%), #07070a !important;
+  background-attachment: fixed !important;
+}
+.lu-app, .ry-auth { isolation: isolate; }
+.lu-app::before, .ry-auth::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: 0.5; background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .7 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.lu-mesh { display: none !important; }
+.rx-motes { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+/* ---------------- one font, in its weights ---------------- */
+.lu-app h1, .lu-app h2, .lu-app h3, .ry-auth h1, .ry-auth h2 { font-family: var(--font-sans); }
+
+/* ---------------- the side menu ---------------- */
+.lu-side, .lu-side.rail {
+  background: radial-gradient(260px 220px at 80% 0%, rgba(201, 164, 100, 0.2), transparent 70%), linear-gradient(180deg, #0b0b0f, #040405) !important;
+  border: 1px solid rgba(214, 182, 120, 0.16) !important;
+  box-shadow: 0 30px 60px -30px #000, inset 0 0 0 4px #08080b, inset 0 0 0 5px rgba(214, 182, 120, 0.07) !important;
+}
+.lu-side::before { background: none; }
+.lu-brand img { box-shadow: 0 0 0 1px rgba(243, 223, 174, 0.5), 0 0 22px -4px rgba(243, 223, 174, 0.55); border-radius: 50%; }
+.lu-brand b { background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: rx-shimmer 10s linear infinite; font-weight: 900; }
+.lu-grp-h { color: rgba(214, 182, 120, 0.55); letter-spacing: 0.12em; }
+.lu-nav { color: rgba(241, 233, 216, 0.72); }
+.lu-nav:hover { background: rgba(201, 164, 100, 0.07) !important; color: #fff3d6; }
+.lu-nav.on, html.dark .lu-nav.on, [dir="ltr"] .lu-nav.on { background: none !important; box-shadow: none; color: #fff3d6; }
+.lu-nav.on::before { display: none !important; }
+.lu-side .lu-nav .i, .lu-side .lu-nav:not(.on) .i { color: #d8b675; }
+.lu-side .lu-nav .i::before { background: rgba(201, 164, 100, 0.08); box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.16); }
+.lu-side .lu-nav.on .i { color: #fff3d6; filter: drop-shadow(0 0 6px rgba(243, 223, 174, 0.8)); }
+.lu-side .lu-nav.on .i::before { background: rgba(201, 164, 100, 0.2); box-shadow: inset 0 0 0 1px rgba(243, 223, 174, 0.35); }
+/* the lit marker that glides to the open page */
+.lu-glide { background: linear-gradient(270deg, rgba(201, 164, 100, 0.34), rgba(201, 164, 100, 0.06)) !important; box-shadow: inset 0 0 0 1px rgba(243, 223, 174, 0.28), 0 0 30px -10px rgba(201, 164, 100, 0.7) !important; }
+[dir="ltr"] .lu-glide { background: linear-gradient(90deg, rgba(201, 164, 100, 0.28), rgba(201, 164, 100, 0.04)) !important; }
+.lu-glide::before { content: ""; position: absolute; inset-inline-start: -6px; top: 9px; bottom: 9px; width: 3px; border-radius: 3px; background: var(--rx-foil); box-shadow: 0 0 14px #f3dfae, 0 0 4px #fff3d6; }
+.lu-nav .lu-badge { animation: rx-halo-red 2.4s ease-in-out infinite; }
+@keyframes rx-halo-red { 50% { box-shadow: 0 0 14px rgba(238, 143, 134, 0.85); } }
+.lu-me { background: rgba(201, 164, 100, 0.05) !important; border-color: rgba(214, 182, 120, 0.16) !important; }
+.ry-promo { background: radial-gradient(240px 140px at 20% 0%, rgba(243, 223, 174, 0.18), transparent 70%), linear-gradient(150deg, #15130f, #0a0a0d) !important; border: 1px solid rgba(214, 182, 120, 0.3) !important; }
+.ry-promo b { color: #f3dfae; }
+.ry-promo button { background: var(--rx-foil) !important; background-size: 220% 100% !important; color: #1b1407 !important; animation: rx-shimmer 6s linear infinite; }
+
+/* ---------------- the top bar ---------------- */
+.lu-top { background: rgba(7, 7, 10, 0.78) !important; border: 1px solid rgba(214, 182, 120, 0.14) !important; box-shadow: 0 20px 40px -30px #000 !important; }
+.lu-top .lu-btn, .ry-me { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(214, 182, 120, 0.16) !important; color: #e9dfc8; }
+.lu-top .lu-btn:hover { box-shadow: 0 0 22px -8px rgba(201, 164, 100, 0.8); color: #f3dfae; }
+.lu-top .lu-btn.search .lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------- page titles: gold foil with a jewelled rule ---------------- */
+.ry-head h1, .ry-head .lux-title { font-weight: 900 !important; font-size: 34px !important; line-height: 1.35 !important; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; animation: rx-shimmer 12s linear infinite; }
+.ry-head h1::after, .ry-head [data-slot="title"] h1::after, [dir="rtl"] .ry-head h1::after { width: 120px; height: 1px; margin-top: 10px; background: linear-gradient(90deg, transparent, #c9a464, transparent) !important; box-shadow: 0 0 8px rgba(243, 223, 174, 0.5); }
+.ry-head p { color: var(--l-muted) !important; }
+.ry-title-ico { color: #f3dfae !important; filter: drop-shadow(0 0 12px rgba(243, 223, 174, 0.35)); }
+.ry-title-ico::before { background: radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b) !important; }
+.ry-title-ico::after { background: linear-gradient(180deg, rgba(243, 223, 174, 0.35), rgba(243, 223, 174, 0) 55%) !important; }
+@media (max-width: 599px) { .ry-head h1, .ry-head .lux-title { font-size: 26px !important; } }
+
+/* ---------------- the jewel-box card ---------------- */
+.lu-app :is(.px-card, .px-stat, .rp-card:not(.rp-kpis), .rc-lic, .rc-dcard, .rc-rp, .ry-card:not(.ry-welcome), .lux-glass, .lu-cc, .lu-row, .cu-card, .cu-kpi, .tk-card, .vio-card, .rp-day),
+.lu-app .rp-kpis > *,
+.lu-app .px-setbody :is(.rounded-3xl, [class*="rounded-3xl"]):where(:not(button)) {
+  border: 1px solid rgba(214, 182, 120, 0.22) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)), #0f1014 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 30px 60px -36px #000, inset 0 0 0 4px #0f1014, inset 0 0 0 5px rgba(214, 182, 120, 0.1) !important;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.25s;
+}
+.lu-app :is(.px-card, .px-stat, .rc-lic, .rc-dcard, .rc-rp, .lu-cc, .cu-card, .cu-kpi, .tk-card, .vio-card):hover,
+.lu-app .rp-kpis > *:hover {
+  border-color: rgba(243, 223, 174, 0.45) !important;
+  box-shadow: 0 30px 70px -30px #000, 0 0 50px -18px rgba(201, 164, 100, 0.55), inset 0 0 0 4px #0f1014, inset 0 0 0 5px rgba(214, 182, 120, 0.14) !important;
+}
+/* engraved corners */
+.px-card, .px-stat { position: relative; }
+.px-card::before, .px-stat::before, .px-card::after, .px-stat::after { content: "" !important; position: absolute !important; width: 18px !important; height: 18px !important; pointer-events: none; border-color: #c9a464; border-style: solid; opacity: 0.85; background: none !important; border-radius: 0 !important; z-index: 2; }
+.px-card::before, .px-stat::before { top: 7px !important; right: 7px !important; left: auto !important; bottom: auto !important; inset-inline-end: auto; border-width: 1px 1px 0 0; }
+.px-card::after, .px-stat::after { bottom: 7px !important; left: 7px !important; top: auto !important; right: auto !important; inset-inline-end: auto !important; border-width: 0 0 1px 1px; }
+.px-chd { border-bottom-color: rgba(214, 182, 120, 0.14) !important; }
+.px-chd h3 { color: #f3dfae; font-weight: 800 !important; font-size: 17px !important; }
+.px-chd h3::after { content: " ❖"; font-size: 11px; color: #c9a464; vertical-align: 3px; }
+
+/* ---------------- figures: numbers in moving gold foil, glowing when they land ---------------- */
+.px-stat .h { color: var(--l-muted); }
+.px-stat .ic { color: #f3dfae !important; background: radial-gradient(circle, rgba(201, 164, 100, 0.16), transparent 70%) !important; box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.35) !important; border-radius: 50% !important; animation: rx-halo 3.6s ease-in-out infinite; }
+@keyframes rx-halo { 50% { box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.5), 0 0 18px -2px rgba(201, 164, 100, 0.6); } }
+.px-stat .v, .lu-app .rp-kpis .v, .lu-app .rc-rp-fig b { font-weight: 900 !important; font-size: 40px !important; line-height: 1.15 !important; background: var(--rx-foil) !important; background-size: 220% 100% !important; -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; -webkit-text-fill-color: transparent; animation: rx-shimmer 8s linear infinite; }
+.px-stat .v small { -webkit-text-fill-color: var(--l-muted); }
+.px-stat .v:has(.rx-landed) { animation: rx-shimmer 8s linear infinite, rx-land 1.4s ease-out; }
+@keyframes rx-land { 0% { filter: drop-shadow(0 0 0 rgba(243, 223, 174, 0)); } 30% { filter: drop-shadow(0 0 16px rgba(243, 223, 174, 0.9)); } 100% { filter: drop-shadow(0 0 0 rgba(243, 223, 174, 0)); } }
+.px-spark .l { filter: drop-shadow(0 0 5px rgba(243, 223, 174, 0.6)); }
+.px-bar { background: rgba(255, 255, 255, 0.05) !important; }
+.px-bar u { box-shadow: 0 0 10px rgba(243, 223, 174, 0.5); }
+.px-chip { background: transparent !important; box-shadow: inset 0 0 0 1px currentColor; }
+@media (max-width: 599px) { .px-stat .v, .lu-app .rp-kpis .v { font-size: 30px !important; } }
+
+/* ---------------- the welcome: a lacquered panel with the turning medallion ---------------- */
+.lu-app .px-welcome, .lu-app .ry-welcome, .lu-app .cu-hero, .lu-app .cu-dhead {
+  border-radius: 8px !important; border: 1px solid rgba(214, 182, 120, 0.3) !important; color: #f1e9d8;
+  background: radial-gradient(600px 320px at 15% -20%, rgba(243, 223, 174, 0.22), transparent 65%), linear-gradient(120deg, #0a0a0d, #15130f 55%, #2a2112) !important;
+  box-shadow: 0 40px 80px -40px #000, inset 0 0 0 5px #0d0c0b, inset 0 0 0 6px rgba(214, 182, 120, 0.18) !important;
+}
+.px-welcome::after { display: none; }
+.px-welcome::before { background: radial-gradient(circle, rgba(243, 223, 174, 0.25), transparent 66%) !important; }
+.px-welcome h2, .lu-app .ry-welcome h2 { font-weight: 900 !important; font-size: 32px !important; line-height: 1.4 !important; background: var(--rx-foil) !important; background-size: 220% 100% !important; -webkit-background-clip: text !important; background-clip: text !important; animation: rx-shimmer 10s linear infinite !important; }
+.px-welcome p { color: rgba(241, 233, 216, 0.82); }
+.px-welcome p b { color: #f3dfae; }
+.px-welcome .wb { border-radius: 6px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(214, 182, 120, 0.3); color: #f1e9d8; }
+.px-welcome .wb.gold { background: var(--rx-foil); background-size: 220% 100%; color: #1b1407; border: 0; animation: rx-breathe 3.2s ease-in-out infinite; }
+.px-welcome .px-ring .v { stroke: #f3dfae; }
+.rx-medal { position: relative; width: 120px; height: 120px; flex: none; filter: drop-shadow(0 0 22px rgba(243, 223, 174, 0.35)); animation: rx-medal 4s ease-in-out infinite; }
+.rx-medal canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rx-medal b { position: absolute; inset: 0; display: grid; place-items: center; font: 900 22px/1 var(--font-sans); color: #f6e7c4; text-shadow: 0 0 14px rgba(243, 223, 174, 0.55); direction: ltr; }
+.rx-medal:not(.big) b::before { content: ""; position: absolute; width: 58%; aspect-ratio: 1; border-radius: 50%; z-index: -1; background: radial-gradient(circle, #0d0c0b 55%, rgba(13, 12, 11, 0.6) 70%, transparent 72%); }
+.rx-medal:not(.big) b { isolation: isolate; }
+.rx-medal.big { width: min(330px, 66vw); height: auto; aspect-ratio: 1; margin: 0 auto; }
+.rx-medal.big b { font-size: clamp(54px, 8vw, 88px); background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; animation: rx-shimmer 9s linear infinite; direction: rtl; }
+@keyframes rx-medal { 50% { filter: drop-shadow(0 0 40px rgba(243, 223, 174, 0.6)); } }
+@media (max-width: 599px) { .px-welcome { justify-content: center; text-align: center; } .px-welcome .acts { justify-content: center; } .px-welcome h2 { font-size: 26px !important; } .rx-medal:not(.big) { width: 104px; height: 104px; } }
+
+/* ---------------- buttons: embossed gold that breathes, quiet outlines ---------------- */
+.lu-app .lux-cta, .lu-app .lu-go, .lu-app .bg-primary:is(button, a), [role="dialog"] .lux-cta, [role="dialog"] .bg-primary:is(button, a), .ry-go,
+.lu-app .rc-btn.pri, .lu-app .tk-btn.pri, .lu-app .vh-btn.gold, .lu-app .cu-btn.gold {
+  background: var(--rx-foil) !important; background-size: 220% 100% !important; color: #1b1407 !important; border: 0 !important; border-radius: 6px !important;
+  box-shadow: 0 14px 28px -14px rgba(201, 164, 100, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(90, 60, 20, 0.35) !important;
+  animation: rx-breathe 3.2s ease-in-out infinite; font-weight: 800;
+}
+@keyframes rx-breathe { 50% { box-shadow: 0 14px 34px -10px rgba(243, 223, 174, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(90, 60, 20, 0.35); } }
+.lu-app .lux-cta::after, .lu-app .lu-go::after, .lu-app .bg-primary:is(button, a)::after, .ry-go::after { background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.55) 50%, transparent 65%) !important; animation: lx-sheen 2.8s ease-in-out infinite !important; }
+.lu-app .px-btn, .lu-app .ry-btn:not(.white), .lu-app .tk-btn:not(.pri), .lu-app button[class*="border-input"], .lu-app a[class*="border-input"] { border-radius: 6px; background: rgba(255, 255, 255, 0.02) !important; border-color: rgba(214, 182, 120, 0.3) !important; color: #e9dfc8; }
+.lu-app .px-btn:hover, .lu-app button[class*="border-input"]:hover { box-shadow: 0 0 22px -8px rgba(201, 164, 100, 0.8); color: #f3dfae; }
+.lu-app .px-link { color: #e8cc8e; }
+
+/* the second sign-in button: a quiet gold outline */
+.ry-go.alt { background: rgba(255, 255, 255, 0.02) !important; color: #f3dfae !important; border: 1px solid rgba(214, 182, 120, 0.4) !important; box-shadow: none !important; animation: none; }
+.ry-go.alt::after { display: none; }
+.ry-go.alt:hover { box-shadow: 0 0 24px -8px rgba(201, 164, 100, 0.8) !important; }
+
+/* ---------------- tabs, tables, badges and pages ---------------- */
+.px-tabs, .lu-app .rc-seg, .lu-app .rp-seg, .lu-app .rp-views { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(214, 182, 120, 0.16); border-radius: 6px !important; }
+.px-tabs button[aria-pressed="true"], .lu-app .rc-seg button[aria-pressed="true"], .lu-app .rp-seg button[aria-pressed="true"], .lu-app .rp-views button[aria-pressed="true"] { background: rgba(201, 164, 100, 0.13) !important; color: #f3dfae !important; box-shadow: inset 0 -1px 0 #c9a464, 0 0 16px -6px rgba(201, 164, 100, 0.7) !important; border-radius: 4px; }
+.px-t th, .lu-app table thead th { color: #c9a464 !important; letter-spacing: 0.1em; font-size: 12px; background: rgba(201, 164, 100, 0.04) !important; border-bottom-color: rgba(214, 182, 120, 0.16) !important; }
+.px-t td, .lu-app table td { border-bottom-color: rgba(214, 182, 120, 0.09) !important; }
+.px-t tbody tr:hover, .lu-app table tbody tr:hover { background: linear-gradient(270deg, rgba(201, 164, 100, 0.1), transparent 70%) !important; }
+[dir="ltr"] .px-t tbody tr:hover, [dir="ltr"] .lu-app table tbody tr:hover { background: linear-gradient(90deg, rgba(201, 164, 100, 0.1), transparent 70%) !important; }
+.px-t tbody tr:hover > td:first-child, .lu-app table tbody tr:hover > td:first-child { box-shadow: inset -2px 0 0 #f3dfae !important; }
+.px-av { color: #f3dfae !important; background: radial-gradient(circle at 35% 30%, #3a3020, #14120e) !important; box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.4) !important; }
+.px-bd { background: transparent !important; box-shadow: inset 0 0 0 1px currentColor; }
+.px-bd.bad { animation: rx-pulse-bad 2.4s ease-in-out infinite; }
+@keyframes rx-pulse-bad { 50% { box-shadow: inset 0 0 0 1px currentColor, 0 0 14px -2px rgba(238, 143, 134, 0.75); } }
+.px-search, .lu-app .px-toolbar input { background: rgba(255, 255, 255, 0.03) !important; border-color: rgba(214, 182, 120, 0.2) !important; }
+.px-pager .pg button { background: transparent !important; border-color: rgba(214, 182, 120, 0.2) !important; border-radius: 4px !important; color: #e9dfc8 !important; }
+.px-pager .pg button[aria-current="page"] { background: var(--rx-foil) !important; color: #1b1407 !important; border: 0 !important; box-shadow: 0 0 16px -4px rgba(243, 223, 174, 0.7); }
+.px-plate { background: #f7f1e3; }
+
+/* ---------------- charts: a lit dot runs the line, bars glow ---------------- */
+.px-chart .ln { filter: drop-shadow(0 0 6px rgba(201, 164, 100, 0.75)) !important; }
+.px-chart .br { filter: drop-shadow(0 0 10px rgba(201, 164, 100, 0.4)) !important; }
+.px-chart .rx-run { filter: drop-shadow(0 0 6px #f3dfae) drop-shadow(0 0 14px #c9a464); }
+.px-donut .seg { filter: drop-shadow(0 0 6px rgba(201, 164, 100, 0.35)); }
+.px-donut .c { font-weight: 900 !important; fill: #f3dfae !important; }
+.px-tip { background: #15130f !important; color: #f1e9d8 !important; border: 1px solid rgba(214, 182, 120, 0.35); box-shadow: 0 16px 30px -10px #000, 0 0 24px -10px rgba(201, 164, 100, 0.6) !important; }
+
+/* ---------------- forms: dark fields that light up in gold ---------------- */
+.lu-app :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea), [role="dialog"] :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea), .ry-fl input {
+  background-color: rgba(255, 255, 255, 0.025) !important; border-color: rgba(214, 182, 120, 0.22) !important; color: #f1e9d8;
+}
+.lu-app :is(input, select, textarea):focus, [role="dialog"] :is(input, select, textarea):focus, .ry-fl input:focus { border-color: #c9a464 !important; box-shadow: 0 0 0 1px #c9a464, 0 0 26px -8px rgba(201, 164, 100, 0.85) !important; animation: rx-field 2s ease-in-out infinite; outline: none; }
+@keyframes rx-field { 50% { box-shadow: 0 0 0 1px #c9a464, 0 0 34px -6px rgba(243, 223, 174, 0.9); } }
+select option { background: #0f1014; color: #f1e9d8; }
+
+/* ---------------- dialogs, menus, side panel and toasts ---------------- */
+[role="dialog"], [role="menu"], [data-radix-popper-content-wrapper] > *, .px-drawer {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)), #0f1014 !important;
+  border-color: rgba(214, 182, 120, 0.3) !important; color: #f1e9d8;
+  box-shadow: 0 40px 80px -30px #000, 0 0 60px -30px rgba(201, 164, 100, 0.55), inset 0 0 0 4px #0f1014, inset 0 0 0 5px rgba(214, 182, 120, 0.1) !important;
+}
+.px-dv { background: rgba(0, 0, 0, 0.6) !important; backdrop-filter: blur(3px); }
+.px-dh b { color: #f3dfae; }
+[data-sonner-toast] { background: #0f1014 !important; color: #f1e9d8 !important; border: 1px solid rgba(214, 182, 120, 0.4) !important; box-shadow: 0 20px 40px -16px #000, 0 0 30px -14px rgba(201, 164, 100, 0.6) !important; }
+
+/* ---------------- the cool accents of older parts (blue, sky, indigo, violet) become gold ---------------- */
+:is(.lu-app, [role="dialog"]) :is([class*="text-sky-"], [class*="text-blue-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-purple-"], [class*="text-cyan-"]) { color: #e8cc8e !important; }
+:is(.lu-app, [role="dialog"]) :is([class*="bg-sky-"], [class*="bg-blue-"], [class*="bg-indigo-"], [class*="bg-violet-"], [class*="bg-purple-"], [class*="bg-cyan-"]):not(svg *) { background-color: rgba(201, 164, 100, 0.12) !important; }
+:is(.lu-app, [role="dialog"]) :is([class*="border-sky-"], [class*="border-blue-"], [class*="border-indigo-"], [class*="border-violet-"], [class*="border-purple-"], [class*="border-cyan-"]) { border-color: rgba(214, 182, 120, 0.35) !important; }
+:is(.lu-app, [role="dialog"]) :is([class*="from-sky-"], [class*="from-blue-"], [class*="from-indigo-"], [class*="from-violet-"], [class*="from-purple-"], [class*="from-cyan-"], [class*="from-teal-"], [class*="from-emerald-"]):not(.h-1):not([class*="h-1 "]):not(button):not(a):not([class*="bg-primary"]) { background-image: radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b) !important; color: #f3dfae !important; box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.35) !important; }
+
+/* the glossy coloured icon tiles: engraved gold on black */
+.rx-icon { background: radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b) !important; border-color: rgba(214, 182, 120, 0.4) !important; box-shadow: 0 0 18px -6px rgba(201, 164, 100, 0.55), inset 0 1px 0 rgba(243, 223, 174, 0.25) !important; }
+.rx-icon > svg { color: #f3dfae !important; filter: drop-shadow(0 0 5px rgba(243, 223, 174, 0.55)) !important; }
+.rx-icon > div { background: linear-gradient(180deg, rgba(243, 223, 174, 0.18), transparent) !important; }
+
+/* ---------------- phones: the island in velvet and gold ---------------- */
+.lu-island { background: rgba(10, 10, 13, 0.94) !important; border: 1px solid rgba(214, 182, 120, 0.28); box-shadow: 0 20px 40px -16px #000, 0 0 30px -14px rgba(201, 164, 100, 0.55), inset 0 1px 0 rgba(243, 223, 174, 0.1) !important; }
+.lu-il-cur .i, .lu-il-t > span { color: #f3dfae !important; filter: drop-shadow(0 0 10px rgba(243, 223, 174, 0.35)) !important; }
+.lu-il-cur .i::before, .lu-il-t > span::before { background: radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b) !important; }
+.lu-il-cur .i::after, .lu-il-t > span::after { background: linear-gradient(180deg, rgba(243, 223, 174, 0.35), rgba(243, 223, 174, 0) 55%) !important; }
+.lu-il-cur, .lu-il-t { color: #f1e9d8 !important; }
+.lu-il-btn { background: rgba(201, 164, 100, 0.1) !important; color: #f3dfae !important; }
+.lu-il-btn.add { background: var(--rx-foil) !important; color: #1b1407 !important; animation: rx-breathe 3.2s ease-in-out infinite; }
+
+/* ---------------- the motion layer ---------------- */
+/* a beam of light running round the frame: always on the welcome, on a card under the pointer */
+@property --rx-ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.rx-beam { position: absolute !important; inset: -1px; border-radius: inherit; padding: 1.5px; pointer-events: none; z-index: 3;
+  background: conic-gradient(from var(--rx-ang), transparent 0 70%, #fff3d6 80%, #c9a464 84%, transparent 92%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0; transition: opacity 0.4s; animation: rx-spin 5s linear infinite; }
+@keyframes rx-spin { to { --rx-ang: 360deg; } }
+.px-welcome > .rx-beam, :hover > .rx-beam { opacity: 1; }
+/* a soft spotlight inside the card that follows the pointer; the card stays still */
+.rx-spot { position: absolute !important; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(360px circle at var(--sx, 50%) var(--sy, 50%), rgba(243, 223, 174, 0.1), transparent 60%); }
+:hover > .rx-spot { opacity: 1; }
+.px-card > :not(.rx-beam):not(.rx-spot), .px-stat > :not(.rx-beam):not(.rx-spot) { position: relative; z-index: 1; }
+/* the parts of a page rise and come into focus, one after another */
+@keyframes rx-bloom { from { opacity: 0.001; transform: translateY(18px) scale(0.985); filter: blur(6px); } }
+.px > *, .px-stats > *, .px-g2 > *, .px-g3 > *, .px-gh > * { animation: rx-bloom 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both !important; animation-delay: calc(var(--i, 0) * 80ms + 60ms) !important; }
+.px-stats > :nth-child(2) { --i: 1; } .px-stats > :nth-child(3) { --i: 2; } .px-stats > :nth-child(4) { --i: 3; }
+/* the curtain between pages */
+.rx-curtain { position: fixed; inset: 0; z-index: 85; pointer-events: none; display: grid; place-items: center; }
+.rx-curtain i { position: absolute; top: 0; bottom: 0; width: 50.5%; background: radial-gradient(120% 90% at 50% 50%, #17140d, #050506); }
+.rx-curtain i.l { left: 0; box-shadow: 1px 0 0 #c9a464, 8px 0 30px -6px rgba(243, 223, 174, 0.7); }
+.rx-curtain i.r { right: 0; box-shadow: -1px 0 0 #c9a464, -8px 0 30px -6px rgba(243, 223, 174, 0.7); }
+.rx-curtain b { position: relative; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--rx-foil); color: #1b1407; font: 900 34px var(--font-sans); box-shadow: 0 0 40px rgba(243, 223, 174, 0.8); }
+
+/* ---------------- sign-in: the medallion is the thesis ---------------- */
+.ry-auth { color: #f1e9d8; }
+.ry-lf { background: linear-gradient(180deg, #0c0c10, #08080b) !important; color: #f1e9d8; }
+.ry-lf .ry-brand b { background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rx-shimmer 10s linear infinite; font-weight: 900; }
+.ry-lf .ry-brand small, .ry-lfoot { color: #9d937f !important; }
+.ry-langbtn { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgba(214, 182, 120, 0.2) !important; color: #e9dfc8 !important; }
+.ry-form h1 { font-weight: 900 !important; font-size: 38px !important; line-height: 1.35 !important; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: rx-shimmer 10s linear infinite; }
+.ry-form p, .ry-fl label, .ry-fl span { color: #9d937f; }
+.ry-fl label, .ry-fl > span:first-child { color: #c9a464 !important; }
+.ry-row a, .ry-lfoot a, .ry-lfoot a:hover { color: #e8cc8e !important; }
+.ry-check input { accent-color: #c9a464; }
+.ry-la.rx-la { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; text-align: center; padding: 40px 32px;
+  background: radial-gradient(700px 480px at 50% 30%, rgba(243, 223, 174, 0.16), transparent 62%), linear-gradient(170deg, #060607, #121009 60%, #241c0e) !important;
+  border-inline-start: 1px solid rgba(214, 182, 120, 0.18); }
+.rx-la .ry-copy { max-width: 30rem; }
+.rx-la .ry-copy h2 { font-weight: 900 !important; font-size: 40px !important; line-height: 1.35 !important; color: #f6eedd !important; background: none !important; -webkit-text-fill-color: currentColor !important; }
+.rx-la .ry-copy p { margin-top: 12px; color: rgba(241, 233, 216, 0.72); font-size: 16px; line-height: 1.8; }
+
+/* ---------------- stillness ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .rx-motes, .rx-beam, .rx-spot, .rx-curtain { display: none !important; }
+  .lu-app *, .ry-auth * { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
+}
+.lu-still .rx-beam, .lu-still .rx-spot { display: none !important; }
+.lu-still *, .lu-still *::before, .lu-still *::after { animation: none !important; }

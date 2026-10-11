@@ -22,8 +22,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Active theme: user's explicit local choice takes priority if not "system".
   // If "system", use the admin's appearance default, else the Oasis light theme.
-  const activeMode = themeMode !== "system" ? themeMode : (appearance?.themeMode ?? "light");
-  const effective = resolveEffectiveTheme(activeMode);
+  // The Royale look is dark by design: black velvet and gold, whatever was chosen before.
+  void themeMode;
+  const effective = resolveEffectiveTheme("dark");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", effective === "dark");
@@ -88,18 +89,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       ui.markAppearanceApplied({ animationsEnabled: appearance.animationsEnabled });
     }
   }, [appearance]);
-
-  useEffect(() => {
-    if (!window.matchMedia) return;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      if (activeMode === "system") {
-        document.documentElement.classList.toggle("dark", media.matches);
-      }
-    };
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, [activeMode]);
 
   return <>{children}</>;
 }

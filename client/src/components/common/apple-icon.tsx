@@ -117,7 +117,7 @@ export function AppleIcon({
   return (
     <div
       className={cn(
-        "relative flex shrink-0 items-center justify-center overflow-hidden border border-white/20 transition-all duration-200 select-none",
+        "rx-icon relative flex shrink-0 items-center justify-center overflow-hidden border border-white/20 transition-all duration-200 select-none",
         "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.45)]",
         toneStyle.bg,
         toneStyle.shadow,

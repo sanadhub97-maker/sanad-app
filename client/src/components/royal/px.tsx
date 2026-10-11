@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const rtl = () => isRtlLanguage(i18n.language);
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
-/** Counts up from zero once, or shows a text value as it is. */
+/** Counts up from zero once, or shows a text value as it is; it glows once when it lands. */
 export function Count({ to }: { to: number | string }) {
   const [n, setN] = useState(0);
   useEffect(() => {
@@ -29,7 +29,8 @@ export function Count({ to }: { to: number | string }) {
     id = requestAnimationFrame(step);
     return () => cancelAnimationFrame(id);
   }, [to]);
-  return <>{typeof to === "number" ? fmt(n) : to}</>;
+  const landed = typeof to !== "number" || n === to;
+  return <span className={landed ? "rx-landed" : undefined}>{typeof to === "number" ? fmt(n) : to}</span>;
 }
 
 /** A small filled trend line; the oldest value on the reading side's start. */
@@ -201,6 +202,11 @@ export function PxArea({ labels, series, unit = "", height = 250 }: { labels: st
         {series.map((s, k) => (
           <path key={s.name} className="ln" style={{ animationDelay: `${k * 0.2}s` }} pathLength={1} d={path(s.values)} fill="none" stroke={s.color} strokeWidth={k ? 2 : 2.6} strokeDasharray={s.dashed ? "5 5" : undefined} strokeLinecap="round" />
         ))}
+        {first && n > 1 && (
+          <circle className="rx-run" r="6" fill="#fff3d6">
+            <animateMotion dur="6s" repeatCount="indefinite" path={path(first.values)} />
+          </circle>
+        )}
         {first?.values.map((v, i) => <circle key={i} className="ar" cx={x(i)} cy={y(v)} r="3.5" fill="var(--l-surface)" stroke={first.color} strokeWidth="2" />)}
         {labels.map((m, i) => (
           <text key={m + i} x={x(i)} y={H + 26} textAnchor="middle">
