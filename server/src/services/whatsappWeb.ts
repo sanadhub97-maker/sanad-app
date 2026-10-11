@@ -5,6 +5,7 @@ import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 import { env } from "@/config/env";
 import { ApiError } from "@/utils/apiError";
+import { L } from "@/services/lang";
 
 // Links one WhatsApp number to the system by QR code (the same mechanism as
 // WhatsApp Web) and sends alerts from it to any number. Not an official Meta
@@ -254,7 +255,13 @@ export async function startWhatsappWeb(pairPhone?: string) {
  * is dropped first so switching between the two methods works. */
 export async function beginLinking(pairPhone?: string) {
   // Linking waits minutes for a phone to scan; a serverless function lives seconds.
-  if (process.env.VERCEL) throw ApiError.badRequest("Linking a new WhatsApp number needs the always-on server. The number linked before keeps sending.");
+  if (process.env.VERCEL)
+    throw ApiError.badRequest(
+      L(
+        "ربط رقم واتساب جديد محتاج سيرفر شغال طول الوقت، والاستضافة الحالية بتقفل بعد كل طلب. الرقم المربوط قبل كده شغال وبيبعت عادي.",
+        "Linking a new WhatsApp number needs the always-on server. The number linked before keeps sending."
+      )
+    );
   if (state.status === "connected" && sock) return;
   if (state.status === "finishing") return; // already completing a link
   const current = sock;
