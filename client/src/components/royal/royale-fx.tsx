@@ -78,6 +78,51 @@ export function Rosette({ className }: { className?: string }) {
   return <canvas ref={ref} className={className} aria-hidden="true" />;
 }
 
+/** Engraved gold waves drifting slowly, behind the welcome band. */
+export function Guilloche() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const cv = ref.current;
+    const ctx = cv?.getContext("2d");
+    if (!cv || !ctx) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const still = reduced();
+    let t = 0;
+    let id = 0;
+    const frame = () => {
+      const w = Math.round(cv.clientWidth * dpr), h = Math.round(cv.clientHeight * dpr);
+      if (cv.width !== w || cv.height !== h) {
+        cv.width = w;
+        cv.height = h;
+      }
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = dpr;
+      ctx.shadowColor = "rgba(243,223,174,.6)";
+      ctx.shadowBlur = 6 * dpr;
+      for (let k = 0; k < 14; k++) {
+        ctx.beginPath();
+        for (let i = 0; i <= 200; i++) {
+          const u = (i / 200) * w;
+          const v = h * (0.62 + 0.2 * Math.sin((u / w) * 6.28 * 1.5 + k * 0.35 + t) * Math.cos((u / w) * 6.28 * 0.7 - k * 0.2));
+          if (i) ctx.lineTo(u, v);
+          else ctx.moveTo(u, v);
+        }
+        ctx.strokeStyle = `rgba(233,211,161,${0.08 + (k % 4) * 0.04})`;
+        ctx.stroke();
+      }
+      t += 0.004;
+      if (!still && !document.hidden) id = requestAnimationFrame(frame);
+      else if (!still) id = window.setTimeout(frame, 500) as unknown as number;
+    };
+    frame();
+    return () => {
+      cancelAnimationFrame(id);
+      clearTimeout(id);
+    };
+  }, []);
+  return <canvas ref={ref} className="rx-guil" aria-hidden="true" />;
+}
+
 /** The medallion: the rosette with a figure or a word in the middle. */
 export function Medal({ children, big }: { children: React.ReactNode; big?: boolean }) {
   return (

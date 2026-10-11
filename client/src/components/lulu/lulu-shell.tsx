@@ -37,8 +37,6 @@ import { preloadPage } from "@/lib/page-preload";
    tablets), a sticky glass header that holds each page's title and actions,
    and on phones the island at the bottom that opens into every section. */
 
-const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "وثيقتان" : n <= 10 ? `${n} وثائق` : `${n} وثيقة`);
-
 function useMedia(query: string) {
   const [on, setOn] = useState(() => typeof window !== "undefined" && !!window.matchMedia?.(query).matches);
   useEffect(() => {
@@ -175,8 +173,6 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const rail = narrow || collapsed;
   const { shut, toggle } = useSectionState();
   const badges = useNavBadges();
-  const { data: summary } = useQuery({ queryKey: ["dashboard", "summary"], queryFn: dashboardApi.summary, staleTime: 60_000 });
-  const needs = (summary?.expiringDocuments ?? 0) + (summary?.expiredDocuments ?? 0);
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 
@@ -215,7 +211,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
         <button type="button" className="lu-brand" onClick={() => navigate("/")} title="SanaD">
           <img src="/brand/sanad-mark.webp" alt="" />
           <span className="min-w-0">
-            <b>SanaD</b>
+            <b>{isAr ? "سند" : "SanaD"}</b>
             <small>{isAr ? "الموارد البشرية والوثائق" : "People and documents"}</small>
           </span>
         </button>
@@ -271,31 +267,22 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
           );
         })}
       </nav>
-      {needs > 0 ? (
-        <div className="ry-promo">
-          <b>{isAr ? `${docsAr(needs)} تحتاج تجديدًا` : `${needs} documents need renewal`}</b>
-          <p>{isAr ? "منتهية أو تنتهي خلال الثلاثين يومًا القادمة." : "Expired or ending within 30 days."}</p>
-          <button type="button" onClick={() => navigate("/notifications")}>
-            {isAr ? "راجعها الآن" : "Review now"}
-          </button>
-        </div>
-      ) : (
-        <AccountMenu>
-          <button type="button" className="lu-me" aria-label={isAr ? "الحساب" : "Account"}>
-            <span className="relative">
-              <UserAvatar name={user?.fullName} fileId={user?.avatarFileId} avatarKey={user?.avatarKey} size={40} ring />
-              <i className="on-dot" />
-            </span>
-            <span className="who">
-              <b>{user?.fullName}</b>
-              <small>{role}</small>
-            </span>
-            <span className="more">
-              <ChevronsUpDown />
-            </span>
-          </button>
-        </AccountMenu>
-      )}
+      {/* The account sits at the foot of the menu, as in the Royale preview. */}
+      <AccountMenu>
+        <button type="button" className="lu-me" aria-label={isAr ? "الحساب" : "Account"}>
+          <span className="relative">
+            <UserAvatar name={user?.fullName} fileId={user?.avatarFileId} avatarKey={user?.avatarKey} size={40} ring />
+            <i className="on-dot" />
+          </span>
+          <span className="who">
+            <b>{user?.fullName}</b>
+            <small>{role}</small>
+          </span>
+          <span className="more">
+            <ChevronsUpDown />
+          </span>
+        </button>
+      </AccountMenu>
     </aside>
   );
 }
@@ -318,6 +305,11 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
   return (
     <>
       <header className="lu-top no-print">
+        <span className="rx-crumb">
+          SanaD{current && current.href !== "/" && <> / <b>{current.label}</b></>}
+          {(!current || current.href === "/") && <> / <b>{isAr ? "لوحة التحكم" : "Dashboard"}</b></>}
+        </span>
+        <span className="rx-sp" />
         <button type="button" className="lu-btn search" onClick={onSearch} aria-label={isAr ? "بحث" : "Search"}>
           <Search />
           <span className="lbl">{isAr ? "ابحث عن موظف، رقم إقامة، أو وثيقة" : "Search employees, iqamas, documents"}</span>

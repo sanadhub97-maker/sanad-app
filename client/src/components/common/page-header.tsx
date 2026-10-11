@@ -4,6 +4,8 @@ import { usePageHeaderSlots } from "@/components/layout/page-header-slot";
 
 interface PageHeaderProps {
   title: React.ReactNode;
+  /** A small gold line above the title (the date on the dashboard). */
+  eyebrow?: React.ReactNode;
   description?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
@@ -11,13 +13,15 @@ interface PageHeaderProps {
 
 /** A page's title, description and actions. Inside the app shell they show in
  * the top row next to the logo (the Oasis header); elsewhere, in place. */
-export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, eyebrow, description, actions, className }: PageHeaderProps) {
   const slots = usePageHeaderSlots();
 
   const heading = (
     <div className="flex min-w-0 flex-col gap-0.5">
+      {eyebrow && <span className="rx-eyebrow">{eyebrow}</span>}
       <h1 className="lux-title truncate font-head text-2xl font-semibold leading-tight text-foreground sm:text-[30px]">{title}</h1>
       {description && <p className="line-clamp-2 text-[13px] text-muted-foreground sm:text-sm">{description}</p>}
+      <i className="rx-rule" aria-hidden="true" />
     </div>
   );
   const buttons = actions ? <div className="flex flex-wrap items-center gap-2.5">{actions}</div> : null;

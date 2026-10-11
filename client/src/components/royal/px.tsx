@@ -88,6 +88,7 @@ export function PxStat({ label, value, unit, icon: Icon, color, chip, sub, spark
         {sub}
       </span>
       {spark && <Spark values={spark} color={color} />}
+      <i className="rx-foot" aria-hidden="true" />
     </>
   );
   const style = { ["--c" as string]: color, ["--i" as string]: i };

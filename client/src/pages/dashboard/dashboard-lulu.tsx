@@ -12,7 +12,7 @@ import { violationsApi } from "@/api/violations";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxArea, PxBadge, PxBars, PxCard, PxDonut, PxStat } from "@/components/royal/px";
-import { Medal } from "@/components/royal/royale-fx";
+import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
    welcome with a stack of documents, the compliance gauge, four stat cards,
@@ -120,7 +120,8 @@ export default function DashboardLulu() {
     <div className="px">
       <PageHeader
         title={isAr ? "لوحة التحكم" : "Dashboard"}
-        description={dateLine}
+        eyebrow={dateLine}
+        description={isAr ? "ملخص اليوم لكل المؤسسات." : "Today's summary across every establishment."}
         actions={
           <>
             {hasPermission("reports.view") && (
@@ -138,6 +139,7 @@ export default function DashboardLulu() {
       />
 
       <section className="px-welcome" style={v({ "--i": 0 })}>
+        <Guilloche />
         <Medal>{pct}%</Medal>
         <div className="tx">
           <h2>
