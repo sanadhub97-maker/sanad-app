@@ -99,8 +99,8 @@ function AccountMenu({ children }: { children: ReactNode }) {
         <DropdownMenuItem onSelect={() => setTimeout(openPushSettings, 120)} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <BellRing className="h-4 w-4 text-muted-foreground" /> {isAr ? "إشعارات الجهاز" : "Device notifications"}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate("/android")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
-          <Smartphone className="h-4 w-4 text-muted-foreground" /> {isAr ? "تطبيق أندرويد" : "Android app"}
+        <DropdownMenuItem onSelect={() => navigate("/apps")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
+          <Smartphone className="h-4 w-4 text-muted-foreground" /> {isAr ? "تطبيقات سند (كمبيوتر وموبايل)" : "SanaD apps (desktop and phone)"}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => i18n.changeLanguage(isAr ? "en" : "ar")} className="cursor-pointer gap-2 rounded-2xl px-3 py-2.5">
           <Globe className="h-4 w-4 text-muted-foreground" /> {isAr ? "English" : "العربية"}

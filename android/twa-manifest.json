@@ -1,6 +1,6 @@
 {
   "packageId": "com.sanad.hr",
-  "host": "sanad-app-t7ja.onrender.com",
+  "host": "sanad-hr.vercel.app",
   "name": "SanaD",
   "launcherName": "SanaD",
   "display": "standalone",
@@ -13,9 +13,9 @@
   "backgroundColor": "#F2F4F9",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-512.png",
-  "maskableIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/maskable-512.png",
-  "monochromeIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/badge-96.png",
+  "iconUrl": "https://sanad-hr.vercel.app/pwa/icon-512.png",
+  "maskableIconUrl": "https://sanad-hr.vercel.app/pwa/maskable-512.png",
+  "monochromeIconUrl": "https://sanad-hr.vercel.app/pwa/badge-96.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "D:\\VibCodeing\\HR\\android\\signing\\sanad-release.keystore",
@@ -27,24 +27,24 @@
     {
       "name": "المهام اليومية",
       "shortName": "المهام",
-      "url": "https://sanad-app-t7ja.onrender.com/daily-tasks",
-      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+      "url": "https://sanad-hr.vercel.app/daily-tasks",
+      "chosenIconUrl": "https://sanad-hr.vercel.app/pwa/icon-192.png"
     },
     {
       "name": "الموظفون",
       "shortName": "الموظفون",
-      "url": "https://sanad-app-t7ja.onrender.com/employees",
-      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+      "url": "https://sanad-hr.vercel.app/employees",
+      "chosenIconUrl": "https://sanad-hr.vercel.app/pwa/icon-192.png"
     },
     {
       "name": "مستندات الموظفين",
       "shortName": "المستندات",
-      "url": "https://sanad-app-t7ja.onrender.com/employee-documents",
-      "chosenIconUrl": "https://sanad-app-t7ja.onrender.com/pwa/icon-192.png"
+      "url": "https://sanad-hr.vercel.app/employee-documents",
+      "chosenIconUrl": "https://sanad-hr.vercel.app/pwa/icon-192.png"
     }
   ],
   "generatorApp": "unknown",
-  "webManifestUrl": "https://sanad-app-t7ja.onrender.com/manifest.webmanifest",
+  "webManifestUrl": "https://sanad-hr.vercel.app/manifest.webmanifest",
   "fallbackType": "customtabs",
   "features": {},
   "alphaDependencies": {
@@ -53,7 +53,7 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://sanad-app-t7ja.onrender.com/",
+  "fullScopeUrl": "https://sanad-hr.vercel.app/",
   "minSdkVersion": 24,
   "orientation": "default",
   "fingerprints": [],

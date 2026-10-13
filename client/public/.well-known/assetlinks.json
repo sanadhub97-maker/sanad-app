@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sanad.hr",
+      "sha256_cert_fingerprints": [
+        "10:EE:A3:8A:1C:05:B0:45:38:C7:09:EB:B3:01:CC:38:04:69:DC:E5:2E:F3:64:22:AD:9B:BF:83:9C:A7:32:00"
+      ]
+    }
+  }
+]

@@ -46,7 +46,7 @@
         \"relation\": [\"delegate_permission/common.handle_all_urls\"],
         \"target\": {
             \"namespace\": \"web\",
-            \"site\": \"https://sanad-app-t7ja.onrender.com\"
+            \"site\": \"https://sanad-hr.vercel.app\"
         }
     }]
     

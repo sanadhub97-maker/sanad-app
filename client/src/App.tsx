@@ -77,7 +77,8 @@ export default function App() {
               <Route path="/verify-email" element={<VerifyEmailPage />} />
             </Route>
 
-            {/* The Android app: open to anyone, so the link can be shared. */}
+            {/* The apps (desktop and Android): open to anyone, so the link can be shared. */}
+            <Route path="/apps" element={<AndroidAppPage />} />
             <Route path="/android" element={<AndroidAppPage />} />
 
             <Route element={<RequireAuth />}>

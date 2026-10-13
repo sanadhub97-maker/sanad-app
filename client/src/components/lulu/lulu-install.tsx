@@ -186,13 +186,12 @@ function isNever(): boolean {
 }
 
 export function LuluInstall() {
-  // The Android app page has its own download button.
   const { pathname } = useLocation();
-  if (pathname === "/android") return null;
-  return <AppleInstallPrompt />;
+  // The apps page has its own install buttons: the card opens only from them, never by itself.
+  return <AppleInstallPrompt auto={pathname !== "/android" && pathname !== "/apps"} />;
 }
 
-export function AppleInstallPrompt() {
+export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
   const { i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
 
@@ -238,7 +237,7 @@ export function AppleInstallPrompt() {
     window.addEventListener(OPEN_EVENT, onManualOpen);
 
     const autoTimer = window.setTimeout(() => {
-      if (!isStandalone() && !isSnoozed() && !isNever()) {
+      if (auto && !isStandalone() && !isSnoozed() && !isNever()) {
         setPlatform(detectPlatform());
         setOpen(true);
       }
@@ -251,7 +250,7 @@ export function AppleInstallPrompt() {
       window.removeEventListener("sanad:standalone", onStandalone);
       window.removeEventListener(OPEN_EVENT, onManualOpen);
     };
-  }, [isAr]);
+  }, [isAr, auto]);
 
   // Handle escape key
   useEffect(() => {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the SanaD Android app (a Trusted Web Activity that opens
-# https://sanad-app-t7ja.onrender.com full screen) and puts it on the site at
+# https://sanad-hr.vercel.app full screen) and puts it on the site at
 # /download/SanaD.apk, with /download/android.json describing it.
 #
 #   ./build-apk.sh 1.0.1 2      # version name, version code (code must grow)

@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import qrcode from "qrcode-generator";
-import { BellRing, CheckCircle2, Download, FolderDown, Maximize2, RefreshCw, ShieldCheck, Smartphone, Zap } from "lucide-react";
+import { BellRing, CheckCircle2, Download, FolderDown, Laptop, Maximize2, MonitorDown, RefreshCw, ShieldCheck, Smartphone, Zap } from "lucide-react";
+import { detectPlatform, isStandalone, openInstall } from "@/components/lulu/lulu-install";
 import { cn } from "@/lib/utils";
 
-/* /android — the SanaD Android app: download it, and how to install it.
-   Open without signing in, so the link can be sent to anyone on the team.
-   The app (android/, a Trusted Web Activity) opens this site full screen. */
+/* /apps (and the older /android) — SanaD's apps, installed from the site itself:
+   the desktop app (the site installed by the browser as its own window on
+   Windows or Mac) and the Android app (android/, a Trusted Web Activity that
+   opens this site full screen). Open without signing in, so the link can be
+   sent to anyone on the team. */
 
 interface ApkInfo {
   versionName: string;
@@ -17,9 +20,8 @@ interface ApkInfo {
 }
 
 const APK = "/download/SanaD.apk";
-const isAndroid = () => typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
-const inApp = () => typeof document !== "undefined" && document.referrer.startsWith("android-app://com.sanad.hr");
 const mb = (n: number) => `${(n / 1024 / 1024).toFixed(1)} ميجا`;
+const inAndroidApp = () => typeof document !== "undefined" && document.referrer.startsWith("android-app://com.sanad.hr");
 
 function Qr({ text }: { text: string }) {
   const svg = useMemo(() => {
@@ -28,139 +30,188 @@ function Qr({ text }: { text: string }) {
     q.make();
     return q.createSvgTag({ cellSize: 5, margin: 2, scalable: true });
   }, [text]);
-  return <div className="h-40 w-40 overflow-hidden rounded-2xl bg-white p-1 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />;
+  return <div className="h-36 w-36 overflow-hidden rounded-2xl bg-white p-1 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
 
-const STEPS = [
-  { icon: Download, title: "حمّل التطبيق", text: "اضغط «حمّل التطبيق» واستنى الملف SanaD.apk يخلص تحميل." },
+const DESKTOP_STEPS = [
+  { icon: MonitorDown, title: "اضغط «ثبّت على الكمبيوتر»", text: "من Chrome أو Edge على ويندوز أو ماك." },
+  { icon: CheckCircle2, title: "وافق على التثبيت", text: "هيظهر سؤال «تثبيت SanaD؟»، اضغط «تثبيت»." },
+  { icon: Laptop, title: "افتحه من سطح المكتب", text: "هيتحط له أيقونة على سطح المكتب وفي قائمة ابدأ، ويفتح في نافذة لوحده." },
+];
+const ANDROID_STEPS = [
+  { icon: Download, title: "حمّل التطبيق", text: "اضغط «حمّل التطبيق» واستنى الملف SanaD.apk يخلص." },
   { icon: FolderDown, title: "افتح الملف", text: "من إشعار التحميل أو من «التنزيلات»، اضغط على SanaD.apk." },
-  { icon: ShieldCheck, title: "اسمح بالتثبيت مرة واحدة", text: "لو ظهر «تثبيت تطبيقات غير معروفة»، ادخل الإعدادات وفعّل «السماح من هذا المصدر» للمتصفح، وارجع." },
-  { icon: CheckCircle2, title: "اضغط «تثبيت» ثم «فتح»", text: "وسجّل دخولك مرة واحدة. أيقونة SanaD هتفضل على الشاشة الرئيسية." },
+  { icon: ShieldCheck, title: "اسمح بالتثبيت مرة واحدة", text: "لو ظهر «تثبيت تطبيقات غير معروفة»، فعّل «السماح من هذا المصدر» وارجع." },
+  { icon: CheckCircle2, title: "اضغط «تثبيت» ثم «فتح»", text: "وسجّل دخولك مرة واحدة، والأيقونة هتفضل على الشاشة." },
 ];
-
 const PERKS = [
-  { icon: Maximize2, c: "#2f5fe0", title: "ملء الشاشة", text: "من غير شريط المتصفح، زي أي تطبيق" },
-  { icon: BellRing, c: "#e5484d", title: "إشعارات باسم SanaD", text: "تنبيهات الوثائق والمهام حتى والتطبيق مقفول" },
-  { icon: RefreshCw, c: "#10b981", title: "دايمًا آخر نسخة", text: "أي تحديث في النظام بيظهر فيه على طول" },
-  { icon: Zap, c: "#f59e0b", title: "خفيف وسريع", text: "حجمه صغير، ويفتح في ثانية" },
+  { icon: Maximize2, title: "نافذة لوحده", text: "من غير شريط المتصفح، زي أي برنامج" },
+  { icon: BellRing, title: "إشعارات باسم SanaD", text: "تنبيهات الوثائق والمهام حتى والبرنامج مقفول" },
+  { icon: RefreshCw, title: "دايمًا آخر نسخة", text: "أي تحديث في النظام بيظهر فيه لوحده" },
+  { icon: Zap, title: "خفيف وسريع", text: "مش بياخد مساحة، ويفتح في ثانية" },
 ];
 
-export default function AndroidAppPage() {
+function Steps({ steps }: { steps: { icon: typeof Download; title: string; text: string }[] }) {
+  return (
+    <ol className="grid gap-2.5">
+      {steps.map(({ icon: Icon, title, text }, i) => (
+        <li key={title} className="flex items-start gap-3 rounded-2xl border border-[rgba(214,182,120,.16)] bg-white/[0.02] p-3.5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[#f3dfae] shadow-[inset_0_0_0_1px_rgba(214,182,120,.4)]" style={{ background: "radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b)" }}>
+            <Icon className="h-[18px] w-[18px]" />
+          </span>
+          <span className="min-w-0">
+            <b className="block text-[15px] font-extrabold text-[#f3ebda]">
+              <span className="me-1.5 font-mono text-[#c9a464]">{i + 1}.</span>
+              {title}
+            </b>
+            <span className="mt-0.5 block text-[13px] leading-relaxed text-[#9a907c]">{text}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export default function AppsPage() {
   const [info, setInfo] = useState<ApkInfo | null>(null);
-  const android = isAndroid();
-  const opened = inApp();
+  const platform = detectPlatform();
+  const onAndroid = platform === "android-phone" || platform === "android-tablet";
+  const onIos = platform === "iphone" || platform === "ipad";
+  const installed = isStandalone();
+  const androidApp = inAndroidApp();
 
   useEffect(() => {
-    document.title = "SanaD لأندرويد";
+    document.title = "تطبيقات SanaD";
     fetch("/download/android.json", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then(setInfo)
       .catch(() => undefined);
   }, []);
+  const pageUrl = typeof window !== "undefined" ? `${window.location.origin}/apps` : "/apps";
 
-  const pageUrl = typeof window !== "undefined" ? `${window.location.origin}/android` : "/android";
+  const card = "relative overflow-hidden rounded-[28px] border border-[rgba(214,182,120,.26)] p-6 sm:p-8 shadow-[0_40px_80px_-40px_#000,inset_0_0_0_6px_#0d0d11,inset_0_0_0_7px_rgba(214,182,120,.12)]";
+  const cardBg = { background: "radial-gradient(600px 320px at 100% 0%, rgba(243,223,174,.12), transparent 65%), linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0)), #0d0d11" };
+  const gold = "inline-flex h-14 items-center gap-3 rounded-2xl px-6 text-base font-black text-[#1b1407] shadow-[0_14px_30px_-12px_rgba(201,164,100,.9),inset_0_1px_0_rgba(255,255,255,.7)] transition hover:brightness-105 active:scale-[0.98]";
+  const goldBg = { background: "linear-gradient(110deg, #8a6a35, #f3dfae 30%, #c9a464 50%, #fff3d6 64%, #a5803f 86%)" };
 
   return (
-    <div dir="rtl" className="min-h-dvh bg-[#f2f4f9] text-[#121a2e] dark:bg-[#0a0f1e] dark:text-slate-100">
-      <div className="mx-auto max-w-5xl px-4 pb-16 pt-[max(20px,env(safe-area-inset-top))] sm:px-6">
+    <div dir="rtl" className="min-h-dvh text-[#f3ebda]" style={{ background: "radial-gradient(1100px 700px at 90% -10%, rgba(201,164,100,.16), transparent 60%), radial-gradient(800px 600px at 0% 110%, rgba(120,90,40,.12), transparent 60%), #07070a" }}>
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-[max(20px,env(safe-area-inset-top))] sm:px-6">
         <header className="flex items-center justify-between py-3">
-          <Link to="/" className="flex items-center gap-2 font-head text-lg font-bold">
-            <img src="/pwa/icon-192.png" alt="" className="h-9 w-9 rounded-xl" />
-            SanaD
+          <Link to="/" className="flex items-center gap-2.5 text-lg font-black">
+            <img src="/pwa/icon-192.png" alt="" className="h-10 w-10 rounded-xl ring-1 ring-[rgba(243,223,174,.5)]" />
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(110deg, #8a6a35, #f3dfae 40%, #c9a464)" }}>
+              سند
+            </span>
           </Link>
-          <Link to="/" className="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10">
+          <Link to="/" className="rounded-xl border border-[rgba(214,182,120,.26)] px-3.5 py-2 text-sm font-bold text-[#d8ceb9] hover:text-[#f3dfae]">
             افتح النظام من المتصفح
           </Link>
         </header>
 
-        <section className="relative mt-4 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0b1b4d] via-[#14286b] to-[#1d3a96] p-6 text-white shadow-[0_30px_60px_-30px_rgba(15,35,110,0.7)] sm:p-10">
-          <div className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-[#d4a843]/25 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-28 right-10 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl" />
-          <div className="relative grid items-center gap-8 md:grid-cols-[1fr_auto]">
-            <div>
-              <div className="flex items-center gap-4">
-                <img src="/pwa/icon-512.png" alt="SanaD" className="h-20 w-20 rounded-[24px] shadow-[0_14px_30px_-10px_rgba(0,0,0,0.6)] ring-1 ring-white/20 sm:h-24 sm:w-24" />
-                <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#f3d27a] ring-1 ring-white/15">
-                    <Smartphone className="h-3.5 w-3.5" /> تطبيق أندرويد
-                  </span>
-                  <h1 className="mt-2 font-head text-3xl font-bold sm:text-4xl">SanaD على موبايلك</h1>
-                </div>
-              </div>
-              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-slate-200">
-                موظفينك ووثائقك في جيبك: تنبيه قبل ما الإقامة أو الرخصة تنتهي، مهام اليوم، والمدفوعات — في تطبيق بيفتح ملء الشاشة وبيبعتلك إشعارات باسمه.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {info && <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">الإصدار {info.versionName}</span>}
-                {info && <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">{mb(info.size)}</span>}
-                <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">أندرويد {info?.minAndroid ?? "7.0"} أو أحدث</span>
-              </div>
+        <section className="mt-6 text-center">
+          <span className="text-sm font-extrabold tracking-[.26em] text-[#c9a464]">ثبّت سند على أجهزتك</span>
+          <h1 className="mt-2 bg-clip-text pb-1 text-4xl font-black text-transparent sm:text-6xl" style={{ backgroundImage: "linear-gradient(110deg, #7d5d27, #f3dfae 24%, #c9a464 42%, #fff3d6 56%, #a5803f 74%, #e8cc8e)" }}>
+            تطبيقات سند
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-[#9a907c]">
+            نفس النظام بنفس حسابك، بس في برنامج لوحده على الكمبيوتر وتطبيق على الموبايل. بيتثبتوا من هنا مباشرة، وأي تحديث في الموقع بيوصلهم لوحده.
+          </p>
+        </section>
 
-              {opened ? (
-                <p className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-emerald-400/15 px-4 py-3 text-sm font-semibold text-emerald-200 ring-1 ring-emerald-300/30">
-                  <CheckCircle2 className="h-5 w-5" /> إنت فاتح تطبيق SanaD دلوقتي — مش محتاج تحمّله تاني.
-                </p>
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {/* the desktop app */}
+          <section className={cn(card, !onAndroid && !onIos && "ring-1 ring-[rgba(243,223,174,.35)]")} style={cardBg} aria-labelledby="desk">
+            <div className="flex items-center gap-4">
+              <span className="grid h-16 w-16 place-items-center rounded-[20px] text-[#f3dfae] shadow-[inset_0_0_0_1px_rgba(214,182,120,.45),0_0_30px_-10px_rgba(201,164,100,.6)]" style={{ background: "radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b)" }}>
+                <Laptop className="h-8 w-8" />
+              </span>
+              <div>
+                <span className="text-xs font-extrabold tracking-[.2em] text-[#c9a464]">ويندوز · ماك</span>
+                <h2 id="desk" className="text-2xl font-black sm:text-3xl">سند للكمبيوتر</h2>
+              </div>
+            </div>
+            <p className="mt-4 text-[14.5px] leading-relaxed text-[#d8ceb9]">برنامج بيفتح في نافذة لوحده، بأيقونة على سطح المكتب وشريط المهام، وبيبعتلك إشعارات الجهاز.</p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              {installed && !androidApp ? (
+                <span className="inline-flex items-center gap-2 rounded-2xl bg-[rgba(127,211,164,.12)] px-4 py-3 text-sm font-bold text-[#7fd3a4] ring-1 ring-[rgba(127,211,164,.35)]">
+                  <CheckCircle2 className="h-5 w-5" /> إنت فاتح برنامج سند دلوقتي.
+                </span>
+              ) : onAndroid || onIos ? (
+                <span className="text-sm text-[#9a907c]">افتح الصفحة دي من الكمبيوتر عشان تثبّته.</span>
               ) : (
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <a
-                    href={APK}
-                    download="SanaD.apk"
-                    className="inline-flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-b from-[#f3d27a] to-[#d4a843] px-6 font-head text-base font-bold text-[#1a1406] shadow-[0_12px_28px_-10px_rgba(212,168,67,0.8)] transition hover:brightness-105 active:scale-[0.98]"
-                  >
-                    <Download className="h-5 w-5" /> حمّل التطبيق
-                  </a>
-                  {!android && <span className="text-sm text-slate-300">أو امسح الكود بموبايلك الأندرويد ←</span>}
+                <button type="button" className={gold} style={goldBg} onClick={() => openInstall(platform)}>
+                  <MonitorDown className="h-5 w-5" /> ثبّت على الكمبيوتر
+                </button>
+              )}
+            </div>
+            <div className="mt-6">
+              <Steps steps={DESKTOP_STEPS} />
+            </div>
+            {platform === "desktop-safari" && (
+              <p className="mt-3 text-[13px] leading-relaxed text-[#e6b964]">على Safari في الماك: من قائمة «ملف» اختار «إضافة إلى Dock».</p>
+            )}
+          </section>
+
+          {/* the Android app */}
+          <section className={cn(card, onAndroid && "ring-1 ring-[rgba(243,223,174,.35)]")} style={cardBg} aria-labelledby="andr">
+            <div className="flex items-center gap-4">
+              <span className="grid h-16 w-16 place-items-center rounded-[20px] text-[#f3dfae] shadow-[inset_0_0_0_1px_rgba(214,182,120,.45),0_0_30px_-10px_rgba(201,164,100,.6)]" style={{ background: "radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b)" }}>
+                <Smartphone className="h-8 w-8" />
+              </span>
+              <div>
+                <span className="text-xs font-extrabold tracking-[.2em] text-[#c9a464]">أندرويد {info?.minAndroid ?? "7.0"} أو أحدث</span>
+                <h2 id="andr" className="text-2xl font-black sm:text-3xl">سند للموبايل</h2>
+              </div>
+            </div>
+            <p className="mt-4 text-[14.5px] leading-relaxed text-[#d8ceb9]">تطبيق بيفتح ملء الشاشة، وبيبعتلك إشعارات باسمه.</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-[#d8ceb9]">
+              {info && <span className="rounded-full border border-[rgba(214,182,120,.26)] px-3 py-1">الإصدار {info.versionName}</span>}
+              {info && <span className="rounded-full border border-[rgba(214,182,120,.26)] px-3 py-1">{mb(info.size)}</span>}
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-5">
+              {androidApp ? (
+                <span className="inline-flex items-center gap-2 rounded-2xl bg-[rgba(127,211,164,.12)] px-4 py-3 text-sm font-bold text-[#7fd3a4] ring-1 ring-[rgba(127,211,164,.35)]">
+                  <CheckCircle2 className="h-5 w-5" /> إنت فاتح تطبيق سند دلوقتي.
+                </span>
+              ) : (
+                <a href={APK} download="SanaD.apk" className={gold} style={goldBg}>
+                  <Download className="h-5 w-5" /> حمّل التطبيق
+                </a>
+              )}
+              {!onAndroid && !androidApp && (
+                <div className="flex items-center gap-3">
+                  <Qr text={pageUrl} />
+                  <span className="max-w-[9rem] text-[13px] leading-relaxed text-[#9a907c]">أو امسح الكود بكاميرا موبايلك الأندرويد</span>
                 </div>
               )}
             </div>
-
-            {!android && !opened && (
-              <div className="hidden flex-col items-center gap-2 rounded-3xl bg-white/10 p-4 ring-1 ring-white/15 md:flex">
-                <Qr text={pageUrl} />
-                <span className="text-xs text-slate-200">امسح بكاميرا الموبايل</span>
-              </div>
+            {!androidApp && (
+              <>
+                <div className="mt-6">
+                  <Steps steps={ANDROID_STEPS} />
+                </div>
+                <p className="mt-3 rounded-2xl bg-[rgba(230,185,100,.1)] px-4 py-3 text-[13px] leading-relaxed text-[#e6b964] ring-1 ring-[rgba(230,185,100,.25)]">
+                  التطبيق مش من متجر Google Play، فممكن «Play Protect» يسألك قبل التثبيت. اختار «تثبيت على أي حال»: التطبيق موقّع باسم سند وبيفتح نظامك بس.
+                </p>
+              </>
             )}
-          </div>
-        </section>
-
-        {!opened && (
-          <section className="mt-8">
-            <h2 className="font-head text-xl font-bold">التثبيت في 4 خطوات</h2>
-            <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {STEPS.map(({ icon: Icon, title, text }, i) => (
-                <li key={title} className="relative rounded-3xl bg-white p-5 shadow-[0_1px_0_rgba(15,25,70,0.04),0_12px_30px_-20px_rgba(15,25,70,0.35)] ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
-                  <span className="absolute left-4 top-4 font-head text-3xl font-bold text-black/[0.06] dark:text-white/10">{i + 1}</span>
-                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#2f5fe0]/10 text-[#2f5fe0] dark:text-sky-300">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <b className="mt-3 block font-head text-[15px]">{title}</b>
-                  <p className="mt-1 text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">{text}</p>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-3 rounded-2xl bg-amber-500/10 px-4 py-3 text-[13px] leading-relaxed text-amber-800 ring-1 ring-amber-500/20 dark:text-amber-200">
-              التطبيق مش من متجر Google Play، فممكن «Play Protect» يسألك قبل التثبيت. اختار «تثبيت على أي حال» — التطبيق موقّع باسم SanaD وبيفتح نظامك بس.
-            </p>
           </section>
-        )}
+        </div>
 
         <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {PERKS.map(({ icon: Icon, c, title, text }) => (
-            <div key={title} className="flex items-start gap-3 rounded-3xl bg-white p-4 ring-1 ring-black/5 dark:bg-white/5 dark:ring-white/10">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-white" style={{ background: c }}>
-                <Icon className="h-5 w-5" />
-              </span>
+          {PERKS.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="flex items-start gap-3 rounded-2xl border border-[rgba(214,182,120,.18)] bg-white/[0.02] p-4">
+              <Icon className="mt-0.5 h-5 w-5 shrink-0 text-[#c9a464]" />
               <span>
-                <b className="block text-sm">{title}</b>
-                <span className={cn("block text-xs text-slate-500 dark:text-slate-400")}>{text}</span>
+                <b className="block text-sm font-extrabold">{title}</b>
+                <span className="block text-xs text-[#9a907c]">{text}</span>
               </span>
             </div>
           ))}
         </section>
 
-        <p className="mt-8 text-center text-xs text-slate-400">
-          على الآيفون والآيباد: افتح النظام من Safari واختار «إضافة إلى الشاشة الرئيسية».
-        </p>
+        <p className="mt-8 text-center text-xs text-[#6c6555]">على الآيفون والآيباد: افتح النظام من Safari، واضغط زرار المشاركة، واختار «إضافة إلى الشاشة الرئيسية».</p>
       </div>
     </div>
   );
