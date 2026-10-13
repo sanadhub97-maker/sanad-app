@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration";
 import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
-import { DEFAULT_WHATSAPP_TEMPLATE, isWhatsappTemplateId, type WhatsappTemplateId } from "@/services/whatsappTemplates";
-import { isWhatsappCardSetting, type WhatsappCardSetting } from "@/services/whatsappCards";
 import { isDigestCardSetting, type DigestCardSetting } from "@/services/whatsappDigestCard";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
@@ -95,32 +93,6 @@ export async function getPrintThemeSetting(): Promise<PrintThemeId> {
 export async function setPrintThemeSetting(theme: PrintThemeId) {
   await setSetting(PRINT_THEME_KEY, { theme });
   return theme;
-}
-
-const WHATSAPP_TEMPLATE_KEY = "whatsapp.template";
-
-/** The WhatsApp alert design chosen in Settings → WhatsApp (see services/whatsappTemplates). */
-export async function getWhatsappTemplateSetting(): Promise<WhatsappTemplateId> {
-  const { template } = await getSetting<{ template: string }>(WHATSAPP_TEMPLATE_KEY, { template: DEFAULT_WHATSAPP_TEMPLATE });
-  return isWhatsappTemplateId(template) ? template : DEFAULT_WHATSAPP_TEMPLATE;
-}
-
-export async function setWhatsappTemplateSetting(template: WhatsappTemplateId) {
-  await setSetting(WHATSAPP_TEMPLATE_KEY, { template });
-  return template;
-}
-
-const WHATSAPP_CARD_KEY = "whatsapp.card";
-
-/** The picture sent with WhatsApp alerts (see services/whatsappCards); "none" sends text only. */
-export async function getWhatsappCardSetting(): Promise<WhatsappCardSetting> {
-  const { card } = await getSetting<{ card: string }>(WHATSAPP_CARD_KEY, { card: "none" });
-  return isWhatsappCardSetting(card) ? card : "none";
-}
-
-export async function setWhatsappCardSetting(card: WhatsappCardSetting) {
-  await setSetting(WHATSAPP_CARD_KEY, { card });
-  return card;
 }
 
 const WHATSAPP_DIGEST_CARD_KEY = "whatsapp.digestCard";

@@ -119,8 +119,6 @@ export interface WhatsappMessageItem {
   kind: "ALERT" | "TEST";
   at: string;
 }
-export type WhatsappTemplateId = "classic" | "card" | "compact" | "priority" | "bilingual";
-export type WhatsappPreviewState = "expired" | "week" | "month";
 export type DigestCardSetting = "noir" | "ivory" | "emerald" | "sapphire" | "none";
 export interface WhatsappDigestCards {
   card: DigestCardSetting;
@@ -138,29 +136,6 @@ export interface WhatsappDailyPreview {
   language: "ar" | "en";
   generatedAt: string;
 }
-export interface WhatsappTemplateSettings {
-  template: WhatsappTemplateId;
-  /** False when the system has no documents yet and the previews use an example. */
-  sampleIsReal: boolean;
-  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState, string>>;
-}
-
-export type WhatsappCardId =
-  | "pass" | "ios" | "bento" | "health" | "lock" | "letter"
-  | "titanium" | "whitecard" | "ultra" | "vision" | "pearl";
-export type WhatsappCardSetting = WhatsappCardId | "none";
-export interface WhatsappCardsPreview {
-  card: WhatsappCardSetting;
-  /** Pictures go out only from a QR-linked number; other providers send the text design. */
-  canSendCards: boolean;
-  sampleIsReal: boolean;
-  /** Stylesheet and markup of every card, rendered live in the preview. */
-  css: string;
-  cards: Record<WhatsappCardId, string>;
-  /** The alert language the cards are drawn in. */
-  language?: "ar" | "en";
-}
-
 export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
 
 export interface WhatsappScheduleSettings {
@@ -184,20 +159,12 @@ export const settingsApi = {
     (await api.get<{ data: PrintSignaturesSettings }>("/settings/print-signatures")).data.data,
   updatePrintSignatures: async (input: PrintSignaturesSettings) =>
     (await api.put<{ data: PrintSignaturesSettings; message: string }>("/settings/print-signatures", input)).data,
-  getWhatsappCards: async (state: WhatsappPreviewState) =>
-    (await api.get<{ data: WhatsappCardsPreview }>("/settings/whatsapp/cards", { params: { state } })).data.data,
-  updateWhatsappCard: async (card: WhatsappCardSetting) =>
-    (await api.put<{ data: { card: WhatsappCardSetting }; message: string }>("/settings/whatsapp/card", { card })).data,
   getWhatsappDigestCards: async () =>
     (await api.get<{ data: WhatsappDigestCards }>("/settings/whatsapp/digest-cards")).data.data,
   updateWhatsappDigestCard: async (card: DigestCardSetting) =>
     (await api.put<{ data: { card: DigestCardSetting }; message: string }>("/settings/whatsapp/digest-card", { card })).data,
   getWhatsappDailyPreview: async () =>
     (await api.get<{ data: WhatsappDailyPreview }>("/settings/whatsapp/daily-preview")).data.data,
-  getWhatsappTemplate: async () =>
-    (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
-  updateWhatsappTemplate: async (template: WhatsappTemplateId) =>
-    (await api.put<{ data: { template: WhatsappTemplateId }; message: string }>("/settings/whatsapp/template", { template })).data,
   getWhatsappSchedule: async () =>
     (await api.get<{ data: WhatsappScheduleSettings }>("/settings/whatsapp/schedule")).data.data,
   updateWhatsappSchedule: async (input: Partial<WhatsappScheduleSettings>) =>

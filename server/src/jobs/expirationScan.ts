@@ -7,13 +7,10 @@ import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
 import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappDigestCardSetting } from "@/services/settingsStore";
 import { alertContext } from "@/services/whatsappTemplates";
-import { dailyEmptyText, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
+import { dailyEmptyText, dailyPicture, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { withLang } from "@/services/lang";
 import { openTasks } from "@/services/openTasks";
-import { getCardAssets } from "@/services/branding";
-import { renderHtmlToPngFit } from "@/services/pdf";
 import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
-import { DIGEST_CARD_MAX_HEIGHT, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument } from "@/services/whatsappDigestCard";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { riyadhDay, sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
@@ -155,10 +152,7 @@ async function performExpirationScan() {
     const cardId = await getWhatsappDigestCardSetting();
     if (cardId !== "none" && whatsappSettings.provider === WHATSAPP_WEB_PROVIDER) {
       try {
-        const { logo, mark } = await getCardAssets();
-        const data = { company, logo: logo ?? mark, documents: dueToday.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
-        const png = await renderHtmlToPngFit(withLang(lang, () => digestCardDocument(cardId, data)), DIGEST_CARD_WIDTH, DIGEST_CARD_MAX_HEIGHT);
-        dailyImage = { png, caption: withLang(lang, () => digestCardCaption(data)) };
+        dailyImage = await dailyPicture({ lang, company, docs: dueToday, tasks }, cardId);
       } catch (err) {
         logger.error({ err }, "Daily summary picture failed; sending the text");
       }

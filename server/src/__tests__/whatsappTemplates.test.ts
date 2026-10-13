@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alertContext, daysAr, renderWhatsappAlert, WHATSAPP_TEMPLATE_IDS, type TaskLine } from "@/services/whatsappTemplates";
+import { alertContext, daysAr, type TaskLine } from "@/services/whatsappTemplates";
 import { renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { dailyMessageParts } from "@/services/whatsappDigest";
 import type { TrackableItem } from "@/services/expiringItems";
@@ -27,7 +27,7 @@ const iqama = (days: number, overrides: Partial<TrackableItem> = {}): TrackableI
   ...overrides,
 });
 
-describe("WhatsApp alert templates", () => {
+describe("WhatsApp daily summary", () => {
   it("makes the Arabic day count agree with the number", () => {
     expect(daysAr(1)).toBe("يوم واحد");
     expect(daysAr(2)).toBe("يومان");
@@ -35,20 +35,7 @@ describe("WhatsApp alert templates", () => {
     expect(daysAr(30)).toBe("30 يومًا");
   });
 
-  it("trims names so a trailing space doesn't break WhatsApp bold", () => {
-    const text = renderWhatsappAlert("classic", alertContext(iqama(7, { employeeNameAr: "أحمد " }), "سمو"));
-    expect(text).toContain("*أحمد*");
-    expect(text).not.toContain(" *\n");
-  });
 
-  it("names the document, not an employee, for company documents", () => {
-    const item = iqama(30, { sourceType: "COMPANY_DOCUMENT", employeeName: undefined, employeeNameAr: undefined, documentAr: "السجل التجاري" });
-    for (const id of WHATSAPP_TEMPLATE_IDS) {
-      const text = renderWhatsappAlert(id, alertContext(item, "سمو"));
-      expect(text).toContain("السجل التجاري");
-      expect(text).not.toContain("الموظف");
-    }
-  });
 
   it("builds the daily summary: counts, documents most urgent first, open tasks and the signature", () => {
     const tasks: TaskLine[] = [
@@ -71,9 +58,4 @@ describe("WhatsApp alert templates", () => {
     expect(dailyMessageParts([], header, "✅ all clear")[0]).toContain("✅ all clear");
   });
 
-  it("says expired, with how long ago, once the date has passed", () => {
-    const text = renderWhatsappAlert("classic", alertContext(iqama(-3), "سمو"));
-    expect(text).toContain("منتهية منذ 3 أيام");
-    expect(text).toContain("🔴");
-  });
 });

@@ -6,6 +6,10 @@ import { whatsappEligible } from "@/services/whatsappDigest";
 import { openTasks } from "@/services/openTasks";
 import { L, isEn } from "@/services/lang";
 import { alertContext, daysAr, type AlertContext, type TaskLine } from "@/services/whatsappTemplates";
+import { getCardAssets } from "@/services/branding";
+import { renderHtmlToPngFit } from "@/services/pdf";
+import { withLang } from "@/services/lang";
+import { DIGEST_CARD_MAX_HEIGHT, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument, type DigestCardId } from "@/services/whatsappDigestCard";
 
 /* The morning WhatsApp summary as text, laid out like a report: a heading
    with the company and the day, a framed panel with the count at each level,
@@ -107,4 +111,12 @@ export function renderDailyTail(tasks: TaskLine[]) {
     RULE,
     sign,
   ].join("\n");
+}
+
+/** The summary drawn as the chosen picture, with its caption. */
+export async function dailyPicture(summary: { lang: "ar" | "en"; company: string; docs: DailyDoc[]; tasks: TaskLine[] }, cardId: DigestCardId) {
+  const { logo, mark } = await getCardAssets();
+  const data = { company: summary.company, logo: logo ?? mark, documents: summary.docs.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks: summary.tasks };
+  const png = await renderHtmlToPngFit(withLang(summary.lang, () => digestCardDocument(cardId, data)), DIGEST_CARD_WIDTH, DIGEST_CARD_MAX_HEIGHT);
+  return { png, caption: withLang(summary.lang, () => digestCardCaption(data)) };
 }

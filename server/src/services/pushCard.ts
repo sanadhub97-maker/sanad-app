@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { env } from "@/config/env";
 import { renderHtmlToPng } from "@/services/pdf";
-import { CARD_FONTS_HREF } from "@/services/whatsappCards";
+const CARD_FONTS_HREF = "https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&display=swap";
 
 /*
  * The picture under a push notification on Android, Windows and macOS Chrome:

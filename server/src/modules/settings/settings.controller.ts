@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiError } from "@/utils/apiError";
 import { canViewSource, escapeHtml, hasPermission } from "@/lib/security";
-import type { AuthContext } from "@/types/express";
 import { assertBrandFile, PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 import * as service from "@/modules/settings/settings.service";
 import { sendMail } from "@/services/email";
@@ -13,87 +12,14 @@ import { listRecipients, saveRecipients } from "@/services/whatsappRecipients";
 import * as whatsappWeb from "@/services/whatsappWeb";
 import { prisma } from "@/lib/prisma";
 import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsappLog";
-import { getTrackableItems } from "@/services/expiringItems";
-import { daysUntil } from "@/services/expiration";
-import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting, getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
+import { getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
 import { rescheduleExpirationScan } from "@/jobs/scheduler";
 import { runExpirationScan } from "@/jobs/expirationScan";
 import { dailyMessageParts } from "@/services/whatsappDigest";
 import { getWhatsappDigestCardSetting, setWhatsappDigestCardSetting } from "@/services/settingsStore";
 import { DIGEST_CARD_IDS, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument, type DigestCardSetting } from "@/services/whatsappDigestCard";
-import { dailyEmptyText, gatherDailySummary, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
+import { dailyEmptyText, dailyPicture, gatherDailySummary, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { getCardAssets } from "@/services/branding";
-import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
-import { CARD_PREVIEW_CSS, WHATSAPP_CARD_IDS, cardMarkup, type WhatsappCardSetting } from "@/services/whatsappCards";
-import {
-  WHATSAPP_TEMPLATE_IDS,
-  alertContext,
-  renderWhatsappAlert,
-  type AlertContext,
-  type WhatsappTemplateId,
-} from "@/services/whatsappTemplates";
-
-/** A real document to fill the WhatsApp alert preview and test message — the
- * next one to expire, preferring an employee's — or a labelled example when
- * the system has none yet. */
-async function sampleAlertContext(companyName: string | null | undefined, companyEn?: string | null, auth?: AuthContext): Promise<{ context: AlertContext; real: boolean }> {
-  const ranked = (await getTrackableItems())
-    .filter((item) => canViewSource(auth, item.sourceType))
-    .map((item) => ({ item, days: daysUntil(item.expiryDate) }))
-    .sort(
-      (a, b) =>
-        Number(Boolean(b.item.employeeNameAr)) - Number(Boolean(a.item.employeeNameAr)) ||
-        Number(b.days >= 0) - Number(a.days >= 0) ||
-        Math.abs(a.days) - Math.abs(b.days)
-    );
-  if (ranked[0]) return { context: alertContext(ranked[0].item, companyName, companyEn), real: true };
-  return {
-    context: {
-      company: companyName || "المنشأة",
-      companyEn: companyEn || "The company",
-      employeeAr: "اسم الموظف (مثال)",
-      employeeEn: "Employee name (example)",
-      documentAr: "الإقامة",
-      documentEn: "Iqama",
-      expiryDate: new Date(Date.now() + 7 * 86_400_000),
-      daysLeft: 7,
-    },
-    real: false,
-  };
-}
-
-// The same document in each state, so the designs can be compared as it nears expiry.
-const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
-
-export const getWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
-  const [{ company }, template, { language }] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting(), getWhatsappScheduleSetting()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
-  // Shown in the language the alerts go out in (Settings → WhatsApp).
-  const previews = withLang(language, () => Object.fromEntries(
-    WHATSAPP_TEMPLATE_IDS.map((id) => [
-      id,
-      Object.fromEntries(
-        Object.entries(PREVIEW_STATES).map(([state, days]) => [
-          state,
-          renderWhatsappAlert(id, { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }),
-        ])
-      ),
-    ])
-  ));
-  res.json({ data: { template, sampleIsReal: real, previews } });
-});
-
-/** The picture designs, as live markup on the sample document in one state
- * — Settings shows them without drawing a single image on the server. */
-export const getWhatsappCards = asyncHandler(async (req: Request, res: Response) => {
-  const state = String(req.query.state ?? "week") as keyof typeof PREVIEW_STATES;
-  const days = PREVIEW_STATES[state] ?? PREVIEW_STATES.week;
-  const [{ company }, card, provider, assets, { language }] = await Promise.all([getBrandingContext(), getWhatsappCardSetting(), getWhatsappProvider(), getCardAssets(), getWhatsappScheduleSetting()]);
-  const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
-  const shown = { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) };
-  const cards = withLang(language, () => Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)])));
-  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards, language } });
-});
 
 /** Settings → WhatsApp: the morning summary exactly as it will go out tomorrow, message by message, on today's real data. */
 export const getWhatsappDailyPreview = asyncHandler(async (req: Request, res: Response) => {
@@ -118,16 +44,6 @@ export const getWhatsappDigestCards = asyncHandler(async (req: Request, res: Res
 export const updateWhatsappDigestCard = asyncHandler(async (req: Request, res: Response) => {
   const card = await setWhatsappDigestCardSetting((req.body as { card: DigestCardSetting }).card);
   res.json({ data: { card }, message: L("تم حفظ تصميم صورة الملخص اليومي.", "Daily summary picture saved.") });
-});
-
-export const updateWhatsappCard = asyncHandler(async (req: Request, res: Response) => {
-  const card = await setWhatsappCardSetting((req.body as { card: WhatsappCardSetting }).card);
-  res.json({ data: { card }, message: "WhatsApp card design saved." });
-});
-
-export const updateWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
-  const template = await setWhatsappTemplateSetting((req.body as { template: WhatsappTemplateId }).template);
-  res.json({ data: { template }, message: "WhatsApp message design saved." });
 });
 
 export const getWhatsappMessages = asyncHandler(async (req: Request, res: Response) => {
@@ -336,41 +252,34 @@ export const runWhatsappScanNow = asyncHandler(async (_req: Request, res: Respon
 });
 
 export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => {
-  const [{ company }, provider, { language }] = await Promise.all([getBrandingContext(), getWhatsappProvider(), getWhatsappScheduleSetting()]);
+  const [provider, { language }] = await Promise.all([getWhatsappProvider(), getWhatsappScheduleSetting()]);
   const en = language === "en";
   const providerLabel =
     provider === WHATSAPP_WEB_PROVIDER ? (en ? "a number linked by QR code" : "رقم مربوط بكود QR") : provider === CALLMEBOT_PROVIDER ? "CallMeBot" : en ? "official WhatsApp (Meta)" : "واتساب الرسمي (Meta)";
-  // The test is the chosen design (card and text) on a real document, so it
-  // looks exactly like the alerts this number will get.
-  const { context } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
-  const style = await getAlertStyle(company?.nameEn);
-  const alert = await withLang(language, () => prepareAlert(context, style));
+  // The test is today's summary, as it goes out each morning: the chosen picture, or the text.
+  const summary = await gatherDailySummary((item) => canViewSource(req.auth, item.sourceType));
   const header = (en
-    ? ["🧪 *A test message from SanaD*", `_Sent through ${providerLabel}. This shows what the alerts look like; it is not a new alert._`, ""]
-    : ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. هذا مثال على شكل التنبيهات، وليس تنبيهًا جديدًا._`, ""]
+    ? ["🧪 *A test message from SanaD*", `_Sent through ${providerLabel}. This is today's summary as it goes out each morning; it is not a new alert._`]
+    : ["🧪 *رسالة تجريبية من نظام SanaD*", `_وصلت عبر: ${providerLabel}. ده ملخص النهارده بالشكل اللي بيوصل كل صباح، وليس تنبيهًا جديدًا._`]
   ).join("\n");
-
-  let result: { sent: boolean; reason?: string };
-
-  if (alert.mode === "card_only") {
-    // Send card only
-    const caption = `${header}\n${alert.cardCaption || ""}`;
-    result = await sendWhatsapp(req.body.to, caption, alert.image);
-  } else if (alert.mode === "both") {
-    // Send formatted text message
-    result = await sendWhatsapp(req.body.to, `${header}\n${alert.text}`);
-    if (result.sent && alert.image) {
-      await new Promise((r) => setTimeout(r, 1200));
-      await sendWhatsapp(req.body.to, alert.cardCaption || "", alert.image);
+  const cardId = await getWhatsappDigestCardSetting();
+  let result: { sent: boolean; reason?: string } = { sent: false };
+  let logText = "";
+  if (cardId !== "none" && provider === WHATSAPP_WEB_PROVIDER) {
+    const picture = await dailyPicture(summary, cardId).catch(() => null);
+    if (picture) {
+      logText = `${header}\n\n${picture.caption}`;
+      result = await sendWhatsapp(req.body.to, logText, picture.png);
     }
-  } else {
-    // text_only
-    result = await sendWhatsapp(req.body.to, `${header}\n${alert.text}`);
   }
-
+  if (!logText) {
+    const parts = withLang(summary.lang, () => dailyMessageParts(summary.docs.map(renderDailyEntry), renderDailyHeader(summary.company, summary.docs, summary.tasks), dailyEmptyText(), renderDailyTail(summary.tasks)));
+    logText = `${header}\n\n${parts[0]}`;
+    result = await sendWhatsapp(req.body.to, logText);
+  }
   await recordWhatsappMessage({
     to: req.body.to,
-    message: `${header}\n${alert.logText}`,
+    message: logText,
     sent: result.sent,
     error: result.reason,
     kind: "TEST",
