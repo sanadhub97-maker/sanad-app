@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration";
 import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { isDigestCardSetting, type DigestCardSetting } from "@/services/whatsappDigestCard";
+import { isDailyTextId, type DailyTextId } from "@/services/dailyTextIds";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
 
@@ -106,6 +107,19 @@ export async function getWhatsappDigestCardSetting(): Promise<DigestCardSetting>
 export async function setWhatsappDigestCardSetting(card: DigestCardSetting) {
   await setSetting(WHATSAPP_DIGEST_CARD_KEY, { card });
   return card;
+}
+
+const WHATSAPP_DAILY_TEXT_KEY = "whatsapp.dailyText";
+
+/** The design of the morning summary sent as text (services/dailyText). */
+export async function getWhatsappDailyTextSetting(): Promise<DailyTextId> {
+  const { design } = await getSetting<{ design: string }>(WHATSAPP_DAILY_TEXT_KEY, { design: "report" });
+  return isDailyTextId(design) ? design : "report";
+}
+
+export async function setWhatsappDailyTextSetting(design: DailyTextId) {
+  await setSetting(WHATSAPP_DAILY_TEXT_KEY, { design });
+  return design;
 }
 
 const WHATSAPP_SCHEDULE_KEY = "whatsapp.schedule";

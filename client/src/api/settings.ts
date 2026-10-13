@@ -128,8 +128,11 @@ export interface WhatsappDigestCards {
   /** Each design as a whole page, drawn on today's documents and open tasks. */
   cards: Record<Exclude<DigestCardSetting, "none">, string>;
 }
+export type DailyTextId = "report" | "grouped" | "cards" | "brief" | "letter" | "executive" | "dashboard" | "timeline";
 export interface WhatsappDailyPreview {
-  /** The messages exactly as they go out, in order. */
+  /** The text design in use, and each design's messages exactly as they go out. */
+  design: DailyTextId;
+  designs: Record<DailyTextId, string[]>;
   messages: string[];
   documents: number;
   tasks: number;
@@ -163,6 +166,8 @@ export const settingsApi = {
     (await api.get<{ data: WhatsappDigestCards }>("/settings/whatsapp/digest-cards")).data.data,
   updateWhatsappDigestCard: async (card: DigestCardSetting) =>
     (await api.put<{ data: { card: DigestCardSetting }; message: string }>("/settings/whatsapp/digest-card", { card })).data,
+  updateWhatsappDailyText: async (design: DailyTextId) =>
+    (await api.put<{ data: { design: DailyTextId }; message: string }>("/settings/whatsapp/daily-text", { design })).data,
   getWhatsappDailyPreview: async () =>
     (await api.get<{ data: WhatsappDailyPreview }>("/settings/whatsapp/daily-preview")).data.data,
   getWhatsappSchedule: async () =>

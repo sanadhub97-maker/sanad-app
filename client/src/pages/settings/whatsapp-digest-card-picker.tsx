@@ -5,7 +5,7 @@ import { Check, ImageIcon, Loader2, RefreshCw, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppleIcon } from "@/components/common/apple-icon";
-import { settingsApi, type DigestCardSetting } from "@/api/settings";
+import { settingsApi, type DailyTextId, type DigestCardSetting } from "@/api/settings";
 import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { WhatsappText } from "./whatsapp-text";
@@ -15,6 +15,23 @@ const DESIGNS: { id: Exclude<DigestCardSetting, "none">; nameAr: string; nameEn:
   { id: "ivory", nameAr: "العاجي التنفيذي", nameEn: "Ivory", descAr: "ورق عاجي بالكحلي والدهبي، شكل تقرير مطبوع.", descEn: "Ivory paper with navy and gold." },
   { id: "emerald", nameAr: "الزمردي", nameEn: "Emerald", descAr: "أخضر زمردي عميق بلمسات دهبي.", descEn: "Deep emerald with gold." },
   { id: "sapphire", nameAr: "الياقوتي", nameEn: "Sapphire", descAr: "كحلي ليلي بالفضي، هادي ورسمي.", descEn: "Midnight navy with silver." },
+];
+
+/** In the order they are offered: the management designs, then the follow-up ones, then the formal and the short. */
+const TEXT_DESIGNS: { id: DailyTextId; icon: string; kind: 0 | 1 | 2; nameAr: string; nameEn: string; descAr: string; descEn: string }[] = [
+  { id: "executive", icon: "💡", kind: 0, nameAr: "الملخص التنفيذي", nameEn: "Executive", descAr: "فقرة خلاصة، ثم إجراءات مرقمة حسب الأولوية", descEn: "A one-paragraph summary, then numbered actions" },
+  { id: "dashboard", icon: "📊", kind: 0, nameAr: "لوحة المؤشرات", nameEn: "Dashboard", descAr: "أشرطة توضح حجم كل مجموعة، ووثائق مختصرة", descEn: "Bars showing each group, compact documents" },
+  { id: "report", icon: "👑", kind: 0, nameAr: "التقرير الملكي", nameEn: "Royal report", descAr: "لوحة بالأعداد، وكل وثيقة في 3 سطور", descEn: "A panel of counts, three lines per document" },
+  { id: "timeline", icon: "⏳", kind: 1, nameAr: "الجدول الزمني", nameEn: "Timeline", descAr: "الوثائق بالتاريخ تحت شهر انتهائها", descEn: "Documents by date under the month they end" },
+  { id: "grouped", icon: "🗂️", kind: 1, nameAr: "المجمّع", nameEn: "Grouped", descAr: "الوثائق مقسمة حسب الخطورة في قوائم", descEn: "Documents listed under each urgency" },
+  { id: "cards", icon: "🪪", kind: 1, nameAr: "البطاقات", nameEn: "Cards", descAr: "كل وثيقة في لوحة بارزة لوحدها", descEn: "Each document in its own panel" },
+  { id: "letter", icon: "📜", kind: 2, nameAr: "الخطاب الرسمي", nameEn: "Formal letter", descAr: "تحية، وقائمة مرقمة، وختام رسمي", descEn: "A greeting, a numbered list, a closing" },
+  { id: "brief", icon: "⚡", kind: 2, nameAr: "المختصر", nameEn: "Brief", descAr: "الأعداد وأهم 5 وثائق، يتقري من الإشعار", descEn: "Counts and the five most urgent" },
+];
+const TEXT_KINDS = [
+  { ar: "للإدارة", en: "For management" },
+  { ar: "للمتابعة", en: "For follow-up" },
+  { ar: "رسمي ومختصر", en: "Formal and short" },
 ];
 
 /** The server's page for one design, drawn at WhatsApp size and shrunk to the column, as tall as its content. */
@@ -102,19 +119,30 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
   const queryClient = useQueryClient();
   const { data, isLoading, isFetching, refetch } = useQuery({ queryKey: ["settings", "whatsapp", "digest-cards"], queryFn: settingsApi.getWhatsappDigestCards, refetchInterval: 120_000 });
   const textQuery = useQuery({ queryKey: ["settings", "whatsapp", "daily-preview"], queryFn: settingsApi.getWhatsappDailyPreview, refetchInterval: 60_000 });
+  const [textDesign, setTextDesign] = useState<DailyTextId | null>(null);
+  useEffect(() => {
+    if (textQuery.data && textDesign === null) setTextDesign(textQuery.data.design);
+  }, [textQuery.data, textDesign]);
+  const shownText = textDesign ?? textQuery.data?.design ?? "report";
   const [choice, setChoice] = useState<DigestCardSetting | null>(null);
   useEffect(() => {
     if (data && choice === null) setChoice(data.card);
   }, [data, choice]);
+  const textDirty = !!textQuery.data && textDesign !== null && textDesign !== textQuery.data.design;
+  const cardDirty = data != null && choice != null && choice !== data.card;
   const save = useMutation({
-    mutationFn: (card: DigestCardSetting) => settingsApi.updateWhatsappDigestCard(card),
-    onSuccess: (res) => {
-      queryClient.setQueryData(["settings", "whatsapp", "digest-cards"], (old: typeof data) => old && { ...old, card: res.data.card });
-      toast.success(res.message);
+    mutationFn: async () => {
+      if (cardDirty && choice) await settingsApi.updateWhatsappDigestCard(choice);
+      if (textDirty && textDesign) await settingsApi.updateWhatsappDailyText(textDesign);
+    },
+    onSuccess: () => {
+      if (cardDirty) queryClient.setQueryData(["settings", "whatsapp", "digest-cards"], (old: typeof data) => old && { ...old, card: choice! });
+      if (textDirty) queryClient.setQueryData(["settings", "whatsapp", "daily-preview"], (old: typeof textQuery.data) => old && { ...old, design: textDesign! });
+      toast.success(isRtl ? "اتحفظ شكل رسالة الصبح" : "Morning message saved");
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
-  const dirty = data != null && choice != null && choice !== data.card;
+  const dirty = cardDirty || textDirty;
   // Switching back to the picture brings back the last design picked.
   const [lastDesign, setLastDesign] = useState<Exclude<DigestCardSetting, "none">>("noir");
   useEffect(() => {
@@ -223,20 +251,65 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
+              <>
+                <div className="flex flex-col gap-3" aria-label={isRtl ? "قالب الرسالة النصية" : "Text design"}>
+                  {TEXT_KINDS.map((k, ki) => (
+                    <div key={ki} className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 text-[11px] font-black text-amber-300/90">
+                        <span>{isRtl ? k.ar : k.en}</span>
+                        <span className="h-px flex-1 bg-amber-400/20" />
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                        {TEXT_DESIGNS.filter((d) => d.kind === ki).map((d) => {
+                          const selected = shownText === d.id;
+                          return (
+                            <button
+                              key={d.id}
+                              type="button"
+                              disabled={!canEdit}
+                              onClick={() => {
+                                setTextDesign(d.id);
+                                setChoice("none");
+                              }}
+                              aria-pressed={selected}
+                              title={isRtl ? d.descAr : d.descEn}
+                              className={cn(
+                                "flex items-start gap-2.5 rounded-xl border px-3 py-2.5 text-start transition-all disabled:cursor-default",
+                                selected ? "border-amber-400/80 bg-amber-400/[0.07] ring-2 ring-amber-400/30" : "border-border/60 hover:border-border",
+                              )}
+                            >
+                              <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-[17px]", selected ? "border-amber-400/50 bg-amber-400/10" : "border-border/60 bg-muted/30")} aria-hidden>
+                                {d.icon}
+                              </span>
+                              <span className="min-w-0">
+                                <b className="flex items-center gap-1.5 text-[12.5px] font-black">
+                                  <span className="truncate">{isRtl ? d.nameAr : d.nameEn}</span>
+                                  {textQuery.data?.design === d.id && <span className="shrink-0 rounded-full bg-amber-400/15 px-1.5 text-[9.5px] text-amber-300">{isRtl ? "المستخدم" : "In use"}</span>}
+                                </b>
+                                <span className="mt-0.5 line-clamp-2 block text-[10.5px] leading-snug text-muted-foreground">{isRtl ? d.descAr : d.descEn}</span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               <Chat>
-                {textQuery.data.messages.map((m, i) => (
+                {(textQuery.data.designs?.[shownText] ?? textQuery.data.messages).map((m, i) => (
                   <div key={i} className="mx-auto max-w-[440px] whitespace-pre-wrap break-words rounded-xl rounded-tr-none bg-[#005c4b] px-3 pt-2 text-[13.5px] leading-[1.65] text-[#e9edef] shadow [unicode-bidi:plaintext]">
                     <WhatsappText text={m} />
                     <Time />
                   </div>
                 ))}
               </Chat>
+              </>
             )}
           </div>
         </div>
         <div className="flex flex-col-reverse gap-3 border-t border-border/40 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">{isRtl ? "الاختيار بيتطبق من رسالة الصبح الجاية، ومن زرار «اختبار»." : "Applies from the next morning message, and to the Test button."}</span>
-          <Button type="button" disabled={!canEdit || !dirty || save.isPending} onClick={() => choice && save.mutate(choice)} className="h-11 shrink-0 rounded-xl px-8 text-xs font-black">
+          <Button type="button" disabled={!canEdit || !dirty || save.isPending} onClick={() => save.mutate()} className="h-11 shrink-0 rounded-xl px-8 text-xs font-black">
             {save.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
             {isRtl ? "اعتماد الاختيار" : "Use this choice"}
           </Button>

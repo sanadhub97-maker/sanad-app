@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { DIGEST_CARD_IDS } from "@/services/whatsappDigestCard";
+import { DAILY_TEXT_IDS } from "@/services/dailyTextIds";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -141,6 +142,13 @@ router.put(
 router.get("/whatsapp/web/status", requirePermission("settings.view"), controller.getWhatsappWebStatus);
 router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
 router.get("/whatsapp/daily-preview", requirePermission("settings.view"), controller.getWhatsappDailyPreview);
+router.put(
+  "/whatsapp/daily-text",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ design: z.enum(DAILY_TEXT_IDS) }) }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappDailyText
+);
 router.get("/whatsapp/digest-cards", requirePermission("settings.view"), controller.getWhatsappDigestCards);
 router.put(
   "/whatsapp/digest-card",

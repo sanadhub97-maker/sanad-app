@@ -147,7 +147,7 @@ export async function sendDailyWhatsappDigest(
         }).catch(() => undefined);
       }
     }
-    const parts = dailyMessageParts(entries.map((e) => e.text), header, emptyText, tail);
+    const parts = dailyMessageParts(entries.map((e) => e.text).filter(Boolean), header, emptyText, tail);
     for (const [n, text] of parts.entries()) {
       const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
       if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;

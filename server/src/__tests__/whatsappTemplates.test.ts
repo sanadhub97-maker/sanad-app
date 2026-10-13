@@ -45,7 +45,7 @@ describe("WhatsApp daily summary", () => {
     const docs = [-3, 7].map((d) => { const item = iqama(d); return { item, context: alertContext(item, "سمو") }; });
     const header = renderDailyHeader("سمو", docs, tasks);
     expect(header).toContain("> 🔴 منتهية: *1*");
-    expect(header).toContain("> 📌 مهام مفتوحة: *2*");
+    expect(header).toContain("> 📌 المهام المطلوبة العمل عليها: *2*");
     expect(renderDailyEntry(docs[0])).toContain("🪪 *الإقامة — أحمد*");
     expect(renderDailyEntry(docs[0])).toContain("منتهية منذ 3 أيام");
     const tail = renderDailyTail(tasks);
@@ -54,8 +54,34 @@ describe("WhatsApp daily summary", () => {
     expect(renderDailyTail([])).toContain("SanaD");
     const parts = dailyMessageParts(Array.from({ length: 40 }, () => "x".repeat(300)), header, "empty", tail);
     expect(parts.length).toBeGreaterThan(1);
-    expect(parts.every((p) => p.length <= 3500 && p.startsWith(header))).toBe(true);
+    expect(parts.every((p) => p.length <= 3500 && (p.startsWith(header) || p === tail))).toBe(true);
     expect(dailyMessageParts([], header, "✅ all clear")[0]).toContain("✅ all clear");
   });
 
+});
+
+describe("the urgency groups", () => {
+  it("splits this calendar month from next month", async () => {
+    const { urgency } = await import("@/services/urgency");
+    const oct13 = new Date("2026-10-13T06:00:00Z");
+    expect(urgency(-1, oct13)).toBe(0);
+    expect(urgency(5, oct13)).toBe(1);
+    expect(urgency(18, oct13)).toBe(2); // 31 October
+    expect(urgency(19, oct13)).toBe(3); // 1 November
+  });
+  it("renders every text design, with this month and next month named", async () => {
+    const { DAILY_TEXT_IDS, dailyTextMessages } = await import("@/services/dailyText");
+    const { alertContext } = await import("@/services/whatsappTemplates");
+    const oct13 = new Date("2026-10-13T06:00:00Z");
+    const at = (days: number) => new Date(oct13.getTime() + days * 86_400_000);
+    const docs = [-3, 18, 25].map((d) => { const item = { ...iqama(d), expiryDate: at(d) }; return { item, context: { ...alertContext(item, "سمو"), daysLeft: d } }; });
+    const tasks = [{ title: "مهمة", priority: "URGENT" as const, time: null, assignee: null, daysLate: 2 }];
+    for (const id of DAILY_TEXT_IDS) {
+      const text = dailyTextMessages(id, "سمو", docs, tasks, oct13).join("\n");
+      expect(text).toContain("أحمد");
+      expect(text).not.toContain("خلال شهر");
+    }
+    expect(dailyTextMessages("grouped", "سمو", docs, tasks, oct13).join("\n")).toContain("تنتهي خلال هذا الشهر");
+    expect(dailyTextMessages("grouped", "سمو", docs, tasks, oct13).join("\n")).toContain("تنتهي الشهر القادم");
+  });
 });

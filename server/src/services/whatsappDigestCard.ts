@@ -1,5 +1,6 @@
 import { L, isEn } from "@/services/lang";
 import { type AlertContext, type TaskLine } from "@/services/whatsappTemplates";
+import { urgency, urgencyCounts, urgencyLabel, type Urgency } from "@/services/urgency";
 
 /* The morning summary as one designed picture, in four designs. The page is a
    report: a letterhead with the company and a calendar leaf for the day, a
@@ -57,7 +58,7 @@ const PALETTES: Record<DigestCardId, string> = {
     --accent: #d2ad6b; --accent2: #f3dfae; --foil: linear-gradient(110deg, #8a6a35, #f3dfae 30%, #c9a464 50%, #fff3d6 64%, #a5803f 86%);
     --tile: linear-gradient(160deg, #2b2416, #14110b); --tileInk: #f3dfae; --tileRing: rgba(214,182,120,.45);
     --leaf: linear-gradient(180deg, #1a1710, #0f0d09); --leafTop: linear-gradient(90deg, #8a6a35, #d2ad6b, #8a6a35); --leafInk: #f3dfae;
-    --bad: #f08a80; --warn: #eab05c; --soon: #d9c278; --ok: #84d1a8; --badT: rgba(240,138,128,.12); --warnT: rgba(234,176,92,.12); --soonT: rgba(217,194,120,.12); --okT: rgba(132,209,168,.12);`,
+    --bad: #f08a80; --warn: #eab05c; --soon: #d9c278; --ok: #84d1a8; --badT: rgba(240,138,128,.12); --warnT: rgba(234,176,92,.12); --soonT: rgba(217,194,120,.12); --next: #8fb3f0; --nextT: rgba(143,179,240,.12); --okT: rgba(132,209,168,.12);`,
   // Ivory paper, navy and gold: a printed report.
   ivory: `--ground: radial-gradient(900px 600px at 100% 0%, rgba(201,164,100,.18), transparent 60%), #f6f0e2;
     --ink: #14213d; --ink2: #2c3a57; --mut: #6e6655; --line: rgba(150,118,60,.30); --hair: rgba(150,118,60,.18);
@@ -65,7 +66,7 @@ const PALETTES: Record<DigestCardId, string> = {
     --accent: #9c7634; --accent2: #c9a464; --foil: linear-gradient(110deg, #14213d, #2a4677 55%, #14213d);
     --tile: linear-gradient(160deg, #1d3157, #111d36); --tileInk: #f3dfae; --tileRing: rgba(201,164,100,.6);
     --leaf: #fffdf8; --leafTop: linear-gradient(90deg, #14213d, #2a4677); --leafInk: #14213d;
-    --bad: #b3392f; --warn: #b26b12; --soon: #8a6d1e; --ok: #2e7a55; --badT: rgba(179,57,47,.09); --warnT: rgba(178,107,18,.09); --soonT: rgba(138,109,30,.09); --okT: rgba(46,122,85,.09);`,
+    --bad: #b3392f; --warn: #b26b12; --soon: #8a6d1e; --ok: #2e7a55; --badT: rgba(179,57,47,.09); --warnT: rgba(178,107,18,.09); --soonT: rgba(138,109,30,.09); --next: #2f5aa8; --nextT: rgba(143,179,240,.12); --okT: rgba(46,122,85,.09);`,
   // Deep emerald with gold.
   emerald: `--ground: radial-gradient(1000px 700px at 100% 0%, rgba(214,182,120,.18), transparent 60%), linear-gradient(165deg, #04201a, #0a3a30 55%, #052a22);
     --ink: #eef6f0; --ink2: #cfe4d8; --mut: #93b6a6; --line: rgba(214,182,120,.26); --hair: rgba(214,182,120,.14);
@@ -73,7 +74,7 @@ const PALETTES: Record<DigestCardId, string> = {
     --accent: #dcbb7c; --accent2: #f6e3b0; --foil: linear-gradient(110deg, #b38b45, #f6e3b0 35%, #d8b675 55%, #fff6dc 70%, #b38b45);
     --tile: linear-gradient(160deg, #1b5a48, #083026); --tileInk: #f6e3b0; --tileRing: rgba(214,182,120,.45);
     --leaf: linear-gradient(180deg, #0c3a30, #062a22); --leafTop: linear-gradient(90deg, #b38b45, #f0d79e, #b38b45); --leafInk: #f6e3b0;
-    --bad: #ff9a8e; --warn: #f3c46c; --soon: #e5d18e; --ok: #93e2b8; --badT: rgba(255,154,142,.12); --warnT: rgba(243,196,108,.12); --soonT: rgba(229,209,142,.12); --okT: rgba(147,226,184,.12);`,
+    --bad: #ff9a8e; --warn: #f3c46c; --soon: #e5d18e; --ok: #93e2b8; --badT: rgba(255,154,142,.12); --warnT: rgba(243,196,108,.12); --soonT: rgba(229,209,142,.12); --next: #8fb3f0; --nextT: rgba(143,179,240,.12); --okT: rgba(147,226,184,.12);`,
   // Midnight sapphire with silver: cool and corporate.
   sapphire: `--ground: radial-gradient(1000px 700px at 100% 0%, rgba(120,160,255,.20), transparent 60%), linear-gradient(165deg, #070d1f, #0d1a3a 55%, #08112a);
     --ink: #eef2fb; --ink2: #ccd6ee; --mut: #8d9bbd; --line: rgba(170,190,235,.22); --hair: rgba(170,190,235,.12);
@@ -81,7 +82,7 @@ const PALETTES: Record<DigestCardId, string> = {
     --accent: #a9bff0; --accent2: #e6edff; --foil: linear-gradient(110deg, #8ea3d6, #ffffff 35%, #b9c8ef 55%, #ffffff 70%, #8ea3d6);
     --tile: linear-gradient(160deg, #22356b, #0f1a3b); --tileInk: #e6edff; --tileRing: rgba(170,190,235,.45);
     --leaf: linear-gradient(180deg, #14234d, #0b1532); --leafTop: linear-gradient(90deg, #5b78c7, #a9bff0, #5b78c7); --leafInk: #e6edff;
-    --bad: #ff8f9a; --warn: #f5b862; --soon: #e3d17e; --ok: #7fd6b0; --badT: rgba(255,143,154,.12); --warnT: rgba(245,184,98,.12); --soonT: rgba(227,209,126,.12); --okT: rgba(127,214,176,.12);`,
+    --bad: #ff8f9a; --warn: #f5b862; --soon: #e3d17e; --ok: #7fd6b0; --badT: rgba(255,143,154,.12); --warnT: rgba(245,184,98,.12); --soonT: rgba(227,209,126,.12); --next: #8fb3f0; --nextT: rgba(143,179,240,.12); --okT: rgba(127,214,176,.12);`,
 };
 
 const CSS = `
@@ -113,7 +114,9 @@ h1 { font-size: 78px; line-height: 1.08; font-weight: 900; background: var(--foi
 /* counts */
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .kpi { position: relative; border-radius: 22px; padding: 20px 22px 18px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 10px; overflow: hidden; }
-.kpi .t { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 800; color: var(--mut); white-space: nowrap; }
+.kpi .t { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--mut); line-height: 1.2; min-height: 48px; align-self: start; }
+.kpi { grid-template-rows: 1fr auto auto; }
+.kpi .t span.d { flex: none; }
 .kpi .t span.d { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--t); color: var(--c); font-size: 22px; }
 .kpi b { font-family: "IBM Plex Mono", monospace; font-size: 64px; line-height: .95; font-weight: 600; color: var(--c); }
 .kpi .bar { height: 6px; border-radius: 6px; background: var(--hair); overflow: hidden; }
@@ -151,7 +154,7 @@ h1 { font-size: 78px; line-height: 1.08; font-weight: 900; background: var(--foi
 .foot .brand { display: inline-flex; align-items: center; gap: 10px; }
 .foot .brand .ic { font-size: 26px; color: var(--accent); }
 .foot b { color: var(--accent); font-weight: 900; letter-spacing: .04em; }
-.bad { --c: var(--bad); --t: var(--badT); } .warn { --c: var(--warn); --t: var(--warnT); } .soon { --c: var(--soon); --t: var(--soonT); } .ok { --c: var(--ok); --t: var(--okT); }
+.next { --c: var(--next); --t: var(--nextT); } .bad { --c: var(--bad); --t: var(--badT); } .warn { --c: var(--warn); --t: var(--warnT); } .soon { --c: var(--soon); --t: var(--soonT); } .ok { --c: var(--ok); --t: var(--okT); }
 .gold { --c: var(--accent); --t: var(--hair); }
 `;
 
@@ -163,9 +166,10 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
   const en = isEn();
   const today = data.today ?? new Date();
   const docs = data.documents;
-  const level = (n: number) => (n <= 0 ? "bad" : n <= 7 ? "warn" : "soon");
-  const counts = { bad: docs.filter((d) => d.daysLeft <= 0).length, warn: docs.filter((d) => d.daysLeft > 0 && d.daysLeft <= 7).length };
-  const month = docs.length - counts.bad - counts.warn;
+  // Expired, this week, later this calendar month, next month (services/urgency).
+  const CLS = ["bad", "warn", "soon", "next"] as const;
+  const level = (n: number) => CLS[urgency(n, today)];
+  const c = urgencyCounts(docs.map((d) => d.daysLeft), today);
   const share = (n: number, of: number) => (of ? Math.max(n ? 6 : 0, Math.round((n / of) * 100)) : 0);
   const kpi = (cls: string, ic: string, label: string, n: number, of: number) =>
     `<div class="kpi ${cls}"><span class="t"><span class="d">${icon(ic)}</span>${esc(label)}</span><b>${n}</b><i class="bar"><u style="width:${share(n, of)}%"></u></i></div>`;
@@ -184,11 +188,7 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
     return `<div class="row ${level(d.daysLeft)}"><span class="tile">${icon(docIcon(d.sourceType))}</span><div class="rtx"><b>${esc(doc)}${who ? ` <em>· ${esc(who)}</em>` : ""}</b><div class="meta">${meta}</div></div><div class="days"><b>${d.daysLeft === 0 ? "0" : n}</b><small>${esc(label)}</small></div></div>`;
   };
   const shown = docs.slice(0, MAX_DOCS);
-  const GROUPS = [
-    ["bad", L("منتهية — تحتاج تجديدًا الآن", "Expired — renew now"), (d: { daysLeft: number }) => d.daysLeft <= 0],
-    ["warn", L("تنتهي خلال أسبوع", "Ending within a week"), (d: { daysLeft: number }) => d.daysLeft > 0 && d.daysLeft <= 7],
-    ["soon", L("تنتهي خلال شهر", "Ending within a month"), (d: { daysLeft: number }) => d.daysLeft > 7],
-  ] as const;
+  const GROUPS = ([0, 1, 2, 3] as Urgency[]).map((u) => [CLS[u], urgencyLabel(u, true), (d: { daysLeft: number }) => urgency(d.daysLeft, today) === u] as const);
   const docsHtml = shown.length
     ? GROUPS.map(([cls, title, test]) => {
         const g = shown.filter(test);
@@ -210,7 +210,7 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
     return `<div class="row ${cls}"><span class="check">${icon("task")}</span><div class="rtx"><b>${esc(t.title)}</b><div class="meta">${meta}</div></div>${state}</div>`;
   });
   const tasksHtml = data.tasks.length
-    ? `<section class="sec"><div class="sh">${icon("task")}<h2>${esc(L("المهام المفتوحة", "Open tasks"))}</h2><span class="cnt">${data.tasks.length}</span></div><div class="list">${taskRows.join("")}${data.tasks.length > MAX_TASKS ? `<div class="more">${esc(L(`و${data.tasks.length - MAX_TASKS} مهام أخرى في صفحة المهام اليومية`, `and ${data.tasks.length - MAX_TASKS} more on the Daily tasks page`))}</div>` : ""}</div></section>`
+    ? `<section class="sec"><div class="sh">${icon("task")}<h2>${esc(L("المهام المطلوبة العمل عليها", "Open tasks"))}</h2><span class="cnt">${data.tasks.length}</span></div><div class="list">${taskRows.join("")}${data.tasks.length > MAX_TASKS ? `<div class="more">${esc(L(`و${data.tasks.length - MAX_TASKS} مهام أخرى في صفحة المهام اليومية`, `and ${data.tasks.length - MAX_TASKS} more on the Daily tasks page`))}</div>` : ""}</div></section>`
     : "";
 
   const weekday = today.toLocaleDateString(en ? "en-GB" : "ar-EG", { timeZone: RIYADH, weekday: "long" });
@@ -239,11 +239,12 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
     </div>
     <div class="leaf"><div class="top">${esc(weekday)}</div><b>${dayNum}</b><small>${esc(monthYear)}</small></div>
   </header>
-  <div class="kpis">
-    ${kpi("bad", "alert", L("منتهية", "Expired"), counts.bad, total)}
-    ${kpi("warn", "hourglass", L("خلال أسبوع", "This week"), counts.warn, total)}
-    ${kpi("soon", "calendar", L("خلال شهر", "This month"), month, total)}
-    ${kpi("gold", "task", L("مهام مفتوحة", "Open tasks"), data.tasks.length, total)}
+  <div class="kpis" style="grid-template-columns: repeat(${c[3] ? 5 : 4}, minmax(0, 1fr))">
+    ${kpi("bad", "alert", urgencyLabel(0), c[0], total)}
+    ${kpi("warn", "hourglass", urgencyLabel(1), c[1], total)}
+    ${kpi("soon", "calendar", urgencyLabel(2), c[2], total)}
+    ${c[3] ? kpi("next", "calendar", urgencyLabel(3), c[3], total) : ""}
+    ${kpi("gold", "task", L("المهام المطلوبة العمل عليها", "Open tasks"), data.tasks.length, total)}
   </div>
   <section class="sec"><div class="sh">${icon("document")}<h2>${esc(L("الوثائق", "Documents"))}</h2><span class="cnt">${docs.length}</span></div>${docsHtml}</section>
   ${tasksHtml}
@@ -254,11 +255,10 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
 /** The two-line caption sent with the picture. */
 export function digestCardCaption(data: DigestCardData) {
   const docs = data.documents;
-  const bad = docs.filter((d) => d.daysLeft <= 0).length;
-  const week = docs.filter((d) => d.daysLeft > 0 && d.daysLeft <= 7).length;
+  const c = urgencyCounts(docs.map((d) => d.daysLeft), data.today ?? new Date());
   return [
     `📋 *${L("الملخص اليومي", "Daily summary")}* · ${data.company}`,
-    `🔴 ${bad}  ·  🟠 ${week}  ·  🟡 ${docs.length - bad - week}  ·  📌 ${data.tasks.length}`,
+    `🔴 ${c[0]}  ·  🟠 ${c[1]}  ·  🟡 ${c[2]}${c[3] ? `  ·  🔵 ${c[3]}` : ""}  ·  📌 ${data.tasks.length}`,
     `_${L(`${docs.length} وثيقة و${data.tasks.length} مهمة للمتابعة، والتفاصيل في الصورة.`, `${docs.length} documents and ${data.tasks.length} tasks to follow; the details are in the picture.`)}_`,
   ].join("\n");
 }

@@ -15,17 +15,22 @@ import { listWhatsappMessages, recordWhatsappMessage } from "@/services/whatsapp
 import { getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
 import { rescheduleExpirationScan } from "@/jobs/scheduler";
 import { runExpirationScan } from "@/jobs/expirationScan";
-import { dailyMessageParts } from "@/services/whatsappDigest";
-import { getWhatsappDigestCardSetting, setWhatsappDigestCardSetting } from "@/services/settingsStore";
+import { getWhatsappDigestCardSetting, setWhatsappDigestCardSetting, getWhatsappDailyTextSetting, setWhatsappDailyTextSetting } from "@/services/settingsStore";
 import { DIGEST_CARD_IDS, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument, type DigestCardSetting } from "@/services/whatsappDigestCard";
-import { dailyEmptyText, dailyPicture, gatherDailySummary, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
+import { dailyPicture, gatherDailySummary } from "@/services/dailySummary";
+import { DAILY_TEXT_IDS, dailyTextMessages, type DailyTextId } from "@/services/dailyText";
 import { getCardAssets } from "@/services/branding";
 
 /** Settings → WhatsApp: the morning summary exactly as it will go out tomorrow, message by message, on today's real data. */
 export const getWhatsappDailyPreview = asyncHandler(async (req: Request, res: Response) => {
-  const { lang, company, docs, tasks } = await gatherDailySummary((item) => canViewSource(req.auth, item.sourceType));
-  const messages = withLang(lang, () => dailyMessageParts(docs.map(renderDailyEntry), renderDailyHeader(company, docs, tasks), dailyEmptyText(), renderDailyTail(tasks)));
-  res.json({ data: { messages, documents: docs.length, tasks: tasks.length, language: lang, generatedAt: new Date().toISOString() } });
+  const [{ lang, company, docs, tasks }, design] = await Promise.all([gatherDailySummary((item) => canViewSource(req.auth, item.sourceType)), getWhatsappDailyTextSetting()]);
+  const designs = withLang(lang, () => Object.fromEntries(DAILY_TEXT_IDS.map((id) => [id, dailyTextMessages(id, company, docs, tasks)])));
+  res.json({ data: { design, designs, messages: designs[design], documents: docs.length, tasks: tasks.length, language: lang, generatedAt: new Date().toISOString() } });
+});
+
+export const updateWhatsappDailyText = asyncHandler(async (req: Request, res: Response) => {
+  const design = await setWhatsappDailyTextSetting((req.body as { design: DailyTextId }).design);
+  res.json({ data: { design }, message: L("تم حفظ قالب الرسالة النصية.", "Text design saved.") });
 });
 
 /** Settings → WhatsApp: the four pictures of the morning summary, drawn on today's real documents and open tasks. */
@@ -273,7 +278,8 @@ export const testWhatsapp = asyncHandler(async (req: Request, res: Response) => 
     }
   }
   if (!logText) {
-    const parts = withLang(summary.lang, () => dailyMessageParts(summary.docs.map(renderDailyEntry), renderDailyHeader(summary.company, summary.docs, summary.tasks), dailyEmptyText(), renderDailyTail(summary.tasks)));
+    const textDesign = await getWhatsappDailyTextSetting();
+    const parts = withLang(summary.lang, () => dailyTextMessages(textDesign, summary.company, summary.docs, summary.tasks));
     logText = `${header}\n\n${parts[0]}`;
     result = await sendWhatsapp(req.body.to, logText);
   }

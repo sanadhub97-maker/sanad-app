@@ -5,9 +5,10 @@ import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappDigestCardSetting } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappDigestCardSetting, getWhatsappDailyTextSetting } from "@/services/settingsStore";
 import { alertContext } from "@/services/whatsappTemplates";
-import { dailyEmptyText, dailyPicture, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
+import { dailyEmptyText, dailyPicture } from "@/services/dailySummary";
+import { renderDailyText } from "@/services/dailyText";
 import { withLang } from "@/services/lang";
 import { openTasks } from "@/services/openTasks";
 import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
@@ -132,6 +133,7 @@ async function performExpirationScan() {
   // written in the design chosen in Settings → WhatsApp, in the alerts' language.
   let dailyHeader = "";
   let dailyTail = "";
+  let dailyEmpty = "";
   let dailyImage: { png: Buffer; caption: string } | undefined;
   if (whatsappSettings?.enabled) {
     const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
@@ -141,11 +143,15 @@ async function performExpirationScan() {
       .filter((item) => daysUntil(item.expiryDate) <= rules.expiringSoonThresholdDays && whatsappEligible(item))
       .map((item) => ({ item, context: alertContext(item, companyName, branding.company?.nameEn) }))
       .sort((a, b) => a.context.daysLeft - b.context.daysLeft);
-    const daily = withLang(lang, () => dueToday.map((d) => ({ item: d.item, dedupeBase: `${d.item.key}:daily`, text: renderDailyEntry(d) })));
     const company = (lang === "en" ? branding.company?.nameEn : undefined) || companyName || "SanaD";
     const tasks = await openTasks();
-    dailyHeader = withLang(lang, () => renderDailyHeader(company, dueToday, tasks));
-    dailyTail = withLang(lang, () => renderDailyTail(tasks));
+    // The text in the design chosen in Settings → WhatsApp.
+    const textDesign = await getWhatsappDailyTextSetting();
+    const text = withLang(lang, () => renderDailyText(textDesign, company, dueToday, tasks));
+    const daily = dueToday.map((d, i) => ({ item: d.item, dedupeBase: `${d.item.key}:daily`, text: text.entries[i] ?? "" }));
+    dailyHeader = text.header;
+    dailyTail = text.tail;
+    dailyEmpty = text.empty;
     for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
 
     // The designed picture with a short caption; only the QR-linked number sends pictures.
@@ -204,7 +210,7 @@ async function performExpirationScan() {
       }
     }
   }
-  await sendDailyWhatsappDigest(whatsappGroups, dailyHeader, withLang(language === "en" ? "en" : "ar", dailyEmptyText), riyadhDay(), dailyTail, dailyImage);
+  await sendDailyWhatsappDigest(whatsappGroups, dailyHeader, dailyEmpty || withLang(language === "en" ? "en" : "ar", dailyEmptyText), riyadhDay(), dailyTail, dailyImage);
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));

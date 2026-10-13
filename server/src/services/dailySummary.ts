@@ -65,7 +65,7 @@ export function renderDailyHeader(company: string, docs: DailyDoc[], tasks: Task
     `> 🔴 ${L("منتهية", "Expired")}: *${expired}*`,
     `> 🟠 ${L("خلال أسبوع", "This week")}: *${week}*`,
     `> 🟡 ${L("خلال شهر", "This month")}: *${month}*`,
-    `> 📌 ${L("مهام مفتوحة", "Open tasks")}: *${tasks.length}*`,
+    `> 📌 ${L("المهام المطلوبة العمل عليها", "Open tasks")}: *${tasks.length}*`,
     RULE,
     `📂 *${L("الوثائق", "Documents")}* · ${docs.length}`,
   ].join("\n");
@@ -102,7 +102,7 @@ export function renderDailyTail(tasks: TaskLine[]) {
   });
   const more = tasks.length - SHOWN_TASKS;
   return [
-    `✅ *${L("المهام المفتوحة", "Open tasks")}* · ${tasks.length}`,
+    `✅ *${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length}`,
     ...(late ? [`_${L(`منها ${late} متأخرة من أيام سابقة`, `${late} carried from earlier days`)}_`] : []),
     "",
     rows.join("\n\n"),
