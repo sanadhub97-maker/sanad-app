@@ -15,6 +15,10 @@ export const listDay = asyncHandler(async (req: Request, res: Response) => {
   res.json({ data: await service.listForDay(q(req).date) });
 });
 /** Every task between two days, and how many unfinished ones are left before the viewer's today. */
+export const all = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({ data: await service.listAll() });
+});
+
 export const range = asyncHandler(async (req: Request, res: Response) => {
   const { from, to, today } = q(req);
   const [tasks, overdue] = await Promise.all([service.listRange(from, to), today ? service.overdueCount(today) : Promise.resolve(0)]);

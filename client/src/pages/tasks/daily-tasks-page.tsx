@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEven
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Clock, Columns3, FileSpreadsheet, FileText, List, Loader2, Plus, Printer, Sparkles, Star, Trash2, User, Users, Wallet, type LucideIcon, AlertTriangle, CheckCircle2, ListChecks } from "lucide-react";
-import { PxStat } from "@/components/royal/px";
+import { ArrowLeft, ArrowRight, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Clock, Columns3, FileSpreadsheet, FileText, List, Loader2, Plus, Printer, Sparkles, Star, Trash2, User, Users, Wallet, type LucideIcon, AlertTriangle, CheckCircle2, ListChecks, Layers } from "lucide-react";
+import { PxBadge, PxDrawer, PxStat } from "@/components/royal/px";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/common/page-header";
 import { luluPop } from "@/components/lulu/lulu-effects";
@@ -177,6 +177,9 @@ export default function DailyTasksPage() {
   const todayQuery = useQuery({ queryKey: ["tasks", "day", today], queryFn: () => tasksApi.day(today) });
   const assigneesQuery = useQuery({ queryKey: ["tasks", "assignees"], queryFn: tasksApi.assignees, staleTime: 5 * 60_000 });
   const suggestionsQuery = useQuery({ queryKey: ["tasks", "suggestions"], queryFn: tasksApi.suggestions });
+  const allQuery = useQuery({ queryKey: ["tasks", "all"], queryFn: tasksApi.all });
+  // Which figure card is open in the side panel.
+  const [panel, setPanel] = useState<null | "all" | "today" | "overdue" | "urgent" | "done">(null);
 
   const tasks = useMemo(() => rangeQuery.data?.tasks ?? [], [rangeQuery.data]);
   const overdue = rangeQuery.data?.overdue ?? 0;
@@ -212,7 +215,7 @@ export default function DailyTasksPage() {
 
   // ---------- Changes ----------
   const refresh = () => {
-    for (const k of ["range", "day", "week", "suggestions"]) void queryClient.invalidateQueries({ queryKey: ["tasks", k] });
+    for (const k of ["range", "day", "week", "suggestions", "all"]) void queryClient.invalidateQueries({ queryKey: ["tasks", k] });
   };
   const patchRange = (fn: (list: DailyTask[]) => DailyTask[]) =>
     queryClient.setQueryData<{ tasks: DailyTask[]; overdue: number }>(rangeKey, (old) => (old ? { ...old, tasks: fn(old.tasks) } : old));
@@ -573,6 +576,20 @@ export default function DailyTasksPage() {
 
   const scopeWord = view === "month" ? tr("الشهر", "month") : tr("الأسبوع", "week");
 
+  // What each figure card opens: its tasks, in the side panel.
+  const allTasks = allQuery.data ?? [];
+  const bySoonest = (list: DailyTask[]) => [...list].sort((a, b) => a.date.localeCompare(b.date) || RANK[a.priority] - RANK[b.priority] || (a.time ?? "99").localeCompare(b.time ?? "99"));
+  const PANELS = {
+    all: { title: tr("جميع المهام", "All tasks"), sub: tr("كل المهام المسجلة، الأحدث أولًا", "Every task, newest first"), list: allTasks },
+    today: { title: tr("مهام اليوم", "Today's tasks"), sub: dm(today), list: [...todayList].sort((a, b) => Number(a.done) - Number(b.done) || RANK[a.priority] - RANK[b.priority] || (a.time ?? "99").localeCompare(b.time ?? "99")) },
+    overdue: { title: tr("المهام المتأخرة", "Overdue tasks"), sub: tr("من أيام سابقة ولم تُنجز", "From earlier days, still open"), list: bySoonest(allTasks.filter((x) => !x.done && x.date < today)) },
+    urgent: { title: tr(`العاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`), sub: `${dm(scope.from)} – ${dm(scope.to)}`, list: bySoonest(scoped.filter((x) => !x.done && x.priority === "URGENT")) },
+    done: { title: tr(`المنجزة هذا ${scopeWord}`, `Done this ${scopeWord}`), sub: `${dm(scope.from)} – ${dm(scope.to)}`, list: bySoonest(scoped.filter((x) => x.done)) },
+  } as const;
+  const panelTitle = panel ? PANELS[panel].title : "";
+  const panelSub = panel ? PANELS[panel].sub : "";
+  const panelTasks: DailyTask[] = panel ? [...PANELS[panel].list] : [];
+
   return (
     <>
       <PageHeader
@@ -616,12 +633,29 @@ export default function DailyTasksPage() {
             </p>
           </div>
         </section>
-        <div className="px-stats" style={{ marginBottom: 16 }}>
-          <PxStat i={1} label={tr("مهام اليوم", "Today's tasks")} value={todayList.filter((t) => !t.done).length} unit={`/ ${todayList.length}`} icon={ListChecks} color="#2563eb" sub={tr("متبقية من إجمالي اليوم", "Open of today's total")} />
-          <PxStat i={2} label={tr("متأخرة", "Overdue")} value={overdue} icon={Clock} color="#7c3aed" sub={overdue ? tr("من أيام سابقة ولم تُنجز", "From earlier days, still open") : tr("لا شيء متأخر", "Nothing overdue")} />
-          <PxStat i={3} label={tr(`عاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`)} value={urgentOpen} icon={AlertTriangle} color="#dc2626" sub={tr("لم تُنجز بعد", "Not done yet")} />
-          <PxStat i={4} label={tr("تم إنجازها", "Done")} value={scopedDone} icon={CheckCircle2} color="#16a34a" sub={tr(`هذا ${scopeWord}`, `This ${scopeWord}`)} />
+        <div className="px-stats tk-stats5" style={{ marginBottom: 16 }}>
+          <PxStat i={0} label={tr("جميع المهام", "All tasks")} value={allTasks.length} icon={Layers} color="#c9a464" sub={tr(`${allTasks.filter((t) => !t.done).length} مفتوحة · ${allTasks.filter((t) => t.done).length} منجزة`, `${allTasks.filter((t) => !t.done).length} open · ${allTasks.filter((t) => t.done).length} done`)} onClick={() => setPanel("all")} active={panel === "all"} />
+          <PxStat i={1} label={tr("مهام اليوم", "Today's tasks")} value={todayList.filter((t) => !t.done).length} unit={`/ ${todayList.length}`} icon={ListChecks} color="#2563eb" sub={tr("متبقية من إجمالي اليوم", "Open of today's total")} onClick={() => setPanel("today")} active={panel === "today"} />
+          <PxStat i={2} label={tr("متأخرة", "Overdue")} value={overdue} icon={Clock} color="#7c3aed" sub={overdue ? tr("من أيام سابقة ولم تُنجز", "From earlier days, still open") : tr("لا شيء متأخر", "Nothing overdue")} onClick={() => setPanel("overdue")} active={panel === "overdue"} />
+          <PxStat i={3} label={tr(`عاجلة هذا ${scopeWord}`, `Urgent this ${scopeWord}`)} value={urgentOpen} icon={AlertTriangle} color="#dc2626" sub={tr("لم تُنجز بعد", "Not done yet")} onClick={() => setPanel("urgent")} active={panel === "urgent"} />
+          <PxStat i={4} label={tr("تم إنجازها", "Done")} value={scopedDone} icon={CheckCircle2} color="#16a34a" sub={tr(`هذا ${scopeWord}`, `This ${scopeWord}`)} onClick={() => setPanel("done")} active={panel === "done"} />
         </div>
+        <TaskPanel
+          open={panel !== null}
+          onClose={() => setPanel(null)}
+          title={panelTitle}
+          sub={panelSub}
+          tasks={panelTasks}
+          loading={panel === "all" || panel === "overdue" ? allQuery.isLoading : false}
+          today={today}
+          locale={locale}
+          canEdit={can.edit}
+          onToggle={(t) => toggle.mutate(t)}
+          onOpenDay={(d) => {
+            setPanel(null);
+            openDay(d);
+          }}
+        />
 
         {can.create && (
           <form className="tk-card tk-add tk-rise" style={{ ["--i" as string]: 1 }} onSubmit={submit} autoComplete="off">
@@ -853,5 +887,74 @@ export default function DailyTasksPage() {
         </div>
       </div>
     </>
+  );
+}
+
+/** The side panel a figure card opens: its tasks, each with its day, time, priority, category,
+ * assignee and notes; a tick marks one done, and its day opens on the board. */
+function TaskPanel({ open, onClose, title, sub, tasks, loading, today, locale, canEdit, onToggle, onOpenDay }: {
+  open: boolean; onClose: () => void; title: string; sub: string; tasks: DailyTask[]; loading: boolean; today: string; locale: string;
+  canEdit: boolean; onToggle: (t: DailyTask) => void; onOpenDay: (date: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  useEffect(() => { if (!open) setQ(""); }, [open]);
+  const shown = q.trim() ? tasks.filter((t) => [t.title, t.notes, t.assignee?.fullName].some((x) => x?.toLowerCase().includes(q.trim().toLowerCase()))) : tasks;
+  const openN = tasks.filter((t) => !t.done).length;
+  const dayLabel = (d: string) => (d === today ? tr("اليوم", "Today") : fmt(d, { weekday: "long", day: "numeric", month: "long" }, locale));
+  return (
+    <PxDrawer open={open} onClose={onClose} label={title}>
+      <div className="px-dh">
+        <span className="px-av"><ListChecks /></span>
+        <span className="min-w-0">
+          <b>{title}</b>
+          <small>{sub} · {tr(`${tasks.length} مهمة · ${openN} مفتوحة`, `${tasks.length} tasks · ${openN} open`)}</small>
+        </span>
+      </div>
+      {tasks.length > 6 && (
+        <div className="px-4 pt-4 sm:px-[22px]">
+          <input className="tk-in w-full" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("ابحث في المهام", "Search the tasks")} aria-label={tr("ابحث في المهام", "Search the tasks")} />
+        </div>
+      )}
+      <div className="px-db">
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : !shown.length ? (
+          <div className="px-empty"><b>{tr("مفيش مهام هنا", "No tasks here")}</b></div>
+        ) : (
+          <ul className="grid gap-2.5">
+            {shown.map((t) => {
+              const cat = CATEGORIES[t.category];
+              const p = PRIORITIES[t.priority];
+              const late = !t.done && t.date < today;
+              return (
+                <li key={t.id} className={cn("tk-card flex items-start gap-3 p-3.5", t.done && "opacity-70")}>
+                  <button type="button" disabled={!canEdit} onClick={() => onToggle(t)} aria-pressed={t.done} aria-label={t.done ? tr("رجّعها مفتوحة", "Mark open") : tr("علّمها منجزة", "Mark done")}
+                    className={cn("mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border-2 transition", t.done ? "border-emerald-400 bg-emerald-400 text-black" : "border-[rgba(214,182,120,.5)] text-transparent hover:text-[#c9a464]")}>
+                    <Check className="h-4 w-4" />
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <b className={cn("block text-[15px] font-extrabold leading-snug", t.done && "line-through decoration-1")}>{t.title}</b>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12px]">
+                      <span className="rounded-full px-2 py-0.5 font-bold" style={{ color: p.c, background: p.t }}>{tr(p.ar, p.en)}</span>
+                      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold" style={{ color: cat.c, background: cat.t }}><cat.Icon className="h-3 w-3" />{tr(cat.ar, cat.en)}</span>
+                      {t.done ? <PxBadge tone="ok">{tr("منجزة", "Done")}</PxBadge> : late ? <PxBadge tone="bad">{tr("متأخرة", "Overdue")}</PxBadge> : <PxBadge tone="warn">{tr("مفتوحة", "Open")}</PxBadge>}
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" />{dayLabel(t.date)}</span>
+                      {t.time && <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /><span dir="ltr">{t.time}</span></span>}
+                      {t.assignee && <span className="inline-flex items-center gap-1"><User className="h-3.5 w-3.5" />{t.assignee.fullName}</span>}
+                    </div>
+                    {t.notes && <p className="mt-1.5 whitespace-pre-wrap text-[13px] text-muted-foreground">{t.notes}</p>}
+                  </div>
+                  <button type="button" onClick={() => onOpenDay(t.date)} className="shrink-0 rounded-lg border border-[rgba(214,182,120,.3)] px-2.5 py-1 text-[12px] font-bold text-[#e8cc8e] hover:text-[#f3dfae]">
+                    {tr("افتح اليوم", "Open day")}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </PxDrawer>
   );
 }

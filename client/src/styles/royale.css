@@ -473,3 +473,9 @@ select option { background: #0f1014; color: #f1e9d8; }
 .px-stat > .rx-foot { position: absolute !important; inset-inline: 22px; bottom: 18px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.06); overflow: hidden; z-index: 1; }
 .px-stat > .rx-foot::after { content: ""; position: absolute; inset-block: 0; width: 40%; background: var(--rx-foil); box-shadow: 0 0 10px rgba(243, 223, 174, 0.7); animation: rx-foot 4.5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 0.4s); }
 @keyframes rx-foot { 0% { inset-inline-start: -40%; } 60%, 100% { inset-inline-start: 100%; } }
+
+/* daily tasks: five figure cards, each opening its tasks */
+.px-stats.tk-stats5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1280px) { .px-stats.tk-stats5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .px-stats.tk-stats5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.px-dh .px-av svg { width: 26px; height: 26px; }

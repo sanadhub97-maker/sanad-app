@@ -13,6 +13,7 @@ router.use(requireAuth);
 router.get("/", requirePermission("tasks.view"), validate({ query: dayQuerySchema }), controller.listDay);
 router.get("/week", requirePermission("tasks.view"), validate({ query: dayQuerySchema }), controller.week);
 router.get("/range", requirePermission("tasks.view"), validate({ query: rangeQuerySchema }), controller.range);
+router.get("/all", requirePermission("tasks.view"), controller.all);
 router.get("/assignees", requirePermission("tasks.view"), controller.assignees);
 router.get("/suggestions", requirePermission("tasks.view"), controller.suggestions);
 router.get("/export", requirePermission("tasks.export"), validate({ query: exportQuerySchema }), controller.exportTasks);

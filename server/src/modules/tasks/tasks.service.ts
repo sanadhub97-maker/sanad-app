@@ -47,6 +47,12 @@ export async function listRange(from: string, to: string) {
   return rows.map(shape);
 }
 
+/** Every task, newest day first (for the "all tasks" card), up to a thousand. */
+export async function listAll() {
+  const rows = await prisma.dailyTask.findMany({ where: { deletedAt: null }, select: taskSelect, orderBy: [{ date: "desc" }, ...order], take: 1000 });
+  return rows.map(shape);
+}
+
 /** Unfinished tasks on days before the given one. */
 export async function overdueCount(before: string) {
   return prisma.dailyTask.count({ where: { date: { lt: toDate(before) }, done: false, deletedAt: null } });
