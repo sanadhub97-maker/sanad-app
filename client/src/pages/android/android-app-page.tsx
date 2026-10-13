@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import qrcode from "qrcode-generator";
-import { BellRing, CheckCircle2, Download, FolderDown, Laptop, Maximize2, MonitorDown, RefreshCw, ShieldCheck, Smartphone, Zap } from "lucide-react";
+import { BellRing, CheckCircle2, Download, Laptop, Maximize2, MonitorDown, RefreshCw, Share, Smartphone, SquarePlus, Zap } from "lucide-react";
 import { detectPlatform, isStandalone, openInstall } from "@/components/lulu/lulu-install";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,8 @@ interface ApkInfo {
 
 const APK = "/download/SanaD.apk";
 const mb = (n: number) => `${(n / 1024 / 1024).toFixed(1)} ميجا`;
+/** Browsers inside other apps (WhatsApp, Instagram, Facebook…) can't install sites. */
+const inAppBrowser = () => typeof navigator !== "undefined" && /FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|TikTok|; wv\)/i.test(navigator.userAgent);
 const inAndroidApp = () => typeof document !== "undefined" && document.referrer.startsWith("android-app://com.sanad.hr");
 
 function Qr({ text }: { text: string }) {
@@ -39,10 +41,14 @@ const DESKTOP_STEPS = [
   { icon: Laptop, title: "افتحه من سطح المكتب", text: "هيتحط له أيقونة على سطح المكتب وفي قائمة ابدأ، ويفتح في نافذة لوحده." },
 ];
 const ANDROID_STEPS = [
-  { icon: Download, title: "حمّل التطبيق", text: "اضغط «حمّل التطبيق» واستنى الملف SanaD.apk يخلص." },
-  { icon: FolderDown, title: "افتح الملف", text: "من إشعار التحميل أو من «التنزيلات»، اضغط على SanaD.apk." },
-  { icon: ShieldCheck, title: "اسمح بالتثبيت مرة واحدة", text: "لو ظهر «تثبيت تطبيقات غير معروفة»، فعّل «السماح من هذا المصدر» وارجع." },
-  { icon: CheckCircle2, title: "اضغط «تثبيت» ثم «فتح»", text: "وسجّل دخولك مرة واحدة، والأيقونة هتفضل على الشاشة." },
+  { icon: Smartphone, title: "افتح الصفحة دي من كروم", text: "على موبايلك الأندرويد، من متصفح Chrome أو Samsung Internet." },
+  { icon: MonitorDown, title: "اضغط «ثبّت على الموبايل»", text: "وبعدين «تثبيت» في الرسالة اللي هتظهر." },
+  { icon: CheckCircle2, title: "افتحه من الشاشة الرئيسية", text: "هتلاقي أيقونة سند، وسجّل دخولك مرة واحدة." },
+];
+const IOS_STEPS = [
+  { icon: Smartphone, title: "افتح الصفحة دي من Safari", text: "على الآيفون أو الآيباد." },
+  { icon: Share, title: "اضغط زرار المشاركة", text: "المربع اللي طالع منه سهم، تحت الشاشة أو فوقها." },
+  { icon: SquarePlus, title: "اختار «إضافة إلى الشاشة الرئيسية»", text: "ثم «إضافة»، وافتح سند من الأيقونة. الإشعارات بتشتغل من التطبيق المثبّت بس." },
 ];
 const PERKS = [
   { icon: Maximize2, title: "نافذة لوحده", text: "من غير شريط المتصفح، زي أي برنامج" },
@@ -153,48 +159,62 @@ export default function AppsPage() {
             )}
           </section>
 
-          {/* the Android app */}
-          <section className={cn(card, onAndroid && "ring-1 ring-[rgba(243,223,174,.35)]")} style={cardBg} aria-labelledby="andr">
+          {/* the phone app: the site installed on the phone, the APK kept as a fallback */}
+          <section className={cn(card, (onAndroid || onIos) && "ring-1 ring-[rgba(243,223,174,.35)]")} style={cardBg} aria-labelledby="andr">
             <div className="flex items-center gap-4">
               <span className="grid h-16 w-16 place-items-center rounded-[20px] text-[#f3dfae] shadow-[inset_0_0_0_1px_rgba(214,182,120,.45),0_0_30px_-10px_rgba(201,164,100,.6)]" style={{ background: "radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b)" }}>
                 <Smartphone className="h-8 w-8" />
               </span>
               <div>
-                <span className="text-xs font-extrabold tracking-[.2em] text-[#c9a464]">أندرويد {info?.minAndroid ?? "7.0"} أو أحدث</span>
+                <span className="text-xs font-extrabold tracking-[.2em] text-[#c9a464]">أندرويد · آيفون</span>
                 <h2 id="andr" className="text-2xl font-black sm:text-3xl">سند للموبايل</h2>
               </div>
             </div>
-            <p className="mt-4 text-[14.5px] leading-relaxed text-[#d8ceb9]">تطبيق بيفتح ملء الشاشة، وبيبعتلك إشعارات باسمه.</p>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-[#d8ceb9]">
-              {info && <span className="rounded-full border border-[rgba(214,182,120,.26)] px-3 py-1">الإصدار {info.versionName}</span>}
-              {info && <span className="rounded-full border border-[rgba(214,182,120,.26)] px-3 py-1">{mb(info.size)}</span>}
-            </div>
+            <p className="mt-4 text-[14.5px] leading-relaxed text-[#d8ceb9]">بيتثبت من الموقع مباشرة من غير ما تحمّل ملفات: أيقونة على الشاشة، ويفتح ملء الشاشة، وبيبعتلك إشعارات.</p>
             <div className="mt-5 flex flex-wrap items-center gap-5">
-              {androidApp ? (
+              {installed || androidApp ? (
                 <span className="inline-flex items-center gap-2 rounded-2xl bg-[rgba(127,211,164,.12)] px-4 py-3 text-sm font-bold text-[#7fd3a4] ring-1 ring-[rgba(127,211,164,.35)]">
-                  <CheckCircle2 className="h-5 w-5" /> إنت فاتح تطبيق سند دلوقتي.
+                  <CheckCircle2 className="h-5 w-5" /> سند متثبّت على الجهاز ده.
                 </span>
+              ) : (onAndroid || onIos) && inAppBrowser() ? (
+                <span className="rounded-2xl bg-[rgba(230,185,100,.1)] px-4 py-3 text-sm font-bold leading-relaxed text-[#e6b964] ring-1 ring-[rgba(230,185,100,.25)]">
+                  الصفحة مفتوحة جوه تطبيق تاني. افتحها في {onIos ? "Safari" : "Chrome"} من القائمة (⋮ أو «فتح في المتصفح») عشان تقدر تثبّت سند.
+                </span>
+              ) : onAndroid || onIos ? (
+                <button type="button" className={gold} style={goldBg} onClick={() => openInstall(platform)}>
+                  <MonitorDown className="h-5 w-5" /> ثبّت على الموبايل
+                </button>
               ) : (
-                <a href={APK} download="SanaD.apk" className={gold} style={goldBg}>
-                  <Download className="h-5 w-5" /> حمّل التطبيق
-                </a>
-              )}
-              {!onAndroid && !androidApp && (
                 <div className="flex items-center gap-3">
                   <Qr text={pageUrl} />
-                  <span className="max-w-[9rem] text-[13px] leading-relaxed text-[#9a907c]">أو امسح الكود بكاميرا موبايلك الأندرويد</span>
+                  <span className="max-w-[11rem] text-[13px] leading-relaxed text-[#9a907c]">امسح الكود بكاميرا موبايلك عشان تفتح الصفحة دي عليه وتثبّت سند.</span>
                 </div>
               )}
             </div>
-            {!androidApp && (
-              <>
-                <div className="mt-6">
-                  <Steps steps={ANDROID_STEPS} />
-                </div>
-                <p className="mt-3 rounded-2xl bg-[rgba(230,185,100,.1)] px-4 py-3 text-[13px] leading-relaxed text-[#e6b964] ring-1 ring-[rgba(230,185,100,.25)]">
-                  التطبيق مش من متجر Google Play، فممكن «Play Protect» يسألك قبل التثبيت. اختار «تثبيت على أي حال»: التطبيق موقّع باسم سند وبيفتح نظامك بس.
-                </p>
-              </>
+            {!(installed || androidApp) && (
+              <div className="mt-6 grid gap-5">
+                {!onIos && (
+                  <div>
+                    <b className="mb-2 block text-sm font-extrabold text-[#c9a464]">على الأندرويد</b>
+                    <Steps steps={ANDROID_STEPS} />
+                  </div>
+                )}
+                {!onAndroid && (
+                  <div>
+                    <b className="mb-2 block text-sm font-extrabold text-[#c9a464]">على الآيفون والآيباد</b>
+                    <Steps steps={IOS_STEPS} />
+                  </div>
+                )}
+              </div>
+            )}
+            {!onIos && !androidApp && (
+              <p className="mt-5 border-t border-[rgba(214,182,120,.16)] pt-4 text-[12.5px] leading-relaxed text-[#6c6555]">
+                متصفحك مش بيقبل التثبيت؟{" "}
+                <a href={APK} download="SanaD.apk" className="font-bold text-[#c9a464] underline-offset-2 hover:underline">
+                  حمّل ملف التطبيق للأندرويد{info ? ` (${info.versionName} · ${mb(info.size)})` : ""}
+                </a>
+                ، وممكن الموبايل يطلب منك تسمح بالتثبيت من مصادر غير معروفة.
+              </p>
             )}
           </section>
         </div>
@@ -211,8 +231,7 @@ export default function AppsPage() {
           ))}
         </section>
 
-        <p className="mt-8 text-center text-xs text-[#6c6555]">على الآيفون والآيباد: افتح النظام من Safari، واضغط زرار المشاركة، واختار «إضافة إلى الشاشة الرئيسية».</p>
-      </div>
+              </div>
     </div>
   );
 }
