@@ -254,16 +254,58 @@ export function renderWhatsappEntry(template: WhatsappTemplateId, context: Alert
 }
 
 /** The summary's opening: the title, the company, the day, and the count at each level. */
-export function renderWhatsappDigestHeader(template: WhatsappTemplateId, company: string, contexts: Pick<AlertContext, "daysLeft">[], today = new Date()): string {
+export function renderWhatsappDigestHeader(template: WhatsappTemplateId, company: string, contexts: Pick<AlertContext, "daysLeft">[], today = new Date(), openTasks = 0): string {
   const expired = contexts.filter((c) => c.daysLeft <= 0).length;
   const week = contexts.filter((c) => c.daysLeft > 0 && c.daysLeft <= 7).length;
   const month = contexts.length - expired - week;
   const counts = optional(
     expired > 0 && `🔴 ${expired} ${L("منتهية", "expired")}`,
     week > 0 && `🟠 ${week} ${L("خلال أسبوع", "within a week")}`,
-    month > 0 && `🟡 ${month} ${L("خلال شهر", "within a month")}`
+    month > 0 && `🟡 ${month} ${L("خلال شهر", "within a month")}`,
+    openTasks > 0 && `📌 ${openTasks} ${L(openTasks === 1 ? "مهمة مفتوحة" : openTasks <= 10 ? "مهام مفتوحة" : "مهمة مفتوحة", openTasks === 1 ? "open task" : "open tasks")}`
   ).join("  ·  ");
   // One language per line: a line mixing both reads out of order in a right-to-left chat.
-  const title = template === "bilingual" ? "📋 *ملخص الوثائق اليومي*\n📋 *Daily documents summary*" : `📋 *${L("ملخص الوثائق اليومي", "Daily documents summary")}*`;
+  const title = template === "bilingual" ? "📋 *الملخص اليومي*\n📋 *Daily summary*" : `📋 *${L("الملخص اليومي", "Daily summary")}*`;
   return [title, `_${company}_ · ${fullDate(today)}`, ...optional(counts && "", counts && (template === "card" ? `> ${counts}` : counts))].join("\n");
+}
+
+// ---------- Open tasks, at the end of the daily summary ----------
+
+export interface TaskLine {
+  title: string;
+  priority: "URGENT" | "HIGH" | "NORMAL";
+  time?: string | null;
+  assignee?: string | null;
+  /** Whole days since the task's day; 0 for today's. */
+  daysLate: number;
+}
+
+const PRIORITY: Record<TaskLine["priority"], { emoji: string; ar: string; en: string }> = {
+  URGENT: { emoji: "🔴", ar: "عاجلة", en: "Urgent" },
+  HIGH: { emoji: "🟠", ar: "مهمة", en: "High" },
+  NORMAL: { emoji: "⚪", ar: "عادية", en: "Normal" },
+};
+const lateL = (n: number) => L(`متأخرة ${daysAr(n)}`, `${daysEn(n)} late`);
+
+/** Today's unfinished tasks and the ones carried from earlier days, in the design's style. */
+export function renderWhatsappTasks(template: WhatsappTemplateId, tasks: TaskLine[]): string {
+  if (!tasks.length) return "";
+  const late = tasks.filter((t) => t.daysLate > 0).length;
+  const heading = [
+    template === "bilingual" ? `📌 *المهام المفتوحة · ${tasks.length}*\n📌 *Open tasks · ${tasks.length}*` : `📌 *${L("المهام المفتوحة", "Open tasks")} · ${tasks.length}*`,
+    ...optional(late > 0 && `_${L(`منها ${late} متأخرة من أيام سابقة`, `${late} carried from earlier days`)}_`),
+  ].join("\n");
+  const details = (t: TaskLine) => optional(t.time && `🕘 ${mono(t.time)}`, t.assignee && `👤 ${t.assignee}`, t.daysLate > 0 && `⏳ ${lateL(t.daysLate)}`).join(" · ");
+  const SHOWN = 30;
+  const lines = tasks.slice(0, SHOWN).map((t) => {
+    const p = PRIORITY[t.priority];
+    const d = details(t);
+    if (template === "compact") return `${p.emoji} ${t.title}${t.daysLate > 0 ? ` — _${lateL(t.daysLate)}_` : ""}`;
+    if (template === "card") return [`> ${p.emoji} *${t.title}*`, ...optional(d && `> ${d}`)].join("\n");
+    if (template === "priority") return [`${p.emoji} *${L(p.ar, p.en)}* · ${t.title}`, ...optional(d && `- ${d}`)].join("\n");
+    return [`${p.emoji} *${t.title}*`, ...optional(d)].join("\n");
+  });
+  const more = tasks.length - SHOWN;
+  if (more > 0) lines.push(`_${L(`و${more} ${more <= 10 ? "مهام" : "مهمة"} أخرى في صفحة المهام اليومية`, `and ${more} more on the Daily tasks page`)}_`);
+  return [heading, ...lines].join(template === "compact" ? "\n" : "\n\n");
 }

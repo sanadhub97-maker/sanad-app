@@ -17,7 +17,7 @@ import { getTrackableItems } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
 import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting, getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
 import { rescheduleExpirationScan } from "@/jobs/scheduler";
-import { runExpirationScan } from "@/jobs/expirationScan";
+import { openTasks, runExpirationScan } from "@/jobs/expirationScan";
 import { getCardAssets } from "@/services/branding";
 import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
 import { CARD_PREVIEW_CSS, WHATSAPP_CARD_IDS, cardMarkup, type WhatsappCardSetting } from "@/services/whatsappCards";
@@ -27,7 +27,9 @@ import {
   renderWhatsappAlert,
   renderWhatsappDigestHeader,
   renderWhatsappEntry,
+  renderWhatsappTasks,
   type AlertContext,
+  type TaskLine,
   type WhatsappTemplateId,
 } from "@/services/whatsappTemplates";
 
@@ -60,10 +62,21 @@ async function sampleAlertContext(companyName: string | null | undefined, compan
   };
 }
 
-/** The morning summary in a design: its opening, then the sample document in each state. */
-function dailyPreview(id: WhatsappTemplateId, context: AlertContext) {
+/** The morning summary in a design: its opening, the sample document in each state, then the open tasks. */
+function dailyPreview(id: WhatsappTemplateId, context: AlertContext, tasks: TaskLine[]) {
   const contexts = Object.values(PREVIEW_STATES).map((days) => ({ ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }));
-  return [renderWhatsappDigestHeader(id, context.company, contexts), ...contexts.map((c) => renderWhatsappEntry(id, c))].join("\n\n");
+  const head = [renderWhatsappDigestHeader(id, context.company, contexts, new Date(), tasks.length), ...contexts.map((c) => renderWhatsappEntry(id, c))].join("\n\n");
+  return tasks.length ? `${head}\n\n━━━━━━━━━━━━\n\n${renderWhatsappTasks(id, tasks)}` : head;
+}
+
+/** Up to three of today's open tasks for the preview, or a labelled example when there are none. */
+async function sampleTasks(): Promise<TaskLine[]> {
+  const real = (await openTasks().catch(() => [])).slice(0, 3);
+  if (real.length) return real;
+  return [
+    { title: L("مراجعة إقامات الشهر (مثال)", "Review this month's iqamas (example)"), priority: "URGENT", time: "10:00", assignee: null, daysLate: 0 },
+    { title: L("تجديد السجل التجاري (مثال)", "Renew the commercial registration (example)"), priority: "HIGH", time: null, assignee: null, daysLate: 2 },
+  ];
 }
 
 // The same document in each state, so the designs can be compared as it nears expiry.
@@ -72,6 +85,7 @@ const PREVIEW_STATES = { expired: -3, week: 7, month: 30 } as const;
 export const getWhatsappTemplate = asyncHandler(async (req: Request, res: Response) => {
   const [{ company }, template, { language }] = await Promise.all([getBrandingContext(), getWhatsappTemplateSetting(), getWhatsappScheduleSetting()]);
   const { context, real } = await sampleAlertContext(company?.nameAr || company?.nameEn, company?.nameEn, req.auth);
+  const tasks = await withLang(language, () => sampleTasks());
   // Shown in the language the alerts go out in (Settings → WhatsApp).
   const previews = withLang(language, () => Object.fromEntries(
     WHATSAPP_TEMPLATE_IDS.map((id) => [
@@ -80,7 +94,7 @@ export const getWhatsappTemplate = asyncHandler(async (req: Request, res: Respon
         Object.entries(PREVIEW_STATES).map(([state, days]) => [
           state,
           renderWhatsappAlert(id, { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) }),
-        ]).concat([["daily", dailyPreview(id, context)]])
+        ]).concat([["daily", dailyPreview(id, context, tasks)]])
       ),
     ])
   ));

@@ -92,7 +92,7 @@ export function riyadhDay(at: Date = new Date()) {
  * whatever was sent on earlier days (so an expired or ending document stays in
  * view until it is renewed). A failed part is retried by a later run that day.
  */
-export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>, header: string, emptyText: string, day = riyadhDay()) {
+export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>, header: string, emptyText: string, day = riyadhDay(), tail = "") {
   const normalized = new Map<string, DigestEntry[]>();
   for (const [phone, entries] of groups) {
     const key = normalizePhone(phone);
@@ -103,6 +103,12 @@ export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>
   }
   for (const [phone, entries] of normalized) {
     const parts = entries.length ? digestParts(entries, header, "").map((p) => p.text) : [`${header.slice(0, 400)}\n\n${emptyText}`];
+    // A closing section (the open tasks): with the last part when it fits, else on its own.
+    if (tail) {
+      const sep = "\n\n━━━━━━━━━━━━\n\n";
+      if (parts[parts.length - 1].length + sep.length + tail.length <= 3500) parts[parts.length - 1] += sep + tail;
+      else parts.push(tail.slice(0, 3500));
+    }
     for (const [n, text] of parts.entries()) {
       const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
       if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;

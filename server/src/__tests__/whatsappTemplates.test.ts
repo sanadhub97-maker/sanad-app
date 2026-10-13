@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alertContext, daysAr, renderWhatsappAlert, WHATSAPP_TEMPLATE_IDS } from "@/services/whatsappTemplates";
+import { alertContext, daysAr, renderWhatsappAlert, renderWhatsappDigestHeader, renderWhatsappTasks, WHATSAPP_TEMPLATE_IDS, type TaskLine } from "@/services/whatsappTemplates";
 import type { TrackableItem } from "@/services/expiringItems";
 
 function addDays(days: number): Date {
@@ -46,6 +46,22 @@ describe("WhatsApp alert templates", () => {
       expect(text).toContain("السجل التجاري");
       expect(text).not.toContain("الموظف");
     }
+  });
+
+  it("lists open tasks in every design, with how late the carried ones are", () => {
+    const tasks: TaskLine[] = [
+      { title: "تجديد السجل", priority: "URGENT", time: "10:00", assignee: "سامح", daysLate: 2 },
+      { title: "مراجعة الإقامات", priority: "NORMAL", time: null, assignee: null, daysLate: 0 },
+    ];
+    for (const id of WHATSAPP_TEMPLATE_IDS) {
+      const text = renderWhatsappTasks(id, tasks);
+      expect(text).toContain("تجديد السجل");
+      expect(text).toContain("مراجعة الإقامات");
+      expect(text).toContain("متأخرة يومان");
+    }
+    expect(renderWhatsappTasks("classic", [])).toBe("");
+    expect(renderWhatsappTasks("classic", Array.from({ length: 35 }, (_, i) => ({ ...tasks[1], title: `t${i}` })))).toContain("و5 مهام أخرى");
+    expect(renderWhatsappDigestHeader("classic", "سمو", [{ daysLeft: -1 }], new Date(), 2)).toContain("📌 2 مهام مفتوحة");
   });
 
   it("says expired, with how long ago, once the date has passed", () => {
