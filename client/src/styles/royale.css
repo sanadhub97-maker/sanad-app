@@ -480,3 +480,9 @@ select option { background: #0f1014; color: #f1e9d8; }
 @media (max-width: 1280px) { .px-stats.tk-stats5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .px-stats.tk-stats5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .px-dh .px-av svg { width: 26px; height: 26px; }
+
+/* the sign-in medallion holds the SanaD logo */
+.rx-medal.big b:has(.rx-medal-logo) { background: none; animation: none; }
+.rx-medal-logo { width: 46%; height: 46%; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 0 22px rgba(243, 223, 174, .55)); animation: rx-logo-breathe 4s ease-in-out infinite; }
+@keyframes rx-logo-breathe { 50% { transform: scale(1.04); filter: drop-shadow(0 0 34px rgba(243, 223, 174, .8)); } }
+@media (prefers-reduced-motion: reduce) { .rx-medal-logo { animation: none; } }

@@ -38,7 +38,9 @@ export function RoyalAuthLayout() {
         </div>
       </section>
       <section className="ry-la rx-la" aria-hidden="true">
-        <Medal big>{isAr ? "سند" : "SanaD"}</Medal>
+        <Medal big>
+          <img src="/brand/sanad-mark.webp" alt="SanaD" className="rx-medal-logo" />
+        </Medal>
         <div className="ry-copy">
           <h2>{isAr ? "كل وثيقة في مكانها وفي ميعادها" : "Every document in its place, on time"}</h2>
           <p>{isAr ? "تنبيه قبل انتهاء الإقامات والرخص والشهادات، ومدفوعات مرتبة، وتقارير بهوية شركتك جاهزة للطباعة." : "A heads-up before iqamas, licences and certificates end, sorted payments, and print-ready reports with your branding."}</p>
