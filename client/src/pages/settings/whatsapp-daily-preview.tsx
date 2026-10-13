@@ -25,7 +25,7 @@ export function WhatsappDailyPreview({ isRtl }: { isRtl: boolean }) {
             <CardTitle className="text-base font-black">{isRtl ? "الملخص اليومي النصي — معاينة حية" : "Daily summary text — live preview"}</CardTitle>
             <CardDescription className="text-xs">
               {isRtl
-                ? "الرسالة النصية اللي بتتبعت لو اخترت «بدون صورة»، أو لو الصورة ما اتبعتتش. ببياناتك الحقيقية دلوقتي، وبتتحدّث كل دقيقة."
+                ? "الرسالة اللي بتتبعت لو اخترت «رسالة نصية»، أو لو الصورة ما اتبعتتش. ببياناتك الحقيقية دلوقتي، وبتتحدّث كل دقيقة."
                 : "The message that goes out at 8 am, exactly, on your real data right now: due documents and open tasks. Refreshed every minute."}
             </CardDescription>
           </div>

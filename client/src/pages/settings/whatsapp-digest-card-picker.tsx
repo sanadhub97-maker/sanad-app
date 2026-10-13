@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, ImageIcon, Loader2, RefreshCw } from "lucide-react";
+import { Check, ImageIcon, Loader2, RefreshCw, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppleIcon } from "@/components/common/apple-icon";
@@ -71,6 +71,12 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
     onError: (err) => toast.error(getErrorMessage(err)),
   });
   const dirty = data != null && choice != null && choice !== data.card;
+  // Picture or text: switching back to picture brings back the last design picked.
+  const [lastDesign, setLastDesign] = useState<Exclude<DigestCardSetting, "none">>("noir");
+  useEffect(() => {
+    if (choice && choice !== "none") setLastDesign(choice);
+  }, [choice]);
+  const asText = choice === "none";
   const shown = DESIGNS.find((d) => d.id === choice) ?? DESIGNS[0];
 
   return (
@@ -79,7 +85,7 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
         <div className="flex flex-wrap items-center gap-3">
           <AppleIcon icon={ImageIcon} tone="amber" size="md" />
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base font-black">{isRtl ? "صورة الملخص اليومي — معاينة حية" : "Daily summary picture — live preview"}</CardTitle>
+            <CardTitle className="text-base font-black">{isRtl ? "شكل رسالة الصبح — صورة أو نص" : "Morning message — picture or text"}</CardTitle>
             <CardDescription className="text-xs">
               {isRtl
                 ? "كل صباح الساعة 8 يتبعت الملخص صورة مصممة ومعاها سطرين. المعاينة ببياناتك الحقيقية دلوقتي وبتتحدّث لوحدها."
@@ -93,12 +99,51 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
         </div>
       </CardHeader>
       <CardContent className="space-y-4 p-4 sm:p-5">
+        {/* The first choice: the morning message as a picture or as text */}
+        <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={isRtl ? "شكل رسالة الصبح" : "Morning message format"}>
+          {(
+            [
+              [false, ImageIcon, isRtl ? "صورة مصممة" : "Designed picture", isRtl ? "تقرير ملوّن بالأيقونات، ومعاه سطرين تحته" : "A coloured report with icons, and a short caption"],
+              [true, Type, isRtl ? "رسالة نصية" : "Text message", isRtl ? "نص منسّق بالإيموجي، يتنسخ ويتقري من الإشعار" : "Formatted text, easy to copy and read from the notification"],
+            ] as const
+          ).map(([text, Icon, title, desc]) => {
+            const on = asText === text;
+            return (
+              <button
+                key={title}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                disabled={!canEdit}
+                onClick={() => setChoice(text ? "none" : lastDesign)}
+                className={cn("flex items-center gap-3 rounded-2xl border p-4 text-start transition-all disabled:cursor-default", on ? "border-amber-400/80 bg-amber-400/[0.07] ring-2 ring-amber-400/30" : "border-border/70 hover:border-border")}
+              >
+                <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", on ? "bg-amber-400 text-black" : "bg-white/5 text-amber-300")}>
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <b className="flex items-center gap-2 text-[15px] font-black">
+                    {title}
+                    {data && (data.card === "none") === text && <span className="rounded-full border border-amber-400/40 px-2 py-px text-[10px] font-bold text-amber-300">{isRtl ? "المعتمد" : "In use"}</span>}
+                  </b>
+                  <span className="mt-0.5 block text-[12px] text-muted-foreground">{desc}</span>
+                </span>
+                <span className={cn("grid h-5 w-5 shrink-0 place-items-center rounded-full border", on ? "border-amber-400 bg-amber-400 text-black" : "border-border")}>{on && <Check className="h-3 w-3" />}</span>
+              </button>
+            );
+          })}
+        </div>
+        {asText && (
+          <p className="rounded-xl border border-border/60 bg-white/[0.02] px-3 py-2 text-xs text-muted-foreground">
+            {isRtl ? "شكل الرسالة النصية في «الملخص اليومي النصي — معاينة حية» تحت الجزء ده على طول." : "The text message is shown in the live text preview just below."}
+          </p>
+        )}
         {data && !data.canSendCards && (
           <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
             {isRtl ? "الصور بتتبعت من الرقم المربوط برمز QR بس؛ مع أي مزوّد تاني بتتبعت الرسالة النصية." : "Pictures go out from the QR-linked number only; other providers send the text."}
           </p>
         )}
-        {isLoading || !data ? (
+        {asText ? null : isLoading || !data ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
@@ -130,7 +175,6 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
                 );
               })}
             </div>
-            {choice !== "none" && (
               <div className="rounded-2xl bg-[#0b141a] p-3 sm:p-5" dir="rtl">
                 <div className="mx-auto max-w-[520px] rounded-xl rounded-tr-none bg-[#005c4b] p-1 text-[#e9edef] shadow">
                   <Shot html={data.cards[shown.id]} width={data.width} />
@@ -142,17 +186,13 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
                   </div>
                 </div>
               </div>
-            )}
           </>
         )}
         <div className="flex flex-col-reverse gap-3 border-t border-border/40 pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <button type="button" disabled={!canEdit} onClick={() => setChoice("none")} className={cn("text-start text-xs font-bold", choice === "none" ? "text-amber-300" : "text-muted-foreground hover:text-foreground")}>
-            {choice === "none" ? "✓ " : ""}
-            {isRtl ? "بدون صورة، ابعت الرسالة النصية بس" : "No picture — send the text only"}
-          </button>
+          <span className="text-xs text-muted-foreground">{isRtl ? "الاختيار بيتطبق من رسالة الصبح الجاية، ومن زرار «اختبار»." : "Applies from the next morning message, and to the Test button."}</span>
           <Button type="button" disabled={!canEdit || !dirty || save.isPending} onClick={() => choice && save.mutate(choice)} className="h-11 shrink-0 rounded-xl px-8 text-xs font-black">
             {save.isPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Check className="me-2 h-4 w-4" />}
-            {isRtl ? "اعتماد التصميم" : "Use this design"}
+            {isRtl ? "اعتماد الاختيار" : "Use this choice"}
           </Button>
         </div>
       </CardContent>
