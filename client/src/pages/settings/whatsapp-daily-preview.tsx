@@ -22,10 +22,10 @@ export function WhatsappDailyPreview({ isRtl }: { isRtl: boolean }) {
         <div className="flex flex-wrap items-center gap-3">
           <AppleIcon icon={CalendarClock} tone="amber" size="md" />
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base font-black">{isRtl ? "الملخص اليومي — معاينة حية" : "Daily summary — live preview"}</CardTitle>
+            <CardTitle className="text-base font-black">{isRtl ? "الملخص اليومي النصي — معاينة حية" : "Daily summary text — live preview"}</CardTitle>
             <CardDescription className="text-xs">
               {isRtl
-                ? "الرسالة اللي هتتبعت الساعة 8 الصبح بالظبط، ببياناتك الحقيقية دلوقتي: الوثائق المنتهية والقريبة، والمهام المفتوحة. بتتحدّث كل دقيقة."
+                ? "الرسالة النصية اللي بتتبعت لو اخترت «بدون صورة»، أو لو الصورة ما اتبعتتش. ببياناتك الحقيقية دلوقتي، وبتتحدّث كل دقيقة."
                 : "The message that goes out at 8 am, exactly, on your real data right now: due documents and open tasks. Refreshed every minute."}
             </CardDescription>
           </div>

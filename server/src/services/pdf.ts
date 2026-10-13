@@ -381,15 +381,21 @@ async function renderPdfWithRetry(html: string, options: RenderPdfOptions = {}):
   }
 }
 
-async function screenshotOnce(browser: Browser, html: string, width: number, height: number): Promise<Buffer> {
+/** `height` 0 sizes the picture to the page's own height (up to `maxHeight`). */
+async function screenshotOnce(browser: Browser, html: string, width: number, height: number, maxHeight = 4000): Promise<Buffer> {
   const page = await browser.newPage();
   try {
     await secureRenderPage(page);
-    await page.setViewport({ width, height, deviceScaleFactor: 1 });
+    await page.setViewport({ width, height: height || 1000, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20_000 });
     await page.waitForNetworkIdle({ timeout: 5000 }).catch(() => undefined);
     // Web fonts decide the Arabic shaping; don't shoot before they're in (5s cap).
     await Promise.race([page.evaluate("document.fonts.ready.then(() => true)"), new Promise((r) => setTimeout(r, 5000))]);
+    if (!height) {
+      // As tall as the content: shot beyond the viewport, which stays put so the layout doesn't move.
+      height = Math.min(maxHeight, Math.ceil(Number(await page.evaluate("document.documentElement.scrollHeight"))));
+      return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height }, captureBeyondViewport: true }));
+    }
     return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height } }));
   } finally {
     await page.close().catch(() => undefined);
@@ -397,12 +403,12 @@ async function screenshotOnce(browser: Browser, html: string, width: number, hei
 }
 
 /** An HTML page as a PNG — the WhatsApp alert cards. Shares the PDF browser. */
-async function renderPngWithRetry(html: string, width: number, height: number): Promise<Buffer> {
+async function renderPngWithRetry(html: string, width: number, height: number, maxHeight?: number): Promise<Buffer> {
   try {
-    return await screenshotOnce(await getBrowser(), html, width, height);
+    return await screenshotOnce(await getBrowser(), html, width, height, maxHeight);
   } catch (err) {
     logger.warn({ err }, "Image render failed, retrying once");
-    return screenshotOnce(await getBrowser(), html, width, height);
+    return screenshotOnce(await getBrowser(), html, width, height, maxHeight);
   }
 }
 
@@ -412,6 +418,12 @@ export function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): P
 export function renderHtmlToPng(html: string, width: number, height: number): Promise<Buffer> {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width * height > 4_000_000) throw ApiError.badRequest("Invalid print image dimensions.");
   return withRenderBudget(html, () => renderPngWithRetry(html, width, height));
+}
+
+/** An HTML page as a PNG as tall as its content (the daily summary), capped at `maxHeight`. */
+export function renderHtmlToPngFit(html: string, width: number, maxHeight: number): Promise<Buffer> {
+  if (!Number.isInteger(width) || width < 1 || !Number.isInteger(maxHeight) || width * maxHeight > 4_400_000) throw ApiError.badRequest("Invalid print image dimensions.");
+  return withRenderBudget(html, () => renderPngWithRetry(html, width, 0, maxHeight));
 }
 
 export function pdfDocumentShell(opts: {

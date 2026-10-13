@@ -5,11 +5,15 @@ import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappDigestCardSetting } from "@/services/settingsStore";
 import { alertContext } from "@/services/whatsappTemplates";
 import { dailyEmptyText, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { withLang } from "@/services/lang";
 import { openTasks } from "@/services/openTasks";
+import { getCardAssets } from "@/services/branding";
+import { renderHtmlToPngFit } from "@/services/pdf";
+import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
+import { DIGEST_CARD_MAX_HEIGHT, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument } from "@/services/whatsappDigestCard";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { riyadhDay, sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
@@ -131,6 +135,7 @@ async function performExpirationScan() {
   // written in the design chosen in Settings → WhatsApp, in the alerts' language.
   let dailyHeader = "";
   let dailyTail = "";
+  let dailyImage: { png: Buffer; caption: string } | undefined;
   if (whatsappSettings?.enabled) {
     const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
     const phones = fallback ? recipients.flatMap((r) => (r.phone ? [r.phone] : [])) : whatsappPhones;
@@ -145,6 +150,19 @@ async function performExpirationScan() {
     dailyHeader = withLang(lang, () => renderDailyHeader(company, dueToday, tasks));
     dailyTail = withLang(lang, () => renderDailyTail(tasks));
     for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
+
+    // The designed picture with a short caption; only the QR-linked number sends pictures.
+    const cardId = await getWhatsappDigestCardSetting();
+    if (cardId !== "none" && whatsappSettings.provider === WHATSAPP_WEB_PROVIDER) {
+      try {
+        const { logo, mark } = await getCardAssets();
+        const data = { company, logo: logo ?? mark, documents: dueToday.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
+        const png = await renderHtmlToPngFit(withLang(lang, () => digestCardDocument(cardId, data)), DIGEST_CARD_WIDTH, DIGEST_CARD_MAX_HEIGHT);
+        dailyImage = { png, caption: withLang(lang, () => digestCardCaption(data)) };
+      } catch (err) {
+        logger.error({ err }, "Daily summary picture failed; sending the text");
+      }
+    }
   }
 
   for (const item of items) {
@@ -192,7 +210,7 @@ async function performExpirationScan() {
       }
     }
   }
-  await sendDailyWhatsappDigest(whatsappGroups, dailyHeader, withLang(language === "en" ? "en" : "ar", dailyEmptyText), riyadhDay(), dailyTail);
+  await sendDailyWhatsappDigest(whatsappGroups, dailyHeader, withLang(language === "en" ? "en" : "ar", dailyEmptyText), riyadhDay(), dailyTail, dailyImage);
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));

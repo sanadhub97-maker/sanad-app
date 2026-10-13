@@ -19,6 +19,8 @@ import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCard
 import { rescheduleExpirationScan } from "@/jobs/scheduler";
 import { runExpirationScan } from "@/jobs/expirationScan";
 import { dailyMessageParts } from "@/services/whatsappDigest";
+import { getWhatsappDigestCardSetting, setWhatsappDigestCardSetting } from "@/services/settingsStore";
+import { DIGEST_CARD_IDS, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocument, type DigestCardSetting } from "@/services/whatsappDigestCard";
 import { dailyEmptyText, gatherDailySummary, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { getCardAssets } from "@/services/branding";
 import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
@@ -98,6 +100,24 @@ export const getWhatsappDailyPreview = asyncHandler(async (req: Request, res: Re
   const { lang, company, docs, tasks } = await gatherDailySummary((item) => canViewSource(req.auth, item.sourceType));
   const messages = withLang(lang, () => dailyMessageParts(docs.map(renderDailyEntry), renderDailyHeader(company, docs, tasks), dailyEmptyText(), renderDailyTail(tasks)));
   res.json({ data: { messages, documents: docs.length, tasks: tasks.length, language: lang, generatedAt: new Date().toISOString() } });
+});
+
+/** Settings → WhatsApp: the four pictures of the morning summary, drawn on today's real documents and open tasks. */
+export const getWhatsappDigestCards = asyncHandler(async (req: Request, res: Response) => {
+  const [{ lang, company, docs, tasks }, card, provider, assets] = await Promise.all([
+    gatherDailySummary((item) => canViewSource(req.auth, item.sourceType)),
+    getWhatsappDigestCardSetting(),
+    getWhatsappProvider(),
+    getCardAssets(),
+  ]);
+  const data = { company, logo: assets.logo ?? assets.mark, documents: docs.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
+  const cards = withLang(lang, () => Object.fromEntries(DIGEST_CARD_IDS.map((id) => [id, digestCardDocument(id, data)])));
+  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, width: DIGEST_CARD_WIDTH, caption: withLang(lang, () => digestCardCaption(data)), cards } });
+});
+
+export const updateWhatsappDigestCard = asyncHandler(async (req: Request, res: Response) => {
+  const card = await setWhatsappDigestCardSetting((req.body as { card: DigestCardSetting }).card);
+  res.json({ data: { card }, message: L("تم حفظ تصميم صورة الملخص اليومي.", "Daily summary picture saved.") });
 });
 
 export const updateWhatsappCard = asyncHandler(async (req: Request, res: Response) => {

@@ -3,6 +3,7 @@ import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration
 import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { DEFAULT_WHATSAPP_TEMPLATE, isWhatsappTemplateId, type WhatsappTemplateId } from "@/services/whatsappTemplates";
 import { isWhatsappCardSetting, type WhatsappCardSetting } from "@/services/whatsappCards";
+import { isDigestCardSetting, type DigestCardSetting } from "@/services/whatsappDigestCard";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
 
@@ -119,6 +120,19 @@ export async function getWhatsappCardSetting(): Promise<WhatsappCardSetting> {
 
 export async function setWhatsappCardSetting(card: WhatsappCardSetting) {
   await setSetting(WHATSAPP_CARD_KEY, { card });
+  return card;
+}
+
+const WHATSAPP_DIGEST_CARD_KEY = "whatsapp.digestCard";
+
+/** The picture of the morning summary (services/whatsappDigestCard); "none" sends the text only. */
+export async function getWhatsappDigestCardSetting(): Promise<DigestCardSetting> {
+  const { card } = await getSetting<{ card: string }>(WHATSAPP_DIGEST_CARD_KEY, { card: "noir" });
+  return isDigestCardSetting(card) ? card : "noir";
+}
+
+export async function setWhatsappDigestCardSetting(card: DigestCardSetting) {
+  await setSetting(WHATSAPP_DIGEST_CARD_KEY, { card });
   return card;
 }
 

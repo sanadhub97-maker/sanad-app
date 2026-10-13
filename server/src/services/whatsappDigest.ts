@@ -109,7 +109,15 @@ export function dailyMessageParts(texts: string[], header: string, emptyText: st
  * whatever was sent on earlier days (so an expired or ending document stays in
  * view until it is renewed). A failed part is retried by a later run that day.
  */
-export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>, header: string, emptyText: string, day = riyadhDay(), tail = "") {
+export async function sendDailyWhatsappDigest(
+  groups: Map<string, DigestEntry[]>,
+  header: string,
+  emptyText: string,
+  day = riyadhDay(),
+  tail = "",
+  /** The designed picture with its caption; when it can't go out, the text goes instead. */
+  image?: { png: Buffer; caption: string }
+) {
   const normalized = new Map<string, DigestEntry[]>();
   for (const [phone, entries] of groups) {
     const key = normalizePhone(phone);
@@ -119,6 +127,26 @@ export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>
     normalized.set(key, [...unique.values()]);
   }
   for (const [phone, entries] of normalized) {
+    if (image) {
+      const dedupeKey = `whatsapp-daily:${day}:${phone}:picture`;
+      if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;
+      const meta = { recipient: phone, message: image.caption, templateCode: "DIGEST" };
+      try {
+        const result = await sendWhatsapp(phone, image.caption, image.png);
+        if (!result.sent) throw new Error(result.reason ?? "Send failed");
+        await prisma.notificationLog.upsert({ where: { dedupeKey },
+          update: { ...meta, status: "SENT", sentAt: new Date(), errorMessage: null },
+          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "SENT", sentAt: new Date() },
+        });
+        continue;
+      } catch (err) {
+        logger.error({ err, dedupeKey }, "Daily WhatsApp picture failed; sending the text");
+        await prisma.notificationLog.upsert({ where: { dedupeKey },
+          update: { ...meta, status: "FAILED", errorMessage: (err as Error).message },
+          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "FAILED", errorMessage: (err as Error).message },
+        }).catch(() => undefined);
+      }
+    }
     const parts = dailyMessageParts(entries.map((e) => e.text), header, emptyText, tail);
     for (const [n, text] of parts.entries()) {
       const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
