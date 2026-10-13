@@ -486,3 +486,7 @@ select option { background: #0f1014; color: #f1e9d8; }
 .rx-medal-logo { width: 46%; height: 46%; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 0 22px rgba(243, 223, 174, .55)); animation: rx-logo-breathe 4s ease-in-out infinite; }
 @keyframes rx-logo-breathe { 50% { transform: scale(1.04); filter: drop-shadow(0 0 34px rgba(243, 223, 174, .8)); } }
 @media (prefers-reduced-motion: reduce) { .rx-medal-logo { animation: none; } }
+
+/* sign-in: the form sits in the middle of its side, its heading centred over it */
+.ry-lbody { margin: auto !important; max-width: 420px; }
+.ry-form h1, .ry-form > .sub { text-align: center; }
