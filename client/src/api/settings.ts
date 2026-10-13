@@ -121,6 +121,15 @@ export interface WhatsappMessageItem {
 }
 export type WhatsappTemplateId = "classic" | "card" | "compact" | "priority" | "bilingual";
 export type WhatsappPreviewState = "expired" | "week" | "month";
+export type DigestCardSetting = "royal" | "ivory" | "emerald" | "none";
+export interface WhatsappDigestCards {
+  card: DigestCardSetting;
+  canSendCards: boolean;
+  width: number;
+  height: number;
+  /** Each design as a whole page, drawn on today's documents and open tasks. */
+  cards: Record<Exclude<DigestCardSetting, "none">, string>;
+}
 export interface WhatsappTemplateSettings {
   template: WhatsappTemplateId;
   /** False when the system has no documents yet and the previews use an example. */
@@ -172,6 +181,10 @@ export const settingsApi = {
     (await api.get<{ data: WhatsappCardsPreview }>("/settings/whatsapp/cards", { params: { state } })).data.data,
   updateWhatsappCard: async (card: WhatsappCardSetting) =>
     (await api.put<{ data: { card: WhatsappCardSetting }; message: string }>("/settings/whatsapp/card", { card })).data,
+  getWhatsappDigestCards: async () =>
+    (await api.get<{ data: WhatsappDigestCards }>("/settings/whatsapp/digest-cards")).data.data,
+  updateWhatsappDigestCard: async (card: DigestCardSetting) =>
+    (await api.put<{ data: { card: DigestCardSetting }; message: string }>("/settings/whatsapp/digest-card", { card })).data,
   getWhatsappTemplate: async () =>
     (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
   updateWhatsappTemplate: async (template: WhatsappTemplateId) =>

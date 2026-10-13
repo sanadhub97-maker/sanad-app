@@ -69,6 +69,7 @@ import { PrintDesignsTab } from "./print-designs-tab";
 import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 import { WhatsappTemplateCard } from "./whatsapp-template-card";
 import { WhatsappCardPicker } from "./whatsapp-card-picker";
+import { WhatsappDigestCardPicker } from "./whatsapp-digest-card-picker";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
 /* The settings in the Royal design, as in the approved preview: the sections
@@ -1560,6 +1561,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} saved={data.provider === "WHATSAPP_WEB" && data.enabled} />
       )}
       <WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />
+      <WhatsappDigestCardPicker canEdit={canEdit} isRtl={isRtl} />
       <WhatsappTemplateCard canEdit={canEdit} isRtl={isRtl} />
       <WhatsappCardPicker canEdit={canEdit} isRtl={isRtl} />
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />

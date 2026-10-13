@@ -17,7 +17,11 @@ import { getTrackableItems } from "@/services/expiringItems";
 import { daysUntil } from "@/services/expiration";
 import { getWhatsappTemplateSetting, setWhatsappTemplateSetting, getWhatsappCardSetting, setWhatsappCardSetting, getWhatsappScheduleSetting, setWhatsappScheduleSetting } from "@/services/settingsStore";
 import { rescheduleExpirationScan } from "@/jobs/scheduler";
-import { openTasks, runExpirationScan } from "@/jobs/expirationScan";
+import { runExpirationScan } from "@/jobs/expirationScan";
+import { openTasks } from "@/services/openTasks";
+import { getExpirationRules, getWhatsappDigestCardSetting, setWhatsappDigestCardSetting } from "@/services/settingsStore";
+import { whatsappEligible } from "@/services/whatsappDigest";
+import { DIGEST_CARD_IDS, DIGEST_CARD_WIDTH, digestCardDocument, digestCardHeight, type DigestCardSetting } from "@/services/whatsappDigestCard";
 import { getCardAssets } from "@/services/branding";
 import { getAlertStyle, prepareAlert } from "@/services/whatsappAlert";
 import { CARD_PREVIEW_CSS, WHATSAPP_CARD_IDS, cardMarkup, type WhatsappCardSetting } from "@/services/whatsappCards";
@@ -111,6 +115,33 @@ export const getWhatsappCards = asyncHandler(async (req: Request, res: Response)
   const shown = { ...context, daysLeft: days, expiryDate: new Date(Date.now() + days * 86_400_000) };
   const cards = withLang(language, () => Object.fromEntries(WHATSAPP_CARD_IDS.map((id) => [id, cardMarkup(id, shown, company?.nameEn, assets)])));
   res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, sampleIsReal: real, css: CARD_PREVIEW_CSS, cards, language } });
+});
+
+/** Settings → WhatsApp: the three pictures of the morning summary, drawn on today's real documents and open tasks. */
+export const getWhatsappDigestCards = asyncHandler(async (req: Request, res: Response) => {
+  const [{ company }, card, provider, assets, { language }, rules, items, tasks] = await Promise.all([
+    getBrandingContext(),
+    getWhatsappDigestCardSetting(),
+    getWhatsappProvider(),
+    getCardAssets(),
+    getWhatsappScheduleSetting(),
+    getExpirationRules(),
+    getTrackableItems(),
+    openTasks(),
+  ]);
+  const name = (language === "en" ? company?.nameEn : company?.nameAr) || company?.nameAr || company?.nameEn || "SanaD";
+  const documents = items
+    .filter((item) => canViewSource(req.auth, item.sourceType) && whatsappEligible(item) && daysUntil(item.expiryDate) <= rules.expiringSoonThresholdDays)
+    .map((item) => ({ ...alertContext(item, company?.nameAr || company?.nameEn, company?.nameEn), sourceType: item.sourceType }))
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+  const data = { company: name, logo: assets.logo ?? assets.mark, documents, tasks };
+  const cards = withLang(language, () => Object.fromEntries(DIGEST_CARD_IDS.map((id) => [id, digestCardDocument(id, data)])));
+  res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, width: DIGEST_CARD_WIDTH, height: digestCardHeight(data), cards } });
+});
+
+export const updateWhatsappDigestCard = asyncHandler(async (req: Request, res: Response) => {
+  const card = await setWhatsappDigestCardSetting((req.body as { card: DigestCardSetting }).card);
+  res.json({ data: { card }, message: L("تم حفظ تصميم صورة الملخص اليومي.", "Daily summary picture saved.") });
 });
 
 export const updateWhatsappCard = asyncHandler(async (req: Request, res: Response) => {

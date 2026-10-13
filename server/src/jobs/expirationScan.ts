@@ -5,9 +5,14 @@ import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappTemplateSetting } from "@/services/settingsStore";
-import { alertContext, renderWhatsappDigestHeader, renderWhatsappEntry, renderWhatsappTasks, type TaskLine } from "@/services/whatsappTemplates";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappTemplateSetting, getWhatsappDigestCardSetting } from "@/services/settingsStore";
+import { alertContext, renderWhatsappDigestHeader, renderWhatsappEntry, renderWhatsappTasks } from "@/services/whatsappTemplates";
 import { withLang } from "@/services/lang";
+import { openTasks } from "@/services/openTasks";
+import { getCardAssets } from "@/services/branding";
+import { renderHtmlToPng } from "@/services/pdf";
+import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
+import { DIGEST_CARD_WIDTH, digestCardDocument, digestCardHeight } from "@/services/whatsappDigestCard";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { riyadhDay, sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
@@ -99,21 +104,6 @@ function assertSent(result: { sent: boolean; reason?: string }) {
   if (!result.sent) throw new Error(result.reason ?? "Send failed");
 }
 
-/** Today's unfinished tasks and those left from earlier days: the late ones first, then by priority and time. */
-export async function openTasks(): Promise<TaskLine[]> {
-  const today = riyadhDay();
-  const rows = await prisma.dailyTask.findMany({
-    where: { deletedAt: null, done: false, date: { lte: new Date(`${today}T00:00:00Z`) } },
-    select: { title: true, priority: true, time: true, date: true, assignee: { select: { fullName: true } } },
-    orderBy: [{ date: "asc" }, { time: { sort: "asc", nulls: "last" } }, { createdAt: "asc" }],
-    take: 200,
-  });
-  const rank = { URGENT: 0, HIGH: 1, NORMAL: 2 } as const;
-  return rows
-    .map((r) => ({ title: r.title.trim(), priority: r.priority, time: r.time, assignee: r.assignee?.fullName?.trim() || null, daysLate: Math.round((Date.parse(`${today}T00:00:00Z`) - r.date.getTime()) / 86_400_000) }))
-    .sort((a, b) => Number(b.daysLate > 0) - Number(a.daysLate > 0) || rank[a.priority] - rank[b.priority]);
-}
-
 let activeScan: Promise<{ dueCount: number }> | null = null;
 export function runExpirationScan() {
   return activeScan ??= performExpirationScan().finally(() => { activeScan = null; });
@@ -144,6 +134,7 @@ async function performExpirationScan() {
   // written in the design chosen in Settings → WhatsApp, in the alerts' language.
   let dailyHeader = "";
   let dailyTasks = "";
+  let dailyImage: { png: Buffer; caption: string } | undefined;
   if (whatsappSettings?.enabled) {
     const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
     const phones = fallback ? recipients.flatMap((r) => (r.phone ? [r.phone] : [])) : whatsappPhones;
@@ -159,6 +150,19 @@ async function performExpirationScan() {
     dailyTasks = withLang(lang, () => renderWhatsappTasks(template, tasks));
     dailyHeader = withLang(lang, () => renderWhatsappDigestHeader(template, company, dueToday.map((d) => d.context), new Date(), tasks.length));
     for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
+
+    // The designed picture of the summary, with a short caption; only the QR-linked number sends pictures.
+    const cardId = await getWhatsappDigestCardSetting();
+    if (cardId !== "none" && whatsappSettings.provider === WHATSAPP_WEB_PROVIDER) {
+      try {
+        const { logo, mark } = await getCardAssets();
+        const data = { company, logo: logo ?? mark, documents: dueToday.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
+        const png = await renderHtmlToPng(withLang(lang, () => digestCardDocument(cardId, data)), DIGEST_CARD_WIDTH, digestCardHeight(data));
+        dailyImage = { png, caption: `${dailyHeader}\n\n${lang === "en" ? "_The details are in the picture._" : "_التفاصيل كاملة في الصورة._"}` };
+      } catch (err) {
+        logger.error({ err }, "Daily summary picture failed; sending the text design");
+      }
+    }
   }
 
   for (const item of items) {
@@ -211,7 +215,8 @@ async function performExpirationScan() {
     dailyHeader,
     language === "en" ? "✅ No document has expired or ends soon." : "✅ لا توجد وثائق منتهية أو قريبة من الانتهاء اليوم.",
     riyadhDay(),
-    dailyTasks
+    dailyTasks,
+    dailyImage
   );
 
   // On the devices of the responsible users (Web Push).
