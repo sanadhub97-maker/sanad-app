@@ -20,7 +20,6 @@ import {
   Eye,
   EyeOff,
   Sun,
-  Moon,
   LayoutList,
   LayoutGrid,
   ShieldCheck,
@@ -40,7 +39,6 @@ import {
   CheckCircle2,
   Sliders,
   AlertTriangle,
-  Laptop,
   QrCode,
   Zap,
   Copy,
@@ -452,9 +450,6 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
     onSuccess: (res, variables) => {
       toast.success(res.message ?? t("common.savedSuccess"));
       queryClient.invalidateQueries({ queryKey: ["settings", "appearance"] });
-      if (variables.themeMode) {
-        useUiStore.getState().setThemeMode(variables.themeMode);
-      }
       if (typeof variables.animationsEnabled === "boolean") {
         useUiStore.getState().setAnimationsEnabled(variables.animationsEnabled);
       }
@@ -488,113 +483,21 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
 
   return (
     <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
-      {/* Theme Mode Selector */}
+      {/* Light and dark are each person's own choice, from the sun/moon button in the top bar. */}
       <Card className="specular-border overflow-hidden border-border/80">
-        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b-0 pb-5">
           <div className="flex items-center gap-3.5">
             <AppleIcon icon={Sun} tone="amber" size="md" />
             <div>
-              <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                {isRtl ? "وضع المظهر العام (Theme Mode)" : "Interface Theme Mode"}
-              </CardTitle>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">{isRtl ? "الوضع الفاتح والداكن" : "Light and dark"}</CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 {isRtl
-                  ? "اختر أسلوب العرض المفضل للواجهة بين السمة الفاتحة أو الداكنة الفاخرة"
-                  : "Choose your preferred system appearance between Crisp Light and Obsidian Dark"}
+                  ? "كل مستخدم بيختار لنفسه من زرار الشمس والقمر في الشريط العلوي، والموقع بيفتكر اختياره على جهازه."
+                  : "Each person chooses with the sun/moon button in the top bar; the site remembers it on their device."}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <Controller
-            control={control}
-            name="themeMode"
-            render={({ field }) => (
-              <div className="grid gap-4 sm:grid-cols-3">
-                {/* Light Mode */}
-                <button
-                  type="button"
-                  onClick={() => field.onChange("light")}
-                  className={cn(
-                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
-                    field.value === "light"
-                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
-                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
-                  )}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 group-hover:scale-105 transition-transform">
-                    <Sun className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="font-black text-sm">{t("settings.appearance.light")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {isRtl ? "واجهة ناصعة بظلال كلاسيكية نقية" : "Pristine slate with crisp contrast"}
-                    </p>
-                  </div>
-                  {field.value === "light" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </button>
-
-                {/* Dark Mode */}
-                <button
-                  type="button"
-                  onClick={() => field.onChange("dark")}
-                  className={cn(
-                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
-                    field.value === "dark"
-                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
-                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
-                  )}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:scale-105 transition-transform">
-                    <Moon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="font-black text-sm">{t("settings.appearance.dark")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {isRtl ? "أسود سبجي فاخر وتأثيرات زجاجية" : "Executive Obsidian and liquid glass"}
-                    </p>
-                  </div>
-                  {field.value === "dark" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </button>
-
-                {/* System Mode */}
-                <button
-                  type="button"
-                  onClick={() => field.onChange("system")}
-                  className={cn(
-                    "relative flex flex-col items-center gap-3.5 p-5 rounded-2xl border-2 text-center transition-all duration-200 text-foreground cursor-pointer group",
-                    field.value === "system"
-                      ? "border-primary bg-primary/5 shadow-md shadow-primary/10"
-                      : "border-border/70 hover:border-border bg-card/60 hover:bg-muted/40"
-                  )}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-500 border border-sky-500/20 group-hover:scale-105 transition-transform">
-                    <Laptop className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <div className="font-black text-sm">{t("settings.appearance.system")}</div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {isRtl ? "المزامنة التلقائية مع إعدادات جهازك" : "Sync automatically with OS preferences"}
-                    </p>
-                  </div>
-                  {field.value === "system" && (
-                    <div className="absolute top-3 end-3 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-                      <Check className="h-3 w-3" />
-                    </div>
-                  )}
-                </button>
-              </div>
-            )}
-          />
-        </CardContent>
       </Card>
 
       {/* Sidebar Layout */}

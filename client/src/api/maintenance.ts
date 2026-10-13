@@ -5,6 +5,7 @@ export type DeletedItem = { id: string; name: string; reference: string; deleted
 export type Revision = { id: string; subjectType: string; subjectId: string; subjectName: string; documentKind: string; actorName: string; before: Record<string, unknown>; after: Record<string, unknown>; createdAt: string };
 export type BackupItem = { id: string; status: "READY" | "RUNNING" | "FAILED"; recordCount: number; fileCount: number; totalBytes: number; error: string | null; createdAt: string; completedAt: string | null };
 export type BackupStatus = { rows: BackupItem[]; enabled: boolean; running: boolean; schedule: string; retention: number };
+export type HealthProblem = { code: "backup" | "whatsapp" | "whatsappLink" | "cron"; titleAr: string; titleEn: string; detailAr: string; detailEn: string };
 const data = async <T,>(url: string, params?: object) => (await api.get<{ data: T }>(url, { params })).data.data;
 export const maintenanceApi = {
   sessions: () => data<SessionItem[]>("/maintenance/sessions"),
@@ -14,6 +15,7 @@ export const maintenanceApi = {
   revisions: (subjectType: string | undefined, page: number) => data<{ rows: Revision[]; total: number }>("/maintenance/revisions", { subjectType, page }),
   restoreRevision: (id: string, version: "before" | "after") => api.post("/maintenance/revisions/restore", { id, version }),
   backups: () => data<BackupStatus>("/maintenance/backups"),
+  health: () => data<{ problems: HealthProblem[]; checkedAt: string }>("/maintenance/health"),
   createBackup: (password: string) => api.post("/maintenance/backups/create", { password }),
   scheduleBackup: (password: string, enabled: boolean) => api.post("/maintenance/backups/schedule", { password, enabled }),
   restoreBackup: (password: string, id: string) => api.post("/maintenance/backups/restore", { password, id, confirmation: "RESTORE" }),

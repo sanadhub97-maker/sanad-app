@@ -257,3 +257,10 @@ html.rx-light .rx-facts b { color: #a89a80; }
 html.rx-light .rx-facts .on b { color: #1f1a10; }
 html.rx-light .rx-plate { box-shadow: 0 20px 36px -22px rgba(60, 45, 20, 0.5); }
 html.rx-light .rx-voucher { box-shadow: 0 30px 60px -36px rgba(90, 64, 20, 0.5); }
+
+/* the admins' warning */
+html.rx-light .rx-alert { border-color: rgba(184, 64, 47, 0.35); background: linear-gradient(90deg, rgba(184, 64, 47, 0.09), rgba(184, 64, 47, 0.02)); color: #1f1a10; }
+html.rx-light .rx-alert > svg { color: #b8402f; }
+html.rx-light .rx-alert b { color: #8f2f22; }
+html.rx-light .rx-alert span { color: #5a4c33; }
+html.rx-light :is(.lu-sbtn, .lu-fchip):is(.lt-sky, .lt-indigo, .lt-violet) { --t: rgba(154, 116, 51, 0.1); --d: rgba(154, 116, 51, 0.2); }

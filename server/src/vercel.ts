@@ -8,6 +8,8 @@ import { runScheduledBackup } from "@/modules/maintenance/backups.service";
 import { flushWhatsappWeb } from "@/services/whatsappWeb";
 import { runDailyPaymentsDigest } from "@/services/paymentsDigest";
 import { prisma } from "@/lib/prisma";
+import { watchSystemHealth } from "@/services/systemHealth";
+import { runMonthlyReport } from "@/services/monthlyReport";
 
 /* Entry points for Vercel (api/index.js and api/cron.js at the repository
    root): the API as one function, and the daily jobs that node-cron runs on
@@ -21,8 +23,9 @@ async function heartbeat(job: string, value: Record<string, unknown>) {
   await prisma.setting.upsert({ where: { key }, update: { value: value as never }, create: { key, value: value as never } }).catch(() => undefined);
 }
 
-/** The daily rounds: in the morning the backup, the morning brief and the expiry scan with its
- * WhatsApp summary; in the evening (?job=payments) the WhatsApp message with the day's payments. */
+/** The daily rounds: in the morning the backup, the morning brief, the expiry scan with its
+ * WhatsApp summary and (early in a month) the monthly report, then a check that all went out;
+ * in the evening (?job=payments) the WhatsApp message with the day's payments. */
 export async function cron(req: Request, res: Response) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
@@ -50,8 +53,12 @@ export async function cron(req: Request, res: Response) {
     await step("scan", async () => {
       if (!(await hasExpirationScanRunToday())) await runExpirationScan();
     });
+    // On the first days of a month, last month's report (once).
+    await step("monthly", () => runMonthlyReport());
   }
   await flushWhatsappWeb();
   await heartbeat(job, { startedAt, finishedAt: new Date().toISOString(), status: "done", steps: done });
+  // After the morning round its own results; in the evening, a morning round that never came.
+  await watchSystemHealth();
   res.json({ data: done });
 }

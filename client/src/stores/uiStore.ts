@@ -24,6 +24,14 @@ interface UiState {
 // (colors, sidebar style, animations) come from Settings → Appearance on
 // the server — this store just remembers the current user's local toggles
 // across reloads, the light/dark choice from the top bar among them.
+/** Older saved preferences brought up to date: v1 opens the side menu once; v2 drops a saved theme, so it starts dark. */
+export function migrateUiPrefs(persisted: unknown, from: number): Partial<UiState> {
+  const p = { ...(persisted as Partial<UiState>) };
+  if (from < 1) p.sidebarCollapsed = false;
+  if (from < 2) delete p.themeMode;
+  return p;
+}
+
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
@@ -44,12 +52,7 @@ export const useUiStore = create<UiState>()(
       // Version 1, the luxury edition: the side menu opens expanded once, as in the approved preview.
       // Version 2: the light/dark choice is remembered; an older saved theme is dropped, so it starts dark.
       version: 2,
-      migrate: (persisted, from) => {
-        const p = { ...(persisted as Partial<UiState>) };
-        if (from < 1) p.sidebarCollapsed = false;
-        if (from < 2) delete p.themeMode;
-        return p as UiState;
-      },
+      migrate: (persisted, from) => migrateUiPrefs(persisted, from) as UiState,
     }
   )
 );

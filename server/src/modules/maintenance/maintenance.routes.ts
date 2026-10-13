@@ -16,6 +16,7 @@ import { TRASH_KINDS, listTrash, restoreTrash } from "./trash.service";
 import { listDocumentRevisions, restoreDocumentRevision } from "./revisions.service";
 import * as backups from "./backups.service";
 import { downloadBackup, importBackupArchive } from "./backup-archive";
+import { checkSystemHealth, alertSystemHealth } from "@/services/systemHealth";
 const router = Router(); router.use(requireAuth);
 const token = (req: any) => req.headers.authorization.slice(7);
 const id = z.string().min(1).max(150); const password = z.string().min(1).max(72);
@@ -26,6 +27,14 @@ router.post("/trash/restore", validate({ body: z.object({ kind: z.enum(TRASH_KIN
 router.get("/revisions", validate({ query: z.object({ subjectType: z.enum(["employee", "employeeDocument", "companyDocument"]).optional(), subjectId: id.optional(), page: z.coerce.number().int().min(1).max(100000).default(1) }) }), asyncHandler(async (req, res) => { res.json({ data: await listDocumentRevisions(req.auth!, req.query.subjectType as any, req.query.subjectId as string | undefined, Number(req.query.page)) }); }));
 router.post("/revisions/restore", validate({ body: z.object({ id, version: z.enum(["before", "after"]) }) }), asyncHandler(async (req, res) => { await restoreDocumentRevision(req.auth!, req.body.id, req.body.version); res.json({ message: "Document version restored." }); }));
 router.use("/backups", (req, _res, next) => req.auth!.isSuperAdmin ? next() : next(ApiError.forbidden("Only the super administrator can manage backups.")));
+// What the daily rounds missed, for the admins' banner; a round that never ran cannot tell anyone itself, so this does.
+router.get("/health", asyncHandler(async (req, res) => {
+  const a = req.auth!;
+  if (!a.isSuperAdmin && !a.roles.includes("Admin")) { res.json({ data: { problems: [] } }); return; }
+  const problems = await checkSystemHealth();
+  if (problems.some((p) => p.code === "cron")) await alertSystemHealth(problems.filter((p) => p.code === "cron")).catch(() => undefined);
+  res.json({ data: { problems, checkedAt: new Date().toISOString() } });
+}));
 router.get("/backups", asyncHandler(async (_req, res) => { res.json({ data: await backups.backupStatus() }); }));
 const backupLimiter = rateLimit({ windowMs: 60 * 60_000, max: 10, standardHeaders: true, legacyHeaders: false, handler: (_req, _res, next) => next(ApiError.tooMany("Too many backup operations. Try again later.")) });
 router.use("/backups", backupLimiter);

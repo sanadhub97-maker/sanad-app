@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { dashboardApi, type DashboardAttentionItem } from "@/api/dashboard";
 import { tasksApi, type DailyTask } from "@/api/tasks";
 import { violationsApi } from "@/api/violations";
+import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxArea, PxBadge, PxBars, PxCard, PxDonut, PxStat } from "@/components/royal/px";
@@ -47,6 +48,9 @@ export default function DashboardLulu() {
   const { data: tasks } = useQuery({ queryKey: dayKey, queryFn: () => tasksApi.day(today), enabled: canTasks });
   const canViolations = hasPermission("violations.view");
   const { data: vio } = useQuery({ queryKey: ["violations", "stats"], queryFn: violationsApi.stats, enabled: canViolations });
+  // What the daily rounds missed (the backup, the morning message), for the admins.
+  const isAdmin = Boolean(user?.isSuperAdmin || user?.roles?.includes("Admin"));
+  const { data: health } = useQuery({ queryKey: ["maintenance", "health"], queryFn: maintenanceApi.health, enabled: isAdmin, staleTime: 10 * 60_000 });
 
   const toggleTask = useMutation({
     mutationFn: (x: DailyTask) => tasksApi.update(x.id, { done: !x.done }),
@@ -137,6 +141,19 @@ export default function DashboardLulu() {
           </>
         }
       />
+
+      {health?.problems.map((p) => (
+        <div key={p.code} className="rx-alert" role="alert">
+          <AlertTriangle aria-hidden="true" />
+          <div className="min-w-0">
+            <b>{isAr ? p.titleAr : p.titleEn}</b>
+            <span>{isAr ? p.detailAr : p.detailEn}</span>
+          </div>
+          <button type="button" className="ry-btn" onClick={() => navigate(p.code === "backup" || p.code === "cron" ? "/maintenance?tab=backups" : "/settings/whatsapp")}>
+            {p.code === "backup" || p.code === "cron" ? (isAr ? "النسخ الاحتياطي" : "Backups") : isAr ? "إعدادات الواتساب" : "WhatsApp settings"}
+          </button>
+        </div>
+      ))}
 
       <section className="px-welcome" style={v({ "--i": 0 })}>
         <Guilloche />

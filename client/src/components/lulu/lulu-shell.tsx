@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, Suspense } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
@@ -32,6 +32,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { translateRoleName } from "@/lib/role-display";
 import { cn } from "@/lib/utils";
 import { preloadPage } from "@/lib/page-preload";
+import { prefetchPageData } from "@/lib/page-prefetch";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
    tablets), a sticky glass header that holds each page's title and actions,
@@ -174,6 +175,13 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const rail = narrow || collapsed;
   const { shut, toggle } = useSectionState();
   const badges = useNavBadges();
+  const queryClient = useQueryClient();
+  const can = useAuthStore((s) => s.hasPermission);
+  // On the way to a page: its code, and its first data.
+  const intend = (href: string) => {
+    preloadPage(href);
+    prefetchPageData(queryClient, href, can);
+  };
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 
@@ -249,7 +257,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
                     const on = isOnPath(path, item.href);
                     const b = badges[item.href];
                     return (
-                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onPointerEnter={() => preloadPage(item.href)} onFocus={() => preloadPage(item.href)} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} style={{ ["--nc" as string]: item.color }} aria-current={on ? "page" : undefined}>
+                      <button key={item.href} type="button" data-tone={item.tone} title={item.label} onPointerEnter={() => intend(item.href)} onFocus={() => intend(item.href)} onClick={() => navigate(item.href)} className={cn("lu-nav", `lt-${item.tone}`, on && "on")} style={{ ["--nc" as string]: item.color }} aria-current={on ? "page" : undefined}>
                         <span className="i">
                           <Icon />
                         </span>

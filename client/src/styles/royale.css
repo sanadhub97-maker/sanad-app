@@ -477,11 +477,17 @@ select option { background: #0f1014; color: #f1e9d8; }
   .lu-top.rx-top .lu-btn.search .lbl { display: block !important; min-width: 0; color: #9d937f; }
 }
 @media (max-width: 767px) {
-  .lu-top.rx-top { gap: 8px; }
-  .rx-org, .rx-clock, .lu-top .lu-btn.rx-lang svg { display: none; }
-  .lu-top.rx-top .lu-btn.search { width: auto; flex: 1; }
-  .rx-tools { gap: 6px; }
+  /* phones: the search as a button, the clock kept small; the language stays in the account menu */
+  .lu-top.rx-top { gap: 6px; }
+  .rx-org, .lu-top .lu-btn.rx-lang { display: none !important; }
+  .lu-top.rx-top .lu-btn.search { width: 42px; flex: none; padding: 0; justify-content: center; }
+  .lu-top.rx-top .lu-btn.search .lbl, .lu-top.rx-top .lu-btn.search .lu-kbd { display: none !important; }
+  .rx-tools { gap: 6px; margin-inline-start: auto; }
+  .rx-clock { height: 40px; padding-inline: 8px; gap: 5px; }
+  .rx-clock .d { font-size: 14px; letter-spacing: 0.02em; }
+  .rx-clock small { font-size: 11px; }
 }
+@media (max-width: 359px) { .rx-clock small { display: none; } }
 @media (max-width: 1179px) { .lu-wrap { padding-inline: 22px !important; } .lu-top { margin-inline: -22px !important; padding: 0 22px !important; } }
 @media (max-width: 767px) { .rx-crumb { display: none; } .lu-wrap { padding-inline: 16px !important; } .lu-top { margin-inline: -16px !important; padding: 0 16px !important; height: 62px; } .lu-top .lu-btn.search { width: auto; flex: 1; } }
 
@@ -523,3 +529,15 @@ select option { background: #0f1014; color: #f1e9d8; }
 /* sign-in: the form sits in the middle of its side, its heading centred over it */
 .ry-lbody { margin: auto !important; max-width: 420px; }
 .ry-form h1, .ry-form > .sub { text-align: center; }
+
+/* the older parts' blue and violet buttons and chips, in gold like the rest */
+:is(.lu-sbtn, .lu-fchip):is(.lt-sky, .lt-indigo, .lt-violet) { --c: var(--rx-gold); --t: rgba(201, 164, 100, 0.12); --d: rgba(201, 164, 100, 0.22); }
+
+/* the admins' warning when a daily round missed something (the backup, the morning message) */
+.rx-alert { display: flex; align-items: center; gap: 14px; padding: 14px 18px; margin-bottom: 16px; border-radius: 8px; border: 1px solid rgba(238, 143, 134, 0.45); background: linear-gradient(90deg, rgba(238, 143, 134, 0.12), rgba(238, 143, 134, 0.03)); color: #f1e9d8; animation: rx-bloom 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.rx-alert > svg { width: 22px; height: 22px; flex: none; color: #ee8f86; }
+.rx-alert > div { flex: 1; display: grid; gap: 2px; }
+.rx-alert b { font-weight: 800; font-size: 15px; color: #f6c2bb; }
+.rx-alert span { font-size: 13px; color: #d9cfbb; line-height: 1.6; }
+.rx-alert .ry-btn { flex: none; }
+@media (max-width: 599px) { .rx-alert { flex-wrap: wrap; } .rx-alert .ry-btn { width: 100%; justify-content: center; } }

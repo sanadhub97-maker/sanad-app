@@ -7,6 +7,8 @@ import { getWhatsappScheduleSetting, hasExpirationScanRunToday } from "@/service
 import { resumeWhatsappWebOnBoot } from "@/services/whatsappWeb";
 import { pushMorningBrief, pushTaskReminders } from "@/services/pushAlerts";
 import { runScheduledBackup, restoringSystem } from "@/modules/maintenance/backups.service";
+import { runMonthlyReport } from "@/services/monthlyReport";
+import { watchSystemHealth } from "@/services/systemHealth";
 
 let scheduledScanTask: ScheduledTask | null = null;
 
@@ -58,6 +60,8 @@ export async function startScheduledJobs() {
   // Push: the morning brief at 08:00, and each task at its own time.
   // The evening WhatsApp message with the day's payments.
   cron.schedule("0 21 * * *", () => { if (!restoringSystem) void runDailyPaymentsDigest().catch((err) => logger.error({ err }, "Payments WhatsApp message failed")); }, { timezone: "Asia/Riyadh" });
+  cron.schedule("30 8 1-3 * *", () => { if (!restoringSystem) void runMonthlyReport().catch((err) => logger.error({ err }, "Monthly report failed")); }, { timezone: "Asia/Riyadh" });
+  cron.schedule("0 10 * * *", () => void watchSystemHealth(), { timezone: "Asia/Riyadh" });
   cron.schedule("0 8 * * *", () => { if (!restoringSystem) void pushMorningBrief().catch((err) => logger.error({ err }, "Morning brief push failed")); }, { timezone: "Asia/Riyadh" });
   cron.schedule("* * * * *", () => { if (!restoringSystem) void pushTaskReminders().catch((err) => logger.error({ err }, "Task reminder push failed")); });
 
