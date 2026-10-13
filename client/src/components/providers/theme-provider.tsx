@@ -22,12 +22,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Active theme: user's explicit local choice takes priority if not "system".
   // If "system", use the admin's appearance default, else the Oasis light theme.
-  // The Royale look is dark by design: black velvet and gold, whatever was chosen before.
-  void themeMode;
-  const effective = resolveEffectiveTheme("dark");
+  // The Royale look: black velvet and gold, or by day (the top-bar button) ivory and gold.
+  const effective = resolveEffectiveTheme(themeMode === "light" ? "light" : "dark");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", effective === "dark");
+    document.documentElement.classList.toggle("rx-light", effective === "light");
 
     const root = document.documentElement.style;
     const colorKeys = [

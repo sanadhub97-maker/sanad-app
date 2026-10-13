@@ -450,6 +450,38 @@ select option { background: #0f1014; color: #f1e9d8; }
 .rx-crumb b { color: #f1e9d8; font-weight: 800; }
 .lu-top .lu-btn.search { width: min(360px, 40vw); justify-content: flex-start; height: 42px; border-radius: 10px !important; }
 @media (min-width: 1180px) { .lu-top .lu-btn.lang, .lu-top .ry-me { display: none !important; } }
+/* three zones: the organisation at the start, the search in the very middle, the tools at the end */
+.lu-top.rx-top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 18px; }
+.rx-org { display: flex; align-items: center; gap: 10px; min-width: 0; justify-self: start; }
+.rx-org i { font-style: normal; font-size: 12px; color: #c9a464; flex: none; }
+.rx-org b { font-size: 15.5px; font-weight: 800; color: #f3dfae; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rx-tools { display: flex; align-items: center; gap: 10px; justify-self: end; min-width: 0; }
+.lu-top.rx-top .lu-btn.search { width: min(440px, 34vw); }
+.lu-top .lu-btn.rx-lang { width: auto; padding-inline: 12px; gap: 6px; font-size: 12.5px; font-weight: 800; display: inline-flex; align-items: center; line-height: 1; }
+.lu-top .lu-btn.rx-lang span { display: block; line-height: 1; padding-top: 2px; }
+.lu-top .lu-btn.rx-lang svg { width: 16px; height: 16px; }
+/* the digital clock: gold figures in a dark well, the seconds' colons pulsing */
+.rx-clock { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding-inline: 12px; border-radius: 10px; white-space: nowrap;
+  background: linear-gradient(180deg, #050506, #0d0d11); border: 1px solid rgba(214, 182, 120, 0.22); box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.8), 0 0 18px -10px rgba(201, 164, 100, 0.7); }
+.rx-clock .d { font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 18px; font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; color: #f3dfae; text-shadow: 0 0 10px rgba(243, 223, 174, 0.45); }
+.rx-clock .d i { font-style: normal; display: inline-block; padding-inline: 1px; color: #c9a464; animation: rx-tick 1s steps(1) infinite; }
+@keyframes rx-tick { 50% { opacity: 0.25; } }
+.rx-clock small { font-size: 13px; font-weight: 800; color: #c9a464; }
+@media (prefers-reduced-motion: reduce) { .rx-clock .d i { animation: none; } }
+@media (max-width: 1179px) {
+  .lu-top.rx-top { display: flex; gap: 12px; }
+  .rx-org { flex: 0 1 auto; }
+  .lu-top.rx-top .lu-btn.search { width: auto; flex: 1 1 200px; max-width: 360px; margin-inline: auto; }
+  .lu-top.rx-top .lu-btn.search .lu-kbd { display: none; }
+  .rx-tools { flex: none; }
+  .lu-top.rx-top .lu-btn.search .lbl { display: block !important; min-width: 0; color: #9d937f; }
+}
+@media (max-width: 767px) {
+  .lu-top.rx-top { gap: 8px; }
+  .rx-org, .rx-clock, .lu-top .lu-btn.rx-lang svg { display: none; }
+  .lu-top.rx-top .lu-btn.search { width: auto; flex: 1; }
+  .rx-tools { gap: 6px; }
+}
 @media (max-width: 1179px) { .lu-wrap { padding-inline: 22px !important; } .lu-top { margin-inline: -22px !important; padding: 0 22px !important; } }
 @media (max-width: 767px) { .rx-crumb { display: none; } .lu-wrap { padding-inline: 16px !important; } .lu-top { margin-inline: -16px !important; padding: 0 16px !important; height: 62px; } .lu-top .lu-btn.search { width: auto; flex: 1; } }
 

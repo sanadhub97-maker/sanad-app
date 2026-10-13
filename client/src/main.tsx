@@ -18,6 +18,7 @@ import "@/styles/lux.css";
 import "@/styles/px.css";
 import "@/styles/royale.css";
 import "@/styles/whatsapp-registry.css";
+import "@/styles/royale-light.css";
 
 // Show the interface immediately with its system-font fallback while the
 // external font stylesheet downloads. Apply the original fonts when ready.

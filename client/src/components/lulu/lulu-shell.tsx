@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Plus, Search, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
+import { Bell, BellRing, ChevronDown, Smartphone, ChevronUp, ChevronsUpDown, Download, ImageUp, PanelLeftClose, PanelRightClose, FileText, Globe, LogOut, Moon, Plus, Search, Sun, User as UserIcon, Users, Wallet, ListChecks } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +60,7 @@ function useBranding() {
 }
 
 const ROYALE_GOLD = "#c9a464";
+const ROYALE_GOLD_DAY = "#9a7433";
 
 /** Profile, language, light/dark, the site colour and sign-out. */
 function AccountMenu({ children }: { children: ReactNode }) {
@@ -287,6 +288,50 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   );
 }
 
+/** A digital clock on Riyadh time, hh:mm:ss and AM/PM, ticking on the second. */
+function TopClock({ isAr }: { isAr: boolean }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    let id: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      setNow(new Date());
+      id = setTimeout(tick, 1000 - (Date.now() % 1000) + 20);
+    };
+    id = setTimeout(tick, 1000 - (Date.now() % 1000) + 20);
+    return () => clearTimeout(id);
+  }, []);
+  const r = new Date(now.getTime() + 3 * 60 * 60_000);
+  const H = r.getUTCHours();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [h, m, s] = [pad(H % 12 || 12), pad(r.getUTCMinutes()), pad(r.getUTCSeconds())];
+  const pm = H >= 12;
+  const part = isAr ? (pm ? "م" : "ص") : pm ? "PM" : "AM";
+  return (
+    <span className="rx-clock" role="timer" aria-label={`${h}:${m}:${s} ${part}`}>
+      <span className="d" dir="ltr">
+        {h}
+        <i>:</i>
+        {m}
+        <i>:</i>
+        {s}
+      </span>
+      <small>{part}</small>
+    </span>
+  );
+}
+
+/** Light or dark. */
+function ModeButton({ isAr }: { isAr: boolean }) {
+  const mode = useUiStore((s) => s.themeMode);
+  const setMode = useUiStore((s) => s.setThemeMode);
+  const light = mode === "light";
+  return (
+    <button type="button" className="lu-btn" onClick={() => setMode(light ? "dark" : "light")} aria-label={isAr ? (light ? "الوضع الداكن" : "الوضع الفاتح") : light ? "Dark mode" : "Light mode"} title={isAr ? (light ? "الوضع الداكن" : "الوضع الفاتح") : light ? "Dark mode" : "Light mode"}>
+      {light ? <Moon /> : <Sun />}
+    </button>
+  );
+}
+
 function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNavItem }) {
   const { i18n } = useTranslation();
   const isAr = (i18n.language || "ar").startsWith("ar");
@@ -304,21 +349,24 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
 
   return (
     <>
-      <header className="lu-top no-print">
-        <span className="rx-crumb">
-          SanaD{current && current.href !== "/" && <> / <b>{current.label}</b></>}
-          {(!current || current.href === "/") && <> / <b>{isAr ? "لوحة التحكم" : "Dashboard"}</b></>}
+      <header className="lu-top rx-top no-print">
+        {/* the organisation named in Settings, the search in the middle, the tools at the far end */}
+        <span className="rx-org" title={brand.name}>
+          <i aria-hidden="true">❖</i>
+          <b>{brand.name}</b>
         </span>
-        <span className="rx-sp" />
         <button type="button" className="lu-btn search" onClick={onSearch} aria-label={isAr ? "بحث" : "Search"}>
           <Search />
           <span className="lbl">{isAr ? "ابحث عن موظف، رقم إقامة، أو وثيقة" : "Search employees, iqamas, documents"}</span>
           <kbd className="lu-kbd k">Ctrl K</kbd>
         </button>
-        <span className="sp" />
-        <button type="button" className="lu-btn lang" onClick={() => i18.changeLanguage(isAr ? "en" : "ar")} aria-label={isAr ? "English" : "العربية"}>
-          {isAr ? "EN" : "ع"}
+        <span className="rx-tools">
+        <TopClock isAr={isAr} />
+        <button type="button" className="lu-btn rx-lang" onClick={() => i18.changeLanguage(isAr ? "en" : "ar")} aria-label={isAr ? "English" : "العربية"} title={isAr ? "English" : "العربية"}>
+          <Globe />
+          <span>{isAr ? "EN" : "ع"}</span>
         </button>
+        <ModeButton isAr={isAr} />
         <button type="button" ref={setBell} className="lu-btn" onClick={() => setOpen((v) => !v)} aria-label={isAr ? "الإشعارات" : "Notifications"} aria-expanded={open}>
           <Bell />
           {unread > 0 && <span className="dot">{unread > 9 ? "9+" : unread}</span>}
@@ -337,6 +385,7 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
             </span>
           </button>
         </AccountMenu>
+        </span>
         <LuluNotifications open={open} anchor={bell} onClose={close} />
       </header>
       <div className="ry-head no-print">
@@ -447,11 +496,10 @@ export function LuluShell() {
   const location = useLocation();
   const main = useRef<HTMLElement>(null);
   const animationsEnabled = useUiStore((s) => s.animationsEnabled);
-  useUiStore((s) => s.themeMode);
+  const dark = useUiStore((s) => s.themeMode) !== "light";
   const { items, current } = useLuluNav();
-  // The Royale look is one committed palette: black velvet and gold.
-  const accent = ROYALE_GOLD;
-  const dark = true;
+  // The Royale palette: gold on black velvet, a deeper gold on ivory by day.
+  const accent = dark ? ROYALE_GOLD : ROYALE_GOLD_DAY;
   const [cmd, setCmd] = useState(false);
 
   useLuluEffects(main, animationsEnabled);

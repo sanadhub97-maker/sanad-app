@@ -23,13 +23,11 @@ interface UiState {
 // Per-viewer UI convenience state (§34). Authoritative appearance defaults
 // (colors, sidebar style, animations) come from Settings → Appearance on
 // the server — this store just remembers the current user's local toggles
-// across reloads. The theme is the exception: every visit starts on the
-// admin's appearance default (the light Oasis theme unless changed), and a
-// switch from the top bar lasts until the page is reloaded.
+// across reloads, the light/dark choice from the top bar among them.
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
-      themeMode: "system",
+      themeMode: "dark",
       sidebarCollapsed: false,
       animationsEnabled: true,
       accent: "#a8792f",
@@ -43,12 +41,15 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: "sanad-ui-preferences",
-      partialize: ({ themeMode: _theme, ...rest }) => rest,
-      // Ignore a theme saved by older versions, so every visit starts on the default.
-      merge: (persisted, current) => ({ ...current, ...(persisted as Partial<UiState>), themeMode: current.themeMode }),
       // Version 1, the luxury edition: the side menu opens expanded once, as in the approved preview.
-      version: 1,
-      migrate: (persisted, from) => (from < 1 ? { ...(persisted as Partial<UiState>), sidebarCollapsed: false } : persisted) as UiState,
+      // Version 2: the light/dark choice is remembered; an older saved theme is dropped, so it starts dark.
+      version: 2,
+      migrate: (persisted, from) => {
+        const p = { ...(persisted as Partial<UiState>) };
+        if (from < 1) p.sidebarCollapsed = false;
+        if (from < 2) delete p.themeMode;
+        return p as UiState;
+      },
     }
   )
 );

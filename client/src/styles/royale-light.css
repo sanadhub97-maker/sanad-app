@@ -1,0 +1,259 @@
+/* =====================================================================
+   The Royale edition in daylight: ivory paper and deep gold. Switched on by
+   the light/dark button in the top bar (html.rx-light, set by the theme
+   provider); everything here repaints a rule of royale.css, so the dark look
+   is left exactly as it was. Loaded after royale.css.
+   ===================================================================== */
+
+html.rx-light:root:root {
+  --background: 40 45% 95%;
+  --foreground: 38 30% 10%;
+  --card: 40 60% 99%;
+  --card-alpha: 1;
+  --card-foreground: 38 30% 10%;
+  --popover: 40 60% 99%;
+  --popover-alpha: 0.98;
+  --popover-foreground: 38 30% 10%;
+  --secondary: 39 35% 91%;
+  --secondary-alpha: 1;
+  --secondary-foreground: 38 30% 12%;
+  --muted: 39 35% 91%;
+  --muted-alpha: 1;
+  --muted-foreground: 37 18% 38%;
+  --accent: 39 50% 88%;
+  --accent-foreground: 36 50% 22%;
+  --border: 38 30% 80%;
+  --input: 38 28% 76%;
+  --primary: 37 50% 38%;
+  --primary-foreground: 40 60% 98%;
+  --ring: 37 50% 38%;
+  --ink: 38 30% 10%;
+  --ink-foreground: 40 45% 95%;
+  --glass-shadow: 0 24px 50px -32px rgba(90, 64, 20, 0.35);
+  --glass-edge: rgba(154, 116, 51, 0.22);
+
+  --l-surface: #fffdf8;
+  --l-ground: #f3ecdd;
+  --l-line: rgba(154, 116, 51, 0.2);
+  --l-ink: #1f1a10;
+  --l-ink2: #3d3423;
+  --l-muted: #7a6c55;
+  --l-faint: #a89a80;
+  --l-glass: rgba(255, 252, 245, 0.86);
+  --l-glass-strong: #fffdf8;
+  --l-edge: rgba(154, 116, 51, 0.22);
+  --l-shadow: 0 24px 50px -34px rgba(90, 64, 20, 0.4), 0 0 0 1px rgba(154, 116, 51, 0.05);
+  --ry-lift: 0 26px 60px -30px rgba(90, 64, 20, 0.45), 0 0 40px -20px rgba(184, 144, 74, 0.45);
+  --ry-track: rgba(90, 64, 20, 0.08);
+  --l-brand: #9a7433;
+
+  --l-indigo: #4a50b8; --l-indigo-t: rgba(74, 80, 184, 0.1); --l-indigo-d: rgba(74, 80, 184, 0.18);
+  --l-sky: #2f6aa8; --l-sky-t: rgba(47, 106, 168, 0.1); --l-sky-d: rgba(47, 106, 168, 0.18);
+  --l-rose: #b8402f; --l-rose-t: rgba(184, 64, 47, 0.1); --l-rose-d: rgba(184, 64, 47, 0.18);
+  --l-amber: #a86a12; --l-amber-t: rgba(168, 106, 18, 0.1); --l-amber-d: rgba(168, 106, 18, 0.18);
+  --l-teal: #17806f; --l-teal-t: rgba(23, 128, 111, 0.1); --l-teal-d: rgba(23, 128, 111, 0.18);
+  --l-violet: #6b4bb8; --l-violet-t: rgba(107, 75, 184, 0.1); --l-violet-d: rgba(107, 75, 184, 0.18);
+  --l-green: #23804f; --l-green-t: rgba(35, 128, 79, 0.1); --l-green-d: rgba(35, 128, 79, 0.18);
+
+  --lx-gold: #9a7433;
+  --rx-gold: #9a7433;
+  --rx-gold2: #6b4e1d;
+  --rx-foil: linear-gradient(115deg, #5e4418 0%, #b8904a 22%, #7d5d27 40%, #c9a464 55%, #6b4e1d 72%, #a8803f 88%, #5e4418 100%);
+  color-scheme: light;
+}
+
+/* ---------------- the ground: ivory paper with a warm light ---------------- */
+html.rx-light:root body { background: #f6f1e6; }
+html.rx-light .lu-app, html.rx-light .ry-auth {
+  background: radial-gradient(900px 600px at 85% -10%, rgba(201, 164, 100, 0.2), transparent 60%), radial-gradient(700px 500px at 0% 110%, rgba(184, 144, 74, 0.12), transparent 60%), #f6f1e6 !important;
+  background-attachment: fixed !important;
+}
+html.rx-light .lu-app::before, html.rx-light .ry-auth::before { opacity: 0.35; mix-blend-mode: multiply; }
+
+/* ---------------- the side menu: a deeper ivory ---------------- */
+html.rx-light .lu-side, html.rx-light .lu-side.rail {
+  background: radial-gradient(260px 220px at 80% 0%, rgba(201, 164, 100, 0.22), transparent 70%), linear-gradient(180deg, #f3ecdd, #ece2cd) !important;
+  border-inline-end: 1px solid rgba(154, 116, 51, 0.22) !important;
+}
+html.rx-light .lu-brand { border-bottom-color: rgba(154, 116, 51, 0.16); }
+html.rx-light .lu-brand img { box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.5), 0 0 18px -6px rgba(154, 116, 51, 0.5); }
+html.rx-light .lu-grp-h { color: rgba(90, 70, 35, 0.55) !important; }
+html.rx-light .lu-nav { color: #3d3423; }
+html.rx-light .lu-nav:hover { background: rgba(154, 116, 51, 0.08) !important; color: #1f1a10; }
+html.rx-light .lu-nav.on, html.rx-light [dir="ltr"] .lu-nav.on { color: #1f1a10; }
+html.rx-light .lu-side .lu-nav .i, html.rx-light .lu-side .lu-nav:not(.on) .i, html.rx-light .lu-side .lu-nav.on .i { color: #9a7433 !important; }
+html.rx-light .lu-side .lu-nav.on .i { color: #6b4e1d !important; filter: none !important; }
+html.rx-light .lu-glide { background: linear-gradient(270deg, rgba(184, 144, 74, 0.26), rgba(184, 144, 74, 0.05)) !important; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.3), 0 8px 22px -12px rgba(154, 116, 51, 0.6) !important; }
+html.rx-light [dir="ltr"] .lu-glide { background: linear-gradient(90deg, rgba(184, 144, 74, 0.26), rgba(184, 144, 74, 0.05)) !important; }
+html.rx-light .lu-glide::before { box-shadow: 0 0 10px rgba(184, 144, 74, 0.8); }
+html.rx-light .lu-me { border-top-color: rgba(154, 116, 51, 0.16) !important; }
+html.rx-light .lu-me .who b { color: #1f1a10; }
+html.rx-light .lu-me .who small { color: #7a6c55; }
+html.rx-light .ry-promo { background: radial-gradient(240px 140px at 20% 0%, rgba(201, 164, 100, 0.25), transparent 70%), linear-gradient(150deg, #fffaf0, #f1e7d2) !important; border-color: rgba(154, 116, 51, 0.3) !important; }
+html.rx-light .ry-promo b { color: #6b4e1d; }
+html.rx-light .ry-promo button { color: #fffaf0 !important; }
+
+/* ---------------- the top bar ---------------- */
+html.rx-light .lu-top { background: rgba(250, 246, 237, 0.88) !important; border-bottom: 1px solid rgba(154, 116, 51, 0.2) !important; }
+html.rx-light .lu-top .lu-btn, html.rx-light .ry-me { background: #fffdf8 !important; border: 1px solid rgba(154, 116, 51, 0.24) !important; color: #3d3423; }
+html.rx-light .lu-top .lu-btn:hover { box-shadow: 0 6px 18px -10px rgba(154, 116, 51, 0.7); color: #6b4e1d; }
+html.rx-light .rx-crumb { color: #7a6c55; }
+html.rx-light .rx-crumb b { color: #1f1a10; }
+html.rx-light .rx-org i { color: #9a7433; }
+html.rx-light .rx-org b { color: #6b4e1d; }
+html.rx-light .lu-top.rx-top .lu-btn.search .lbl { color: #7a6c55; }
+html.rx-light .rx-clock { background: linear-gradient(180deg, #fffdf8, #f3ecdd); border-color: rgba(154, 116, 51, 0.3); box-shadow: inset 0 1px 4px rgba(90, 64, 20, 0.12), 0 6px 16px -12px rgba(154, 116, 51, 0.6); }
+html.rx-light .rx-clock .d { color: #6b4e1d; text-shadow: none; }
+html.rx-light .rx-clock .d i, html.rx-light .rx-clock small { color: #9a7433; }
+
+/* ---------------- page titles ---------------- */
+html.rx-light .rx-eyebrow { color: #9a7433; }
+html.rx-light .rx-rule::before { background: linear-gradient(90deg, transparent, #9a7433, transparent); }
+html.rx-light .rx-rule::after { box-shadow: 0 0 8px rgba(154, 116, 51, 0.45); }
+html.rx-light .ry-title-ico { color: #6b4e1d !important; filter: none; }
+html.rx-light .ry-title-ico::before { background: radial-gradient(circle at 50% 30%, #fffaf0, #eadfc6) !important; }
+
+/* ---------------- the jewel-box card, on ivory ---------------- */
+html.rx-light .lu-app :is(.px-card, .px-stat, .rp-card:not(.rp-kpis), .rc-lic, .rc-dcard, .rc-rp, .ry-card:not(.ry-welcome), .lux-glass, .lu-cc, .lu-row, .cu-card, .cu-kpi, .tk-card, .vio-card, .rp-day),
+html.rx-light .lu-app .rp-kpis > *,
+html.rx-light .lu-app .px-setbody :is(.rounded-3xl, [class*="rounded-3xl"]):where(:not(button)) {
+  border: 1px solid rgba(154, 116, 51, 0.24) !important;
+  background: linear-gradient(180deg, #ffffff, #fffaf1) !important;
+  box-shadow: 0 22px 44px -32px rgba(90, 64, 20, 0.45), inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.12) !important;
+}
+html.rx-light .lu-app :is(.px-card, .px-stat, .rc-lic, .rc-dcard, .rc-rp, .lu-cc, .cu-card, .cu-kpi, .tk-card, .vio-card):hover,
+html.rx-light .lu-app .rp-kpis > *:hover {
+  border-color: rgba(154, 116, 51, 0.5) !important;
+  box-shadow: 0 26px 50px -28px rgba(90, 64, 20, 0.5), 0 0 34px -16px rgba(184, 144, 74, 0.55), inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.18) !important;
+}
+html.rx-light .px-card::before, html.rx-light .px-stat::before, html.rx-light .px-card::after, html.rx-light .px-stat::after { border-color: #9a7433; }
+html.rx-light .px-chd { border-bottom-color: rgba(154, 116, 51, 0.16) !important; }
+html.rx-light .px-chd h3 { color: #4a3816; }
+html.rx-light .px-chd h3::after { color: #9a7433; }
+
+/* ---------------- figures ---------------- */
+html.rx-light .px-stat .ic { color: #6b4e1d !important; background: radial-gradient(circle, rgba(201, 164, 100, 0.2), transparent 70%) !important; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.4) !important; }
+html.rx-light .px-bar, html.rx-light .px-stat > .rx-foot { background: rgba(90, 64, 20, 0.08) !important; }
+html.rx-light .px-bar u { box-shadow: none; }
+html.rx-light .px-stat > .rx-foot::after { box-shadow: 0 0 8px rgba(184, 144, 74, 0.6); }
+
+/* ---------------- the welcome: a lacquered ivory panel ---------------- */
+html.rx-light .lu-app .px-welcome, html.rx-light .lu-app .ry-welcome, html.rx-light .lu-app .cu-hero, html.rx-light .lu-app .cu-dhead {
+  border: 1px solid rgba(154, 116, 51, 0.32) !important; color: #1f1a10;
+  background: radial-gradient(600px 320px at 15% -20%, rgba(201, 164, 100, 0.3), transparent 65%), linear-gradient(120deg, #fffdf8, #f7efdf 55%, #eadbb8) !important;
+  box-shadow: 0 30px 60px -36px rgba(90, 64, 20, 0.45), inset 0 0 0 5px #fffaf0, inset 0 0 0 6px rgba(154, 116, 51, 0.2) !important;
+}
+html.rx-light .px-welcome::before { background: radial-gradient(circle, rgba(201, 164, 100, 0.3), transparent 66%) !important; }
+html.rx-light .px-welcome p { color: #3d3423; }
+html.rx-light .px-welcome p b { color: #6b4e1d; }
+html.rx-light .px-welcome .wb:not(.gold) { background: #fffdf8; border-color: rgba(154, 116, 51, 0.35); color: #3d3423; }
+html.rx-light .px-welcome .px-ring .tr { stroke: rgba(90, 64, 20, 0.12); }
+html.rx-light .px-welcome .px-ring text { fill: #6b4e1d; }
+html.rx-light .px-welcome .wb.gold { color: #fffaf0; }
+html.rx-light .px-welcome .px-ring .v { stroke: #9a7433; }
+html.rx-light .rx-medal { filter: drop-shadow(0 0 16px rgba(184, 144, 74, 0.35)); }
+html.rx-light .rx-medal b { color: #6b4e1d; text-shadow: none; }
+html.rx-light .rx-medal:not(.big) b::before { background: radial-gradient(circle, #fffaf0 55%, rgba(255, 250, 240, 0.6) 70%, transparent 72%); }
+
+/* ---------------- buttons ---------------- */
+html.rx-light .lu-app .lux-cta, html.rx-light .lu-app .lu-go, html.rx-light .lu-app .bg-primary:is(button, a), html.rx-light [role="dialog"] .lux-cta, html.rx-light [role="dialog"] .bg-primary:is(button, a), html.rx-light .ry-go,
+html.rx-light .lu-app .rc-btn.pri, html.rx-light .lu-app .tk-btn.pri, html.rx-light .lu-app .vh-btn.gold, html.rx-light .lu-app .cu-btn.gold,
+html.rx-light .px-pager .pg button[aria-current="page"], html.rx-light .lu-il-btn.add {
+  color: #fffaf0 !important;
+  box-shadow: 0 12px 24px -14px rgba(107, 78, 29, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 0 rgba(60, 40, 10, 0.3) !important;
+}
+html.rx-light .lu-app .px-btn, html.rx-light .lu-app .ry-btn:not(.white), html.rx-light .lu-app .tk-btn:not(.pri), html.rx-light .lu-app button[class*="border-input"], html.rx-light .lu-app a[class*="border-input"] { background: #fffdf8 !important; border-color: rgba(154, 116, 51, 0.32) !important; color: #3d3423; }
+html.rx-light .lu-app .px-btn:hover, html.rx-light .lu-app button[class*="border-input"]:hover { box-shadow: 0 6px 18px -10px rgba(154, 116, 51, 0.7); color: #6b4e1d; }
+html.rx-light .lu-app .px-link, html.rx-light .ry-row a, html.rx-light .ry-lfoot a, html.rx-light .ry-lfoot a:hover { color: #8a6a35 !important; }
+html.rx-light .ry-go.alt { background: #fffdf8 !important; color: #6b4e1d !important; border-color: rgba(154, 116, 51, 0.4) !important; }
+
+/* ---------------- tabs, tables, badges ---------------- */
+html.rx-light .px-tabs, html.rx-light .lu-app .rc-seg, html.rx-light .lu-app .rp-seg, html.rx-light .lu-app .rp-views { background: #f3ecdd !important; border-color: rgba(154, 116, 51, 0.2); }
+html.rx-light .px-tabs button[aria-pressed="true"], html.rx-light .lu-app .rc-seg button[aria-pressed="true"], html.rx-light .lu-app .rp-seg button[aria-pressed="true"], html.rx-light .lu-app .rp-views button[aria-pressed="true"] { background: #fffdf8 !important; color: #6b4e1d !important; box-shadow: inset 0 -1px 0 #9a7433, 0 4px 12px -8px rgba(154, 116, 51, 0.7) !important; }
+html.rx-light .px-t th, html.rx-light .lu-app table thead th { color: #8a6a35 !important; background: rgba(184, 144, 74, 0.08) !important; border-bottom-color: rgba(154, 116, 51, 0.2) !important; }
+html.rx-light .px-t td, html.rx-light .lu-app table td { border-bottom-color: rgba(154, 116, 51, 0.12) !important; }
+html.rx-light .px-t tbody tr:hover, html.rx-light .lu-app table tbody tr:hover { background: linear-gradient(270deg, rgba(184, 144, 74, 0.12), transparent 70%) !important; }
+html.rx-light [dir="ltr"] .px-t tbody tr:hover, html.rx-light [dir="ltr"] .lu-app table tbody tr:hover { background: linear-gradient(90deg, rgba(184, 144, 74, 0.12), transparent 70%) !important; }
+html.rx-light .px-t tbody tr:hover > td:first-child, html.rx-light .lu-app table tbody tr:hover > td:first-child { box-shadow: inset -2px 0 0 #9a7433 !important; }
+html.rx-light .px-av { color: #6b4e1d !important; background: radial-gradient(circle at 35% 30%, #fffaf0, #eadfc6) !important; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.4) !important; }
+html.rx-light .px-search, html.rx-light .lu-app .px-toolbar input { background: #fffdf8 !important; border-color: rgba(154, 116, 51, 0.26) !important; }
+html.rx-light .px-pager .pg button { border-color: rgba(154, 116, 51, 0.26) !important; color: #3d3423 !important; }
+
+/* ---------------- charts ---------------- */
+html.rx-light .px-chart .ln { filter: drop-shadow(0 2px 4px rgba(154, 116, 51, 0.45)) !important; }
+html.rx-light .px-chart .br { filter: none !important; }
+html.rx-light .px-chart .rx-run { filter: drop-shadow(0 0 4px #c9a464); }
+html.rx-light .px-donut .seg { filter: none; }
+html.rx-light .px-donut .c { fill: #6b4e1d !important; }
+html.rx-light .px-tip { background: #fffdf8 !important; color: #1f1a10 !important; border-color: rgba(154, 116, 51, 0.35); box-shadow: 0 16px 30px -14px rgba(90, 64, 20, 0.45) !important; }
+
+/* ---------------- forms ---------------- */
+html.rx-light .lu-app :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea), html.rx-light [role="dialog"] :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea), html.rx-light .ry-fl input {
+  background-color: #fffdf8 !important; border-color: rgba(154, 116, 51, 0.3) !important; color: #1f1a10;
+}
+html.rx-light .lu-app :is(input, select, textarea):focus, html.rx-light [role="dialog"] :is(input, select, textarea):focus, html.rx-light .ry-fl input:focus { border-color: #9a7433 !important; box-shadow: 0 0 0 1px #9a7433, 0 0 18px -8px rgba(154, 116, 51, 0.8) !important; animation: none; }
+html.rx-light select option { background: #fffdf8; color: #1f1a10; }
+
+/* ---------------- dialogs, menus, side panel and toasts ---------------- */
+html.rx-light [role="dialog"], html.rx-light [role="menu"], html.rx-light [data-radix-popper-content-wrapper] > *, html.rx-light .px-drawer {
+  background: linear-gradient(180deg, #ffffff, #fffaf1) !important;
+  border-color: rgba(154, 116, 51, 0.3) !important; color: #1f1a10;
+  box-shadow: 0 40px 80px -30px rgba(90, 64, 20, 0.45), inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.12) !important;
+}
+html.rx-light .px-dv { background: rgba(60, 45, 20, 0.35) !important; }
+html.rx-light .px-dh b { color: #6b4e1d; }
+html.rx-light [data-sonner-toast] { background: #fffdf8 !important; color: #1f1a10 !important; border-color: rgba(154, 116, 51, 0.4) !important; box-shadow: 0 20px 40px -18px rgba(90, 64, 20, 0.45) !important; }
+
+/* ---------------- the older parts' cool accents, in deep gold ---------------- */
+html.rx-light :is(.lu-app, [role="dialog"]) :is([class*="text-sky-"], [class*="text-blue-"], [class*="text-indigo-"], [class*="text-violet-"], [class*="text-purple-"], [class*="text-cyan-"]) { color: #8a6a35 !important; }
+html.rx-light :is(.lu-app, [role="dialog"]) :is([class*="bg-sky-"], [class*="bg-blue-"], [class*="bg-indigo-"], [class*="bg-violet-"], [class*="bg-purple-"], [class*="bg-cyan-"]):not(svg *) { background-color: rgba(184, 144, 74, 0.14) !important; }
+html.rx-light :is(.lu-app, [role="dialog"]) :is([class*="border-sky-"], [class*="border-blue-"], [class*="border-indigo-"], [class*="border-violet-"], [class*="border-purple-"], [class*="border-cyan-"]) { border-color: rgba(154, 116, 51, 0.35) !important; }
+html.rx-light :is(.lu-app, [role="dialog"]) :is([class*="from-sky-"], [class*="from-blue-"], [class*="from-indigo-"], [class*="from-violet-"], [class*="from-purple-"], [class*="from-cyan-"], [class*="from-teal-"], [class*="from-emerald-"]):not(.h-1):not([class*="h-1 "]):not(button):not(a):not([class*="bg-primary"]) { background-image: radial-gradient(circle at 50% 30%, #fffaf0, #eadfc6) !important; color: #6b4e1d !important; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.35) !important; }
+html.rx-light .rx-icon { background: radial-gradient(circle at 50% 30%, #fffaf0, #eadfc6) !important; border-color: rgba(154, 116, 51, 0.4) !important; box-shadow: 0 6px 16px -10px rgba(154, 116, 51, 0.6), inset 0 1px 0 #fff !important; }
+html.rx-light .rx-icon > svg { color: #6b4e1d !important; filter: none !important; }
+
+/* ---------------- phones: the island ---------------- */
+html.rx-light .lu-island { background: rgba(255, 252, 245, 0.95) !important; border-color: rgba(154, 116, 51, 0.3); box-shadow: 0 20px 40px -18px rgba(90, 64, 20, 0.45) !important; }
+html.rx-light .lu-il-cur .i, html.rx-light .lu-il-t > span { color: #6b4e1d !important; filter: none !important; }
+html.rx-light .lu-il-cur .i::before, html.rx-light .lu-il-t > span::before { background: radial-gradient(circle at 50% 30%, #fffaf0, #eadfc6) !important; }
+html.rx-light .lu-il-cur, html.rx-light .lu-il-t { color: #1f1a10 !important; }
+html.rx-light .lu-il-btn:not(.add) { background: rgba(184, 144, 74, 0.14) !important; color: #6b4e1d !important; }
+
+/* ---------------- the motion layer ---------------- */
+html.rx-light .rx-beam { background: conic-gradient(from var(--rx-ang), transparent 0 70%, #c9a464 80%, #7d5d27 84%, transparent 92%); }
+html.rx-light .rx-spot { background: radial-gradient(360px circle at var(--sx, 50%) var(--sy, 50%), rgba(201, 164, 100, 0.14), transparent 60%); }
+html.rx-light .rx-curtain i { background: radial-gradient(120% 90% at 50% 50%, #fffaf0, #eadfc6); }
+html.rx-light .rx-curtain i.l { box-shadow: 1px 0 0 #9a7433, 8px 0 30px -6px rgba(184, 144, 74, 0.6); }
+html.rx-light .rx-curtain i.r { box-shadow: -1px 0 0 #9a7433, -8px 0 30px -6px rgba(184, 144, 74, 0.6); }
+html.rx-light .rx-curtain b img { background: #fffaf0; }
+
+/* ---------------- sign-in ---------------- */
+html.rx-light .ry-auth { color: #1f1a10; }
+html.rx-light .ry-lf { background: linear-gradient(180deg, #fffdf8, #f6f0e2) !important; color: #1f1a10; }
+html.rx-light .ry-lf .ry-brand small, html.rx-light .ry-lfoot { color: #7a6c55 !important; }
+html.rx-light .ry-langbtn { background: #fffdf8 !important; border-color: rgba(154, 116, 51, 0.3) !important; color: #3d3423 !important; }
+html.rx-light .ry-form p, html.rx-light .ry-fl span { color: #7a6c55; }
+html.rx-light .ry-fl label, html.rx-light .ry-fl > span:first-child { color: #8a6a35 !important; }
+html.rx-light .ry-la.rx-la { background: radial-gradient(700px 480px at 50% 30%, rgba(201, 164, 100, 0.3), transparent 62%), linear-gradient(170deg, #fbf6ea, #f0e5cc 60%, #e4d2a8) !important; border-inline-start-color: rgba(154, 116, 51, 0.22); }
+html.rx-light .rx-la .ry-copy h2 { color: #2a2112 !important; }
+html.rx-light .rx-la .ry-copy p { color: #5a4c33; }
+
+/* ---------------- the live previews beside the add forms ---------------- */
+html.rx-light .rx-t-ok { --t: #23804f; } html.rx-light .rx-t-warn { --t: #a86a12; } html.rx-light .rx-t-bad { --t: #b8402f; } html.rx-light .rx-t-mut { --t: #7a6c55; }
+html.rx-light .rx-live-cap { color: #8a6a35; }
+html.rx-light .rx-live-cap::before { background: #b8904a; box-shadow: 0 0 8px #c9a464; }
+html.rx-light :is(.rx-check, .rx-car, .rx-dates, .rx-ring, .rx-facts) { background: #fffdf8; border-color: rgba(154, 116, 51, 0.26); }
+html.rx-light .rx-ring { box-shadow: inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.12); }
+html.rx-light :is(.rx-check-h b, .rx-car b, .rx-ring .tx b) { color: #6b4e1d; }
+html.rx-light .rx-ring .n { fill: #6b4e1d; }
+html.rx-light :is(.rx-car small, .rx-ring .tx small, .rx-facts span, .rx-check > div:not(.rx-check-h):not(.rx-check-bar)) { color: #7a6c55; }
+html.rx-light .rx-ring .l { fill: #7a6c55; }
+html.rx-light :is(.rx-check-bar, .rx-dates .tr) { background: rgba(90, 64, 20, 0.08); }
+html.rx-light .rx-check i { border-color: rgba(154, 116, 51, 0.35); }
+html.rx-light .rx-check .ok { color: #1f1a10 !important; }
+html.rx-light .rx-check .ok i { color: #fff; box-shadow: none; }
+html.rx-light .rx-facts div { border-bottom-color: rgba(154, 116, 51, 0.16); }
+html.rx-light .rx-facts b { color: #a89a80; }
+html.rx-light .rx-facts .on b { color: #1f1a10; }
+html.rx-light .rx-plate { box-shadow: 0 20px 36px -22px rgba(60, 45, 20, 0.5); }
+html.rx-light .rx-voucher { box-shadow: 0 30px 60px -36px rgba(90, 64, 20, 0.5); }
