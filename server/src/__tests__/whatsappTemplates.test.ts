@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { alertContext, daysAr, renderWhatsappAlert, renderWhatsappDigestHeader, renderWhatsappTasks, WHATSAPP_TEMPLATE_IDS, type TaskLine } from "@/services/whatsappTemplates";
+import { alertContext, daysAr, renderWhatsappAlert, WHATSAPP_TEMPLATE_IDS, type TaskLine } from "@/services/whatsappTemplates";
+import { renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
+import { dailyMessageParts } from "@/services/whatsappDigest";
 import type { TrackableItem } from "@/services/expiringItems";
 
 function addDays(days: number): Date {
@@ -48,20 +50,25 @@ describe("WhatsApp alert templates", () => {
     }
   });
 
-  it("lists open tasks in every design, with how late the carried ones are", () => {
+  it("builds the daily summary: counts, documents most urgent first, open tasks and the signature", () => {
     const tasks: TaskLine[] = [
       { title: "تجديد السجل", priority: "URGENT", time: "10:00", assignee: "سامح", daysLate: 2 },
       { title: "مراجعة الإقامات", priority: "NORMAL", time: null, assignee: null, daysLate: 0 },
     ];
-    for (const id of WHATSAPP_TEMPLATE_IDS) {
-      const text = renderWhatsappTasks(id, tasks);
-      expect(text).toContain("تجديد السجل");
-      expect(text).toContain("مراجعة الإقامات");
-      expect(text).toContain("متأخرة يومان");
-    }
-    expect(renderWhatsappTasks("classic", [])).toBe("");
-    expect(renderWhatsappTasks("classic", Array.from({ length: 35 }, (_, i) => ({ ...tasks[1], title: `t${i}` })))).toContain("و5 مهام أخرى");
-    expect(renderWhatsappDigestHeader("classic", "سمو", [{ daysLeft: -1 }], new Date(), 2)).toContain("📌 2 مهام مفتوحة");
+    const docs = [-3, 7].map((d) => { const item = iqama(d); return { item, context: alertContext(item, "سمو") }; });
+    const header = renderDailyHeader("سمو", docs, tasks);
+    expect(header).toContain("> 🔴 منتهية: *1*");
+    expect(header).toContain("> 📌 مهام مفتوحة: *2*");
+    expect(renderDailyEntry(docs[0])).toContain("🪪 *الإقامة — أحمد*");
+    expect(renderDailyEntry(docs[0])).toContain("منتهية منذ 3 أيام");
+    const tail = renderDailyTail(tasks);
+    expect(tail).toContain("متأخرة يومان");
+    expect(tail).toContain("مهمة اليوم");
+    expect(renderDailyTail([])).toContain("SanaD");
+    const parts = dailyMessageParts(Array.from({ length: 40 }, () => "x".repeat(300)), header, "empty", tail);
+    expect(parts.length).toBeGreaterThan(1);
+    expect(parts.every((p) => p.length <= 3500 && p.startsWith(header))).toBe(true);
+    expect(dailyMessageParts([], header, "✅ all clear")[0]).toContain("✅ all clear");
   });
 
   it("says expired, with how long ago, once the date has passed", () => {

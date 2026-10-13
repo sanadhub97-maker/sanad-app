@@ -3,7 +3,6 @@ import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { WHATSAPP_TEMPLATE_IDS } from "@/services/whatsappTemplates";
 import { WHATSAPP_CARD_IDS } from "@/services/whatsappCards";
-import { DIGEST_CARD_IDS } from "@/services/whatsappDigestCard";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -144,14 +143,7 @@ router.get("/whatsapp/web/status", requirePermission("settings.view"), controlle
 router.get("/whatsapp/messages", requirePermission("settings.view"), controller.getWhatsappMessages);
 router.get("/whatsapp/template", requirePermission("settings.view"), controller.getWhatsappTemplate);
 router.get("/whatsapp/cards", requirePermission("settings.view"), controller.getWhatsappCards);
-router.get("/whatsapp/digest-cards", requirePermission("settings.view"), controller.getWhatsappDigestCards);
-router.put(
-  "/whatsapp/digest-card",
-  requirePermission("settings.edit"),
-  validate({ body: z.object({ card: z.enum(["none", ...DIGEST_CARD_IDS]) }) }),
-  auditLog(AuditAction.UPDATE, "settings"),
-  controller.updateWhatsappDigestCard
-);
+router.get("/whatsapp/daily-preview", requirePermission("settings.view"), controller.getWhatsappDailyPreview);
 router.get("/whatsapp/schedule", requirePermission("settings.view"), controller.getWhatsappSchedule);
 router.put(
   "/whatsapp/schedule",

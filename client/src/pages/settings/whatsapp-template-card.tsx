@@ -48,11 +48,10 @@ const DESIGNS: { id: WhatsappTemplateId; nameAr: string; nameEn: string; descAr:
   },
 ];
 
-const STATES: { id: WhatsappPreviewState | "daily"; ar: string; en: string; dot: string }[] = [
+const STATES: { id: WhatsappPreviewState; ar: string; en: string; dot: string }[] = [
   { id: "expired", ar: "منتهية", en: "Expired", dot: "bg-red-500" },
   { id: "week", ar: "باقي 7 أيام", en: "7 days left", dot: "bg-orange-500" },
   { id: "month", ar: "باقي 30 يومًا", en: "30 days left", dot: "bg-yellow-500" },
-  { id: "daily", ar: "الملخص اليومي", en: "Daily summary", dot: "bg-amber-300" },
 ];
 
 /** Settings → WhatsApp: the design of the expiry alert, previewed on a real document. */
@@ -60,7 +59,7 @@ export function WhatsappTemplateCard({ canEdit, isRtl }: { canEdit: boolean; isR
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["settings", "whatsapp", "template"], queryFn: settingsApi.getWhatsappTemplate });
   const [choice, setChoice] = useState<WhatsappTemplateId | null>(null);
-  const [state, setState] = useState<WhatsappPreviewState | "daily">("week");
+  const [state, setState] = useState<WhatsappPreviewState>("week");
   useEffect(() => {
     if (data) setChoice(data.template);
   }, [data]);

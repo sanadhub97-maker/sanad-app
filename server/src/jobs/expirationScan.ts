@@ -5,14 +5,11 @@ import { canViewSource, escapeHtml } from "@/lib/security";
 import { getTrackableItems, TrackableItem } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
 import { daysUntil } from "@/services/expiration";
-import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting, getWhatsappTemplateSetting, getWhatsappDigestCardSetting } from "@/services/settingsStore";
-import { alertContext, renderWhatsappDigestHeader, renderWhatsappEntry, renderWhatsappTasks } from "@/services/whatsappTemplates";
+import { getExpirationRules, markExpirationScanRun, setWhatsappScheduleSetting, getWhatsappScheduleSetting } from "@/services/settingsStore";
+import { alertContext } from "@/services/whatsappTemplates";
+import { dailyEmptyText, renderDailyEntry, renderDailyHeader, renderDailyTail } from "@/services/dailySummary";
 import { withLang } from "@/services/lang";
 import { openTasks } from "@/services/openTasks";
-import { getCardAssets } from "@/services/branding";
-import { renderHtmlToPng } from "@/services/pdf";
-import { WHATSAPP_WEB_PROVIDER } from "@/services/whatsappWeb";
-import { DIGEST_CARD_WIDTH, digestCardDocument, digestCardHeight } from "@/services/whatsappDigestCard";
 import { getBrandingContext } from "@/services/branding";
 import { sendMail } from "@/services/email";
 import { riyadhDay, sendDailyWhatsappDigest, whatsappEligible, type DigestEntry } from "@/services/whatsappDigest";
@@ -133,36 +130,21 @@ async function performExpirationScan() {
   // window, most urgent first — it keeps coming until the document is renewed. It is
   // written in the design chosen in Settings → WhatsApp, in the alerts' language.
   let dailyHeader = "";
-  let dailyTasks = "";
-  let dailyImage: { png: Buffer; caption: string } | undefined;
+  let dailyTail = "";
   if (whatsappSettings?.enabled) {
     const fallback = !whatsappPhones.length && !["CALLMEBOT", "WHATSAPP_WEB"].includes(whatsappSettings.provider ?? "");
     const phones = fallback ? recipients.flatMap((r) => (r.phone ? [r.phone] : [])) : whatsappPhones;
-    const template = await getWhatsappTemplateSetting();
     const lang = language === "en" ? "en" : "ar";
     const dueToday = items
       .filter((item) => daysUntil(item.expiryDate) <= rules.expiringSoonThresholdDays && whatsappEligible(item))
       .map((item) => ({ item, context: alertContext(item, companyName, branding.company?.nameEn) }))
       .sort((a, b) => a.context.daysLeft - b.context.daysLeft);
-    const daily = withLang(lang, () => dueToday.map(({ item, context }) => ({ item, dedupeBase: `${item.key}:daily`, text: renderWhatsappEntry(template, context) })));
+    const daily = withLang(lang, () => dueToday.map((d) => ({ item: d.item, dedupeBase: `${d.item.key}:daily`, text: renderDailyEntry(d) })));
     const company = (lang === "en" ? branding.company?.nameEn : undefined) || companyName || "SanaD";
     const tasks = await openTasks();
-    dailyTasks = withLang(lang, () => renderWhatsappTasks(template, tasks));
-    dailyHeader = withLang(lang, () => renderWhatsappDigestHeader(template, company, dueToday.map((d) => d.context), new Date(), tasks.length));
+    dailyHeader = withLang(lang, () => renderDailyHeader(company, dueToday, tasks));
+    dailyTail = withLang(lang, () => renderDailyTail(tasks));
     for (const phone of new Set(phones)) whatsappGroups.set(phone, daily);
-
-    // The designed picture of the summary, with a short caption; only the QR-linked number sends pictures.
-    const cardId = await getWhatsappDigestCardSetting();
-    if (cardId !== "none" && whatsappSettings.provider === WHATSAPP_WEB_PROVIDER) {
-      try {
-        const { logo, mark } = await getCardAssets();
-        const data = { company, logo: logo ?? mark, documents: dueToday.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
-        const png = await renderHtmlToPng(withLang(lang, () => digestCardDocument(cardId, data)), DIGEST_CARD_WIDTH, digestCardHeight(data));
-        dailyImage = { png, caption: `${dailyHeader}\n\n${lang === "en" ? "_The details are in the picture._" : "_التفاصيل كاملة في الصورة._"}` };
-      } catch (err) {
-        logger.error({ err }, "Daily summary picture failed; sending the text design");
-      }
-    }
   }
 
   for (const item of items) {
@@ -210,14 +192,7 @@ async function performExpirationScan() {
       }
     }
   }
-  await sendDailyWhatsappDigest(
-    whatsappGroups,
-    dailyHeader,
-    language === "en" ? "✅ No document has expired or ends soon." : "✅ لا توجد وثائق منتهية أو قريبة من الانتهاء اليوم.",
-    riyadhDay(),
-    dailyTasks,
-    dailyImage
-  );
+  await sendDailyWhatsappDigest(whatsappGroups, dailyHeader, withLang(language === "en" ? "en" : "ar", dailyEmptyText), riyadhDay(), dailyTail);
 
   // On the devices of the responsible users (Web Push).
   await pushDueItems(due, recipients.map((r) => r.id)).catch((err) => logger.error({ err }, "Expiry push failed"));

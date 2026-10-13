@@ -121,21 +121,19 @@ export interface WhatsappMessageItem {
 }
 export type WhatsappTemplateId = "classic" | "card" | "compact" | "priority" | "bilingual";
 export type WhatsappPreviewState = "expired" | "week" | "month";
-export type DigestCardSetting = "royal" | "ivory" | "emerald" | "none";
-export interface WhatsappDigestCards {
-  card: DigestCardSetting;
-  canSendCards: boolean;
-  width: number;
-  height: number;
-  /** Each design as a whole page, drawn on today's documents and open tasks. */
-  cards: Record<Exclude<DigestCardSetting, "none">, string>;
+export interface WhatsappDailyPreview {
+  /** The messages exactly as they go out, in order. */
+  messages: string[];
+  documents: number;
+  tasks: number;
+  language: "ar" | "en";
+  generatedAt: string;
 }
 export interface WhatsappTemplateSettings {
   template: WhatsappTemplateId;
   /** False when the system has no documents yet and the previews use an example. */
   sampleIsReal: boolean;
-  /** Each design for one alert in each state, and "daily": the morning summary in that design. */
-  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState | "daily", string>>;
+  previews: Record<WhatsappTemplateId, Record<WhatsappPreviewState, string>>;
 }
 
 export type WhatsappCardId =
@@ -181,10 +179,8 @@ export const settingsApi = {
     (await api.get<{ data: WhatsappCardsPreview }>("/settings/whatsapp/cards", { params: { state } })).data.data,
   updateWhatsappCard: async (card: WhatsappCardSetting) =>
     (await api.put<{ data: { card: WhatsappCardSetting }; message: string }>("/settings/whatsapp/card", { card })).data,
-  getWhatsappDigestCards: async () =>
-    (await api.get<{ data: WhatsappDigestCards }>("/settings/whatsapp/digest-cards")).data.data,
-  updateWhatsappDigestCard: async (card: DigestCardSetting) =>
-    (await api.put<{ data: { card: DigestCardSetting }; message: string }>("/settings/whatsapp/digest-card", { card })).data,
+  getWhatsappDailyPreview: async () =>
+    (await api.get<{ data: WhatsappDailyPreview }>("/settings/whatsapp/daily-preview")).data.data,
   getWhatsappTemplate: async () =>
     (await api.get<{ data: WhatsappTemplateSettings }>("/settings/whatsapp/template")).data.data,
   updateWhatsappTemplate: async (template: WhatsappTemplateId) =>

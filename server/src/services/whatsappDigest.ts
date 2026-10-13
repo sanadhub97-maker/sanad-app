@@ -87,20 +87,29 @@ export function riyadhDay(at: Date = new Date()) {
   return new Date(at.getTime() + 3 * 60 * 60_000).toISOString().slice(0, 10);
 }
 
+/** The messages the morning summary is sent as: the heading and the documents, split below the
+ * provider's limit with each document kept whole, then the closing section (the open tasks). */
+export function dailyMessageParts(texts: string[], header: string, emptyText: string, tail = "") {
+  const parts: string[] = [];
+  for (const text of texts.length ? texts : [emptyText]) {
+    const line = text.slice(0, 2400);
+    if (!parts.length || parts[parts.length - 1].length + line.length + 2 > 3500) parts.push(header.slice(0, 1200));
+    parts[parts.length - 1] += `\n\n${line}`;
+  }
+  if (tail) {
+    const sep = "\n\n━━━━━━━━━━━━━━━\n\n";
+    if (parts[parts.length - 1].length + sep.length + tail.length <= 3500) parts[parts.length - 1] += sep + tail;
+    else parts.push(tail.slice(0, 3500));
+  }
+  return parts;
+}
+
 /**
  * The morning summary, sent every day: each recipient gets today's list once,
  * whatever was sent on earlier days (so an expired or ending document stays in
  * view until it is renewed). A failed part is retried by a later run that day.
  */
-export async function sendDailyWhatsappDigest(
-  groups: Map<string, DigestEntry[]>,
-  header: string,
-  emptyText: string,
-  day = riyadhDay(),
-  tail = "",
-  /** The designed picture of the summary with its short caption; when it can't go out, the text goes instead. */
-  image?: { png: Buffer; caption: string }
-) {
+export async function sendDailyWhatsappDigest(groups: Map<string, DigestEntry[]>, header: string, emptyText: string, day = riyadhDay(), tail = "") {
   const normalized = new Map<string, DigestEntry[]>();
   for (const [phone, entries] of groups) {
     const key = normalizePhone(phone);
@@ -110,33 +119,7 @@ export async function sendDailyWhatsappDigest(
     normalized.set(key, [...unique.values()]);
   }
   for (const [phone, entries] of normalized) {
-    if (image) {
-      const dedupeKey = `whatsapp-daily:${day}:${phone}:picture`;
-      if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;
-      const meta = { recipient: phone, message: image.caption, templateCode: "DIGEST" };
-      try {
-        const result = await sendWhatsapp(phone, image.caption, image.png);
-        if (!result.sent) throw new Error(result.reason ?? "Send failed");
-        await prisma.notificationLog.upsert({ where: { dedupeKey },
-          update: { ...meta, status: "SENT", sentAt: new Date(), errorMessage: null },
-          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "SENT", sentAt: new Date() },
-        });
-        continue;
-      } catch (err) {
-        logger.error({ err, dedupeKey }, "Daily WhatsApp picture failed; sending the text");
-        await prisma.notificationLog.upsert({ where: { dedupeKey },
-          update: { ...meta, status: "FAILED", errorMessage: (err as Error).message },
-          create: { ...meta, dedupeKey, channel: "WHATSAPP", status: "FAILED", errorMessage: (err as Error).message },
-        }).catch(() => undefined);
-      }
-    }
-    const parts = entries.length ? digestParts(entries, header, "").map((p) => p.text) : [`${header.slice(0, 400)}\n\n${emptyText}`];
-    // A closing section (the open tasks): with the last part when it fits, else on its own.
-    if (tail) {
-      const sep = "\n\n━━━━━━━━━━━━\n\n";
-      if (parts[parts.length - 1].length + sep.length + tail.length <= 3500) parts[parts.length - 1] += sep + tail;
-      else parts.push(tail.slice(0, 3500));
-    }
+    const parts = dailyMessageParts(entries.map((e) => e.text), header, emptyText, tail);
     for (const [n, text] of parts.entries()) {
       const dedupeKey = `whatsapp-daily:${day}:${phone}:${n}`;
       if ((await prisma.notificationLog.findUnique({ where: { dedupeKey } }))?.status === "SENT") continue;
