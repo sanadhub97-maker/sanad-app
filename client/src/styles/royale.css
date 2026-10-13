@@ -142,8 +142,9 @@ html:root body { background: #07070a; }
 /* engraved corners */
 .px-card, .px-stat { position: relative; }
 .px-card::before, .px-stat::before, .px-card::after, .px-stat::after { content: "" !important; position: absolute !important; width: 18px !important; height: 18px !important; pointer-events: none; border-color: #c9a464; border-style: solid; opacity: 0.85; background: none !important; border-radius: 0 !important; z-index: 2; }
-.px-card::before, .px-stat::before { top: 7px !important; right: 7px !important; left: auto !important; bottom: auto !important; inset-inline-end: auto; border-width: 1px 1px 0 0; }
-.px-card::after, .px-stat::after { bottom: 7px !important; left: 7px !important; top: auto !important; right: auto !important; inset-inline-end: auto !important; border-width: 0 0 1px 1px; }
+/* physical sides only: a logical inset here is the same side as left or right and would undo it */
+.px-card::before, .px-stat::before { top: 7px !important; right: 7px !important; left: auto !important; bottom: auto !important; border-width: 1px 1px 0 0; }
+.px-card::after, .px-stat::after { bottom: 7px !important; left: 7px !important; top: auto !important; right: auto !important; border-width: 0 0 1px 1px; }
 .px-chd { border-bottom-color: rgba(214, 182, 120, 0.14) !important; }
 .px-chd h3 { color: #f3dfae; font-weight: 800 !important; font-size: 17px !important; }
 .px-chd h3::after { content: " ❖"; font-size: 11px; color: #c9a464; vertical-align: 3px; }
