@@ -67,7 +67,6 @@ import { useUiStore } from "@/stores/uiStore";
 import { cn } from "@/lib/utils";
 import { PrintDesignsTab } from "./print-designs-tab";
 import { WhatsappLiveFeed } from "./whatsapp-live-feed";
-import { WhatsappDailyPreview } from "./whatsapp-daily-preview";
 import { WhatsappDigestCardPicker } from "./whatsapp-digest-card-picker";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
@@ -1561,7 +1560,6 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
       )}
       <WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />
       <WhatsappDigestCardPicker canEdit={canEdit} isRtl={isRtl} />
-      <WhatsappDailyPreview isRtl={isRtl} />
       <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
       <WhatsappLiveFeed isRtl={isRtl} />
     </div>

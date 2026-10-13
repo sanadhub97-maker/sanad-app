@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Check, ImageIcon, Loader2, RefreshCw, Type } from "lucide-react";
@@ -54,10 +54,54 @@ function Shot({ html, width, maxHeight }: { html: string; width: number; maxHeig
   );
 }
 
-/** Settings → WhatsApp: the picture of the morning summary, live on today's documents and open tasks. */
+/** A WhatsApp chat on its own wallpaper, holding the morning message. */
+function Chat({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex-1 space-y-2 rounded-2xl bg-[#0b141a] p-3 sm:p-4" dir="rtl">
+      {children}
+    </div>
+  );
+}
+const Time = () => (
+  <div className="px-2 pb-1 text-left text-[10px] opacity-70" dir="ltr">
+    08:00
+  </div>
+);
+
+/** One column's head: picking it picks that form of the message. */
+function Pick({ on, inUse, disabled, onPick, icon: Icon, title, desc, isRtl }: {
+  on: boolean; inUse: boolean; disabled: boolean; onPick: () => void; icon: typeof ImageIcon; title: string; desc: string; isRtl: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={on}
+      disabled={disabled}
+      onClick={onPick}
+      className={cn("flex w-full items-center gap-3 rounded-2xl border p-3.5 text-start transition-all disabled:cursor-default", on ? "border-amber-400/80 bg-amber-400/[0.07] ring-2 ring-amber-400/30" : "border-border/70 hover:border-border")}
+    >
+      <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", on ? "bg-amber-400 text-black" : "bg-white/5 text-amber-300")}>
+        <Icon className="h-5 w-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <b className="flex flex-wrap items-center gap-2 text-[15px] font-black">
+          {title}
+          {inUse && <span className="rounded-full border border-amber-400/40 px-2 py-px text-[10px] font-bold text-amber-300">{isRtl ? "المعتمد" : "In use"}</span>}
+        </b>
+        <span className="mt-0.5 block text-[12px] text-muted-foreground">{desc}</span>
+      </span>
+      <span className={cn("grid h-5 w-5 shrink-0 place-items-center rounded-full border", on ? "border-amber-400 bg-amber-400 text-black" : "border-border")}>{on && <Check className="h-3 w-3" />}</span>
+    </button>
+  );
+}
+
+/** Settings → WhatsApp: the morning message in its two forms side by side — the designed picture and the
+ * text — each previewed live on today's documents and open tasks; one of them is the one that goes out. */
 export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const queryClient = useQueryClient();
   const { data, isLoading, isFetching, refetch } = useQuery({ queryKey: ["settings", "whatsapp", "digest-cards"], queryFn: settingsApi.getWhatsappDigestCards, refetchInterval: 120_000 });
+  const textQuery = useQuery({ queryKey: ["settings", "whatsapp", "daily-preview"], queryFn: settingsApi.getWhatsappDailyPreview, refetchInterval: 60_000 });
   const [choice, setChoice] = useState<DigestCardSetting | null>(null);
   useEffect(() => {
     if (data && choice === null) setChoice(data.card);
@@ -71,13 +115,14 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
     onError: (err) => toast.error(getErrorMessage(err)),
   });
   const dirty = data != null && choice != null && choice !== data.card;
-  // Picture or text: switching back to picture brings back the last design picked.
+  // Switching back to the picture brings back the last design picked.
   const [lastDesign, setLastDesign] = useState<Exclude<DigestCardSetting, "none">>("noir");
   useEffect(() => {
     if (choice && choice !== "none") setLastDesign(choice);
   }, [choice]);
   const asText = choice === "none";
-  const shown = DESIGNS.find((d) => d.id === choice) ?? DESIGNS[0];
+  const shown = DESIGNS.find((d) => d.id === (choice && choice !== "none" ? choice : lastDesign)) ?? DESIGNS[0];
+  const textInUse = data?.card === "none";
 
   return (
     <Card className="overflow-hidden rounded-3xl">
@@ -85,109 +130,110 @@ export function WhatsappDigestCardPicker({ canEdit, isRtl }: { canEdit: boolean;
         <div className="flex flex-wrap items-center gap-3">
           <AppleIcon icon={ImageIcon} tone="amber" size="md" />
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-base font-black">{isRtl ? "شكل رسالة الصبح — صورة أو نص" : "Morning message — picture or text"}</CardTitle>
+            <CardTitle className="text-base font-black">{isRtl ? "شكل رسالة الصبح — معاينة حية" : "Morning message — live preview"}</CardTitle>
             <CardDescription className="text-xs">
               {isRtl
-                ? "كل صباح الساعة 8 يتبعت الملخص صورة مصممة ومعاها سطرين. المعاينة ببياناتك الحقيقية دلوقتي وبتتحدّث لوحدها."
-                : "Each morning at 8 the summary goes out as a designed picture with a short caption. Previewed live on your real data."}
+                ? "الشكلين جنب بعض ببياناتك الحقيقية دلوقتي: اختار اللي يتبعت كل صباح الساعة 8، واعتمده."
+                : "Both forms side by side, on your real data now: pick the one sent each morning at 8."}
             </CardDescription>
           </div>
-          <button type="button" onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground">
-            <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
+          <button
+            type="button"
+            onClick={() => {
+              void refetch();
+              void textQuery.refetch();
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5", (isFetching || textQuery.isFetching) && "animate-spin")} />
             {isRtl ? "تحديث" : "Refresh"}
           </button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 p-4 sm:p-5">
-        {/* The first choice: the morning message as a picture or as text */}
-        <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={isRtl ? "شكل رسالة الصبح" : "Morning message format"}>
-          {(
-            [
-              [false, ImageIcon, isRtl ? "صورة مصممة" : "Designed picture", isRtl ? "تقرير ملوّن بالأيقونات، ومعاه سطرين تحته" : "A coloured report with icons, and a short caption"],
-              [true, Type, isRtl ? "رسالة نصية" : "Text message", isRtl ? "نص منسّق بالإيموجي، يتنسخ ويتقري من الإشعار" : "Formatted text, easy to copy and read from the notification"],
-            ] as const
-          ).map(([text, Icon, title, desc]) => {
-            const on = asText === text;
-            return (
-              <button
-                key={title}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                disabled={!canEdit}
-                onClick={() => setChoice(text ? "none" : lastDesign)}
-                className={cn("flex items-center gap-3 rounded-2xl border p-4 text-start transition-all disabled:cursor-default", on ? "border-amber-400/80 bg-amber-400/[0.07] ring-2 ring-amber-400/30" : "border-border/70 hover:border-border")}
-              >
-                <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl", on ? "bg-amber-400 text-black" : "bg-white/5 text-amber-300")}>
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <b className="flex items-center gap-2 text-[15px] font-black">
-                    {title}
-                    {data && (data.card === "none") === text && <span className="rounded-full border border-amber-400/40 px-2 py-px text-[10px] font-bold text-amber-300">{isRtl ? "المعتمد" : "In use"}</span>}
-                  </b>
-                  <span className="mt-0.5 block text-[12px] text-muted-foreground">{desc}</span>
-                </span>
-                <span className={cn("grid h-5 w-5 shrink-0 place-items-center rounded-full border", on ? "border-amber-400 bg-amber-400 text-black" : "border-border")}>{on && <Check className="h-3 w-3" />}</span>
-              </button>
-            );
-          })}
-        </div>
-        {asText && (
-          <p className="rounded-xl border border-border/60 bg-white/[0.02] px-3 py-2 text-xs text-muted-foreground">
-            {isRtl ? "شكل الرسالة النصية في «الملخص اليومي النصي — معاينة حية» تحت الجزء ده على طول." : "The text message is shown in the live text preview just below."}
-          </p>
-        )}
         {data && !data.canSendCards && (
           <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-700 dark:text-amber-300">
             {isRtl ? "الصور بتتبعت من الرقم المربوط برمز QR بس؛ مع أي مزوّد تاني بتتبعت الرسالة النصية." : "Pictures go out from the QR-linked number only; other providers send the text."}
           </p>
         )}
-        {asText ? null : isLoading || !data ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4" role="radiogroup">
-              {DESIGNS.map((d) => {
-                const selected = choice === d.id;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    disabled={!canEdit}
-                    onClick={() => setChoice(d.id)}
-                    className={cn("flex flex-col gap-2 rounded-2xl border p-2.5 text-start transition-all disabled:cursor-default", selected ? "border-amber-400/80 ring-2 ring-amber-400/30" : "border-border/70 hover:border-border")}
-                  >
-                    <Shot html={data.cards[d.id]} width={data.width} maxHeight={170} />
-                    <div className="flex items-center justify-between gap-2 px-1">
-                      <span className="text-sm font-black">{isRtl ? d.nameAr : d.nameEn}</span>
-                      {data.card === d.id ? (
-                        <span className="rounded-full border border-amber-400/40 px-2 py-px text-[10px] font-bold text-amber-300">{isRtl ? "المعتمد" : "In use"}</span>
-                      ) : (
-                        selected && <Check className="h-4 w-4 text-amber-300" />
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-              <div className="rounded-2xl bg-[#0b141a] p-3 sm:p-5" dir="rtl">
-                <div className="mx-auto max-w-[520px] rounded-xl rounded-tr-none bg-[#005c4b] p-1 text-[#e9edef] shadow">
-                  <Shot html={data.cards[shown.id]} width={data.width} />
-                  <div className="whitespace-pre-wrap px-2 pb-1 pt-2 text-[13.5px] leading-[1.6] [unicode-bidi:plaintext]">
-                    <WhatsappText text={data.caption} />
-                  </div>
-                  <div className="px-2 pb-1 text-left text-[10px] opacity-70" dir="ltr">
-                    08:00
-                  </div>
-                </div>
+        <div className="grid items-start gap-4 lg:grid-cols-2" role="radiogroup" aria-label={isRtl ? "شكل رسالة الصبح" : "Morning message format"}>
+          {/* the picture */}
+          <div className={cn("flex min-w-0 flex-col gap-3 rounded-3xl border p-3 transition-opacity", asText ? "border-border/40 opacity-60" : "border-amber-400/30")}>
+            <Pick
+              on={!asText}
+              inUse={!!data && !textInUse}
+              disabled={!canEdit}
+              onPick={() => setChoice(lastDesign)}
+              icon={ImageIcon}
+              title={isRtl ? "صورة مصممة" : "Designed picture"}
+              desc={isRtl ? "تقرير ملوّن بالأيقونات، ومعاه سطرين تحته" : "A coloured report with icons, and a short caption"}
+              isRtl={isRtl}
+            />
+            {isLoading || !data ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
-          </>
-        )}
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={isRtl ? "التصميم" : "Design"}>
+                  {DESIGNS.map((d) => {
+                    const selected = !asText && choice === d.id;
+                    return (
+                      <button
+                        key={d.id}
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => setChoice(d.id)}
+                        aria-pressed={selected}
+                        title={isRtl ? d.descAr : d.descEn}
+                        className={cn("flex flex-col gap-1.5 rounded-xl border p-1.5 text-center transition-all disabled:cursor-default", selected ? "border-amber-400/80 ring-2 ring-amber-400/30" : "border-border/60 hover:border-border")}
+                      >
+                        <Shot html={data.cards[d.id]} width={data.width} maxHeight={80} />
+                        <span className="truncate text-[11.5px] font-black">{isRtl ? d.nameAr : d.nameEn}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <Chat>
+                  <div className="mx-auto max-w-[440px] rounded-xl rounded-tr-none bg-[#005c4b] p-1 text-[#e9edef] shadow">
+                    <Shot html={data.cards[shown.id]} width={data.width} />
+                    <div className="whitespace-pre-wrap px-2 pb-1 pt-2 text-[13.5px] leading-[1.6] [unicode-bidi:plaintext]">
+                      <WhatsappText text={data.caption} />
+                    </div>
+                    <Time />
+                  </div>
+                </Chat>
+              </>
+            )}
+          </div>
+          {/* the text */}
+          <div className={cn("flex min-w-0 flex-col gap-3 rounded-3xl border p-3 transition-opacity", asText ? "border-amber-400/30" : "border-border/40 opacity-60")}>
+            <Pick
+              on={asText}
+              inUse={textInUse}
+              disabled={!canEdit}
+              onPick={() => setChoice("none")}
+              icon={Type}
+              title={isRtl ? "رسالة نصية" : "Text message"}
+              desc={isRtl ? "نص منسّق بالإيموجي، يتنسخ ويتقري من الإشعار" : "Formatted text, easy to copy and read from the notification"}
+              isRtl={isRtl}
+            />
+            {textQuery.isLoading || !textQuery.data ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <Chat>
+                {textQuery.data.messages.map((m, i) => (
+                  <div key={i} className="mx-auto max-w-[440px] whitespace-pre-wrap break-words rounded-xl rounded-tr-none bg-[#005c4b] px-3 pt-2 text-[13.5px] leading-[1.65] text-[#e9edef] shadow [unicode-bidi:plaintext]">
+                    <WhatsappText text={m} />
+                    <Time />
+                  </div>
+                ))}
+              </Chat>
+            )}
+          </div>
+        </div>
         <div className="flex flex-col-reverse gap-3 border-t border-border/40 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">{isRtl ? "الاختيار بيتطبق من رسالة الصبح الجاية، ومن زرار «اختبار»." : "Applies from the next morning message, and to the Test button."}</span>
           <Button type="button" disabled={!canEdit || !dirty || save.isPending} onClick={() => choice && save.mutate(choice)} className="h-11 shrink-0 rounded-xl px-8 text-xs font-black">
