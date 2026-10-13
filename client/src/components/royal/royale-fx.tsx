@@ -247,6 +247,9 @@ function useFrames(root: React.RefObject<HTMLElement | null>, enabled: boolean) 
 }
 
 /** Between pages: two dark halves meet over the old page with the gold seal, then open on the new one. */
+/** The logo on the curtain seal, loaded ahead so it shows the moment the curtain closes. */
+if (typeof Image !== "undefined") new Image().src = "/brand/sanad-mark.webp";
+
 function useCurtain(enabled: boolean) {
   const path = useLocation().pathname;
   const first = useRef(true);
@@ -259,7 +262,7 @@ function useCurtain(enabled: boolean) {
     const c = document.createElement("div");
     c.className = "rx-curtain";
     c.setAttribute("aria-hidden", "true");
-    c.innerHTML = '<i class="l"></i><i class="r"></i><b>س</b>';
+    c.innerHTML = '<i class="l"></i><i class="r"></i><b><img src="/brand/sanad-mark.webp" alt=""></b>';
     document.body.appendChild(c);
     const ease = "cubic-bezier(.7,0,.3,1)", D = 720;
     const half = (sign: number) => [{ transform: "translateX(0)" }, { transform: "translateX(0)", offset: 0.25 }, { transform: `translateX(${sign * 101}%)` }];
