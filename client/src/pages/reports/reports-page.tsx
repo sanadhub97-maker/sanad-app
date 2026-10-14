@@ -133,7 +133,7 @@ export default function ReportsPage() {
     soon: { value: sSoon, sub: L("تنتهي خلال 30 يوم", "end within 30 days"), parts: [[sSoon, "var(--warn)"]] },
     documents: { value: docCount, sub: L("وثيقة", "documents"), parts: [[nExpired, "var(--bad)"], [nSoon, "var(--warn)"], [docCount - nExpired - nSoon, "var(--ok)"]] },
     employees: { value: employeeCount, sub: L(`موظف · ${activeEmployeeCount} على رأس العمل`, `employees · ${activeEmployeeCount} on duty`) },
-    payments: { value: formatCurrency(paid), sub: L(`${paymentCount} دفعة في آخر 30 يوم`, `${paymentCount} payments in 30 days`) },
+    payments: { value: formatCurrency(paid), sub: L(`إجمالي كل المدفوعات · ${paymentCount} سند`, `All payments · ${paymentCount} vouchers`) },
     activity: { value: activityCount, sub: L("عملية في آخر 30 يوم", "actions in 30 days") },
   };
   const docsTotal = Math.max(1, docCount);
@@ -147,7 +147,7 @@ export default function ReportsPage() {
         <PxStat i={1} label={L("وثائق منتهية", "Expired documents")} value={summary?.documents ? sExpired : 0} icon={AlertTriangle} color="#dc2626" sub={L("تحتاج تجديد فورًا", "Renew now")} onClick={() => openTile("expired")} active={open === "expired"} />
         <PxStat i={2} label={L("تنتهي خلال 30 يوم", "Ending within 30 days")} value={summary?.documents ? sSoon : 0} icon={Clock} color="#d97706" sub={L("جهّز التجديد", "Get the renewal ready")} onClick={() => openTile("soon")} active={open === "soon"} />
         <PxStat i={3} label={L("الموظفون", "Employees")} value={summary?.employees ? employeeCount : 0} icon={Users} color="#2563eb" sub={L("في كل المؤسسات", "Across the establishments")} onClick={() => openTile("employees")} active={open === "employees"} />
-        <PxStat i={4} label={L("مدفوعات آخر 30 يوم", "Payments, last 30 days")} value={summary?.payments ? Math.round(paid) : 0} unit={L("ر.س", "SAR")} icon={Wallet} color="#16a34a" sub={L(`${paymentCount} دفعة`, `${paymentCount} payments`)} onClick={() => openTile("payments")} active={open === "payments"} />
+        <PxStat i={4} label={L("إجمالي المدفوعات", "Total payments")} value={summary?.payments ? Math.round(paid) : 0} unit={L("ر.س", "SAR")} icon={Wallet} color="#16a34a" sub={L(`${paymentCount} سند`, `${paymentCount} vouchers`)} onClick={() => openTile("payments")} active={open === "payments"} />
       </div>
 
       <div className="rc-rp-grid">

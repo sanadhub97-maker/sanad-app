@@ -7,7 +7,8 @@ import { vehicleSchema, renewSchema } from "@/modules/vehicles/vehicles.schemas"
 import { inSponsoredScope } from "@/modules/reports/reports.service";
 import { isEstablishmentSource } from "@/services/expiringItems";
 
-const at = (days: number) => { const d = new Date(); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() + days); return d; };
+// Local midday, the same calendar day daysUntil counts from, whatever the hour the tests run.
+const at = (days: number) => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + days); return d; };
 const car = (inspect: number, insure: number, reg: number | null) =>
   withDays({ inspectionExpiry: at(inspect), insuranceExpiry: at(insure), registrationExpiry: reg === null ? null : at(reg) } as never);
 

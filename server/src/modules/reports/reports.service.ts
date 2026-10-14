@@ -32,7 +32,7 @@ export async function reportSummary(auth: AuthContext) {
     })() : null,
     hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null } }) : null,
     hasPermission(auth, "employees.view") ? prisma.employee.count({ where: { deletedAt: null, employmentStatus: "ACTIVE" } }) : null,
-    hasPermission(auth, "payments.view") ? prisma.payment.aggregate({ where: { deletedAt: null, paymentDate: { gte: since } }, _sum: { total: true }, _count: { _all: true } }) : null,
+    hasPermission(auth, "payments.view") ? prisma.payment.aggregate({ where: { deletedAt: null }, _sum: { total: true }, _count: { _all: true } }) : null,
     hasPermission(auth, "auditLogs.view") ? prisma.auditLog.count({ where: { createdAt: { gte: since } } }) : null,
   ]);
   return { documents, employees: employees === null ? null : { total: employees, active: activeEmployees ?? 0 }, payments: payments ? { total: Number(payments._sum.total ?? 0), count: payments._count._all } : null, activity };
