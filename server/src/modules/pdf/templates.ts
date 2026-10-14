@@ -1004,9 +1004,8 @@ export interface PaymentStatementEstablishment { name: string; nameEn?: string |
 
 export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, est?: PaymentStatementEstablishment) {
   const money = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  // A statement shows the riyal sign before the amount; the company-wide report keeps "ر.س" after it.
-  const cur = est ? SAR : L("ر.س", "SAR");
-  const withCur = (v: string, wrap = true) => (est ? `${wrap ? `<span>${cur}</span>` : cur}${v}` : `${v}${wrap ? `<span>${cur}</span>` : ` ${cur}`}`);
+  const cur = SAR;
+  const withCur = (v: string, wrap = true) => `${wrap ? `<span>${cur}</span>` : cur}${v}`;
   const sum = (list: PaymentReportRow[], k: "amount" | "vat" | "total") => list.reduce((s, r) => s + (Number(r[k]) || 0), 0);
   const amount = sum(rows, "amount"), vat = sum(rows, "vat"), total = sum(rows, "total");
   const name = (ar: string | null, en: string | null) => escapeHtml((isEn() ? en || ar : ar || en) || "");
@@ -1096,9 +1095,9 @@ export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, 
       ? `<div class="pr-cart">
       <i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i>
       <div class="pr-rib">${L("إجمالي المدفوعات · شامل الضريبة", "TOTAL PAID · VAT INCLUDED")}</div>
-      <div class="side"><small>${L("المبالغ قبل الضريبة", "Before VAT")}</small><b${est ? "" : ' class="txt"'}>${withCur(money(amount))}</b></div>
-      <div class="mid"><b${est ? "" : ' class="txt"'}>${withCur(money(total))}</b>${words ? `<em>${words}</em>` : ""}</div>
-      <div class="side"><small>${L("ضريبة القيمة المضافة", "VAT")}</small><b${est ? "" : ' class="txt"'}>${withCur(money(vat))}</b></div>
+      <div class="side"><small>${L("المبالغ قبل الضريبة", "Before VAT")}</small><b>${withCur(money(amount))}</b></div>
+      <div class="mid"><b>${withCur(money(total))}</b>${words ? `<em>${words}</em>` : ""}</div>
+      <div class="side"><small>${L("ضريبة القيمة المضافة", "VAT")}</small><b>${withCur(money(vat))}</b></div>
     </div>
     <div class="pr-strip">
 ${est ? "" : `<div>${L("عدد المنشآت", "Establishments")}<b class="n">${estCount}</b></div>`}
