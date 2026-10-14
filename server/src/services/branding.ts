@@ -6,6 +6,28 @@ import { getPrintThemeSetting, getPrintSignatures, getAppearanceSettings } from 
 import type { SignatureDocument } from "@/services/settingsStore";
 import { PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
 
+/*
+ * Print images (logo, stamp, signatures) are read from file storage and shrunk
+ * once, then kept in the database: a fresh serverless instance otherwise spent
+ * seconds downloading and resizing them before every first print. A file id
+ * never changes its content, so a kept copy is never stale.
+ */
+const KEPT_PREFIX = "print.asset:";
+async function kept<T>(key: string, make: () => Promise<T>): Promise<T> {
+  // The database copy is a speed-up only: when it cannot be read or written, the image is simply made.
+  try {
+    const row = await prisma.setting.findUnique({ where: { key: KEPT_PREFIX + key } });
+    if (row) return (row.value as { v: T }).v;
+  } catch { /* made below */ }
+  const value = await make();
+  try {
+    await prisma.setting.upsert({ where: { key: KEPT_PREFIX + key }, update: { value: { v: value } as never }, create: { key: KEPT_PREFIX + key, value: { v: value } as never } });
+  } catch (err) {
+    logger.warn({ err, key }, "Could not keep a print image");
+  }
+  return value;
+}
+
 const logoCache = new Map<string, Promise<{ buffer: Buffer; mimeType: string } | null>>();
 async function readPrintLogo(company: { printLogoFileId: string | null; logoFileId: string | null } | null) {
   // A dedicated print logo wins; otherwise the light-mode logo (prints are on white paper).
@@ -20,11 +42,13 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   return pending;
 }
 async function loadPrintLogo(printLogoId: string, module = "company-logo") {
-  const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
-  if (!logoFile || logoFile.module !== module || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
-  const raw = await storage.read(logoFile.storedName);
-  const buffer = await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png().toBuffer();
-  return { buffer, mimeType: "image/png" };
+  const b64 = await kept(`logo:${module}:${printLogoId}`, async () => {
+    const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
+    if (!logoFile || logoFile.module !== module || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
+    const raw = await storage.read(logoFile.storedName);
+    return (await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png().toBuffer()).toString("base64");
+  });
+  return b64 ? { buffer: Buffer.from(b64, "base64"), mimeType: "image/png" } : null;
 }
 
 // Stamp/signature images, shrunk once per file and kept: they print about
@@ -36,15 +60,15 @@ async function fileDataUrl(fileId: string | null | undefined, modules: readonly 
   const cacheKey = `${modules.join(",")}:${fileId}`;
   const cached = printAssetCache.get(cacheKey);
   if (cached) return cached;
-  const file = await prisma.file.findUnique({ where: { id: fileId } });
-  if (!file || !modules.includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
   try {
-    const raw = await storage.read(file.storedName);
-    let url = `data:${file.mimeType};base64,${raw.toString("base64")}`;
-    if (file.mimeType.startsWith("image/") && file.mimeType !== "image/svg+xml") {
+    const url = await kept(`img:${cacheKey}`, async () => {
+      const file = await prisma.file.findUnique({ where: { id: fileId } });
+      if (!file || !modules.includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
+      const raw = await storage.read(file.storedName);
       const png = await sharp(raw).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true }).png().toBuffer();
-      url = `data:image/png;base64,${png.toString("base64")}`;
-    }
+      return `data:image/png;base64,${png.toString("base64")}`;
+    });
+    if (!url) return null;
     if (printAssetCache.size >= 128) printAssetCache.clear();
     printAssetCache.set(cacheKey, url);
     return url;
@@ -100,10 +124,12 @@ export async function logoBrandColor(buffer: Buffer): Promise<string | null> {
 async function brandColorOf(fileId: string | null | undefined, buffer: Buffer | undefined) {
   if (!fileId || !buffer) return null;
   if (brandColorCache.has(fileId)) return brandColorCache.get(fileId)!;
-  const color = await logoBrandColor(buffer).catch((err) => {
-    logger.warn({ err }, "Could not read the logo's colour");
-    return null;
-  });
+  const color = await kept(`color:${fileId}`, () =>
+    logoBrandColor(buffer).catch((err) => {
+      logger.warn({ err }, "Could not read the logo's colour");
+      return null;
+    })
+  );
   if (brandColorCache.size >= 32) brandColorCache.clear();
   brandColorCache.set(fileId, color);
   return color;

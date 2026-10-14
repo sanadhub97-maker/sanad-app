@@ -17,6 +17,8 @@ import { listDocumentRevisions, restoreDocumentRevision } from "./revisions.serv
 import * as backups from "./backups.service";
 import { downloadBackup, importBackupArchive } from "./backup-archive";
 import { checkSystemHealth, alertSystemHealth } from "@/services/systemHealth";
+import { warmPdfBrowser } from "@/services/pdf";
+import { getBrandingContext } from "@/services/branding";
 const router = Router(); router.use(requireAuth);
 const token = (req: any) => req.headers.authorization.slice(7);
 const id = z.string().min(1).max(150); const password = z.string().min(1).max(72);
@@ -34,6 +36,11 @@ router.get("/health", asyncHandler(async (req, res) => {
   const problems = await checkSystemHealth();
   if (problems.some((p) => p.code === "cron")) await alertSystemHealth(problems.filter((p) => p.code === "cron")).catch(() => undefined);
   res.json({ data: { problems, checkedAt: new Date().toISOString() } });
+}));
+// Opened with a page that prints: the print browser and the print images get ready before the first print.
+router.post("/print-warm", asyncHandler(async (_req, res) => {
+  await Promise.all([warmPdfBrowser(), getBrandingContext()]).catch(() => undefined);
+  res.json({ data: { ready: true } });
 }));
 router.get("/backups", asyncHandler(async (_req, res) => { res.json({ data: await backups.backupStatus() }); }));
 const backupLimiter = rateLimit({ windowMs: 60 * 60_000, max: 10, standardHeaders: true, legacyHeaders: false, handler: (_req, _res, next) => next(ApiError.tooMany("Too many backup operations. Try again later.")) });

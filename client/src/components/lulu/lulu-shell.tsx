@@ -33,6 +33,7 @@ import { translateRoleName } from "@/lib/role-display";
 import { cn } from "@/lib/utils";
 import { preloadPage } from "@/lib/page-preload";
 import { prefetchPageData } from "@/lib/page-prefetch";
+import { warmPrintingFor } from "@/lib/print-warm";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
    tablets), a sticky glass header that holds each page's title and actions,
@@ -181,6 +182,7 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const intend = (href: string) => {
     preloadPage(href);
     prefetchPageData(queryClient, href, can);
+    warmPrintingFor(href);
   };
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
@@ -532,6 +534,7 @@ export function LuluShell() {
 
   useEffect(() => {
     main.current?.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    warmPrintingFor(location.pathname);
   }, [location.pathname]);
 
   useEffect(() => {
