@@ -295,7 +295,7 @@ export const activity = asyncHandler(async (req: Request, res: Response) => {
     format: query.format,
     rows: rows as Row[],
     columns: [
-      col("التاريخ والوقت", "Timestamp", "date"),
+      col("التاريخ والوقت", "Timestamp", "date", undefined, (v) => (v ? new Date(v as Date).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).replace(",", "") : "—")),
       col("المستخدم", "User", "user", undefined, (v) => (v === "System" ? L("النظام", "System") : ((v as string) ?? "—"))),
       col("العملية", "Action", "action", undefined, (v) => actionLabel(v as string)),
       col("القسم", "Section", "module", undefined, (v) => moduleLabel(v as string)),

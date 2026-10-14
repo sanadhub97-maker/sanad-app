@@ -25,7 +25,8 @@ router.post(
 );
 router.get("/", requirePermission("files.view"), controller.list);
 router.get("/:id", requirePermission("files.view"), controller.getMetadata);
-router.get("/:id/download", auditLog(AuditAction.DOWNLOAD, "files"), controller.download);
+// Thumbnails fetch the same file repeatedly: one download row per user and file every 12 hours.
+router.get("/:id/download", auditLog(AuditAction.DOWNLOAD, "files", { oncePer: 12 * 3_600_000 }), controller.download);
 router.delete("/:id", requirePermission("files.delete"), auditLog(AuditAction.DELETE, "files"), controller.remove);
 
 export default router;

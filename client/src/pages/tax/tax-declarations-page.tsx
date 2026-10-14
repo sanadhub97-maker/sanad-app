@@ -255,7 +255,7 @@ export default function TaxDeclarationsPage() {
                   {isAr ? "نظام التنبيهات الربع سنوية" : "Quarterly VAT Alert"}
                 </span>
                 <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                  {vatAlert ? vatAlert.nameAr : isAr ? "إقرار ضريبة القيمة المضافة" : "VAT Return"}
+                  {vatAlert ? (isAr ? vatAlert.nameAr : vatAlert.nameEn) : isAr ? "إقرار ضريبة القيمة المضافة" : "VAT Return"}
                 </h3>
               </div>
             </div>
@@ -703,7 +703,7 @@ export default function TaxDeclarationsPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold text-foreground">{q.nameAr}</span>
+                    <span className="text-sm font-bold text-foreground">{isAr ? q.nameAr : q.nameEn}</span>
                     <Badge
                       className={`text-[10px] rounded-lg px-2 py-0.5 ${
                         isPaid
