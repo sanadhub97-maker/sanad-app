@@ -179,3 +179,7 @@ export function paymentCategoryLabel(category: string | null | undefined, type?:
   const sub = type && allowed?.includes(type) ? (isEn() ? SUBTYPE_LABELS_EN : SUBTYPE_LABELS_AR)[type] : undefined;
   return sub ? `${label} — ${sub}` : label;
 }
+
+/** Categories paid once for several establishments / employees (the amount is shared equally). */
+export const MULTI_BRANCH_CATEGORIES: readonly string[] = ["WAGE_PROTECTION"];
+export const MULTI_EMPLOYEE_CATEGORIES: readonly string[] = ["HEALTH_CERTIFICATE"];

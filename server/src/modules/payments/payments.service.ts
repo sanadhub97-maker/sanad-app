@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
-import { PAYMENT_SUBTYPES } from "@/constants/paymentCategories";
+import { PAYMENT_SUBTYPES, MULTI_BRANCH_CATEGORIES, MULTI_EMPLOYEE_CATEGORIES } from "@/constants/paymentCategories";
 import type { z } from "zod";
 import type { createPaymentSchema, listPaymentsQuerySchema, updatePaymentSchema } from "@/modules/payments/payments.schemas";
 
@@ -15,6 +15,41 @@ const includeRelations = {
   employee: { select: { id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, profession: true, professionEn: true, iqamaNumber: true, sponsorName: true } },
   createdBy: { select: { id: true, fullName: true } },
 } as const;
+
+/** The parties a payment is for: several for the categories that take them (the first also in branchId /
+ * employeeId, so single-party screens keep working), else just the one. */
+function parties(category: string | undefined, input: { branchId?: string | null; employeeId?: string | null; branchIds?: string[]; employeeIds?: string[] }) {
+  const out: { branchId?: string | null; employeeId?: string | null; branchIds?: string[]; employeeIds?: string[] } = {};
+  if (input.branchIds !== undefined || input.branchId !== undefined || category !== undefined) {
+    const ids = category && MULTI_BRANCH_CATEGORIES.includes(category) ? (input.branchIds?.length ? input.branchIds : input.branchId ? [input.branchId] : []) : [];
+    if (ids.length) Object.assign(out, { branchIds: ids, branchId: ids[0] });
+    else if (input.branchIds !== undefined || category !== undefined) out.branchIds = [];
+  }
+  if (input.employeeIds !== undefined || input.employeeId !== undefined || category !== undefined) {
+    const ids = category && MULTI_EMPLOYEE_CATEGORIES.includes(category) ? (input.employeeIds?.length ? input.employeeIds : input.employeeId ? [input.employeeId] : []) : [];
+    if (ids.length) Object.assign(out, { employeeIds: ids, employeeId: ids[0] });
+    else if (input.employeeIds !== undefined || category !== undefined) out.employeeIds = [];
+  }
+  return out;
+}
+
+/** A filter on an establishment or employee that also finds the payments shared with it. */
+export function partyWhere(branchId?: string, employeeId?: string): Prisma.PaymentWhereInput[] {
+  return [
+    ...(branchId ? [{ OR: [{ branchId }, { branchIds: { has: branchId } }] }] : []),
+    ...(employeeId ? [{ OR: [{ employeeId }, { employeeIds: { has: employeeId } }] }] : []),
+  ];
+}
+
+/** The names of every establishment and employee a shared payment is for. */
+export async function withParties<T extends { branchIds?: string[]; employeeIds?: string[] }>(payment: T) {
+  const [branches, employees] = await Promise.all([
+    payment.branchIds?.length ? prisma.branch.findMany({ where: { id: { in: payment.branchIds } }, select: { id: true, name: true, nameEn: true, code: true } }) : [],
+    payment.employeeIds?.length ? prisma.employee.findMany({ where: { id: { in: payment.employeeIds } }, select: { id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, iqamaNumber: true, profession: true, professionEn: true } }) : [],
+  ]);
+  const order = <R extends { id: string }>(ids: string[] | undefined, rows: R[]) => (ids ?? []).map((id) => rows.find((r) => r.id === id)).filter((r): r is R => !!r);
+  return { ...payment, branches: order(payment.branchIds, branches), employees: order(payment.employeeIds, employees) };
+}
 
 async function generatePaymentNumber(): Promise<string> {
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -33,8 +68,7 @@ export async function list(query: ListQuery) {
     deletedAt: null,
     ...(category ? { category } : {}),
     ...(method ? { method } : {}),
-    ...(branchId ? { branchId } : {}),
-    ...(employeeId ? { employeeId } : {}),
+    AND: partyWhere(branchId, employeeId),
     ...(dateFrom || dateTo ? { paymentDate: { gte: dateFrom, lte: dateTo } } : {}),
     ...(q
       ? {
@@ -70,7 +104,7 @@ export async function list(query: ListQuery) {
 export async function getById(id: string) {
   const payment = await prisma.payment.findFirst({ where: { id, deletedAt: null }, include: includeRelations });
   if (!payment) throw ApiError.notFound("Payment not found");
-  return payment;
+  return withParties(payment);
 }
 
 export async function create(input: CreateInput, createdById: string) {
@@ -85,7 +119,7 @@ export async function create(input: CreateInput, createdById: string) {
   }
 
   return prisma.payment.create({
-    data: { ...input, fileIds: input.fileIds ?? (input.fileId ? [input.fileId] : []), fileId: input.fileIds ? input.fileIds[0] ?? null : input.fileId, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
+    data: { ...input, ...parties(input.category, input), fileIds: input.fileIds ?? (input.fileId ? [input.fileId] : []), fileId: input.fileIds ? input.fileIds[0] ?? null : input.fileId, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
     include: includeRelations,
   });
 }
@@ -109,7 +143,7 @@ export async function update(id: string, input: UpdateInput) {
   const type = input.category && !PAYMENT_SUBTYPES[input.category] ? null : input.type;
 
   const attachments = input.fileIds !== undefined ? { fileIds: input.fileIds, fileId: input.fileIds[0] ?? null } : input.fileId !== undefined ? { fileIds: [input.fileId], fileId: input.fileId } : {};
-  return prisma.payment.update({ where: { id }, data: { ...input, ...attachments, type, amount, vat, total }, include: includeRelations });
+  return prisma.payment.update({ where: { id }, data: { ...input, ...parties(input.category ?? existing.category, { branchId: input.branchId ?? existing.branchId, employeeId: input.employeeId ?? existing.employeeId, branchIds: input.branchIds, employeeIds: input.employeeIds }), ...attachments, type, amount, vat, total }, include: includeRelations });
 }
 
 export async function softDelete(id: string) {

@@ -304,6 +304,16 @@ export function riyalsInWords(amount: number): string {
 }
 
 const VOUCHER_CSS = `<style>
+  table.vc-list { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 4.5mm; }
+  .vc-list th { background: #fbf6ea !important; color: #6b4e1d !important; font-size: 7.9pt !important; font-weight: 900; padding: 1.8mm 2mm !important; text-align: start; border: 0 !important; border-top: .5mm solid #b8904a !important; border-bottom: .3mm solid #b8904a !important; box-shadow: none !important; }
+  .vc-list th:first-child { width: 7mm; text-align: center; }
+  .vc-list th.m, .vc-list td.m { text-align: left; }
+  .vc-list td { padding: 1.3mm 2mm !important; font-size: 8.8pt !important; font-weight: 700; border: 0 !important; border-bottom: .2mm solid #efe7d4 !important; background: transparent !important; color: #1a1610; }
+  .vc-list td.c { text-align: center; color: #9a7433; font-weight: 900; }
+  .vc-list td.n, .vc-list td.m { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .vc-list td.m { font-weight: 900; color: #5e4418; }
+  .vc-list td.n { text-align: right; }
+  .vc-list tr { break-inside: avoid; }
   .vc-top { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4mm; margin: 0 0 4mm; break-inside: avoid; }
   .vc-amt { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 5.4mm 7mm 4.6mm; background: #15120c; color: #f3e3bd; border-radius: 1.4mm; box-shadow: inset 0 0 0 1.2mm #15120c, inset 0 0 0 1.45mm #b8904a, inset 0 0 0 2.2mm #15120c, inset 0 0 0 2.35mm #5e4a26; text-align: center; }
   .vc-amt::before, .vc-amt::after { content: ""; position: absolute; width: 5mm; height: 5mm; border: 0 solid #d9b877; }
@@ -369,6 +379,9 @@ export function paymentReceiptPdf(
       iqamaNumber?: string | null;
       sponsorName?: string | null;
     } | null;
+    /** A payment shared by several establishments / employees: all of them. */
+    branches?: { name: string; nameEn?: string | null; code?: string | null }[];
+    employees?: { employeeNumber?: string | null; fullNameAr: string; fullNameEn: string | null; iqamaNumber?: string | null; profession?: string | null; professionEn?: string | null }[];
   },
   branding: Branding,
   // A domestic worker's payments are made by the sponsor, whose name the voucher carries.
@@ -390,7 +403,23 @@ export function paymentReceiptPdf(
   const est = payment.branch ? pick(payment.branch.name, payment.branch.nameEn) : "";
   const cell = (label: string, value: string, num = false) => `<div><small>${label}</small><b${num ? ' class="num"' : ""}>${value}</b></div>`;
 
-  const person = emp
+  const manyBranches = (payment.branches?.length ?? 0) > 1 ? payment.branches! : null;
+  const manyEmployees = (payment.employees?.length ?? 0) > 1 ? payment.employees! : null;
+  const share = (n: number) => `${cur}${money(total / n)}`;
+  // Several parties: a ruled list, each with its equal share of the amount.
+  const partyList = manyEmployees
+    ? `<div class="section-header"><span>${L(`الموظفون (${manyEmployees.length})`, `Employees (${manyEmployees.length})`)}</span><span>${L("المبلغ مقسم بالتساوي", "Shared equally")}</span></div>
+    <table class="vc-list"><colgroup><col style="width:6%"><col style="width:35%"><col style="width:15%"><col style="width:17%"><col style="width:14%"><col style="width:13%"></colgroup><thead><tr><th>#</th><th>${L("الموظف", "Employee")}</th><th>${L("الرقم الوظيفي", "Employee no.")}</th><th>${L("رقم الإقامة", "Iqama no.")}</th><th>${L("المهنة", "Profession")}</th><th class="m">${L("الحصة", "Share")}</th></tr></thead>
+    <tbody>${manyEmployees.map((e, i) => `<tr><td class="c">${i + 1}</td><td>${pick(e.fullNameAr, e.fullNameEn)}</td><td class="n">${escapeHtml(e.employeeNumber || "—")}</td><td class="n">${escapeHtml(e.iqamaNumber || "—")}</td><td>${e.profession || e.professionEn ? pick(e.profession, e.professionEn) : "—"}</td><td class="m">${share(manyEmployees.length)}</td></tr>`).join("")}</tbody></table>`
+    : manyBranches
+      ? `<div class="section-header"><span>${L(`المنشآت (${manyBranches.length})`, `Establishments (${manyBranches.length})`)}</span><span>${L("المبلغ مقسم بالتساوي", "Shared equally")}</span></div>
+    <table class="vc-list"><colgroup><col style="width:6%"><col style="width:58%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>#</th><th>${L("المنشأة", "Establishment")}</th><th>${L("الرمز", "Code")}</th><th class="m">${L("الحصة", "Share")}</th></tr></thead>
+    <tbody>${manyBranches.map((b, i) => `<tr><td class="c">${i + 1}</td><td>${pick(b.name, b.nameEn)}</td><td class="n">${escapeHtml(b.code || "—")}</td><td class="m">${share(manyBranches.length)}</td></tr>`).join("")}</tbody></table>`
+      : "";
+
+  const person = manyEmployees || manyBranches
+    ? partyList
+    : emp
     ? `<div class="section-header"><span>${domestic ? L("بيانات العامل", "Worker") : L("بيانات الموظف", "Employee")}</span></div>
     <div class="vc-band">
       ${cell(domestic ? L("العامل", "Worker") : L("الموظف", "Employee"), pick(emp.fullNameAr, emp.fullNameEn))}
@@ -422,7 +451,7 @@ export function paymentReceiptPdf(
       ${domestic && emp?.sponsorName ? `<div class="vc-line"><span>${L("الكفيل", "Sponsor")}</span><b>${escapeHtml(emp.sponsorName)}</b></div>` : ""}
       <div class="vc-line"><span>${L("تم دفع مبلغ وقدره", "The sum of")}</span><b><span class="n">${cur}${money(total)}</span> — ${escapeHtml(words)}</b></div>
       <div class="vc-line"><span>${L("وذلك عن", "For")}</span><b>${escapeHtml(purpose)}</b></div>
-      ${!emp && est ? `<div class="vc-line"><span>${L("المنشأة", "Establishment")}</span><b>${est}</b></div>` : ""}
+      ${!emp && est && !manyBranches ? `<div class="vc-line"><span>${L("المنشأة", "Establishment")}</span><b>${est}</b></div>` : ""}
     </div>
 
     ${person}

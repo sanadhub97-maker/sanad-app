@@ -544,6 +544,10 @@ model Payment {
   paidBy          String?
   branchId        String?
   employeeId      String?
+  /// Wage protection covers several establishments, a health certificate several employees:
+  /// all of them (the first is also branchId / employeeId); the amount is shared equally.
+  branchIds       String[]         @default([])
+  employeeIds     String[]         @default([])
   supplierName    String?
   referenceNumber String?
   fileId          String?

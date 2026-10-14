@@ -138,6 +138,9 @@ export interface Payment {
   branch?: { id: string; name: string; nameEn?: string | null; code: string } | null;
   employeeId?: string | null;
   employee?: { id: string; employeeNumber: string; fullNameAr: string; fullNameEn?: string | null } | null;
+  /** A payment for several establishments (wage protection) or employees (health certificates). */
+  branchIds?: string[];
+  employeeIds?: string[];
   supplierName?: string | null;
   referenceNumber?: string | null;
   fileId?: string | null;

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { paginationSchema } from "@/utils/pagination";
 import { emptyToUndefined } from "@/utils/zodHelpers";
 import { PaymentCategory } from "@prisma/client";
-import { PAYMENT_SUBTYPES } from "@/constants/paymentCategories";
+import { PAYMENT_SUBTYPES, MULTI_BRANCH_CATEGORIES } from "@/constants/paymentCategories";
 
 export const paymentMethodEnum = z.enum(["CASH", "BANK_TRANSFER", "CARD", "ONLINE", "OTHER"]);
 export const paymentCategoryEnum = z.nativeEnum(PaymentCategory);
@@ -22,6 +22,8 @@ const basePaymentSchema = z.object({
   paidBy: emptyToUndefined(z.string().max(150).optional()),
   branchId: emptyToUndefined(z.string().optional()),
   employeeId: emptyToUndefined(z.string().optional()),
+  branchIds: z.array(z.string().min(1)).max(100).transform((ids) => [...new Set(ids)]).optional(),
+  employeeIds: z.array(z.string().min(1)).max(500).transform((ids) => [...new Set(ids)]).optional(),
   supplierName: emptyToUndefined(z.string().max(150).optional()),
   referenceNumber: emptyToUndefined(z.string().max(100).optional()),
   fileId: emptyToUndefined(z.string().optional()),
@@ -41,8 +43,11 @@ function checkCategoryFields(p: PaymentFields, ctx: z.RefinementCtx) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["type"], message: "Choose the transaction type" });
   }
   const needsEmployee = EMPLOYEE_CATEGORIES.includes(p.category) && !(p.category === "VISA" && p.type === "WORK_VISA");
-  if (needsEmployee && !p.employeeId) {
+  if (needsEmployee && !p.employeeId && !p.employeeIds?.length) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: "Choose the employee" });
+  }
+  if (MULTI_BRANCH_CATEGORIES.includes(p.category) && !p.branchId && !p.branchIds?.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["branchIds"], message: "Choose the establishments" });
   }
 }
 

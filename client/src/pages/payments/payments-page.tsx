@@ -228,8 +228,10 @@ export default function PaymentsPage() {
               {!isLoading &&
                 rows.map((p, j) => {
                   const sub = p.type && PAYMENT_SUBTYPES[p.category]?.includes(p.type) ? ` — ${t(`paymentSubtypes.${p.type}`)}` : "";
-                  const who = p.employee ? (isAr ? p.employee.fullNameAr : p.employee.fullNameEn || p.employee.fullNameAr) : p.supplierName;
-                  const branch = localized(p.branch?.name, p.branch?.nameEn);
+                  const more = (p.employeeIds?.length ?? 0) > 1 ? ` +${(p.employeeIds?.length ?? 1) - 1}` : "";
+                  const who = p.employee ? `${isAr ? p.employee.fullNameAr : p.employee.fullNameEn || p.employee.fullNameAr}${more}` : p.supplierName;
+                  const extra = (p.branchIds?.length ?? 0) > 1 ? ` +${(p.branchIds?.length ?? 1) - 1}` : "";
+                  const branch = localized(p.branch?.name, p.branch?.nameEn) ? `${localized(p.branch?.name, p.branch?.nameEn)}${extra}` : null;
                   const edit = () => hasPermission("payments.edit") && setDialog({ open: true, payment: p });
                   return (
                     <tr key={p.id} className="click" style={{ ["--j" as string]: j }} onClick={edit}>

@@ -69,6 +69,11 @@ export const PAYMENT_CATEGORIES = [
   "OTHER",
 ] as const;
 
+/** Categories paid once for several establishments / employees (amount shared equally).
+ * Keep in sync with server/src/constants/paymentCategories.ts. */
+export const MULTI_BRANCH_CATEGORIES: readonly string[] = ["WAGE_PROTECTION"];
+export const MULTI_EMPLOYEE_CATEGORIES: readonly string[] = ["HEALTH_CERTIFICATE"];
+
 /** Sub-types a category requires (labels in i18n paymentSubtypes.*). Keep in
  * sync with PAYMENT_SUBTYPES in server/src/constants/paymentCategories.ts. */
 export const PAYMENT_SUBTYPES: Record<string, readonly string[]> = {

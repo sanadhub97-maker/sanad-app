@@ -32,7 +32,8 @@ import { FormField } from "@/components/common/form-field";
 import { MultiFileUpload } from "@/components/common/multi-file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
-import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES } from "@/api/payments";
+import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES, MULTI_BRANCH_CATEGORIES, MULTI_EMPLOYEE_CATEGORIES } from "@/api/payments";
+import { MultiPicker } from "@/components/common/multi-picker";
 import { employeesApi } from "@/api/employees";
 import { EmployeePicker } from "@/components/common/employee-picker";
 import { getErrorMessage } from "@/lib/api";
@@ -54,6 +55,8 @@ const makeSchema = () => z.object({
   category: z.string().min(1),
   type: z.string().optional(),
   employeeId: z.string().optional(),
+  employeeIds: z.array(z.string()).default([]),
+  branchIds: z.array(z.string()).default([]),
   description: z.string().optional(),
   amount: z.coerce.number().positive(tr("يجب أن يكون أكبر من صفر", "Must be greater than 0")),
   vat: z.coerce.number().min(0).default(0),
@@ -74,8 +77,12 @@ const makeSchema = () => z.object({
       message: v.category === "VISA" ? tr("اختر نوع التأشيرة", "Select the visa type") : tr("اختر نوع العملية", "Select the transaction type"),
     });
   }
-  if (needsEmployee(v.category, v.type) && !v.employeeId) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["employeeId"], message: tr("اختر الموظف", "Select an employee") });
+  const multiEmployee = MULTI_EMPLOYEE_CATEGORIES.includes(v.category);
+  if (needsEmployee(v.category, v.type) && (multiEmployee ? !v.employeeIds.length : !v.employeeId)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: [multiEmployee ? "employeeIds" : "employeeId"], message: multiEmployee ? tr("اختر موظفًا واحدًا على الأقل", "Select at least one employee") : tr("اختر الموظف", "Select an employee") });
+  }
+  if (MULTI_BRANCH_CATEGORIES.includes(v.category) && !v.branchIds.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["branchIds"], message: tr("اختر منشأة واحدة على الأقل", "Select at least one establishment") });
   }
 });
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
@@ -124,6 +131,8 @@ export function PaymentDialog({
   const [uploadingAttachments, setUploadingAttachments] = useState(false);
   const visaType = watch("type");
   const showEmployee = !!category && EMPLOYEE_CATEGORIES.includes(category);
+  const multiBranch = !!category && MULTI_BRANCH_CATEGORIES.includes(category);
+  const multiEmployee = !!category && MULTI_EMPLOYEE_CATEGORIES.includes(category);
   const subtypes = category ? PAYMENT_SUBTYPES[category] : undefined;
 
   // A sub-type from the previous category (e.g. "cancellation" from a license)
@@ -137,8 +146,8 @@ export function PaymentDialog({
   const total = (Number(amount) + Number(vat)).toFixed(2);
   // The live voucher beside the form follows what is typed.
   const live = watch();
-  const liveBranch = branches?.find((b) => b.id === live.branchId);
-  const liveEmployee = employees.find((e) => e.id === live.employeeId);
+  const liveBranch = branches?.find((b) => b.id === (multiBranch ? live.branchIds?.[0] : live.branchId));
+  const liveEmployee = employees.find((e) => e.id === (multiEmployee ? live.employeeIds?.[0] : live.employeeId));
 
   useEffect(() => {
     if (open) {
@@ -147,6 +156,8 @@ export function PaymentDialog({
           ? (nullsToUndefined({
               ...payment,
               branchId: payment.branchId ?? undefined,
+              branchIds: payment.branchIds?.length ? payment.branchIds : payment.branchId ? [payment.branchId] : [],
+              employeeIds: payment.employeeIds?.length ? payment.employeeIds : payment.employeeId ? [payment.employeeId] : [],
               paymentDate: toDateInputValue(payment.paymentDate),
               fileId: payment.fileId ?? undefined,
               fileIds: payment.fileIds?.length ? payment.fileIds : payment.fileId ? [payment.fileId] : [],
@@ -162,7 +173,18 @@ export function PaymentDialog({
   }, [open, payment, reset]);
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) => (isEdit ? paymentsApi.update(payment!.id, values) : paymentsApi.create(values)),
+    mutationFn: (raw: FormValues) => {
+      const mb = MULTI_BRANCH_CATEGORIES.includes(raw.category);
+      const me = MULTI_EMPLOYEE_CATEGORIES.includes(raw.category);
+      const values = {
+        ...raw,
+        branchIds: mb ? raw.branchIds : [],
+        employeeIds: me ? raw.employeeIds : [],
+        branchId: mb ? raw.branchIds[0] : raw.branchId,
+        employeeId: me ? raw.employeeIds[0] : raw.employeeId,
+      };
+      return isEdit ? paymentsApi.update(payment!.id, values) : paymentsApi.create(values);
+    },
     onSuccess: (res) => {
       toast.success(res.message ?? (isAr ? "تم حفظ سند الصرف بنجاح" : "Payment saved successfully."));
       queryClient.invalidateQueries({ queryKey: ["payments"] });
@@ -383,7 +405,32 @@ export function PaymentDialog({
                 </FormField>
               )}
 
-              {showEmployee && (
+              {multiEmployee && (
+                <FormField
+                  label={isAr ? "الموظفون" : "Employees"}
+                  icon={User}
+                  required
+                  hint={isAr ? "المبلغ يتقسم عليهم بالتساوي" : "The amount is shared equally"}
+                  error={errors.employeeIds?.message}
+                  className="sm:col-span-2"
+                >
+                  <Controller
+                    control={control}
+                    name="employeeIds"
+                    render={({ field }) => (
+                      <MultiPicker
+                        options={employees.map((e) => ({ id: e.id, label: localized(e.fullNameAr, e.fullNameEn) ?? e.fullNameAr, hint: [e.employeeNumber, e.iqamaNumber].filter(Boolean).join(" · ") }))}
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder={isAr ? "اختر الموظفين" : "Select employees"}
+                        invalid={!!errors.employeeIds}
+                      />
+                    )}
+                  />
+                </FormField>
+              )}
+
+              {showEmployee && !multiEmployee && (
                 <FormField
                   label={isAr ? "الموظف" : "Employee"}
                   icon={User}
@@ -431,6 +478,30 @@ export function PaymentDialog({
                 />
               </FormField>
 
+              {multiBranch ? (
+                <FormField
+                  label={isAr ? "المنشآت التابع لها" : "Establishments"}
+                  icon={Building2}
+                  required
+                  hint={isAr ? "المبلغ يتقسم عليها بالتساوي" : "The amount is shared equally"}
+                  error={errors.branchIds?.message}
+                  className="sm:col-span-2"
+                >
+                  <Controller
+                    control={control}
+                    name="branchIds"
+                    render={({ field }) => (
+                      <MultiPicker
+                        options={(branches ?? []).map((b) => ({ id: b.id, label: localized(b.name, b.nameEn) ?? b.name, hint: b.code }))}
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder={isAr ? "اختر المنشآت" : "Select establishments"}
+                        invalid={!!errors.branchIds}
+                      />
+                    )}
+                  />
+                </FormField>
+              ) : (
               <FormField
                 label={isAr ? "المؤسسة التابع لها" : "Establishment"}
                 icon={Building2}
@@ -454,6 +525,7 @@ export function PaymentDialog({
                   )}
                 />
               </FormField>
+              )}
 
               <FormField
                 label={isAr ? "القائم بالصرف" : "Paid By"}
