@@ -254,6 +254,9 @@ export function employeeProfilePdf(
   });
 }
 
+/** The Saudi riyal sign (the official symbol, drawn as a shape so it prints without a font), set after an amount. */
+const SAR = `<svg class="sar" viewBox="40 0 1150 1270" aria-label="SAR" style="display:inline-block;width:.8em;height:.88em;vertical-align:-.08em;margin:0 .22em 0 0;fill:currentColor"><path d="M750 1119C730 1163 716 1211 711 1262L1136 1172C1156 1127 1169 1079 1174 1028L750 1119ZM1136 901C1156 857 1169 809 1174 758L843 828V693L1136 631C1156 587 1169 538 1174 488L843 558V72C793 100 748 138 711 183V586L579 614V6C528 34 483 72 447 117V642L151 705C131 750 117 798 112 849L447 777V948L88 1024C68 1068 55 1117 50 1167L425 1088C456 1081 482 1063 499 1038L568 936C575 926 579 913 579 899V749L711 721V992L1136 901Z"/></svg>`;
+
 /* ---------- Amounts in words (Arabic), for the voucher ---------- */
 
 const ONES = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
@@ -308,7 +311,7 @@ const VOUCHER_CSS = `<style>
   .vc-amt::after { bottom: 3.4mm; left: 3.4mm; border-bottom-width: .45mm; border-left-width: .45mm; }
   .vc-amt small { display: block; font-size: 8.4pt; letter-spacing: .05em; color: #c9a464; font-weight: 700; }
   .vc-amt b { display: block; font-size: 31pt; font-weight: 900; line-height: 1.2; color: #f3dfae; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; margin: 1.2mm 0 1mm; }
-  .vc-amt b span { font-size: 11pt; font-weight: 700; color: #d8c49a; padding-inline-start: 1.8mm; }
+  .vc-amt b span { font-size: 18pt; color: #d8c49a; }
   .vc-amt em { display: block; font-style: normal; font-size: 10pt; font-weight: 700; color: #eadcb8; border-top: .25mm solid #6b5530; padding-top: 2.2mm; margin: 1.2mm 6mm 0; line-height: 1.6; }
   .vc-meta { display: grid; grid-template-columns: 1fr 1fr; border: .3mm solid #d4c194; background: #fff; box-shadow: inset 0 0 0 1mm #fff, inset 0 0 0 1.25mm #ece1c4; }
   .vc-meta > div { padding: 2.7mm 3.6mm; border-bottom: .25mm solid #ece3cd; }
@@ -373,7 +376,7 @@ export function paymentReceiptPdf(
 ) {
   const money = (v: unknown) => Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const total = Number(payment.total || 0);
-  const cur = L("ر.س", "SAR");
+  const cur = SAR;
   const emp = payment.employee;
   const domestic = !!(emp && opts.domestic);
   let hijri = "";
@@ -401,7 +404,7 @@ export function paymentReceiptPdf(
     <div class="vc-top">
       <div class="vc-amt">
         <small>${L("المبلغ المدفوع · شامل ضريبة القيمة المضافة", "Amount paid · VAT included")}</small>
-        <b>${money(total)}<span>${cur}</span></b>
+        <b><span>${cur}</span>${money(total)}</b>
         <em>${escapeHtml(words)}</em>
       </div>
       <div class="vc-meta">
@@ -417,7 +420,7 @@ export function paymentReceiptPdf(
     <div class="vc-deed">
       <div class="vc-deed-t">${L("بيان الدفع", "Payment statement")}</div>
       ${domestic && emp?.sponsorName ? `<div class="vc-line"><span>${L("الكفيل", "Sponsor")}</span><b>${escapeHtml(emp.sponsorName)}</b></div>` : ""}
-      <div class="vc-line"><span>${L("تم دفع مبلغ وقدره", "The sum of")}</span><b><span class="n">${money(total)} ${cur}</span> — ${escapeHtml(words)}</b></div>
+      <div class="vc-line"><span>${L("تم دفع مبلغ وقدره", "The sum of")}</span><b><span class="n">${cur}${money(total)}</span> — ${escapeHtml(words)}</b></div>
       <div class="vc-line"><span>${L("وذلك عن", "For")}</span><b>${escapeHtml(purpose)}</b></div>
       ${!emp && est ? `<div class="vc-line"><span>${L("المنشأة", "Establishment")}</span><b>${est}</b></div>` : ""}
     </div>
@@ -426,9 +429,9 @@ export function paymentReceiptPdf(
 
     <div class="section-header"><span>${L("تفاصيل المبلغ", "Amount")}</span><span>${L("بالريال السعودي", "In Saudi riyals")}</span></div>
     <div class="vc-band">
-      ${cell(L("المبلغ قبل الضريبة", "Before VAT"), `${money(payment.amount)} ${cur}`, true)}
-      ${cell(L("ضريبة القيمة المضافة", "VAT"), `${money(payment.vat)} ${cur}`, true)}
-      <div class="tot"><small>${L("الإجمالي المدفوع", "Total paid")}</small><b class="num">${money(total)} ${cur}</b></div>
+      ${cell(L("المبلغ قبل الضريبة", "Before VAT"), `${cur}${money(payment.amount)}`, true)}
+      ${cell(L("ضريبة القيمة المضافة", "VAT"), `${cur}${money(payment.vat)}`, true)}
+      <div class="tot"><small>${L("الإجمالي المدفوع", "Total paid")}</small><b class="num">${cur}${money(total)}</b></div>
     </div>
 
     ${signatureBlock("voucher", branding)}
@@ -838,5 +841,314 @@ export function employeesDocumentsReportPdf(rows: EmployeeDocsRow[], branding: B
     brandColor: branding.brandColor,
     highlight: { value: String(rows.length).padStart(2, "0"), label: L("موظف في التقرير", "employees") },
     bodyHtml: content,
+  });
+}
+
+/* ---------- Payment vouchers report: totals, a split by category and method, the ledger ---------- */
+
+export interface PaymentReportRow {
+  paymentNumber: string;
+  paymentDate: Date;
+  category: string;
+  type?: string | null;
+  method: string;
+  description?: string | null;
+  branch: string | null;
+  branchEn: string | null;
+  employee: string | null;
+  employeeEn: string | null;
+  amount: number;
+  vat: number;
+  total: number;
+}
+
+/** A ring of small gold petals and beads around the crest's medallion (solid fills: PDF-safe). */
+const PR_CREST_RING = (() => {
+  const c = 50, parts: string[] = [];
+  for (let k = 0; k < 48; k++) {
+    const a = (k / 48) * Math.PI * 2, r1 = 41, r2 = 47.5, w = 0.055;
+    const p = (r: number, t: number) => `${(c + r * Math.cos(t)).toFixed(2)},${(c + r * Math.sin(t)).toFixed(2)}`;
+    if (k % 2 === 0) parts.push(`<polygon points="${p(r1, a)} ${p((r1 + r2) / 2, a - w)} ${p(r2, a)} ${p((r1 + r2) / 2, a + w)}" fill="#b8904a"/>`);
+    else parts.push(`<circle cx="${(c + 44.2 * Math.cos(a)).toFixed(2)}" cy="${(c + 44.2 * Math.sin(a)).toFixed(2)}" r=".9" fill="#c9a464"/>`);
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="49.3" fill="none" stroke="#b8904a" stroke-width=".5"/><circle cx="50" cy="50" r="39.6" fill="none" stroke="#b8904a" stroke-width=".5"/>${parts.join("")}</svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+})();
+
+/** The first letters of a name's first two words, for an establishment with no logo. */
+function monogram(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((w) => w.replace(/^ال/, "").charAt(0)).join(" ");
+}
+
+const PAY_REP_CSS = `<style>
+  /* the watermark: the establishment's logo, faint, in the middle of every page */
+  .pr-wm { position: fixed; left: 50%; top: 53%; width: 118mm; height: 118mm; transform: translate(-50%, -50%); z-index: -1; pointer-events: none; display: grid; place-items: center; }
+  .pr-wm img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: .065; filter: grayscale(1) sepia(.7); }
+
+  /* a centred ornament: gold rules ending in diamonds, a title between them */
+  .pr-orn { display: flex; align-items: center; gap: 3mm; margin: 0 0 3mm; break-after: avoid; }
+  .pr-orn::before, .pr-orn::after { content: ""; flex: 1; height: .3mm; background: #c9a464; }
+  .pr-orn > i { flex: none; width: 1.8mm; height: 1.8mm; background: #b8904a; transform: rotate(45deg); }
+  .pr-orn > b { flex: none; font-size: 10.6pt; font-weight: 900; color: #5e4418; letter-spacing: .02em; padding: 0 1mm; }
+  .pr-orn > b span { font-size: 7.6pt; font-weight: 700; color: #9a7433; padding-inline-start: 2mm; }
+
+  /* the establishment's registrations, centred between gold rules */
+  .pr-idf { display: flex; justify-content: center; align-items: center; flex-wrap: nowrap; gap: 0; padding: 2.4mm 0; margin: 0 0 5mm; border-top: .3mm solid #d9c69a; border-bottom: .3mm solid #d9c69a; font-size: 8.4pt; break-inside: avoid; }
+  .pr-idf > div { white-space: nowrap; padding: 0 2.8mm; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .pr-idf > i { flex: none; width: 1.5mm; height: 1.5mm; background: #b8904a; transform: rotate(45deg); }
+  .pr-idf span { color: #8a7c62; font-weight: 700; padding-inline-end: 1.6mm; }
+  .pr-idf b { color: #1a1610; font-weight: 800; }
+  .pr-idf b.n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  /* the crest: the establishment's medallion, its name and its registrations, centred */
+  .pr-crest { display: flex; justify-content: center; align-items: center; gap: 6mm; margin: 0 0 3mm; break-inside: avoid; }
+  .pr-crest > div:last-child { text-align: start; }
+  .pr-medal { flex: none; position: relative; width: 28mm; height: 28mm; margin: 0; display: grid; place-items: center; background: ${PR_CREST_RING} center / 100% 100% no-repeat; }
+  .pr-medal > div { width: 21mm; height: 21mm; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: #fff; box-shadow: 0 0 0 .5mm #fff, 0 0 0 .85mm #b8904a; }
+  .pr-medal img { width: 78%; height: 78%; object-fit: contain; }
+  .pr-medal span { width: 100%; height: 100%; display: grid; place-items: center; background: #fbf6ea; color: #6b4e1d; font-size: 17pt; font-weight: 900; }
+  .pr-crest small { display: block; font-size: 8pt; font-weight: 800; color: #9a7433; letter-spacing: .12em; }
+  .pr-crest h2 { margin: .6mm 0 1.8mm; font-size: 17pt; font-weight: 900; color: #1a1610; line-height: 1.3; }
+  .pr-facts { display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 1mm 0; font-size: 8.6pt; }
+  .pr-facts > div { white-space: nowrap; padding: 0 3.4mm; }
+  .pr-facts > div:first-child { padding-inline-start: 0; }
+  .pr-facts > div + div { border-inline-start: .3mm solid #d4c194; }
+  .pr-facts span { color: #8a7c62; font-weight: 700; padding-inline-end: 1.4mm; }
+  .pr-facts b { color: #1a1610; font-weight: 800; }
+  .pr-facts b.n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .pr-by { margin-top: 1.4mm; font-size: 7.8pt; color: #8a7c62; font-weight: 700; }
+  .pr-by b { color: #5e4418; font-weight: 800; padding-inline-start: 1mm; }
+
+  /* the total, in a framed cartouche with its ribbon on the top rule */
+  .pr-cart { position: relative; display: grid; grid-template-columns: 1fr 1.5fr 1fr; align-items: center; margin: 5mm 0 2mm; padding: 6mm 4mm 3.6mm; background: #fffdf8; border: .4mm solid #b8904a; box-shadow: inset 0 0 0 1.2mm #fffdf8, inset 0 0 0 1.45mm #d9c69a, inset 0 0 0 2.4mm #fffdf8, inset 0 0 0 2.55mm #ece1c4; break-inside: avoid; }
+  .pr-cart > i { position: absolute; width: 4.6mm; height: 4.6mm; background: #fffdf8; border: .4mm solid #b8904a; transform: rotate(45deg); }
+  .pr-cart > i.a { top: -2.3mm; right: -2.3mm; } .pr-cart > i.b { top: -2.3mm; left: -2.3mm; } .pr-cart > i.c { bottom: -2.3mm; right: -2.3mm; } .pr-cart > i.d { bottom: -2.3mm; left: -2.3mm; }
+  .pr-cart > i::after { content: ""; position: absolute; inset: .9mm; background: #b8904a; }
+  .pr-rib { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; background: #fffdf8; padding: 0 4mm; font-size: 8.6pt; font-weight: 900; color: #9a7433; letter-spacing: .06em; }
+  .pr-cart .side { text-align: center; }
+  .pr-cart .side small { display: block; font-size: 7.8pt; color: #8a7c62; font-weight: 700; }
+  .pr-cart .side b { display: block; font-size: 12pt; font-weight: 900; color: #5e4418; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; margin-top: .6mm; }
+  .pr-cart .side b span { font-size: 10pt; color: #a8925f; }
+  .pr-cart .mid { text-align: center; padding: 0 4mm; border-inline: .3mm solid #e6dcc4; }
+  .pr-cart .mid b { display: block; font-size: 26pt; font-weight: 900; color: #5e4418; line-height: 1.1; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .pr-cart .mid b span { font-size: 17pt; color: #9a7433; }
+  .pr-cart .mid b.txt span { font-size: 10pt; font-weight: 700; padding-inline-start: 1.6mm; }
+  .pr-cart .side b.txt span { font-size: 7.4pt; padding-inline-start: 1mm; }
+  .pr-cart .mid em { display: block; font-style: normal; font-size: 8.6pt; font-weight: 700; color: #6b5a3e; margin-top: 1.2mm; line-height: 1.5; }
+  .pr-strip { display: flex; justify-content: center; align-items: center; gap: 0; margin: 0 0 5mm; font-size: 8.4pt; font-weight: 700; color: #8a7c62; }
+  .pr-strip > div { padding: 0 4mm; white-space: nowrap; display: inline-flex; gap: 1.8mm; align-items: baseline; }
+  .pr-strip > div + div { border-inline-start: .3mm solid #d4c194; }
+  .pr-strip b { color: #1a1610; font-weight: 900; }
+  .pr-strip b.n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+
+  /* where the money went: one ruled summary table by category, the methods on a line under it */
+  table.pr-sumt thead, table.pr-sumt thead tr, table.pr-led thead, table.pr-led thead tr { border: 0 !important; box-shadow: none !important; background: none !important; }
+  table.pr-sumt th, table.pr-led thead th { box-shadow: none !important; }
+  table.pr-sumt { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 2.4mm; }
+  .pr-sumt th { background: transparent !important; color: #8a7c62 !important; font-size: 7.6pt !important; font-weight: 800; padding: 0 2mm 1.6mm !important; text-align: start; border: 0 !important; border-bottom: .35mm solid #b8904a !important; white-space: nowrap; }
+  .pr-sumt th.c, .pr-sumt td.c { text-align: center; }
+  .pr-sumt th.m, .pr-sumt td.m { text-align: end; }
+  .pr-sumt td { padding: 1.7mm 2mm !important; font-size: 9pt !important; border: 0 !important; border-bottom: .2mm solid #efe7d4 !important; vertical-align: middle; background: transparent !important; color: #1a1610; }
+  .pr-sumt td.k i { display: inline-grid; place-items: center; width: 5.6mm; height: 5.6mm; border-radius: 50%; font-style: normal; font-size: 7.4pt; font-weight: 900; color: #6b4e1d; background: #fbf6ea; box-shadow: 0 0 0 .3mm #b8904a, 0 0 0 .6mm #fff, 0 0 0 .8mm #d9c69a; }
+  .pr-sumt td.l { font-weight: 800; }
+  .pr-sumt td.c { font-weight: 800; color: #5e4418; }
+  .pr-sumt td.bar { padding-inline-end: 4mm !important; }
+  .pr-sumt td.bar > div { display: flex; align-items: center; gap: 2mm; }
+  .pr-sumt td.bar u { flex: 1; display: block; height: 1.3mm; background: #f1e9d6; text-decoration: none; border-radius: 1mm; overflow: hidden; }
+  .pr-sumt td.bar u s { display: block; height: 100%; background: #b8904a; text-decoration: none; }
+  .pr-sumt td.bar b { flex: none; width: 9mm; text-align: end; font-size: 8pt; font-weight: 900; color: #9a7433; direction: ltr; unicode-bidi: isolate; }
+  .pr-sumt td.m { font-weight: 900; color: #5e4418; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pr-meth { display: flex; flex-wrap: wrap; align-items: center; gap: 1.6mm 0; margin: 0 0 6mm; font-size: 8.6pt; break-inside: avoid; }
+  .pr-meth > b { font-weight: 900; color: #5e4418; padding-inline-end: 3mm; }
+  .pr-meth > span { padding: 0 3mm; font-weight: 800; color: #1a1610; white-space: nowrap; }
+  .pr-meth > span + span { border-inline-start: .3mm solid #d4c194; }
+  .pr-meth em { font-style: normal; color: #8a7c62; font-weight: 700; padding-inline-start: 1.4mm; }
+
+  /* the ledger: gold-ruled, months as small ribbons, the total between double rules */
+  table.pr-led { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .pr-led thead th { background: #fbf6ea !important; color: #6b4e1d !important; font-size: 7.9pt !important; font-weight: 900; padding: 2.2mm 2mm !important; text-align: start; border: 0 !important; border-top: 1mm double #b8904a !important; border-bottom: .3mm solid #b8904a !important; white-space: nowrap; }
+  .pr-led thead th.m { text-align: end; }
+  .pr-led td { padding: 1.5mm 2mm !important; font-size: 8.8pt !important; border: 0 !important; border-bottom: .2mm solid #efe7d4 !important; vertical-align: middle; color: #1a1610; background: transparent !important; }
+  .pr-led tbody tr:nth-child(odd):not(.mo) td { background: #fffdf8 !important; }
+  .pr-led tr { break-inside: avoid; }
+  .pr-led tr.mo td { padding: 2.4mm 2mm 1.2mm !important; border-bottom: .3mm solid #d9c69a !important; font-size: 8.8pt !important; font-weight: 900; color: #9a7433; background: transparent !important; }
+  .pr-led tr.mo td small { display: inline; font-size: 7.4pt; color: #a8925f; font-weight: 700; padding-inline-start: 2mm; margin: 0; }
+  .pr-led tr.mo td .dm { display: inline-block; width: 1.5mm; height: 1.5mm; background: #b8904a; transform: rotate(45deg); margin-inline-end: 2mm; vertical-align: .2em; }
+  .pr-led tr.mo td.m { color: #a8925f; font-weight: 800; font-size: 8pt !important; }
+  .pr-led td.i { text-align: center; color: #b8904a; font-weight: 900; font-size: 8pt !important; }
+  .pr-led td b { display: block; font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+  .pr-led td small { display: block; font-size: 7.4pt; color: #8a7c62; font-weight: 600; margin-top: .4mm; line-height: 1.45; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .pr-led td small.one { display: block; white-space: nowrap; -webkit-line-clamp: unset; }
+  .pr-led td b { line-height: 1.4; }
+  .pr-led tr.mo td.sub { text-align: end; color: #a8925f; font-weight: 700; font-size: 7.6pt !important; }
+  .pr-led .no { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pr-led td.m { text-align: end; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+  .pr-led td.t { font-weight: 900; color: #5e4418; }
+  .pr-led td.z { color: #c2b69c; }
+  .pr-led td .self { color: #8a7c62; font-weight: 700; }
+  .pr-led tfoot { display: table-row-group; }
+  .pr-led tfoot td { padding: 2.6mm 2mm !important; font-size: 9.8pt !important; font-weight: 900; color: #5e4418; background: #fbf6ea !important; border: 0 !important; border-top: .4mm solid #b8904a !important; border-bottom: 1.2mm double #b8904a !important; }
+  .pr-led tfoot td.t { font-size: 11pt !important; }
+  table.pr-led ~ .signature-matrix { margin-top: 3.5mm !important; }
+  table.pr-led ~ .signature-matrix .sig-card-header { padding: 1.4mm 1mm !important; }
+  table.pr-led ~ .signature-matrix .sig-card-body { padding: 2.2mm 3mm !important; }
+  table.pr-led ~ .signature-matrix .sig-row { height: 8.6mm !important; margin-bottom: .8mm !important; }
+  table.pr-led ~ .signature-matrix .stamp-img { width: 26mm; height: 26mm; }
+</style>`;
+
+/** The establishment a statement is for: its name, logo and registrations head the pages, its logo is the watermark. */
+export interface PaymentStatementEstablishment { name: string; nameEn?: string | null; logo?: string | null; owner?: string | null; cr?: string | null; vat?: string | null; code?: string | null }
+
+export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, est?: PaymentStatementEstablishment) {
+  const money = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // A statement shows the riyal sign before the amount; the company-wide report keeps "ر.س" after it.
+  const cur = est ? SAR : L("ر.س", "SAR");
+  const withCur = (v: string, wrap = true) => (est ? `${wrap ? `<span>${cur}</span>` : cur}${v}` : `${v}${wrap ? `<span>${cur}</span>` : ` ${cur}`}`);
+  const sum = (list: PaymentReportRow[], k: "amount" | "vat" | "total") => list.reduce((s, r) => s + (Number(r[k]) || 0), 0);
+  const amount = sum(rows, "amount"), vat = sum(rows, "vat"), total = sum(rows, "total");
+  const name = (ar: string | null, en: string | null) => escapeHtml((isEn() ? en || ar : ar || en) || "");
+  const pct = (v: number) => (total ? Math.round((v / total) * 100) : 0);
+
+  // The period the vouchers cover, oldest to newest.
+  const times = rows.map((r) => new Date(r.paymentDate).getTime()).filter((t) => !Number.isNaN(t));
+  const period = times.length ? `${fmtDate(new Date(Math.min(...times)))} — ${fmtDate(new Date(Math.max(...times)))}` : "—";
+
+  // Totals per key, largest first; past `keep` the rest fold into "other".
+  const group = (key: (r: PaymentReportRow) => string, label: (k: string) => string, keep: number) => {
+    const m = new Map<string, { n: number; v: number }>();
+    for (const r of rows) {
+      const e = m.get(key(r)) ?? { n: 0, v: 0 };
+      e.n++;
+      e.v += Number(r.total) || 0;
+      m.set(key(r), e);
+    }
+    let list = [...m.entries()].map(([k, e]) => ({ label: label(k), ...e })).sort((a, b) => b.v - a.v);
+    if (list.length > keep) {
+      const rest = list.slice(keep - 1);
+      list = [...list.slice(0, keep - 1), { label: L("بنود أخرى", "Other"), n: rest.reduce((s, e) => s + e.n, 0), v: rest.reduce((s, e) => s + e.v, 0) }];
+    }
+    return list;
+  };
+  // The amounts are summed once, by category; the methods line only counts the vouchers.
+  const catRows = (list: ReturnType<typeof group>) =>
+    list
+      .map((e, i) => `<tr><td class="k c"><i>${i + 1}</i></td><td class="l">${e.label}</td><td class="c">${e.n}</td><td class="bar"><div><u><s style="width:${Math.max(3, pct(e.v))}%;${isEn() ? "" : "margin-left:auto"}"></s></u><b>${pct(e.v)}%</b></div></td><td class="m">${money(e.v)}</td></tr>`)
+      .join("");
+  const methodLine = (list: ReturnType<typeof group>) =>
+    [...list].sort((x, y) => y.n - x.n).map((e) => `<span>${e.label}<em><bdi>${L(`${e.n} سند`, `${e.n} vouchers`)}</bdi> · <bdi dir="ltr">${rows.length ? Math.round((e.n / rows.length) * 100) : 0}%</bdi></em></span>`).join("");
+  const cats = group((r) => `${r.category}|${r.type ?? ""}`, (k) => { const [c, t] = k.split("|"); return paymentCategoryLabel(c, t || null); }, 6);
+  const methods = group((r) => r.method, (k) => paymentMethodLabel(k), 4);
+  const estCount = new Set(rows.map((r) => r.branch ?? "")).size;
+  const orn = (title: string, note = "") => `<div class="pr-orn"><i></i><b>${title}${note ? `<span>${note}</span>` : ""}</b><i></i></div>`;
+
+  // The crest: the establishment (or, for the whole report, the company).
+  const fact = (label: string, value?: string | null, num = false) => (value ? `<div><span>${label}</span><b${num ? ' class="n"' : ""}>${escapeHtml(value)}</b></div>` : "");
+  // The establishment's registrations, on one ruled line under the title (its name and logo are in the page header).
+  const crest = est
+    ? `<div class="pr-idf">
+        ${[fact(L("السجل التجاري", "CR no."), est.cr, true), fact(L("الرقم الضريبي", "VAT no."), est.vat, true), fact(L("المالك", "Owner"), est.owner), fact(L("الرمز", "Code"), est.code, true)].filter(Boolean).join("<i></i>")}
+      </div>`
+    : "";
+
+  // The ledger, a chapter per month (newest first) with its subtotal; a short month stays on one page.
+  const monthKey = (d: Date) => `${new Date(d).getFullYear()}-${String(new Date(d).getMonth() + 1).padStart(2, "0")}`;
+  const monthName = (d: Date) => new Date(d).toLocaleDateString(isEn() ? "en-GB" : "ar-EG-u-nu-latn", { month: "long", year: "numeric", timeZone: "Asia/Riyadh" });
+  const months: { label: string; rows: PaymentReportRow[] }[] = [];
+  for (const r of rows) {
+    const last = months[months.length - 1];
+    if (last && monthKey(last.rows[0].paymentDate) === monthKey(r.paymentDate)) last.rows.push(r);
+    else months.push({ label: monthName(r.paymentDate), rows: [r] });
+  }
+  let n = 0;
+  const ledger = months
+    .map((m) => {
+      const head = `<tr class="mo"><td colspan="4"><span class="dm"></span><bdi>${escapeHtml(m.label)}</bdi><small><bdi>${L(`${m.rows.length} سند`, `${m.rows.length} vouchers`)}</bdi></small></td><td colspan="2" class="sub">${L("مجموع الشهر", "Month total")}</td><td class="m">${money(sum(m.rows, "total"))}</td></tr>`;
+      const body = m.rows
+        .map((r) => {
+          const place = name(r.branch, r.branchEn);
+          const person = name(r.employee, r.employeeEn);
+          const payee = est ? person || `<span class="self">${L("المنشأة نفسها", "The establishment")}</span>` : place || person || "—";
+          const z = (v: number) => (Number(v) ? "" : " z");
+          return `<tr>
+        <td class="i">${++n}</td>
+        <td><b class="no">${escapeHtml(r.paymentNumber)}</b><small class="one"><span class="no">${fmtDate(r.paymentDate)}</span></small></td>
+        <td><b>${paymentCategoryLabel(r.category, r.type ?? null)}</b><small>${paymentMethodLabel(r.method)}${r.description ? ` · ${escapeHtml(r.description)}` : ""}</small></td>
+        <td><b>${payee}</b>${!est && place && person ? `<small class="one">${person}</small>` : ""}</td>
+        <td class="m${z(r.amount)}">${money(Number(r.amount))}</td>
+        <td class="m${z(r.vat)}">${money(Number(r.vat))}</td>
+        <td class="m t">${money(Number(r.total))}</td>
+      </tr>`;
+        })
+        .join("");
+      return `<tbody${m.rows.length <= 8 ? ' style="break-inside:avoid"' : ""}>${head}${body}</tbody>`;
+    })
+    .join("");
+
+  const watermark = est?.logo ? `<style>.pr-wm { position: fixed; left: 50%; top: 53%; width: 118mm; height: 118mm; transform: translate(-50%, -50%); z-index: -1; pointer-events: none; display: grid; place-items: center; } .pr-wm img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: .065; filter: grayscale(1) sepia(.7); }</style><div class="pr-wm" aria-hidden="true"><img src="${est.logo}" alt="" /></div><style>.mk-wm { display: none !important; }</style>` : "";
+  const words = isEn() ? "" : escapeHtml(riyalsInWords(total));
+
+  const body = `${PAY_REP_CSS}${watermark}
+    ${crest}
+    ${rows.length
+      ? `<div class="pr-cart">
+      <i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i>
+      <div class="pr-rib">${L("إجمالي المدفوعات · شامل الضريبة", "TOTAL PAID · VAT INCLUDED")}</div>
+      <div class="side"><small>${L("المبالغ قبل الضريبة", "Before VAT")}</small><b${est ? "" : ' class="txt"'}>${withCur(money(amount))}</b></div>
+      <div class="mid"><b${est ? "" : ' class="txt"'}>${withCur(money(total))}</b>${words ? `<em>${words}</em>` : ""}</div>
+      <div class="side"><small>${L("ضريبة القيمة المضافة", "VAT")}</small><b${est ? "" : ' class="txt"'}>${withCur(money(vat))}</b></div>
+    </div>
+    <div class="pr-strip">
+${est ? "" : `<div>${L("عدد المنشآت", "Establishments")}<b class="n">${estCount}</b></div>`}
+      <div>${L("عدد السندات", "Vouchers")}<b class="n">${rows.length}</b></div>
+      <div>${L("متوسط السند", "Average")}<b class="n">${withCur(money(total / rows.length), false)}</b></div>
+      <div>${L("الفترة", "Period")}<b class="n">${period}</b></div>
+    </div>
+
+    ${orn(L("ملخص بنود الصرف", "By category"))}
+    <table class="pr-sumt">
+      <colgroup><col style="width:7%"><col style="width:37%"><col style="width:13%"><col style="width:27%"><col style="width:16%"></colgroup>
+      <thead><tr><th class="c">#</th><th>${L("بند الصرف", "Category")}</th><th class="c">${L("عدد السندات", "Vouchers")}</th><th>${L("النسبة من الإجمالي", "Share")}</th><th class="m">${L("المبلغ", "Amount")}</th></tr></thead>
+      <tbody>${catRows(cats)}</tbody>
+    </table>
+    <div class="pr-meth"><b>${L("طرق الدفع:", "Methods:")}</b>${methodLine(methods)}</div>
+
+    ${orn(L("سجل السندات", "The vouchers"), L(`${rows.length} سند · بالريال السعودي`, `${rows.length} vouchers · SAR`))}
+    <table class="pr-led">
+      <colgroup><col style="width:4.5%"><col style="width:14%"><col style="width:27.5%"><col style="width:23%"><col style="width:11.5%"><col style="width:8%"><col style="width:11.5%"></colgroup>
+      <thead><tr>
+        <th style="text-align:center">#</th>
+        <th>${L("السند والتاريخ", "Voucher · date")}</th>
+        <th>${L("البيان", "Details")}</th>
+        <th>${est ? L("المستفيد", "Payee") : L("المنشأة / المستفيد", "Establishment · payee")}</th>
+        <th class="m">${L("قبل الضريبة", "Before VAT")}</th>
+        <th class="m">${L("الضريبة", "VAT")}</th>
+        <th class="m">${L("الإجمالي", "Total")}</th>
+      </tr></thead>
+      ${ledger}
+      <tfoot><tr>
+        <td colspan="4">${L(`الإجمالي العام — ${rows.length} سند`, `Grand total — ${rows.length} vouchers`)}</td>
+        <td class="m">${money(amount)}</td>
+        <td class="m">${money(vat)}</td>
+        <td class="m t">${money(total)}</td>
+      </tr></tfoot>
+    </table>
+
+    ${signatureBlock("report", est ? { ...branding, signatures: { ...(branding.signatures ?? DEFAULT_PRINT_SIGNATURES), showSeal: false } } : branding)}`
+      : `<div class="empty-state-card">
+      <div class="empty-state-title">${L("لا توجد سندات مطابقة لمعايير البحث الحالية", "No vouchers match this report")}</div>
+      <div class="empty-state-desc">${L("لم يتم العثور على أي سندات صرف بناءً على الفلاتر المحددة في هذا التقرير.", "No payment vouchers were found for the filters chosen.")}</div>
+    </div>`}`;
+
+  return pdfDocumentShell({
+    title: est ? "كشف مدفوعات منشأة" : "تقرير سندات الصرف",
+    titleEn: est ? "Establishment Payments Statement" : "Payment Vouchers Report",
+    dir: "rtl",
+    companyNameAr: est ? est.name : branding.company?.nameAr,
+    companyNameEn: est ? est.nameEn || est.name : branding.company?.nameEn,
+    logoDataUrl: est ? est.logo ?? undefined : branding.logoDataUrl,
+    classification: est ? "كشف مدفوعات معتمد | Payments Statement" : "تقرير مالي معتمد | Financial Report",
+    theme: branding.printTheme,
+    brandColor: branding.brandColor,
+    highlight: { value: money(total), label: L("ريال سعودي", "Saudi riyals") },
+    bodyHtml: body,
   });
 }

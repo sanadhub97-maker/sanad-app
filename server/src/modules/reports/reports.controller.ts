@@ -9,7 +9,7 @@ import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext, getSpreadsheetBranding, branchLogoDataUrls } from "@/services/branding";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { actionLabel, moduleLabel } from "@/constants/auditLabels";
-import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, employeesDocumentsReportPdf, type ScopedEmployeeGroup, type ScopedEstablishment, type EmployeeDocsRow, type EstablishmentInfo } from "@/modules/pdf/templates";
+import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, employeesDocumentsReportPdf, paymentsReportPdf, type PaymentReportRow, type PaymentStatementEstablishment, type ScopedEmployeeGroup, type ScopedEstablishment, type EmployeeDocsRow, type EstablishmentInfo } from "@/modules/pdf/templates";
 import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/services/expiration";
@@ -241,9 +241,30 @@ export const documents = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+/** An establishment's name, logo and registrations, for its payments statement. */
+async function paymentStatementEstablishment(branchId: string): Promise<PaymentStatementEstablishment | undefined> {
+  const b = await prisma.branch.findFirst({ where: { id: branchId, deletedAt: null }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true, logoFileId: true } });
+  if (!b) return undefined;
+  const [cr, logos] = await Promise.all([
+    prisma.companyDocument.findFirst({ where: { deletedAt: null, category: "COMMERCIAL_REGISTRATION", branchId: b.id }, orderBy: { expiryDate: "desc" }, select: { documentNumber: true, licenseNumber: true } }),
+    branchLogoDataUrls([b]),
+  ]);
+  return { name: b.name, nameEn: b.nameEn, logo: logos.get(b.id) ?? null, owner: b.ownerName, cr: cr?.documentNumber || cr?.licenseNumber || null, vat: b.vatRegistrationNumber, code: b.code };
+}
+
 export const payments = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
   const rows = await service.paymentsReport(req.query as never);
+  if (query.format === "pdf") {
+    // One establishment chosen: its own statement, under its name and logo.
+    const branchId = (req.query as { branchId?: string }).branchId;
+    const est = branchId ? await paymentStatementEstablishment(branchId) : undefined;
+    const html = paymentsReportPdf(rows as PaymentReportRow[], await getBrandingContext("report"), est);
+    const pdf = await renderHtmlToPdf(html, { footerLabel: est ? L("كشف مدفوعات منشأة", "Payments Statement") : L("تقرير سندات الصرف", "Payment Vouchers Report") });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="payments-report.pdf"`);
+    return res.send(pdf);
+  }
   await respond(res, {
     title: "تقرير سندات الصرف والمصروفات التشغيلية",
     titleEn: "Payment Vouchers Report",
