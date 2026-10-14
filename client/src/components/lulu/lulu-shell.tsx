@@ -32,7 +32,7 @@ import { useUiStore } from "@/stores/uiStore";
 import { translateRoleName } from "@/lib/role-display";
 import { cn } from "@/lib/utils";
 import { preloadPage } from "@/lib/page-preload";
-import { prefetchPageData } from "@/lib/page-prefetch";
+import { prefetchPageData, warmUpPages } from "@/lib/page-prefetch";
 import { warmPrintingFor } from "@/lib/print-warm";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
@@ -184,6 +184,9 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
     prefetchPageData(queryClient, href, can);
     warmPrintingFor(href);
   };
+  // After sign-in: the main pages warm up in the background.
+  const userId = user?.id;
+  useEffect(() => (userId ? warmUpPages(queryClient, can) : undefined), [userId, queryClient, can]);
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 

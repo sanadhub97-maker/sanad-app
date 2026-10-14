@@ -3,6 +3,9 @@ import { dashboardApi } from "@/api/dashboard";
 import { employeesApi } from "@/api/employees";
 import { paymentsApi } from "@/api/payments";
 import { tasksApi } from "@/api/tasks";
+import { fetchReportSummary } from "@/api/reports";
+import { listActiveBranches } from "@/api/branches";
+import { preloadPage } from "@/lib/page-preload";
 
 /* A page's first data, fetched when the pointer reaches its menu item, so the
    page opens on it instead of waiting. Each entry uses the same key and call
@@ -34,4 +37,26 @@ export function prefetchPageData(client: QueryClient, path: string, can: (permis
     if (e.needs && !can(e.needs)) continue;
     void client.prefetchQuery({ queryKey: e.key, queryFn: e.fn, staleTime: 30_000 });
   }
+}
+
+/* Once signed in and the first page has settled, the main pages' code and
+   first data load quietly one after another, so opening any of them is instant.
+   The server is far (each request ~½ s), so this hides that wait. */
+const WARM_PATHS = ["/", "/employees", "/payments", "/daily-tasks", "/reports", "/employee-documents", "/company-documents", "/branches"];
+const EXTRA: Entry[] = [
+  { key: ["reports", "summary"], fn: fetchReportSummary },
+  { key: ["active-branches"], fn: listActiveBranches, needs: "branches.view" },
+];
+export function warmUpPages(client: QueryClient, can: (permission: string) => boolean) {
+  let cancelled = false;
+  const steps: (() => void)[] = [];
+  for (const path of WARM_PATHS) steps.push(() => { preloadPage(path); prefetchPageData(client, path, can); });
+  for (const e of EXTRA) steps.push(() => { if (!e.needs || can(e.needs)) void client.prefetchQuery({ queryKey: e.key, queryFn: e.fn, staleTime: 60_000 }); });
+  const run = (i: number) => {
+    if (cancelled || i >= steps.length) return;
+    steps[i]();
+    setTimeout(() => run(i + 1), 350);
+  };
+  const start = setTimeout(() => run(0), 1500);
+  return () => { cancelled = true; clearTimeout(start); };
 }

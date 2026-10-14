@@ -36,7 +36,7 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: shouldRetryQuery, refetchOnWindowFocus: false, staleTime: 30_000 },
+    queries: { retry: shouldRetryQuery, refetchOnWindowFocus: false, staleTime: 60_000, gcTime: 30 * 60_000 },
   },
 });
 installAuthCacheIsolation(queryClient);
