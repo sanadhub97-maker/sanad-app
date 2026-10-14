@@ -201,7 +201,8 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
     branchIds.length ? prisma.branch.findMany({ where: { id: { in: branchIds } }, select: { id: true, name: true, nameEn: true } }) : [],
     employeeIds.length ? prisma.employee.findMany({ where: { id: { in: employeeIds } }, select: { id: true, fullNameAr: true, fullNameEn: true } }) : [],
   ]);
-  const names = <R extends { id: string }>(ids: string[], rows: R[], label: (r: R) => string) => ids.map((id) => rows.find((r) => r.id === id)).filter((r): r is R => !!r).map(label).join("، ");
+  const list = <R extends { id: string }>(ids: string[], rows: R[], label: (r: R) => string) => ids.map((id) => rows.find((r) => r.id === id)).filter((r): r is R => !!r).map(label);
+  const names = <R extends { id: string }>(ids: string[], rows: R[], label: (r: R) => string) => list(ids, rows, label).join("، ");
   return done.map((p) => {
     // In one establishment's statement a shared payment counts its equal share.
     const shareOf = query.branchId && p.branchIds.length > 1 ? p.branchIds.length : 1;
@@ -219,6 +220,8 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
       branchEn: many ? names(p.branchIds, allBranches, (b) => b.nameEn || b.name) : p.branch?.nameEn || p.branch?.name || null,
       employee: staff ? names(p.employeeIds, allEmployees, (e) => e.fullNameAr || e.fullNameEn || "") : p.employee ? p.employee.fullNameAr || p.employee.fullNameEn : null,
       employeeEn: staff ? names(p.employeeIds, allEmployees, (e) => e.fullNameEn || e.fullNameAr) : p.employee ? p.employee.fullNameEn || p.employee.fullNameAr : null,
+      employeeList: staff ? list(p.employeeIds, allEmployees, (e) => e.fullNameAr || e.fullNameEn || "") : undefined,
+      employeeListEn: staff ? list(p.employeeIds, allEmployees, (e) => e.fullNameEn || e.fullNameAr) : undefined,
       amount: part(p.amount),
       vat: part(p.vat),
       total: part(p.total),

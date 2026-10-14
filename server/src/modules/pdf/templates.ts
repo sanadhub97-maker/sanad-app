@@ -886,6 +886,9 @@ export interface PaymentReportRow {
   branchEn: string | null;
   employee: string | null;
   employeeEn: string | null;
+  /** A shared payment's employees, one by one. */
+  employeeList?: string[];
+  employeeListEn?: string[];
   amount: number;
   vat: number;
   total: number;
@@ -1012,6 +1015,11 @@ const PAY_REP_CSS = `<style>
   .pr-led .no { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .pr-led td.m { text-align: left; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
   .pr-led td.t { font-weight: 900; color: #5e4418; }
+  .pr-led tr.names td { padding: 0 2mm 2mm !important; border-bottom: .2mm solid #efe7d4 !important; }
+  .pr-led tr:has(+ tr.names) td { border-bottom: 0 !important; }
+  .pr-led ol.pr-names { margin: 0; padding: 1.6mm 2.4mm; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: .6mm 4mm; background: #fbf8f0; border: .2mm solid #ece3cd; border-radius: 1mm; counter-reset: n; }
+  .pr-led ol.pr-names li { display: flex; gap: 1.6mm; align-items: baseline; font-size: 7.6pt; font-weight: 700; color: #3d3428; line-height: 1.55; counter-increment: n; break-inside: avoid; }
+  .pr-led ol.pr-names li::before { content: counter(n); flex: none; width: 3.4mm; text-align: center; color: #b8904a; font-weight: 900; font-size: 6.8pt; }
   .pr-led td.m, .pr-led tfoot td { line-height: 1.4; vertical-align: middle; }
   .pr-led td.z { color: #c2b69c; }
   .pr-led td .self { color: #8a7c62; font-weight: 700; }
@@ -1098,17 +1106,24 @@ export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, 
         .map((r) => {
           const place = name(r.branch, r.branchEn);
           const person = name(r.employee, r.employeeEn);
+          // Several employees: their count, then the names in a tidy two-column list under it.
+          const staffCell = (row: PaymentReportRow) => {
+            const list = (isEn() ? row.employeeListEn : row.employeeList) ?? [];
+            if (list.length < 2) return null;
+            const head = !est && place ? `<b>${place}</b><small class="one">${L(`${list.length} موظفين`, `${list.length} employees`)}</small>` : `<b>${L(`${list.length} موظفين`, `${list.length} employees`)}</b>`;
+            return head;
+          };
           const payee = est ? person || `<span class="self">${L("المنشأة نفسها", "The establishment")}</span>` : place || person || "—";
           const z = (v: number) => (Number(v) ? "" : " z");
           return `<tr>
         <td class="i">${++n}</td>
         <td><b class="no">${escapeHtml(r.paymentNumber)}</b><small class="one"><span class="no">${fmtDate(r.paymentDate)}</span></small><small class="one">${paymentMethodLabel(r.method)}</small></td>
         <td><b>${paymentCategoryLabel(r.category, r.type ?? null)}</b>${r.description ? `<small>${escapeHtml(r.description)}</small>` : ""}</td>
-        <td><b>${payee}</b>${!est && place && person ? `<small class="one">${person}</small>` : ""}</td>
+        <td>${staffCell(r) ?? `<b>${payee}</b>${!est && place && person ? `<small class="one">${person}</small>` : ""}`}</td>
         <td class="m${z(r.amount)}">${money(Number(r.amount))}</td>
         <td class="m${z(r.vat)}">${money(Number(r.vat))}</td>
         <td class="m t">${money(Number(r.total))}</td>
-      </tr>`;
+      </tr>${((isEn() ? r.employeeListEn : r.employeeList) ?? []).length > 1 ? `<tr class="names"><td></td><td colspan="6"><ol class="pr-names">${((isEn() ? r.employeeListEn : r.employeeList) ?? []).map((nm) => `<li>${escapeHtml(nm)}</li>`).join("")}</ol></td></tr>` : ""}`;
         })
         .join("");
       return `<tbody${m.rows.length <= 8 ? ' style="break-inside:avoid"' : ""}>${head}${body}</tbody>`;
