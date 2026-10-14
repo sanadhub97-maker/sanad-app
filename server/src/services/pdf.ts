@@ -135,8 +135,10 @@ async function withRenderBudget<T>(html: string, render: () => Promise<T>): Prom
 // An idle Chromium holds well over 100 MB, and the API itself already uses most of
 // the 512 MB host: close it shortly after the last document (a little later after a
 // warm-up, when the user is about to print).
-const IDLE_CLOSE_MS = 10_000;
-const WARM_IDLE_CLOSE_MS = 45_000;
+// On Vercel the function has 2 GB and is billed by CPU, so the browser stays up
+// between prints; on a small always-on host it closes soon after.
+const IDLE_CLOSE_MS = process.env.VERCEL ? 5 * 60_000 : 10_000;
+const WARM_IDLE_CLOSE_MS = process.env.VERCEL ? 5 * 60_000 : 45_000;
 let idleTimer: NodeJS.Timeout | null = null;
 function cancelIdleClose() {
   if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
@@ -235,6 +237,7 @@ async function getBrowserInner(): Promise<Browser> {
 
 export async function closePdfBrowser() {
   cancelIdleClose();
+  sparePage = null;
   const cached = browserPromise;
   if (cached) {
     browserPromise = null;
@@ -313,15 +316,39 @@ const FIT_TO_BOX = `(sel) => {
  * - Clean bilingual headers without bidirectional text reversal
  * - Official corporate signatures and circular compliance seal
  */
+/*
+ * One page, kept for the next document: on the serverless Chromium a fresh
+ * page took over 4 s to open each time, longer than the print itself. A page
+ * that failed is closed rather than kept. Renders run one at a time, so one
+ * page is enough.
+ */
+let sparePage: { browser: Browser; page: Page } | null = null;
+async function takePage(browser: Browser): Promise<Page> {
+  const spare = sparePage;
+  sparePage = null;
+  if (spare && spare.browser === browser && !spare.page.isClosed()) return spare.page;
+  if (spare) await spare.page.close().catch(() => undefined);
+  const page = await browser.newPage();
+  await secureRenderPage(page);
+  return page;
+}
+async function givePage(browser: Browser, page: Page, ok: boolean) {
+  if (ok && browser.connected && !page.isClosed() && !sparePage) {
+    sparePage = { browser, page };
+    return;
+  }
+  await page.close().catch(() => undefined);
+}
+
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
   // How long each step takes, in the log, to see what slows a print down.
   const t0 = Date.now();
   const steps: Record<string, number> = {};
   const lap = (name: string) => { steps[name] = Date.now() - t0; };
-  const page = await browser.newPage();
+  const page = await takePage(browser);
   lap("page");
+  let ok = false;
   try {
-    await secureRenderPage(page);
     // The shell stamps its design into the page; margins and the per-page
     // header/footer come from that design.
     const theme = getPrintTheme(html.match(/<meta name="print-theme" content="(\w+)"/)?.[1]);
@@ -356,7 +383,9 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     lap(settled ? "idle" : "idle-timeout");
     if (options.bare) {
       if (options.fitSelector) await page.evaluate(`(${FIT_TO_BOX})(${JSON.stringify(options.fitSelector)})`);
-      return Buffer.from(await page.pdf({ format: "A4", landscape: false, printBackground: true, waitForFonts: false, preferCSSPageSize: false, margin: { top: "0", bottom: "0", left: "0", right: "0" } }));
+      const bare = Buffer.from(await page.pdf({ format: "A4", landscape: false, printBackground: true, waitForFonts: false, preferCSSPageSize: false, margin: { top: "0", bottom: "0", left: "0", right: "0" } }));
+      ok = true;
+      return bare;
     }
     const pdf = await page.pdf({
       format: "A4",
@@ -374,9 +403,10 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     });
     lap("pdf");
     logger.info({ steps, bytes: html.length }, "PDF render steps (ms from start)");
+    ok = true;
     return Buffer.from(pdf);
   } finally {
-    await page.close().catch(() => undefined);
+    await givePage(browser, page, ok);
   }
 }
 
@@ -399,9 +429,10 @@ async function renderPdfWithRetry(html: string, options: RenderPdfOptions = {}):
 
 /** `height` 0 sizes the picture to the page's own height (up to `maxHeight`). */
 async function screenshotOnce(browser: Browser, html: string, width: number, height: number, maxHeight = 4000): Promise<Buffer> {
-  const page = await browser.newPage();
+  const page = await takePage(browser);
+  let ok = false;
   try {
-    await secureRenderPage(page);
+    await page.emulateMediaType("screen");
     await page.setViewport({ width, height: height || 1000, deviceScaleFactor: 1 });
     await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 20_000 });
     await page.waitForNetworkIdle({ timeout: 5000 }).catch(() => undefined);
@@ -410,11 +441,15 @@ async function screenshotOnce(browser: Browser, html: string, width: number, hei
     if (!height) {
       // As tall as the content: shot beyond the viewport, which stays put so the layout doesn't move.
       height = Math.min(maxHeight, Math.ceil(Number(await page.evaluate("document.documentElement.scrollHeight"))));
-      return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height }, captureBeyondViewport: true }));
+      const tall = Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height }, captureBeyondViewport: true }));
+      ok = true;
+      return tall;
     }
-    return Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height } }));
+    const shot = Buffer.from(await page.screenshot({ type: "png", clip: { x: 0, y: 0, width, height } }));
+    ok = true;
+    return shot;
   } finally {
-    await page.close().catch(() => undefined);
+    await givePage(browser, page, ok);
   }
 }
 

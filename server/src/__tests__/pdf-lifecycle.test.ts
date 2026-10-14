@@ -3,10 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mock = vi.hoisted(() => ({ launch: vi.fn(), pdf: vi.fn(), closePage: vi.fn(), networkIdle: vi.fn(), evaluate: vi.fn() }));
 vi.mock("puppeteer", () => ({ default: { launch: mock.launch } }));
 vi.mock("@/config/env", () => ({ env: { CLIENT_URL: "https://example.invalid", PDF_DISABLE_SANDBOX: false } }));
-vi.mock("@/lib/logger", () => ({ logger: { warn: vi.fn(), error: vi.fn() } }));
+vi.mock("@/lib/logger", () => ({ logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 import { bundledRenderResource, closePdfBrowser, renderHtmlToPdf, warmPdfBrowser } from "@/services/pdf";
 function browser() {
-  const instance = { connected: true, close: vi.fn(async () => { instance.connected = false; }), newPage: vi.fn(async () => ({ setJavaScriptEnabled: vi.fn(), setRequestInterception: vi.fn(), on: vi.fn(), setViewport: vi.fn(), emulateMediaType: vi.fn(), setContent: vi.fn(), waitForNetworkIdle: mock.networkIdle, evaluate: mock.evaluate, pdf: mock.pdf, close: mock.closePage })) };
+  const instance = { connected: true, close: vi.fn(async () => { instance.connected = false; }), newPage: vi.fn(async () => ({ setJavaScriptEnabled: vi.fn(), setRequestInterception: vi.fn(), on: vi.fn(), setViewport: vi.fn(), emulateMediaType: vi.fn(), setContent: vi.fn(), waitForNetworkIdle: mock.networkIdle, evaluate: mock.evaluate, pdf: mock.pdf, close: mock.closePage, isClosed: () => false })) };
   return instance;
 }
 beforeEach(() => { vi.resetAllMocks(); mock.pdf.mockResolvedValue(Buffer.from("%PDF-1.7")); mock.closePage.mockResolvedValue(undefined); mock.networkIdle.mockResolvedValue(undefined); mock.evaluate.mockResolvedValue(true); });
@@ -47,8 +47,18 @@ describe("PDF browser recovery and resource limits", () => {
   it("retries a failed page without leaking a second healthy browser", async () => {
     mock.launch.mockResolvedValue(browser()); mock.pdf.mockRejectedValueOnce(new Error("Page closed"));
     expect((await renderHtmlToPdf("<html>synthetic</html>")).subarray(0, 5).toString()).toBe("%PDF-");
-    expect(mock.launch).toHaveBeenCalledOnce(); expect(mock.closePage).toHaveBeenCalledTimes(2);
+    // The failed page is closed; the one that printed is kept for the next document.
+    expect(mock.launch).toHaveBeenCalledOnce(); expect(mock.closePage).toHaveBeenCalledTimes(1);
     expect(mock.launch.mock.calls[0][0].args).not.toContain("--no-sandbox");
+  });
+  it("keeps one page for the next document instead of opening a new one each time", async () => {
+    const instance = browser();
+    mock.launch.mockResolvedValue(instance);
+    await renderHtmlToPdf("<html>one</html>");
+    await renderHtmlToPdf("<html>two</html>");
+    await renderHtmlToPdf("<html>three</html>");
+    expect(instance.newPage).toHaveBeenCalledOnce();
+    expect(mock.pdf).toHaveBeenCalledTimes(3);
   });
   it("relaunches after a disconnected browser", async () => {
     const first = browser(); mock.launch.mockResolvedValueOnce(first).mockResolvedValueOnce(browser());
