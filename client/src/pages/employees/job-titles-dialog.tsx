@@ -56,7 +56,7 @@ export function JobTitlesDialog({ open, onOpenChange, isAr }: { open: boolean; o
           <DialogTitle>{isAr ? "تحديد المهن" : "Fill in professions"}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          {isAr ? "اختار الموظفين واكتب مهنتهم. لو المهنة منزلية (زي سائق خاص أو عاملة منزلية)، تأمينهم الطبي هيترَبط بالإقامة تلقائيًا." : "Choose employees and their profession. A domestic profession (private driver, housemaid…) links their medical insurance to the iqama."}
+          {isAr ? "اختار الموظفين واكتب مسماهم الوظيفي." : "Choose employees and their job title."}
         </p>
         <div className="flex flex-wrap items-end gap-2">
           <label className="grid flex-1 gap-1 text-sm">
@@ -73,7 +73,6 @@ export function JobTitlesDialog({ open, onOpenChange, isAr }: { open: boolean; o
             {isAr ? `حفظ (${selected.size})` : `Save (${selected.size})`}
           </Button>
         </div>
-        {domestic.isDomestic(title) && <p className="text-xs text-sky-700 dark:text-sky-300">{isAr ? "مهنة منزلية: التأمين الطبي هيمشي مع الإقامة." : "Domestic profession: the medical insurance will follow the iqama."}</p>}
         <div className="rounded-2xl border">
           <label className="flex items-center gap-3 border-b px-3 py-2 text-sm font-semibold">
             <input type="checkbox" checked={rows.length > 0 && selected.size === rows.length} onChange={(e) => setSelected(e.target.checked ? new Set(rows.map((r) => r.id)) : new Set())} />

@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AuthInitializer } from "@/components/providers/auth-initializer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LuluInstall } from "@/components/lulu/lulu-install";
@@ -17,7 +17,6 @@ import ServerErrorPage from "@/pages/errors/server-error";
 
 const DashboardPage = lazy(() => import("@/pages/dashboard/dashboard-lulu"));
 const LuluShell = lazy(() => import("@/components/lulu/lulu-shell").then(m => ({ default: m.LuluShell })));
-const PrintTemplatesPreview = lazy(() => import("@/pages/preview/print-templates-preview"));
 const EmployeesListPage = lazy(() => import("@/pages/employees/employees-list-page"));
 const EmployeeProfilePage = lazy(() => import("@/pages/employees/employee-profile-page"));
 const EmployeeDocumentsPage = lazy(() => import("@/pages/workforce/employee-documents-page"));
@@ -61,10 +60,6 @@ function EmployeeEditRedirect() {
 }
 
 export default function App() {
-  const location = useLocation();
-  if (/^\/print-templates\/?$/.test(location.pathname)) {
-    return <Suspense fallback={<PageFallback />}><PrintTemplatesPreview /></Suspense>;
-  }
   return (
     <AuthInitializer>
       <ThemeProvider>

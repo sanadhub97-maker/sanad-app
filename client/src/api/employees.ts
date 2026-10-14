@@ -16,6 +16,8 @@ export interface EmployeeInput {
   address?: string;
   city?: string;
   jobTitle?: string;
+  profession?: string;
+  professionEn?: string;
   department?: string;
   branchId?: string;
   joiningDate?: string;

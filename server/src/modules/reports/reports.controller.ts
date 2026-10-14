@@ -9,7 +9,8 @@ import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext, getSpreadsheetBranding } from "@/services/branding";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { actionLabel, moduleLabel } from "@/constants/auditLabels";
-import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, type ScopedEmployeeGroup, type ScopedEstablishment } from "@/modules/pdf/templates";
+import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, employeesDocumentsReportPdf, type ScopedEmployeeGroup, type ScopedEstablishment, type EmployeeDocsRow } from "@/modules/pdf/templates";
+import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/services/expiration";
 import { L, isEn } from "@/services/lang";
@@ -33,7 +34,8 @@ const STATUS: Record<string, [string, string]> = {
   INACTIVE: ["غير نشط", "Inactive"],
 };
 const statusLabel = (v: unknown) => (typeof v === "string" && STATUS[v] ? L(STATUS[v][0], STATUS[v][1]) : ((v as string) ?? "—"));
-const STATUS_KEYS = new Set(["status", "iqamaStatus", "passportStatus", "employmentStatus"]);
+const STATUS_KEYS = new Set(["status", "iqamaStatus", "passportStatus", "employmentStatus", "healthCertStatus", "insuranceStatus", "visaStatus"]);
+const VISA_KIND: Record<string, [string, string]> = { VISA: ["تأشيرة", "Visa"], EXIT_REENTRY_VISA: ["خروج وعودة", "Exit & re-entry"], FINAL_EXIT_VISA: ["خروج نهائي", "Final exit"] };
 
 /** A column with Arabic and English titles, reading the English field on English reports. */
 function col(ar: string, en: string, key: string, keyEn?: string, format?: ColumnDef<Row>["format"]): ColumnDef<Row> {
@@ -106,7 +108,33 @@ async function respond(
 
 export const employees = asyncHandler(async (req: Request, res: Response) => {
   const query = req.query as never as { format: string };
-  const rows = await service.employeesReport(req.query as never);
+  // The health certificate, medical insurance and visa come with the employee documents permission.
+  const withDocuments = hasPermission(req.auth, "employeeDocuments.view");
+  const rows = await service.employeesReport(req.query as never, withDocuments);
+  if (query.format === "pdf") {
+    // The PDF: each employee's documents type by type, each named in its cell, by establishment.
+    const branding = await getBrandingContext("report");
+    const companyName = L(branding.company?.nameAr || branding.company?.nameEn || "الشركة", branding.company?.nameEn || branding.company?.nameAr || "Company");
+    const r = rows as Array<Record<string, any>>;
+    const docRows: EmployeeDocsRow[] = r.map((e) => ({
+      name: L(e.fullName ?? "—", e.fullNameEn ?? e.fullName ?? "—"),
+      employeeNumber: e.employeeNumber ?? null,
+      jobTitle: L(e.jobTitle ?? "", e.jobTitleEn ?? e.jobTitle ?? "") || null,
+      establishment: e.branch ? L(e.branch, e.branchEn ?? e.branch) : companyName,
+      docs: {
+        iqama: { number: e.iqamaNumber, expiry: e.iqamaExpiryDate, status: e.iqamaStatus },
+        healthCert: { number: e.healthCertNumber, expiry: e.healthCertExpiryDate, status: e.healthCertStatus },
+        passport: { number: e.passportNumber, expiry: e.passportExpiryDate, status: e.passportStatus },
+        insurance: { number: e.insuranceNumber, expiry: e.insuranceExpiryDate, status: e.insuranceStatus, withIqama: e.insuranceWithIqama === true },
+        visa: { number: e.visaNumber, expiry: e.visaExpiryDate, status: e.visaStatus, kind: e.visaType },
+      },
+    }));
+    docRows.sort((a, b) => a.establishment.localeCompare(b.establishment, "ar") || (a.employeeNumber ?? "").localeCompare(b.employeeNumber ?? ""));
+    const pdf = await renderHtmlToPdf(employeesDocumentsReportPdf(docRows, branding), { footerLabel: L("تقرير الموظفين ووثائقهم", "Employees and their documents") });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'inline; filename="employees-report.pdf"');
+    return res.send(pdf);
+  }
   await respond(res, {
     title: "تقرير الموظفين الشامل",
     titleEn: "Employees Report",
@@ -118,6 +146,7 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
       col("اسم الموظف", "Full Name", "fullName", "fullNameEn"),
       col("الجنسية", "Nationality", "nationality", "nationalityEn"),
       col("المسمى الوظيفي", "Job Title", "jobTitle", "jobTitleEn"),
+      col("المهنة حسب الإقامة", "Iqama Profession", "profession", "professionEn"),
       col("القسم الإداري", "Department", "department", "departmentEn"),
       col("الفرع / المنشأة", "Branch", "branch", "branchEn"),
       col("حالة العمل", "Status", "employmentStatus"),
@@ -125,6 +154,17 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
       col("حالة الإقامة", "Iqama Status", "iqamaStatus"),
       col("انتهاء الجواز", "Passport Expiry", "passportExpiryDate"),
       col("حالة الجواز", "Passport Status", "passportStatus"),
+      ...(withDocuments
+        ? [
+            col("انتهاء الشهادة الصحية", "Health Cert. Expiry", "healthCertExpiryDate"),
+            col("حالة الشهادة الصحية", "Health Cert. Status", "healthCertStatus"),
+            col("انتهاء التأمين الطبي", "Insurance Expiry", "insuranceExpiryDate"),
+            col("حالة التأمين الطبي", "Insurance Status", "insuranceStatus"),
+            col("نوع التأشيرة", "Visa Type", "visaType", undefined, (v) => (typeof v === "string" && VISA_KIND[v] ? L(VISA_KIND[v][0], VISA_KIND[v][1]) : "—")),
+            col("انتهاء التأشيرة", "Visa Expiry", "visaExpiryDate"),
+            col("حالة التأشيرة", "Visa Status", "visaStatus"),
+          ]
+        : []),
     ],
   });
 });

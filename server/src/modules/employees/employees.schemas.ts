@@ -27,6 +27,8 @@ export const createEmployeeSchema = z.object({
   cityEn: optStr(100),
   jobTitle: optStr(150),
   jobTitleEn: optStr(150),
+  profession: optStr(150),
+  professionEn: optStr(150),
   department: optStr(150),
   departmentEn: optStr(150),
   branchId: emptyToUndefined(z.string().optional()),

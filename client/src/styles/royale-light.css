@@ -264,3 +264,54 @@ html.rx-light .rx-alert > svg { color: #b8402f; }
 html.rx-light .rx-alert b { color: #8f2f22; }
 html.rx-light .rx-alert span { color: #5a4c33; }
 html.rx-light :is(.lu-sbtn, .lu-fchip):is(.lt-sky, .lt-indigo, .lt-violet) { --t: rgba(154, 116, 51, 0.1); --d: rgba(154, 116, 51, 0.2); }
+
+/* the medical insurance card by day */
+html.rx-light .rx-ins { --s: #1d6b40; color: #1f1a10; background: radial-gradient(260px 160px at 85% 0%, rgba(35, 128, 79, 0.14), transparent 70%), linear-gradient(135deg, #ffffff, #f2f7f2 55%, #f3ead6); border-color: rgba(154, 116, 51, 0.4); box-shadow: 0 20px 40px -28px rgba(60, 45, 20, 0.5), inset 0 0 0 4px #fff, inset 0 0 0 5px rgba(154, 116, 51, 0.16); }
+html.rx-light .rx-ins.rx-ins-warn { --s: #9a5b00; } html.rx-light .rx-ins.rx-ins-bad { --s: #a8281b; } html.rx-light .rx-ins.rx-ins-none { --s: #7a6c55; }
+html.rx-light .rx-ins .ic { background: rgba(35, 128, 79, 0.1); border-color: rgba(35, 128, 79, 0.35); color: #1d6b40; }
+html.rx-light .rx-ins .t b { color: #6b4e1d; }
+html.rx-light .rx-ins .t small, html.rx-light .rx-ins .who bdi, html.rx-light .rx-ins .grid small, html.rx-light .rx-ins .foot { color: #7a6c55; }
+html.rx-light .rx-ins .foot { border-top-color: rgba(154, 116, 51, 0.3); }
+
+/* the document cards by day */
+html.rx-light .rx-dc { --s: #1d6b40; color: #1f1a10; border-color: rgba(154, 116, 51, 0.38); box-shadow: 0 18px 36px -26px rgba(60, 45, 20, 0.5), inset 0 0 0 4px #fff, inset 0 0 0 5px rgba(154, 116, 51, 0.14); }
+html.rx-light .rx-dc:hover { box-shadow: 0 22px 40px -24px rgba(60, 45, 20, 0.55), 0 0 28px -14px rgba(184, 144, 74, 0.6), inset 0 0 0 4px #fff, inset 0 0 0 5px rgba(154, 116, 51, 0.22); }
+html.rx-light .rx-dc.t-warn { --s: #9a5b00; } html.rx-light .rx-dc.t-bad { --s: #a8281b; } html.rx-light .rx-dc.t-none { --s: #7a6c55; }
+html.rx-light .rx-dc .ic { background: rgba(154, 116, 51, 0.08); border-color: rgba(154, 116, 51, 0.32); color: #6b4e1d; }
+html.rx-light .rx-dc .tt b, html.rx-light .rx-dc.dc-iqama .num { color: #6b4e1d; }
+html.rx-light .rx-dc .tt small, html.rx-light .rx-dc .who bdi, html.rx-light .rx-dc .who small, html.rx-light .rx-dc .fl small, html.rx-light .rx-dc .mrz, html.rx-light .rx-dc.dc-ticket .tk-stub small { color: #7a6c55; }
+html.rx-light .rx-dc .st { background: #fff; }
+html.rx-light .rx-dc .mrz { border-top-color: rgba(154, 116, 51, 0.3); }
+html.rx-light .rx-dc.dc-iqama { background: radial-gradient(240px 150px at 85% 0%, rgba(35, 128, 79, 0.12), transparent 70%), linear-gradient(135deg, #ffffff, #eef6f0 55%, #f3ead6); }
+html.rx-light .rx-dc.dc-passport { background: radial-gradient(240px 150px at 85% 0%, rgba(47, 106, 168, 0.12), transparent 70%), linear-gradient(135deg, #ffffff, #eef2f8 55%, #f3ead6); }
+html.rx-light .rx-dc.dc-passport .ph { color: #6b4e1d; background: #faf6ec; border-color: rgba(154, 116, 51, 0.35); }
+html.rx-light .rx-dc.dc-health { background: radial-gradient(240px 150px at 85% 0%, rgba(23, 128, 111, 0.12), transparent 70%), linear-gradient(135deg, #ffffff, #edf6f4 55%, #f3ead6); }
+html.rx-light .rx-dc.dc-visa { background: #fffdf8; }
+html.rx-light .rx-dc.dc-visa .vs-stamp { color: #6b4e1d; border-color: rgba(154, 116, 51, 0.55); box-shadow: inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.3); }
+html.rx-light .rx-dc.dc-visa .vs-band { color: #fffaf0; background: linear-gradient(90deg, #5e4418, #9a7433 55%, #6b4e1d); }
+html.rx-light .rx-dc.dc-ticket { background: linear-gradient(135deg, #ffffff, #f6f2ea 60%, #f0e6d0); }
+html.rx-light .rx-dc.dc-ticket .route .ln { color: #9a7433; }
+html.rx-light .rx-dc.dc-ticket .route .ln::before { border-top-color: rgba(154, 116, 51, 0.5); }
+html.rx-light .rx-dc.dc-ticket .route .ln svg { background: #faf6ee; }
+html.rx-light .rx-dc.dc-ticket .tk-stub { border-inline-start-color: rgba(154, 116, 51, 0.35); background: rgba(184, 144, 74, 0.07); }
+html.rx-light .rx-dc.dc-ticket .tk-stub::before, html.rx-light .rx-dc.dc-ticket .tk-stub::after { background: #fffdf8; }
+html.rx-light .rx-dc.dc-ticket .tk-stub .bars { background: repeating-linear-gradient(90deg, rgba(60, 45, 20, 0.85) 0 2px, transparent 2px 4px, rgba(60, 45, 20, 0.85) 4px 5px, transparent 5px 8px); }
+
+/* the premium finish by day */
+html.rx-light .rx-dc, html.rx-light .rx-ins { box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.55), 0 22px 44px -26px rgba(60, 45, 20, 0.5), 0 0 30px -18px rgba(184, 144, 74, 0.6), inset 0 1px 0 #fff, inset 0 0 0 5px #fff, inset 0 0 0 6px rgba(154, 116, 51, 0.25); }
+html.rx-light .rx-dc > .gw, html.rx-light .rx-ins > .gw { mix-blend-mode: multiply; opacity: 0.5; filter: sepia(1) saturate(1.4) brightness(.75); }
+html.rx-light .rx-dc > .holo, html.rx-light .rx-ins > .holo { opacity: 0.14; mix-blend-mode: multiply; width: 26px; }
+html.rx-light .rx-dc .tt b, html.rx-light .rx-ins .t b, html.rx-light .rx-dc.dc-iqama .num { background: linear-gradient(115deg, #5e4418, #b8904a 22%, #7d5d27 40%, #c9a464 55%, #6b4e1d 72%, #a8803f 88%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; }
+html.rx-light .rx-dc.dc-ticket .route b { background: linear-gradient(115deg, #5e4418, #9a7433 50%, #6b4e1d); -webkit-background-clip: text; background-clip: text; }
+html.rx-light .rx-dc .who b, html.rx-light .rx-ins .who b { text-shadow: none; }
+html.rx-light .rx-dc .ic, html.rx-light .rx-ins .ic { background: radial-gradient(circle at 35% 30%, #fffaf0, #eadfc6); border-color: rgba(154, 116, 51, 0.45); color: #6b4e1d; box-shadow: 0 4px 10px -6px rgba(154, 116, 51, 0.6); }
+html.rx-light .rx-dc .fl, html.rx-light .rx-ins .grid { border-top-color: rgba(154, 116, 51, 0.2); }
+html.rx-light .rx-dc .mrz { color: #8a7a5e; }
+html.rx-light .rx-dc.dc-iqama { background: radial-gradient(320px 200px at 90% -10%, rgba(35, 128, 79, 0.16), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.22), transparent 70%), linear-gradient(140deg, #ffffff, #f0f7f2 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-passport { background: radial-gradient(320px 200px at 90% -10%, rgba(47, 106, 168, 0.16), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.22), transparent 70%), linear-gradient(140deg, #ffffff, #eff3fa 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-health { background: radial-gradient(320px 200px at 90% -10%, rgba(23, 128, 111, 0.16), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.22), transparent 70%), linear-gradient(140deg, #ffffff, #eef7f5 50%, #f3ead6); }
+html.rx-light .rx-ins { background: radial-gradient(320px 200px at 90% -10%, rgba(35, 128, 79, 0.16), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.22), transparent 70%), linear-gradient(140deg, #ffffff, #f0f7f2 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-visa { background: radial-gradient(300px 200px at 100% 100%, rgba(201, 164, 100, 0.22), transparent 70%), #fffdf8; }
+html.rx-light .rx-dc.dc-visa .vs-stamp { border: 2px double rgba(154, 116, 51, 0.7); }
+html.rx-light .rx-dc.dc-ticket { background: radial-gradient(320px 200px at 90% -10%, rgba(201, 164, 100, 0.22), transparent 65%), linear-gradient(140deg, #ffffff, #f7f2e8 55%, #f0e6d0); }
+html.rx-light .rx-dc.dc-ticket .tk-stub { background: linear-gradient(180deg, rgba(184, 144, 74, 0.12), rgba(184, 144, 74, 0.03)); }

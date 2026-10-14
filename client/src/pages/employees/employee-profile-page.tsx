@@ -23,6 +23,9 @@ import { PrintDocumentHeader, PrintDocumentFooter } from "@/components/common/pr
 import { Pill, daysFromToday, dmy, weekday } from "@/components/royal/rp";
 import { BigRing, CoverHero, DCard, DetailBar, Fact, History, MiniDoc, Owner, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory } from "@/components/royal/cards";
 import { employeeDocs } from "@/pages/workforce/employee-docs";
+import { InsuranceCard } from "@/components/royal/insurance-card";
+import { DocCard, hasDocCard } from "@/components/royal/doc-cards";
+import { settingsApi } from "@/api/settings";
 
 /* The employee's own page, as in the approved preview: a cover hero with the
    avatar, the status and how many documents are valid, then cards for the
@@ -52,6 +55,7 @@ export default function EmployeeProfilePage() {
   const { data: custodyItems } = useQuery({ queryKey: ["custody", "employee-items", id], queryFn: () => custodyApi.employeeItems(id!), enabled: Boolean(id) && hasPermission("custody.view") });
   const { data: cars } = useQuery({ queryKey: ["vehicles", "list", { driverId: id }], queryFn: () => vehiclesApi.list({ driverId: id, pageSize: 20 }), enabled: Boolean(id) && hasPermission("vehicles.view") });
   const { data: history } = useRecordHistory(id);
+  const { data: branding } = useQuery({ queryKey: ["settings", "branding"], queryFn: settingsApi.getBranding, staleTime: 5 * 60_000 });
 
   const [docDialogOpen, setDocDialogOpen] = useState(false);
   // "?edit=1" (the old /employees/:id/edit link) opens the edit form.
@@ -76,6 +80,7 @@ export default function EmployeeProfilePage() {
   const e = employee;
   const names = namePair(e.fullNameAr, e.fullNameEn, isAr);
   const job = localized(e.jobTitle, e.jobTitleEn);
+  const profession = localized(e.profession, e.professionEn);
   const nat = localized(e.nationality, e.nationalityEn);
   const branch = localized(e.branch?.name, e.branch?.nameEn);
   const color = estColor(e.branch?.code || e.branchId);
@@ -185,11 +190,34 @@ export default function EmployeeProfilePage() {
         <div className="rc-dcol">
           <DCard title={isAr ? "الوثائق" : "Documents"} icon={IdCard} right={isAr ? `${docs.length} وثائق · اضغط للتفاصيل` : `${docs.length} documents · open for details`}>
             {docs.length ? (
-              <div className="rc-mdocs">
-                {docs.map((d) => (
-                  <MiniDoc key={d.key} title={d.label} sub={<span className="rp-mono">{d.number || "—"}</span>} expiryDate={d.expiryDate} onClick={() => navigate(`/employee-documents/${e.id}/${d.key}`)} />
-                ))}
-              </div>
+              <>
+                {/* The iqama, passport, health certificate, visas and tickets as what they are; the rest as rows. */}
+                {(docs.some((d) => hasDocCard(d.type)) || e.insuranceFollowsIqama) && (
+                  <div className="rx-dcards">
+                    {docs
+                      .filter((d) => hasDocCard(d.type))
+                      .map((d) => (
+                        <DocCard
+                          key={d.key}
+                          isAr={isAr}
+                          doc={{ type: d.type, label: d.label, number: d.number, authority: d.issuingAuthority || d.authority, issueDate: d.issueDate, startDate: d.startDate, expiryDate: d.expiryDate, notes: d.notes }}
+                          holder={{ name: names.primary, nameEn: isAr ? e.fullNameEn : null, nationality: nat, profession, establishment: branch, employeeNumber: e.employeeNumber }}
+                          onOpen={() => navigate(`/employee-documents/${e.id}/${d.key}`)}
+                        />
+                      ))}
+                    {e.insuranceFollowsIqama && <InsuranceCard isAr={isAr} company={isAr ? branding?.nameAr || branding?.nameEn : branding?.nameEn || branding?.nameAr} name={names.primary} nameEn={isAr ? e.fullNameEn : null} iqamaNumber={e.iqamaNumber} iqamaExpiryDate={e.iqamaExpiryDate} nationality={nat} profession={profession} />}
+                  </div>
+                )}
+                {docs.some((d) => !hasDocCard(d.type) && !d.linkedToIqama) && (
+                  <div className="rc-mdocs">
+                    {docs
+                      .filter((d) => !hasDocCard(d.type) && !d.linkedToIqama)
+                      .map((d) => (
+                        <MiniDoc key={d.key} title={d.label} sub={<span className="rp-mono">{d.number || "—"}</span>} expiryDate={d.expiryDate} onClick={() => navigate(`/employee-documents/${e.id}/${d.key}`)} />
+                      ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="rc-none">{t("employees.profile.noDocuments")}</div>
             )}
@@ -210,6 +238,7 @@ export default function EmployeeProfilePage() {
             <div className="rc-facts">
               <Fact label={t("employees.fields.employeeNumber")} icon={Hash} value={<span className="rp-mono" style={{ fontSize: 14 }}>{e.employeeNumber}</span>} copy={e.employeeNumber} />
               <Fact label={isAr ? "المسمى الوظيفي" : "Job title"} icon={Briefcase} value={job || "—"} />
+              <Fact label={isAr ? "المهنة حسب الإقامة" : "Profession on the iqama"} icon={IdCard} value={profession || "—"} em={e.insuranceFollowsIqama ? (isAr ? "مهنة منزلية: التأمين مرتبط بالإقامة" : "Domestic: insurance with the iqama") : undefined} />
               <Fact label={isAr ? "القسم" : "Department"} icon={Building2} value={localized(e.department, e.departmentEn) || "—"} />
               <Fact label={isAr ? "المؤسسة" : "Establishment"} icon={Building2} value={branch || t("employees.profile.noBranch")} em={e.branch?.code} />
               <Fact label={t("employees.fields.joiningDate")} icon={Calendar} value={<span className="rp-num">{e.joiningDate ? dmy(e.joiningDate) : "—"}</span>} em={dateEm(e.joiningDate)} />

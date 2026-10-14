@@ -15,6 +15,8 @@ export interface EmpDoc {
   authority?: string | null;
   issuingAuthority?: string | null;
   issueDate?: string | null;
+  /** When the document starts (a visa's first day, a ticket's travel date). */
+  startDate?: string | null;
   expiryDate?: string | null;
   fileId?: string | null;
   notes?: string | null;
@@ -49,6 +51,7 @@ export function employeeDocs(emp: Employee, isAr: boolean): EmpDoc[] {
       authority: d.issuingAuthority,
       issuingAuthority: d.issuingAuthority,
       issueDate: d.issueDate || d.startDate,
+      startDate: d.startDate,
       expiryDate: d.expiryDate,
       fileId: d.fileId,
       notes: d.notes,

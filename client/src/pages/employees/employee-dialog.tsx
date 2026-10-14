@@ -30,6 +30,7 @@ import {
   Activity,
   FileEdit,
   ShieldCheck,
+  IdCard,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,8 @@ const makeSchema = () => z.object({
   cityEn: z.string().optional(),
   jobTitle: z.string().optional(),
   jobTitleEn: z.string().optional(),
+  profession: z.string().optional(),
+  professionEn: z.string().optional(),
   department: z.string().optional(),
   departmentEn: z.string().optional(),
   branchId: z.string().optional(),
@@ -123,8 +126,9 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
   });
   // Domestic workers (private driver, housemaid…): their medical insurance follows the iqama.
   const domestic = useDomesticProfessions(open);
-  const isDomestic = domestic.isDomestic(watch("jobTitle"), watch("jobTitleEn"));
-  const auto = useAutoTranslate<FormValues>({ getValues, setValue }, [{ ar: "nationality", en: "nationalityEn", kind: "nationality" }, { ar: "city", en: "cityEn" }, { ar: "jobTitle", en: "jobTitleEn" }, { ar: "department", en: "departmentEn" }], open);
+  // By the profession on the iqama, not the job title.
+  const isDomestic = domestic.isDomestic(watch("profession"), watch("professionEn"));
+  const auto = useAutoTranslate<FormValues>({ getValues, setValue }, [{ ar: "nationality", en: "nationalityEn", kind: "nationality" }, { ar: "city", en: "cityEn" }, { ar: "jobTitle", en: "jobTitleEn" }, { ar: "profession", en: "professionEn" }, { ar: "department", en: "departmentEn" }], open);
 
   // Auto-fetch next employee number if creating
   const {
@@ -515,8 +519,7 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
               <FormField label={t("employees.fields.jobTitle")} icon={Briefcase}>
                 <Input
                   {...register("jobTitle", { onChange: auto.arChange("jobTitleEn") })}
-                  list="domestic-professions"
-                  placeholder={isAr ? "مثال: مدير عمليات، سائق خاص، عاملة منزلية..." : "e.g. Operations Manager"}
+                  placeholder={isAr ? "مثال: مدير عمليات، شيف، محاسب..." : "e.g. Operations Manager"}
                   className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
                 />
               </FormField>
@@ -537,11 +540,30 @@ export function EmployeeDialog({ open, employee, onOpenChange, onSuccess }: Empl
                 />
               </FormField>
 
+              <FormField label={isAr ? "المهنة حسب الإقامة" : "Profession on the iqama"} icon={IdCard}>
+                <Input
+                  {...register("profession", { onChange: auto.arChange("professionEn") })}
+                  list="domestic-professions"
+                  placeholder={isAr ? "زي المكتوبة في الإقامة: سائق خاص، عامل منزلي..." : "As on the iqama: private driver, housemaid…"}
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
+                />
+              </FormField>
+
+              <FormField label={isAr ? "المهنة حسب الإقامة (إنجليزي)" : "Profession on the iqama (English)"} icon={IdCard}>
+                <EnglishInput
+                  {...register("professionEn", { onChange: auto.enChange("professionEn") })}
+                  onTranslate={() => auto.translateNow("professionEn")}
+                  busy={auto.busy.professionEn}
+                  placeholder="e.g. Private driver"
+                  className="h-11 rounded-xl font-medium bg-background/90 border-border/80 shadow-xs focus-visible:ring-purple-500/30 focus-visible:border-purple-500/60"
+                />
+              </FormField>
+
               {isDomestic && (
                 <div className="sm:col-span-2 lg:col-span-3 rounded-xl border border-sky-500/25 bg-sky-500/10 px-4 py-3 text-sm">
-                  <b className="block text-sky-700 dark:text-sky-300">{isAr ? "عمالة منزلية: التأمين الطبي مرتبط بالإقامة" : "Domestic worker: the medical insurance follows the iqama"}</b>
+                  <b className="block text-sky-700 dark:text-sky-300">{isAr ? "مهنة منزلية: التأمين الطبي مرتبط بالإقامة" : "Domestic profession: the medical insurance follows the iqama"}</b>
                   <span className="text-muted-foreground">
-                    {isAr ? "التأمين بياخد تاريخ الإقامة وحالتها تلقائيًا، ويتجدد معاها. مش محتاج تسجّله لوحده." : "It takes the iqama's dates and status and renews with it. No separate record is needed."}
+                    {isAr ? "بتطلعله بطاقة تأمين طبي سارية طول ما الإقامة سارية، وبتتجدد معاها. مش محتاج تسجّل التأمين لوحده." : "An insurance card valid while the iqama is, renewed with it. No separate record is needed."}
                   </span>
                   <label className="mt-2 flex items-center gap-2 font-medium">
                     <input type="checkbox" className="h-4 w-4 accent-sky-600" {...register("insuranceSeparate")} />

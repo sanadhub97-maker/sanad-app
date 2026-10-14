@@ -7,6 +7,7 @@ import { computeStatus } from "@/services/expiration";
 import { getExpirationRules } from "@/services/settingsStore";
 import { getTrackableItems } from "@/services/expiringItems";
 import { isEstablishmentSource } from "@/constants/documentSources";
+import { domesticMatcher, insuranceFollowsIqama } from "@/services/domesticInsurance";
 import type { z } from "zod";
 import type {
   activityReportQuerySchema,
@@ -41,7 +42,12 @@ function requireCompleteReport<T>(rows: T[]): T[] {
   return rows;
 }
 
-export async function employeesReport(query: z.infer<typeof employeeReportQuerySchema>) {
+/** The employee documents the employees report shows beside the residency permit and the passport, by group; a group shows the one that ends last. */
+const DOC_GROUPS = { healthCert: ["HEALTH_CERTIFICATE"], insurance: ["MEDICAL_INSURANCE"], visa: ["VISA", "EXIT_REENTRY_VISA", "FINAL_EXIT_VISA"], iqama: ["IQAMA"], passport: ["PASSPORT"] } as const;
+type DocGroup = keyof typeof DOC_GROUPS;
+
+/** `withDocuments`: the health certificate, the medical insurance and the visa too (needs the employee documents permission). */
+export async function employeesReport(query: z.infer<typeof employeeReportQuerySchema>, withDocuments = false) {
   const rules = await getExpirationRules();
   const where: Prisma.EmployeeWhereInput = {
     deletedAt: null,
@@ -56,8 +62,27 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
     orderBy: { fullNameEn: "asc" },
     include: { branch: { select: { name: true, nameEn: true } } },
   });
+  requireCompleteReport(rows);
 
-  return requireCompleteReport(rows).map((e) => ({
+  // Each employee's latest document of each group (the iqama and passport only fill in when the employee record has none).
+  const docs = withDocuments
+    ? await prisma.employeeDocument.findMany({
+        where: { deletedAt: null, employeeId: { in: rows.map((e) => e.id) }, type: { in: Object.values(DOC_GROUPS).flat() as never } },
+        select: { employeeId: true, type: true, documentNumber: true, expiryDate: true },
+      })
+    : [];
+  const latest = new Map<string, (typeof docs)[number]>();
+  for (const d of docs) {
+    const group = (Object.keys(DOC_GROUPS) as DocGroup[]).find((g) => (DOC_GROUPS[g] as readonly string[]).includes(d.type))!;
+    const key = `${d.employeeId}:${group}`;
+    const cur = latest.get(key);
+    if (!cur || (d.expiryDate?.getTime() ?? 0) > (cur.expiryDate?.getTime() ?? 0)) latest.set(key, d);
+  }
+  const doc = (id: string, g: DocGroup) => latest.get(`${id}:${g}`);
+  // Domestic workers: the insurance goes with the iqama (services/domesticInsurance).
+  const isDomestic = withDocuments ? await domesticMatcher() : () => false;
+
+  return rows.map((e) => ({
     id: e.id,
     employeeNumber: e.employeeNumber,
     // Arabic first: the PDF/Excel reports are Arabic. The screen picks by language.
@@ -67,6 +92,8 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
     nationalityEn: e.nationalityEn || e.nationality,
     jobTitle: e.jobTitle,
     jobTitleEn: e.jobTitleEn || e.jobTitle,
+    profession: e.profession,
+    professionEn: e.professionEn || e.profession,
     department: e.department,
     departmentEn: e.departmentEn,
     branch: e.branch?.name ?? null,
@@ -74,12 +101,35 @@ export async function employeesReport(query: z.infer<typeof employeeReportQueryS
     employmentStatus: e.employmentStatus,
     mobile: e.mobile,
     email: e.email,
-    iqamaNumber: e.iqamaNumber,
-    iqamaExpiryDate: e.iqamaExpiryDate,
-    iqamaStatus: computeStatus(e.iqamaExpiryDate, rules),
-    passportNumber: e.passportNumber,
-    passportExpiryDate: e.passportExpiryDate,
-    passportStatus: computeStatus(e.passportExpiryDate, rules),
+    iqamaNumber: e.iqamaNumber ?? doc(e.id, "iqama")?.documentNumber ?? null,
+    iqamaExpiryDate: e.iqamaExpiryDate ?? doc(e.id, "iqama")?.expiryDate ?? null,
+    iqamaStatus: computeStatus(e.iqamaExpiryDate ?? doc(e.id, "iqama")?.expiryDate ?? null, rules),
+    passportNumber: e.passportNumber ?? doc(e.id, "passport")?.documentNumber ?? null,
+    passportExpiryDate: e.passportExpiryDate ?? doc(e.id, "passport")?.expiryDate ?? null,
+    passportStatus: computeStatus(e.passportExpiryDate ?? doc(e.id, "passport")?.expiryDate ?? null, rules),
+    ...(withDocuments
+      ? {
+          healthCertNumber: doc(e.id, "healthCert")?.documentNumber ?? null,
+          healthCertExpiryDate: doc(e.id, "healthCert")?.expiryDate ?? null,
+          healthCertStatus: doc(e.id, "healthCert") ? computeStatus(doc(e.id, "healthCert")!.expiryDate, rules) : null,
+          ...(insuranceFollowsIqama(e, isDomestic)
+            ? {
+                insuranceWithIqama: true,
+                insuranceNumber: null,
+                insuranceExpiryDate: e.iqamaExpiryDate ?? doc(e.id, "iqama")?.expiryDate ?? null,
+                insuranceStatus: computeStatus(e.iqamaExpiryDate ?? doc(e.id, "iqama")?.expiryDate ?? null, rules),
+              }
+            : {
+                insuranceNumber: doc(e.id, "insurance")?.documentNumber ?? null,
+                insuranceExpiryDate: doc(e.id, "insurance")?.expiryDate ?? null,
+                insuranceStatus: doc(e.id, "insurance") ? computeStatus(doc(e.id, "insurance")!.expiryDate, rules) : null,
+              }),
+          visaType: doc(e.id, "visa")?.type ?? null,
+          visaNumber: doc(e.id, "visa")?.documentNumber ?? null,
+          visaExpiryDate: doc(e.id, "visa")?.expiryDate ?? null,
+          visaStatus: doc(e.id, "visa") ? computeStatus(doc(e.id, "visa")!.expiryDate, rules) : null,
+        }
+      : {}),
   }));
 }
 

@@ -17,7 +17,7 @@ type ListQuery = z.infer<typeof listEmployeesQuerySchema>;
 
 const includeBranch = { branch: { select: { id: true, name: true, nameEn: true, code: true } } } as const;
 
-async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; passportExpiryDate: Date | null; jobTitle?: string | null; jobTitleEn?: string | null; insuranceSeparate?: boolean | null }>(
+async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; passportExpiryDate: Date | null; profession?: string | null; professionEn?: string | null; insuranceSeparate?: boolean | null }>(
   employee: T
 ) {
   const [rules, isDomestic] = await Promise.all([getExpirationRules(), domesticMatcher()]);
@@ -26,7 +26,7 @@ async function withComputedStatus<T extends { iqamaExpiryDate: Date | null; pass
     iqamaStatus: computeStatus(employee.iqamaExpiryDate, rules),
     passportStatus: computeStatus(employee.passportExpiryDate, rules),
     /** A domestic worker (private driver, housemaid, nanny…). */
-    domesticProfession: isDomestic(employee.jobTitle, employee.jobTitleEn),
+    domesticProfession: isDomestic(employee.profession, employee.professionEn),
     /** Their medical insurance follows the iqama (no document of its own). */
     insuranceFollowsIqama: insuranceFollowsIqama(employee, isDomestic),
   };

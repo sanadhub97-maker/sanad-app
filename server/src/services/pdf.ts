@@ -474,7 +474,8 @@ export function pdfDocumentShell(opts: {
     timeStr,
     highlight: opts.highlight,
   };
-  const isClassic = theme.id === "classic";
+  // Every design is a house design now; the plain fallback header stays for a theme with no letterhead.
+  const isClassic = false as boolean;
 
   return `<!doctype html>
 <html dir="${dir}" lang="${dir === "rtl" ? "ar" : "en"}">

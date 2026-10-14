@@ -26,13 +26,23 @@ describe("domestic workers' insurance follows the iqama", () => {
 
   it("keeps the insurance separate for the exceptions", async () => {
     const isDomestic = await domesticMatcher();
-    expect(insuranceFollowsIqama({ jobTitle: "مربية أطفال" }, isDomestic)).toBe(true);
-    expect(insuranceFollowsIqama({ jobTitle: "مربية أطفال", insuranceSeparate: true }, isDomestic)).toBe(false);
+    expect(insuranceFollowsIqama({ profession: "مربية أطفال" }, isDomestic)).toBe(true);
+    expect(insuranceFollowsIqama({ profession: "مربية أطفال", insuranceSeparate: true }, isDomestic)).toBe(false);
     const ids = await linkedInsuranceIds([
-      { id: "a", jobTitle: "سائق خاص" },
-      { id: "b", jobTitle: "سائق خاص", insuranceSeparate: true },
-      { id: "c", jobTitle: "مدير عمليات" },
+      { id: "a", profession: "سائق خاص" },
+      { id: "b", profession: "سائق خاص", insuranceSeparate: true },
+      { id: "c", profession: "مدير عمليات" },
     ]);
     expect([...ids]).toEqual(["a"]);
+  });
+
+  it("goes by the profession on the iqama, not the job title", async () => {
+    const isDomestic = await domesticMatcher();
+    // A housemaid on the iqama working as a chef: the insurance follows the iqama.
+    expect(insuranceFollowsIqama({ profession: "عامل منزلي", jobTitle: "شيف" } as never, isDomestic)).toBe(true);
+    // A private driver by job title only: it does not.
+    expect(insuranceFollowsIqama({ profession: null, jobTitle: "سائق خاص" } as never, isDomestic)).toBe(false);
+    expect(insuranceFollowsIqama({ profession: "عامل تربية مواشي" }, isDomestic)).toBe(true);
+    expect(insuranceFollowsIqama({ profession: "راعي" }, isDomestic)).toBe(true);
   });
 });

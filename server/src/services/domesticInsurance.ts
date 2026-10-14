@@ -21,6 +21,8 @@ export const DEFAULT_DOMESTIC_PROFESSIONS = [
   "حارس منزلي",
   "مزارع منزلي",
   "ممرض منزلي",
+  "عامل تربية مواشي",
+  "راعي",
   // The same professions as they are written in English.
   "Private driver",
   "Domestic worker",
@@ -31,6 +33,8 @@ export const DEFAULT_DOMESTIC_PROFESSIONS = [
   "Home guard",
   "Home farmer",
   "Home nurse",
+  "Livestock worker",
+  "Shepherd",
 ];
 
 /** One spelling for comparing professions: no diacritics or tatweel, one alif, ه for ة, ي for ى, no "ال", single spaces. */
@@ -67,21 +71,22 @@ export async function setDomesticProfessions(list: string[]): Promise<string[]> 
   return clean;
 }
 
-/** A matcher for the current list, for checking many employees at once. */
-export async function domesticMatcher(): Promise<(jobTitle?: string | null, jobTitleEn?: string | null) => boolean> {
+/** A matcher for the current list, for checking many employees at once (by their profession, Arabic or English). */
+export async function domesticMatcher(): Promise<(profession?: string | null, professionEn?: string | null) => boolean> {
   const set = new Set((await getDomesticProfessions()).map(normalizeProfession).filter(Boolean));
-  return (jobTitle, jobTitleEn) => set.has(normalizeProfession(jobTitle)) || set.has(normalizeProfession(jobTitleEn));
+  return (profession, professionEn) => set.has(normalizeProfession(profession)) || set.has(normalizeProfession(professionEn));
 }
 
+/** It goes by the profession on the iqama, never the job title. */
 export interface InsuranceSubject {
-  jobTitle?: string | null;
-  jobTitleEn?: string | null;
+  profession?: string | null;
+  professionEn?: string | null;
   insuranceSeparate?: boolean | null;
 }
 
 /** Whether this employee's insurance follows the iqama. */
 export function insuranceFollowsIqama(emp: InsuranceSubject, isDomestic: (a?: string | null, b?: string | null) => boolean) {
-  return isDomestic(emp.jobTitle, emp.jobTitleEn) && !emp.insuranceSeparate;
+  return isDomestic(emp.profession, emp.professionEn) && !emp.insuranceSeparate;
 }
 
 /** The employees whose insurance follows the iqama, from a list (ids). */

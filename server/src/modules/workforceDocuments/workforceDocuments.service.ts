@@ -15,14 +15,14 @@ import { linkedInsuranceIds } from "@/services/domesticInsurance";
 // document of their own is set aside unless they are marked insuranceSeparate.
 // ---------------------------------------------------------------------------
 const linkedSelect = {
-  id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, jobTitle: true, jobTitleEn: true, insuranceSeparate: true,
+  id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, jobTitle: true, jobTitleEn: true, profession: true, professionEn: true, insuranceSeparate: true,
   iqamaNumber: true, iqamaIssueDate: true, iqamaExpiryDate: true,
   branch: { select: { id: true, name: true, nameEn: true, code: true } },
 } as const;
 
 /** Every employee whose insurance follows the iqama (ids), for setting their own insurance documents aside. */
 export async function linkedInsuranceEmployeeIds(): Promise<string[]> {
-  const emps = await prisma.employee.findMany({ where: { deletedAt: null }, select: { id: true, jobTitle: true, jobTitleEn: true, insuranceSeparate: true } });
+  const emps = await prisma.employee.findMany({ where: { deletedAt: null }, select: { id: true, profession: true, professionEn: true, insuranceSeparate: true } });
   return [...(await linkedInsuranceIds(emps))];
 }
 

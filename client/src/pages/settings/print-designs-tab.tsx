@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, ExternalLink, Eye, Loader2, Printer, Sparkles } from "lucide-react";
+import { Check, ExternalLink, Eye, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppleIcon } from "@/components/common/apple-icon";
@@ -14,9 +14,9 @@ import { PrintLivePreview, type PreviewDoc } from "./print-live-preview";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DESIGNS } from "@/pages/preview/print-design-catalog";
 
-/** The actual print layout, loaded only when its card approaches the viewport. */
+/** The design's first report page, printed by the system (public/print-designs). */
 function Thumb({ d }: { d: (typeof DESIGNS)[number] }) {
-  return <div className="relative mx-auto aspect-[210/297] w-[150px] max-w-full overflow-hidden bg-white shadow-md" aria-hidden><iframe title={d.nameAr} src={`/print-samples/${d.id}-report.html`} sandbox="" loading="lazy" tabIndex={-1} style={{ width: 794, height: 1123, border: 0, position: "absolute", top: 0, left: 0, transform: "scale(.1889)", transformOrigin: "top left", pointerEvents: "none" }} /></div>;
+  return <div className="relative mx-auto aspect-[210/297] w-[150px] max-w-full overflow-hidden bg-white shadow-md" aria-hidden><img src={`/print-designs/${d.id}-report.png`} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" /></div>;
 }
 
 function useWide() {
@@ -37,11 +37,10 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
   const { data: current, isLoading } = useQuery({ queryKey: ["settings", "print-theme"], queryFn: settingsApi.getPrintTheme });
   const [picked, setPicked] = useState<PrintThemeId | null>(null);
   const [doc, setDoc] = useState<PreviewDoc>("report");
-  const [filter, setFilter] = useState<"all" | "new">("all");
   const [sheet, setSheet] = useState(false);
   const [opening, setOpening] = useState(false);
   const wide = useWide();
-  const shown = picked ?? current ?? "classic";
+  const shown = picked ?? current ?? "malaki";
   const design = DESIGNS.find((x) => x.id === shown) ?? DESIGNS[0];
 
   const save = useMutation({
@@ -75,7 +74,7 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
     ["voucher", isRtl ? "سند صرف" : "Payment voucher", "violet"],
     ["profile", isRtl ? "ملف موظف" : "Employee profile", "indigo"],
   ];
-  const list = DESIGNS.filter((d) => filter === "all" || d.fresh);
+  const list = DESIGNS;
   const inUse = current === design.id;
 
   const head = (
@@ -116,20 +115,9 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
               <CardTitle className="text-lg font-bold">{isRtl ? "تصميم الطباعة" : "Print Design"}</CardTitle>
               <CardDescription className="text-xs">
                 {isRtl
-                  ? `${DESIGNS.length} تصميمًا لكل المطبوعات الرسمية: التقارير وسند الصرف وملف الموظف. اختر تصميمًا لتراه مطبوعًا ببياناتك الحقيقية في المعاينة الحية، ثم اعتمده.`
+                  ? `${DESIGNS.length} تصاميم لكل المطبوعات الرسمية: التقارير وسند الصرف وملف الموظف. اختر تصميمًا لتراه مطبوعًا ببياناتك الحقيقية في المعاينة الحية، ثم اعتمده.`
                   : `${DESIGNS.length} designs for every official print: reports, payment vouchers and employee profiles. Pick one to see it printed with your real data in the live preview, then use it.`}
               </CardDescription>
-            </div>
-            <div className="lu-tools">
-              <a href="/print-templates" target="_blank" rel="noopener noreferrer" className="lu-fchip lt-sky">
-                <Eye className="h-4 w-4" /> {isRtl ? "معرض كل القوالب" : "All templates gallery"}
-              </a>
-              <button type="button" className={cn("lu-fchip lt-sky", filter === "all" && "on")} onClick={() => setFilter("all")}>
-                <i /> {isRtl ? `الكل ${DESIGNS.length}` : `All ${DESIGNS.length}`}
-              </button>
-              <button type="button" className={cn("lu-fchip lt-violet", filter === "new" && "on")} onClick={() => setFilter("new")}>
-                <Sparkles className="h-4 w-4" /> {isRtl ? `الجديدة ${DESIGNS.filter(d => d.fresh).length}` : `New ${DESIGNS.filter(d => d.fresh).length}`}
-              </button>
             </div>
           </div>
         </CardHeader>
@@ -143,7 +131,7 @@ export function PrintDesignsTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
               <div className="lu-pd-list">
                 {list.map((d) => (
                   <button key={d.id} type="button" className={cn("lu-pd-card", shown === d.id && "sel")} onClick={() => pick(d.id)} aria-pressed={shown === d.id}>
-                    {current === d.id ? <span className="tag use">{isRtl ? "المعتمد" : "In use"}</span> : d.fresh ? <span className="tag">{isRtl ? "جديد" : "New"}</span> : null}
+                    {current === d.id ? <span className="tag use">{isRtl ? "المعتمد" : "In use"}</span> : null}
                     <span className="th">
                       <Thumb d={d} />
                     </span>

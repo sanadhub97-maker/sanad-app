@@ -420,6 +420,9 @@ model Employee {
   cityEn           String?
   jobTitle         String?
   jobTitleEn       String?
+  /// The profession on the iqama (it can differ from the job title); a domestic profession puts the medical insurance with the iqama.
+  profession       String?
+  professionEn     String?
   department       String?
   departmentEn     String?
   branchId         String?

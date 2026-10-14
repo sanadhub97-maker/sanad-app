@@ -541,3 +541,130 @@ select option { background: #0f1014; color: #f1e9d8; }
 .rx-alert span { font-size: 13px; color: #d9cfbb; line-height: 1.6; }
 .rx-alert .ry-btn { flex: none; }
 @media (max-width: 599px) { .rx-alert { flex-wrap: wrap; } .rx-alert .ry-btn { width: 100%; justify-content: center; } }
+
+/* a domestic worker's medical insurance card (components/royal/insurance-card.tsx) */
+.rx-dcards > .rx-ins { align-content: start; }
+.rx-ins { --s: #7ccfa2; position: relative; overflow: hidden; border-radius: 14px; padding: 14px 16px 12px; display: grid; gap: 10px; color: #f2ead8;
+  background: radial-gradient(260px 160px at 85% 0%, rgba(124, 207, 162, 0.22), transparent 70%), linear-gradient(135deg, #0c1f1a, #13332b 55%, #2b2316);
+  border: 1px solid rgba(214, 182, 120, 0.45); box-shadow: 0 24px 50px -28px #000, inset 0 0 0 4px rgba(0, 0, 0, 0.2), inset 0 0 0 5px rgba(214, 182, 120, 0.22); }
+.rx-ins.rx-ins-warn { --s: #e6b964; } .rx-ins.rx-ins-bad { --s: #ee8f86; } .rx-ins.rx-ins-none { --s: #9d937f; }
+.rx-ins::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255, 243, 214, 0.12) 45%, transparent 60%); transform: translateX(-120%); animation: lx-sheen 6s ease-in-out infinite; }
+.rx-ins .top { display: flex; align-items: center; gap: 10px; }
+.rx-ins .ic { width: 34px; height: 34px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(124, 207, 162, 0.14); border: 1px solid rgba(124, 207, 162, 0.4); color: #a8e6c6; }
+.rx-ins .ic svg { width: 18px; height: 18px; }
+.rx-ins .t { flex: 1; min-width: 0; line-height: 1.25; }
+.rx-ins .t b { display: block; font-size: 14.5px; font-weight: 900; color: #f3dfae; }
+.rx-ins .t small { display: block; font-size: 11.5px; color: rgba(242, 234, 216, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rx-ins .st { flex: none; font-size: 11.5px; font-weight: 800; color: var(--s); border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; }
+.rx-ins .who b { display: block; font-size: 18px; font-weight: 900; line-height: 1.3; }
+.rx-ins .who bdi { display: block; font-size: 12px; color: rgba(242, 234, 216, 0.6); }
+.rx-ins .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.rx-ins .grid small { display: block; font-size: 10.5px; color: rgba(242, 234, 216, 0.55); }
+.rx-ins .grid b { display: block; font-size: 13.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rx-ins .grid b.mono { font-variant-numeric: tabular-nums; letter-spacing: 0.04em; direction: ltr; unicode-bidi: isolate; text-align: start; }
+.rx-ins .foot { font-size: 11px; color: rgba(242, 234, 216, 0.6); border-top: 1px dashed rgba(214, 182, 120, 0.3); padding-top: 8px; }
+
+/* the employee's documents as what they are (components/royal/doc-cards.tsx) */
+.rx-dcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; margin-bottom: 14px; }
+.rx-dc { --s: #7ccfa2; position: relative; overflow: hidden; display: grid; gap: 10px; text-align: start; width: 100%; border-radius: 14px; padding: 14px 16px 12px; color: #f2ead8; cursor: pointer;
+  border: 1px solid rgba(214, 182, 120, 0.4); box-shadow: 0 22px 44px -28px #000, inset 0 0 0 4px rgba(0, 0, 0, 0.18), inset 0 0 0 5px rgba(214, 182, 120, 0.18); transition: transform 0.2s, box-shadow 0.2s; }
+.rx-dc:hover { transform: translateY(-2px); box-shadow: 0 28px 50px -26px #000, 0 0 34px -14px rgba(201, 164, 100, 0.6), inset 0 0 0 4px rgba(0, 0, 0, 0.18), inset 0 0 0 5px rgba(214, 182, 120, 0.28); }
+.rx-dc.t-warn { --s: #e6b964; } .rx-dc.t-bad { --s: #ee8f86; } .rx-dc.t-none { --s: #9d937f; }
+.rx-dc .hd { display: flex; align-items: center; gap: 10px; }
+.rx-dc .ic { width: 34px; height: 34px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(243, 223, 174, 0.35); color: #f3dfae; }
+.rx-dc .ic svg { width: 18px; height: 18px; }
+.rx-dc .tt { flex: 1; min-width: 0; line-height: 1.25; }
+.rx-dc .tt b { display: block; font-size: 14.5px; font-weight: 900; color: #f3dfae; }
+.rx-dc .tt small { display: block; font-size: 11.5px; color: rgba(242, 234, 216, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rx-dc .st { flex: none; font-size: 11.5px; font-weight: 800; color: var(--s); border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; background: rgba(0, 0, 0, 0.18); }
+.rx-dc .who b { display: block; font-size: 17px; font-weight: 900; line-height: 1.3; }
+.rx-dc .who bdi, .rx-dc .who small { display: block; font-size: 12px; color: rgba(242, 234, 216, 0.62); }
+.rx-dc .fl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; min-width: 0; }
+.rx-dc .fl > span { min-width: 0; } .rx-dc .fl > .wide { grid-column: 1 / -1; }
+.rx-dc .fl small { display: block; font-size: 10.5px; color: rgba(242, 234, 216, 0.55); }
+.rx-dc .fl b { display: block; font-size: 13.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rx-dc .mono { font-variant-numeric: tabular-nums; letter-spacing: 0.05em; direction: ltr; unicode-bidi: isolate; text-align: start; }
+.rx-dc .mrz { font: 600 11px/1.3 "IBM Plex Mono", ui-monospace, monospace; letter-spacing: 0.12em; color: rgba(242, 234, 216, 0.5); border-top: 1px dashed rgba(214, 182, 120, 0.3); padding-top: 7px; white-space: nowrap; overflow: hidden; direction: ltr; text-align: left; }
+/* the iqama: a green resident card with a broad number */
+.rx-dc.dc-iqama { background: radial-gradient(240px 150px at 85% 0%, rgba(124, 207, 162, 0.2), transparent 70%), linear-gradient(135deg, #0d2a22, #16392f 55%, #2b2316); }
+.rx-dc.dc-iqama .num { font-size: 22px; font-weight: 900; color: #f3dfae; letter-spacing: 0.12em; }
+/* the passport: a booklet's cover colour, the photo box and the reading line */
+.rx-dc.dc-passport { background: radial-gradient(240px 150px at 85% 0%, rgba(159, 187, 230, 0.2), transparent 70%), linear-gradient(135deg, #10182e, #1b2847 55%, #2b2316); }
+.rx-dc.dc-passport .pp { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: start; }
+.rx-dc.dc-passport .ph { width: 58px; height: 72px; border-radius: 8px; display: grid; place-items: center; font: 900 26px var(--font-sans); color: #f3dfae; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(243, 223, 174, 0.35); }
+/* the health certificate: a clean clinical card */
+.rx-dc.dc-health { background: radial-gradient(240px 150px at 85% 0%, rgba(127, 214, 200, 0.22), transparent 70%), linear-gradient(135deg, #0d2629, #133a3d 55%, #2b2316); }
+/* the visa: a sticker with a band, a security weave and a stamp */
+.rx-dc.dc-visa { padding: 0; gap: 0; background: #14130f; }
+.rx-dc.dc-visa::before { content: ""; position: absolute; inset: 0; opacity: 0.35; pointer-events: none;
+  background: repeating-radial-gradient(circle at 20% 120%, rgba(201, 164, 100, 0.22) 0 1px, transparent 1px 7px), repeating-radial-gradient(circle at 90% -20%, rgba(124, 207, 162, 0.16) 0 1px, transparent 1px 9px); }
+.rx-dc.dc-visa > * { position: relative; }
+.rx-dc.dc-visa .vs-band { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: linear-gradient(90deg, #6b4e1d, #c9a464 55%, #7d5d27); color: #1b1407; }
+.rx-dc.dc-visa .vs-band b { font-size: 16px; font-weight: 900; letter-spacing: 0.18em; }
+.rx-dc.dc-visa .vs-band span:not(.st) { flex: 1; font-size: 12.5px; font-weight: 800; }
+.rx-dc.dc-visa .vs-band .st { background: rgba(255, 250, 240, 0.85); }
+.rx-dc.dc-visa .vs-body { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 12px 16px; align-items: center; }
+.rx-dc.dc-visa .vs-stamp { width: 70px; height: 70px; border-radius: 50%; border: 2px solid rgba(243, 223, 174, 0.55); display: grid; place-items: center; align-content: center; gap: 2px; color: #f3dfae; transform: rotate(-12deg); box-shadow: inset 0 0 0 4px rgba(20, 19, 15, 0.9), inset 0 0 0 5px rgba(243, 223, 174, 0.35); }
+.rx-dc.dc-visa .vs-stamp svg { width: 20px; height: 20px; }
+.rx-dc.dc-visa .vs-stamp small { font-size: 9.5px; font-weight: 800; text-align: center; line-height: 1.1; padding: 0 6px; }
+.rx-dc.dc-visa .mrz { margin: 0 16px 12px; }
+/* the ticket: a boarding pass with a torn stub */
+.rx-dc.dc-ticket { padding: 0; gap: 0; grid-template-columns: 1fr 112px; background: linear-gradient(135deg, #14161d, #1f2230 60%, #2b2316); }
+.rx-dc.dc-ticket .tk-main { display: grid; gap: 10px; padding: 14px 16px 12px; min-width: 0; }
+.rx-dc.dc-ticket .route { display: flex; align-items: center; gap: 10px; }
+.rx-dc.dc-ticket .route b { font-size: 18px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
+.rx-dc.dc-ticket .route .ln { flex: 1; position: relative; height: 18px; display: grid; place-items: center; color: #f3dfae; }
+.rx-dc.dc-ticket .route .ln::before { content: ""; position: absolute; inset-inline: 0; top: 50%; border-top: 1px dashed rgba(243, 223, 174, 0.5); }
+.rx-dc.dc-ticket .route .ln svg { position: relative; width: 18px; height: 18px; background: #1d2030; padding: 0 3px; }
+[dir="rtl"] .rx-dc.dc-ticket .route .ln svg { transform: scaleX(-1); }
+.rx-dc.dc-ticket .tk-stub { position: relative; display: grid; align-content: center; justify-items: center; gap: 6px; padding: 12px 8px; text-align: center; border-inline-start: 2px dashed rgba(243, 223, 174, 0.35); background: rgba(201, 164, 100, 0.08); }
+.rx-dc.dc-ticket .tk-stub::before, .rx-dc.dc-ticket .tk-stub::after { content: ""; position: absolute; inset-inline-start: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--l-surface, #0f1014); }
+.rx-dc.dc-ticket .tk-stub::before { top: -8px; } .rx-dc.dc-ticket .tk-stub::after { bottom: -8px; }
+.rx-dc.dc-ticket .tk-stub small { font-size: 10.5px; color: rgba(242, 234, 216, 0.55); }
+.rx-dc.dc-ticket .tk-stub b { font-size: 12.5px; font-weight: 800; word-break: break-all; }
+.rx-dc.dc-ticket .tk-stub .bars { width: 78px; height: 30px; background: repeating-linear-gradient(90deg, rgba(243, 223, 174, 0.85) 0 2px, transparent 2px 4px, rgba(243, 223, 174, 0.85) 4px 5px, transparent 5px 8px); border-radius: 2px; }
+@media (max-width: 420px) { .rx-dc.dc-ticket { grid-template-columns: 1fr; } .rx-dc.dc-ticket .tk-stub { border-inline-start: 0; border-top: 2px dashed rgba(243, 223, 174, 0.35); } .rx-dc.dc-ticket .tk-stub::before, .rx-dc.dc-ticket .tk-stub::after { display: none; } }
+
+/* the document cards, the premium finish: a guilloche weave behind, an iridescent
+   security strip, gold-foil headings and numbers, an inner gold frame, a chip,
+   and a light that passes over the card */
+.rx-dc, .rx-ins { isolation: isolate; border-radius: 16px; border: 1px solid transparent;
+  background-clip: padding-box; box-shadow: 0 0 0 1px rgba(243, 223, 174, 0.55), 0 30px 60px -30px #000, 0 0 40px -22px rgba(201, 164, 100, 0.7), inset 0 1px 0 rgba(255, 243, 214, 0.25), inset 0 0 0 5px rgba(0, 0, 0, 0.18), inset 0 0 0 6px rgba(243, 223, 174, 0.3); }
+.rx-dc > *, .rx-ins > * { position: relative; z-index: 1; }
+.rx-dc > .gw, .rx-ins > .gw { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0.55; mix-blend-mode: screen;
+  background: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='120' viewBox='0 0 240 120'%3E%3Cg fill='none' stroke='%23e8cc8e' stroke-width='.45' opacity='.5'%3E%3Cpath d='M0 60 C40 10 80 110 120 60 S200 10 240 60'/%3E%3Cpath d='M0 66 C40 16 80 116 120 66 S200 16 240 66'/%3E%3Cpath d='M0 72 C40 22 80 122 120 72 S200 22 240 72'/%3E%3Cpath d='M0 54 C40 4 80 104 120 54 S200 4 240 54'/%3E%3Cpath d='M0 48 C40 -2 80 98 120 48 S200 -2 240 48'/%3E%3Cpath d='M0 78 C40 28 80 128 120 78 S200 28 240 78'/%3E%3Cpath d='M0 42 C40 -8 80 92 120 42 S200 -8 240 42'/%3E%3C/g%3E%3C/svg%3E") center / 240px 120px repeat,
+    radial-gradient(circle at 15% 110%, rgba(243, 223, 174, 0.14), transparent 45%); }
+.rx-dc > .holo, .rx-ins > .holo { position: absolute; z-index: 0; pointer-events: none; top: -30%; bottom: -30%; inset-inline-start: 58%; width: 38px; transform: rotate(18deg); opacity: 0.32; filter: blur(.3px);
+  background: linear-gradient(180deg, #ff9ad5, #ffe28a 18%, #9cf3c9 36%, #8cc8ff 54%, #c6a2ff 72%, #ff9ad5 90%); background-size: 100% 300%; animation: rx-holo 7s linear infinite; mix-blend-mode: soft-light; }
+@keyframes rx-holo { to { background-position: 0 300%; } }
+.rx-dc::after, .rx-ins::after { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; background: linear-gradient(115deg, transparent 32%, rgba(255, 243, 214, 0.16) 46%, transparent 60%); transform: translateX(-130%); animation: lx-sheen 6.5s ease-in-out infinite; }
+/* foil on the headings and the big numbers */
+.rx-dc .tt b, .rx-ins .t b, .rx-dc.dc-iqama .num, .rx-dc.dc-visa .vs-band b { background: var(--rx-foil, linear-gradient(115deg, #7d5d27, #f3dfae 22%, #c9a464 40%, #fff3d6 55%, #a5803f 72%, #e8cc8e 88%)); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: rx-shimmer 9s linear infinite; }
+.rx-dc.dc-visa .vs-band b { background: linear-gradient(115deg, #2a1d08, #5e4418 40%, #1b1407 70%); -webkit-background-clip: text; background-clip: text; animation: none; }
+.rx-dc .who b, .rx-ins .who b { letter-spacing: .01em; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
+.rx-dc .ic, .rx-ins .ic { background: radial-gradient(circle at 35% 30%, rgba(255, 243, 214, 0.28), rgba(201, 164, 100, 0.08) 70%); border-color: rgba(243, 223, 174, 0.55); color: #fff3d6; box-shadow: 0 0 14px -4px rgba(243, 223, 174, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.rx-dc .st, .rx-ins .st { backdrop-filter: blur(4px); box-shadow: 0 0 12px -4px currentColor; }
+.rx-dc .fl, .rx-ins .grid { padding-top: 8px; border-top: 1px solid rgba(243, 223, 174, 0.18); }
+/* the iqama's chip */
+.rx-dc.dc-iqama .idrow { display: flex; align-items: center; gap: 12px; }
+.rx-dc .chip { width: 40px; height: 30px; flex: none; border-radius: 6px; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #8a6a35, #f3dfae 30%, #c9a464 50%, #fff3d6 65%, #a5803f); box-shadow: inset 0 0 0 1px rgba(60, 40, 10, 0.45), 0 2px 6px rgba(0, 0, 0, 0.45); }
+.rx-dc .chip i { position: absolute; background: rgba(60, 40, 10, 0.45); }
+.rx-dc .chip i:nth-child(1) { left: 0; right: 0; top: 50%; height: 1px; }
+.rx-dc .chip i:nth-child(2) { top: 0; bottom: 0; left: 33%; width: 1px; }
+.rx-dc .chip i:nth-child(3) { top: 0; bottom: 0; left: 66%; width: 1px; }
+.rx-dc.dc-iqama .num { font-size: 24px; letter-spacing: .16em; text-shadow: none; }
+/* richer grounds */
+.rx-dc.dc-iqama { background: radial-gradient(320px 200px at 90% -10%, rgba(124, 207, 162, 0.32), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.25), transparent 70%), linear-gradient(140deg, #071a15, #0f2f26 45%, #183e33 70%, #2b2316); }
+.rx-dc.dc-passport { background: radial-gradient(320px 200px at 90% -10%, rgba(140, 170, 230, 0.3), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.25), transparent 70%), linear-gradient(140deg, #070d1f, #111c3a 45%, #1c2b52 70%, #2b2316); }
+.rx-dc.dc-passport .ph { background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(243, 223, 174, 0.55); box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.25); }
+.rx-dc.dc-health { background: radial-gradient(320px 200px at 90% -10%, rgba(127, 214, 200, 0.32), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.25), transparent 70%), linear-gradient(140deg, #061a1c, #0e3134 45%, #164447 70%, #2b2316); }
+.rx-ins { background: radial-gradient(320px 200px at 90% -10%, rgba(124, 207, 162, 0.3), transparent 65%), radial-gradient(260px 160px at 0% 120%, rgba(201, 164, 100, 0.25), transparent 70%), linear-gradient(140deg, #08201a, #123a30 50%, #2b2316); }
+.rx-dc.dc-visa { background: radial-gradient(300px 200px at 100% 100%, rgba(201, 164, 100, 0.2), transparent 70%), #12110d; }
+.rx-dc.dc-visa .vs-band { background: linear-gradient(100deg, #6b4e1d, #e8cc8e 30%, #c9a464 50%, #fff3d6 62%, #9a7433 85%); box-shadow: inset 0 -1px 0 rgba(60, 40, 10, 0.4); }
+.rx-dc.dc-visa .vs-stamp { border: 2px double rgba(243, 223, 174, 0.75); }
+.rx-dc.dc-ticket { background: radial-gradient(320px 200px at 90% -10%, rgba(201, 164, 100, 0.22), transparent 65%), linear-gradient(140deg, #0e1017, #1a1d2a 55%, #2b2316); }
+.rx-dc.dc-ticket .tk-stub { background: linear-gradient(180deg, rgba(243, 223, 174, 0.14), rgba(201, 164, 100, 0.04)); }
+.rx-dc.dc-ticket .route b { background: linear-gradient(115deg, #f3dfae, #fff3d6 50%, #c9a464); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 22px; }
+.rx-dc .mrz { color: rgba(243, 223, 174, 0.55); }
+@media (prefers-reduced-motion: reduce) { .rx-dc > .holo, .rx-ins > .holo, .rx-dc::after, .rx-ins::after { animation: none; } }

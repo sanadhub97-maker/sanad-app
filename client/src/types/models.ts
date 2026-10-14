@@ -68,6 +68,9 @@ export interface Employee {
   cityEn?: string | null;
   jobTitle?: string | null;
   jobTitleEn?: string | null;
+  /** The profession on the iqama; a domestic one puts the medical insurance with the iqama. */
+  profession?: string | null;
+  professionEn?: string | null;
   department?: string | null;
   departmentEn?: string | null;
   branchId?: string | null;

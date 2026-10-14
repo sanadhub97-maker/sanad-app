@@ -129,6 +129,17 @@ const TEMPLATE_COLUMNS: TemplateColumn[] = [
     exampleEn: "HR Manager",
   },
   {
+    key: "profession",
+    headerAr: "المهنة حسب الإقامة",
+    headerEn: "Iqama Profession",
+    width: 24,
+    group: "job",
+    noteAr: "المهنة المكتوبة في الإقامة؛ المهن المنزلية (سائق خاص، عامل منزلي…) تأمينها مرتبط بالإقامة",
+    exampleVal: "سائق خاص",
+    noteEn: "The profession on the iqama; domestic ones (private driver, housemaid…) have their insurance with the iqama",
+    exampleEn: "Private driver",
+  },
+  {
     key: "department",
     headerAr: "القسم / الإدارة",
     headerEn: "Department",

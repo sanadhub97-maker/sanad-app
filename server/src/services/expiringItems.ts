@@ -103,6 +103,8 @@ export async function getTrackableItems(opts: { linkedInsurance?: boolean } = {}
         passportNumber: true,
         jobTitle: true,
         jobTitleEn: true,
+        profession: true,
+        professionEn: true,
         insuranceSeparate: true,
         branch: { select: { name: true, nameEn: true } },
       },

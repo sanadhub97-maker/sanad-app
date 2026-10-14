@@ -404,11 +404,16 @@ export function tableReportPdf(
   // (smaller type, tighter cells) so all columns still fit the page width.
   const density = columns.length >= 9 ? "dense" : columns.length >= 6 ? "compact" : "";
 
+  // A code, a number or a date stays on one line: a wide table otherwise splits them at a hyphen or a slash.
+  const cell = (html: string) => {
+    const text = html.replace(/<[^>]+>/g, "").trim();
+    return `<td${/^[\w./:+#-]{1,24}$/.test(text) ? ' class="nowrap"' : ""}>${html}</td>`;
+  };
   const rowHtml = rows.map(
     (row, idx) =>
       `<tr>
                     <td style="text-align:center; font-family:monospace; color:#64748b; font-size:8pt;">${idx + 1}</td>
-                    ${columns.map((c) => `<td>${c.render(row)}</td>`).join("")}
+                    ${columns.map((c) => cell(c.render(row))).join("")}
                   </tr>`
   );
 
@@ -594,5 +599,124 @@ export function scopedDocumentsReportPdf(title: string, titleEn: string, data: {
     brandColor: branding.brandColor,
     highlight: { value: String(nEst + nEmp).padStart(2, "0"), label: L("وثيقة في التقرير", "documents") },
     bodyHtml: body,
+  });
+}
+
+/* ---------- The employees report: each employee's documents, type by type ---------- */
+
+/** `withIqama`: a domestic worker's insurance, which runs with the iqama. */
+export interface EmployeeDocCell { number?: string | null; expiry?: Date | null; status?: string | null; kind?: string | null; withIqama?: boolean }
+export interface EmployeeDocsRow {
+  name: string;
+  employeeNumber: string | null;
+  jobTitle: string | null;
+  establishment: string;
+  docs: Record<"iqama" | "healthCert" | "passport" | "insurance" | "visa", EmployeeDocCell>;
+}
+
+/** The five document types, in the order printed, with their names. */
+export const EMPLOYEE_DOC_TYPES: { key: keyof EmployeeDocsRow["docs"]; ar: string; en: string }[] = [
+  { key: "iqama", ar: "الإقامة", en: "Iqama" },
+  { key: "healthCert", ar: "الشهادة الصحية", en: "Health certificate" },
+  { key: "passport", ar: "جواز السفر", en: "Passport" },
+  { key: "insurance", ar: "التأمين الطبي", en: "Medical insurance" },
+  { key: "visa", ar: "التأشيرة", en: "Visa" },
+];
+const VISA_KINDS: Record<string, [string, string]> = { VISA: ["التأشيرة", "Visa"], EXIT_REENTRY_VISA: ["تأشيرة خروج وعودة", "Exit & re-entry visa"], FINAL_EXIT_VISA: ["تأشيرة خروج نهائي", "Final exit visa"] };
+const DOC_STATE: Record<string, [string, string]> = { VALID: ["سارية", "Valid"], EXPIRING_SOON: ["قاربت على الانتهاء", "Ending soon"], EXPIRED: ["منتهية", "Expired"] };
+const recorded = (c: EmployeeDocCell) => Boolean(c.expiry || c.number || c.withIqama);
+
+/* One card per employee: a band with the name, number, job and establishment,
+   then the five documents side by side in equal boxes — each with its type
+   on top, its number, its end date large, and its state in its colour. The
+   type sizes are set for reading on paper (nothing under 8pt). */
+const EMP_DOCS_CSS = `<style>
+  .lux .ed-sum { width: 100%; border-collapse: collapse; margin: 0 0 6mm; break-inside: avoid; }
+  .lux .ed-sum th, .lux .ed-sum td { padding: 2mm 3mm !important; font-size: 9.4pt !important; text-align: center !important; }
+  .lux .ed-sum th:first-child, .lux .ed-sum td:first-child { text-align: start !important; }
+  .lux .ed-sum td:first-child { font-weight: 800; }
+  .ed-sum .r { color: #a8281b; font-weight: 800; } .ed-sum .a { color: #9a5b00; font-weight: 800; } .ed-sum .g { color: #1d6b40; font-weight: 800; } .ed-sum .n { color: #a89a80; }
+  .ed-sec { display: flex; align-items: center; gap: 2.6mm; margin: 6mm 0 3mm; font-size: 12.5pt; font-weight: 800; break-after: avoid; }
+  .ed-sec .dm { width: 2.4mm; height: 2.4mm; background: #9a7433; transform: rotate(45deg); flex: none; }
+  .ed-sec .ln { flex: 1; height: .3mm; background: #d9c9a3; }
+  .ed-sec small { font-size: 9.4pt; font-weight: 700; color: #7a6c55; }
+  .ec { border: .35mm solid #d9c9a3; background: #fff; margin: 0 0 2.8mm; break-inside: avoid; page-break-inside: avoid; }
+  .ec-h { display: flex; align-items: center; gap: 3mm; padding: 1.6mm 3.4mm; background: #f6f0e2; border-bottom: .35mm solid #d9c9a3; }
+  .ec-h .no { flex: none; min-width: 7mm; height: 7mm; padding: 0 1.6mm; border: .35mm solid #9a7433; color: #9a7433; font-size: 9.4pt; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .ec-h .nm { flex: 1; min-width: 0; }
+  .ec-h .nm b { display: inline; font-size: 11.6pt; font-weight: 800; line-height: 1.3; }
+  .ec-h .nm small { display: inline; font-size: 9pt; color: #7a6c55; margin-inline-start: 2.4mm; }
+  .ec-h .nm small::before { content: "·"; margin-inline-end: 2.4mm; color: #c9a464; }
+  .ec-h .tag { flex: none; font-size: 8.6pt; font-weight: 700; color: #7a6c55; }
+  .ec-h .tag b { color: #1a1610; font-variant-numeric: tabular-nums; }
+  .ec-d { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .ec-d > div { padding: 1.6mm 1.8mm 1.8mm; text-align: center; border-inline-start: .3mm solid #ece3cd; border-top: 1mm solid var(--c, #ece3cd); line-height: 1.4; }
+  .ec-d > div:first-child { border-inline-start: 0; }
+  .ec-d .k { display: block; font-size: 9pt; font-weight: 800; color: #6b4e1d; margin-bottom: .2mm; }
+  .ec-d .n { display: block; font-size: 8.4pt; color: #7a6c55; direction: ltr; unicode-bidi: isolate; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ec-d .d { display: block; font-size: 10.6pt; font-weight: 800; color: #1a1610; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ec-d .s { display: inline-block; margin-top: .5mm; font-size: 8.4pt; font-weight: 800; color: var(--c); border: .3mm solid var(--c); border-radius: 99px; padding: 0 2.6mm; white-space: nowrap; }
+  .ec-d .EXPIRED { --c: #a8281b; } .ec-d .EXPIRING_SOON { --c: #9a5b00; } .ec-d .VALID { --c: #1d6b40; }
+  .ec-d .none { background: #fbf8f1; }
+  .ec-d .none .k { color: #a89a80; }
+  .ec-d .none .d { color: #c4b89c; font-weight: 600; font-size: 10pt; }
+  .ec-d .none .s { color: #a89a80; border-color: #e0d6bf; font-weight: 600; }
+</style>`;
+
+function docBox(t: (typeof EMPLOYEE_DOC_TYPES)[number], c: EmployeeDocCell) {
+  const name = t.key === "visa" && c.kind && VISA_KINDS[c.kind] ? L(VISA_KINDS[c.kind][0], VISA_KINDS[c.kind][1]) : L(t.ar, t.en);
+  if (!recorded(c)) return `<div class="none"><span class="k">${name}</span><span class="d">—</span><span class="s">${L("غير مسجلة", "Not recorded")}</span></div>`;
+  const st = c.status && DOC_STATE[c.status] ? c.status : "";
+  return `<div class="${st}"><span class="k">${name}</span><span class="n">${c.withIqama ? L("مرتبط بالإقامة", "With the iqama") : c.number ? escapeHtml(c.number) : "&nbsp;"}</span><span class="d">${fmtDate(c.expiry)}</span>${st ? `<span class="s">${L(DOC_STATE[st][0], DOC_STATE[st][1])}</span>` : ""}</div>`;
+}
+
+export function employeesDocumentsReportPdf(rows: EmployeeDocsRow[], branding: Branding) {
+  const esc = (v: unknown) => escapeHtml(v ?? "—");
+  // The summary: each type, how it stands across the report.
+  const sumRows = EMPLOYEE_DOC_TYPES.map((t) => {
+    const n = { EXPIRED: 0, EXPIRING_SOON: 0, VALID: 0, none: 0 };
+    for (const r of rows) {
+      const c = r.docs[t.key];
+      if (!recorded(c)) n.none++;
+      else if (c.status === "EXPIRED") n.EXPIRED++;
+      else if (c.status === "EXPIRING_SOON") n.EXPIRING_SOON++;
+      else n.VALID++;
+    }
+    return `<tr><td>${L(t.ar, t.en)}</td><td class="r">${n.EXPIRED}</td><td class="a">${n.EXPIRING_SOON}</td><td class="g">${n.VALID}</td><td class="n">${n.none}</td></tr>`;
+  }).join("");
+  const summary = `<div class="section-header"><span>${L("ملخص الوثائق", "Documents at a glance")}</span><span>${L(`${rows.length} موظف`, `${rows.length} employees`)}</span></div>
+    <table class="ed-sum"><thead><tr><th>${L("الوثيقة", "Document")}</th><th>${L("منتهية", "Expired")}</th><th>${L("قاربت على الانتهاء", "Ending soon")}</th><th>${L("سارية", "Valid")}</th><th>${L("غير مسجلة", "Not recorded")}</th></tr></thead><tbody>${sumRows}</tbody></table>`;
+  // The cards, by establishment.
+  const groups = new Map<string, EmployeeDocsRow[]>();
+  for (const r of rows) groups.set(r.establishment, [...(groups.get(r.establishment) ?? []), r]);
+  let i = 0;
+  const sections = [...groups.entries()]
+    .map(([est, list]) => {
+      const cards = list
+        .map(
+          (r) => `<div class="ec"><div class="ec-h"><span class="no">${++i}</span><div class="nm"><b>${esc(r.name)}</b>${r.jobTitle ? `<small>${esc(r.jobTitle)}</small>` : ""}</div>${r.employeeNumber ? `<span class="tag">${L("الرقم الوظيفي", "Emp. no.")} <b>${esc(r.employeeNumber)}</b></span>` : ""}</div>
+          <div class="ec-d">${EMPLOYEE_DOC_TYPES.map((t) => docBox(t, r.docs[t.key])).join("")}</div></div>`
+        )
+        .join("");
+      return `<div class="ed-sec"><span class="dm"></span>${esc(est)}<span class="ln"></span><small>${L(`${list.length} موظف`, `${list.length} employees`)}</small></div>${cards}`;
+    })
+    .join("");
+  const content = rows.length
+    ? `${EMP_DOCS_CSS}${summary}${sections}
+    <div class="report-summary-bar"><span>${L("✓ نهاية التقرير", "✓ End of report")}</span><span class="summary-kpi">${L(`إجمالي الموظفين: ${rows.length}`, `Employees: ${rows.length}`)}</span></div>
+    ${signatureBlock("report", branding)}`
+    : `<div class="empty-state-card"><div class="empty-state-title">${L("لا يوجد موظفون مطابقون لهذا التقرير", "No employees match this report")}</div></div>`;
+  return pdfDocumentShell({
+    title: "تقرير الموظفين ووثائقهم",
+    titleEn: "Employees and their documents",
+    dir: "rtl",
+    companyNameAr: branding.company?.nameAr,
+    companyNameEn: branding.company?.nameEn,
+    logoDataUrl: branding.logoDataUrl,
+    classification: "تقرير تنفيذي رسمي معتمد | Official Executive Report",
+    theme: branding.printTheme,
+    brandColor: branding.brandColor,
+    highlight: { value: String(rows.length).padStart(2, "0"), label: L("موظف في التقرير", "employees") },
+    bodyHtml: content,
   });
 }
