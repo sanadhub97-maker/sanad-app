@@ -328,7 +328,7 @@ const VOUCHER_CSS = `<style>
   .vc-line { display: grid; grid-template-columns: 34mm 1fr; align-items: baseline; gap: 3mm; margin: 0 0 3.2mm; font-size: 10.6pt; }
   .vc-line:last-child { margin-bottom: 0; }
   .vc-line > span { color: #5e4418; font-weight: 800; white-space: nowrap; }
-  .vc-line > span::before { content: "◆"; font-size: 6pt; color: #b8904a; padding-inline-end: 1.8mm; vertical-align: .25em; }
+  .vc-line > span::before { content: ""; display: inline-block; width: 1.5mm; height: 1.5mm; background: #b8904a; transform: rotate(45deg); margin-inline-end: 2.2mm; vertical-align: .2em; }
   .vc-line > b { min-width: 0; font-weight: 800; color: #1a1610; border-bottom: .3mm dotted #b9a67a; padding: 0 1.6mm .7mm; line-height: 1.6; }
   .vc-line > b .n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; font-weight: 900; color: #6b4e1d; }
 
