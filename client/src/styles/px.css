@@ -225,9 +225,9 @@ table.px-t { width: 100%; border-collapse: collapse; font-size: 14px; }
 @media (max-width: 640px) { .lu-app .rc-rp-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* the employee number under a name: a small gold tag (pages/employees EmpNo) */
-.px-empno { display: inline-flex; align-items: center; gap: 0; margin-top: 4px; height: 20px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(201, 164, 100, 0.38); background: rgba(201, 164, 100, 0.07); font: 700 11.5px/1 ui-monospace, "SF Mono", Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; }
-.px-empno > i { font-style: normal; height: 100%; display: grid; place-items: center; padding: 0 6px; color: #c9a464; background: rgba(201, 164, 100, 0.14); border-inline-end: 1px solid rgba(201, 164, 100, 0.3); font-size: 10px; letter-spacing: 0.1em; }
-.px-empno > span { padding: 0 7px; color: #f3dfae; }
+.px-who .px-empno, .px-empno { display: inline-flex; width: fit-content; max-width: 100%; white-space: nowrap; vertical-align: middle; align-items: center; gap: 0; margin-top: 4px; height: 20px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(201, 164, 100, 0.38); background: rgba(201, 164, 100, 0.07); font: 700 11.5px/1 ui-monospace, "SF Mono", Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; }
+.px-empno > i { font-style: normal; height: 100%; display: grid; flex: none; place-items: center; padding: 0 6px; color: #c9a464; background: rgba(201, 164, 100, 0.14); border-inline-end: 1px solid rgba(201, 164, 100, 0.3); font-size: 10px; letter-spacing: 0.1em; }
+.px-empno > span { display: block; flex: none; padding: 0 7px; color: #f3dfae; }
 html.rx-light .px-empno { border-color: rgba(154, 116, 51, 0.4); background: #fffaf0; }
 html.rx-light .px-empno > i { color: #9a7433; background: rgba(154, 116, 51, 0.1); border-inline-end-color: rgba(154, 116, 51, 0.3); }
 html.rx-light .px-empno > span { color: #5e4418; }
