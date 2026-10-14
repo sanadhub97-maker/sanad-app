@@ -76,9 +76,31 @@ export async function getMetadata(id: string) {
   return file;
 }
 
+/* The stored files live in another region; a warm server keeps the small ones it has
+   served (logos, photos) in memory. A stored name never changes its content, so no
+   invalidation is needed beyond dropping a deleted file. */
+const CACHE_LIMIT = 24 * 1024 * 1024;
+const CACHE_ITEM = 1024 * 1024;
+const contentCache = new Map<string, Buffer>();
+let cacheBytes = 0;
+function remember(name: string, buffer: Buffer) {
+  if (buffer.length > CACHE_ITEM) return;
+  contentCache.delete(name);
+  contentCache.set(name, buffer);
+  cacheBytes += buffer.length;
+  for (const [k, v] of contentCache) {
+    if (cacheBytes <= CACHE_LIMIT) break;
+    contentCache.delete(k);
+    cacheBytes -= v.length;
+  }
+}
+
 export async function getContent(id: string) {
   const file = await getMetadata(id);
+  const cached = contentCache.get(file.storedName);
+  if (cached) return { file, buffer: cached };
   const buffer = await storage.read(file.storedName);
+  remember(file.storedName, buffer);
   return { file, buffer };
 }
 
@@ -86,6 +108,8 @@ export async function remove(id: string) {
   const file = await getMetadata(id);
   const history = await prisma.documentRevision.findFirst({ where: { OR: ["before", "after"].flatMap(version => ["fileId", "iqamaFileId", "passportFileId"].map(field => ({ [version]: { path: [field], equals: id } }))) }, select: { id: true } });
   if (history) throw ApiError.badRequest("This attachment is retained in document history and cannot be deleted.");
+  const gone = contentCache.get(file.storedName);
+  if (gone) { contentCache.delete(file.storedName); cacheBytes -= gone.length; }
   await storage.delete(file.storedName);
   await prisma.file.delete({ where: { id } });
 }
