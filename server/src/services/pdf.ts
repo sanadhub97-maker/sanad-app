@@ -216,6 +216,11 @@ function launchBrowser(): Promise<Browser> {
 }
 
 async function getBrowser(): Promise<Browser> {
+  const started = Date.now();
+  const fresh = !browserPromise;
+  try { return await getBrowserInner(); } finally { if (fresh) logger.info({ ms: Date.now() - started }, "PDF browser launch"); }
+}
+async function getBrowserInner(): Promise<Browser> {
   const cached = browserPromise;
   if (cached) {
     const existing = await cached.catch(() => null);
@@ -309,7 +314,12 @@ const FIT_TO_BOX = `(sel) => {
  * - Official corporate signatures and circular compliance seal
  */
 async function renderOnce(browser: Browser, html: string, options: RenderPdfOptions): Promise<Buffer> {
+  // How long each step takes, in the log, to see what slows a print down.
+  const t0 = Date.now();
+  const steps: Record<string, number> = {};
+  const lap = (name: string) => { steps[name] = Date.now() - t0; };
   const page = await browser.newPage();
+  lap("page");
   try {
     await secureRenderPage(page);
     // The shell stamps its design into the page; margins and the per-page
@@ -332,14 +342,18 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     const headerHtml = running ? running.html : english ? englishLabels(theme.headerTemplate) : theme.headerTemplate;
     const footerHtml = english ? englishLabels(theme.footerTemplate(footerLabel)) : theme.footerTemplate(footerLabel);
     const marginFonts = options.bare ? "" : await marginTypographyFor(headerHtml + footerHtml);
+    lap("margins");
     await page.setContent(withSiteFonts(html, marginFonts ? preloadMarginFonts(marginFonts) : ""), { waitUntil: "domcontentloaded", timeout: 20000 });
+    lap("content");
     await waitForSiteFonts(page);
+    lap("fonts");
     const settled = await Promise.race([
       page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
     ]).catch(() => false);
     // Stop anything still loading past the budget (a design's own extra font).
     if (!settled) await page.evaluate("window.stop()").catch(() => undefined);
+    lap(settled ? "idle" : "idle-timeout");
     if (options.bare) {
       if (options.fitSelector) await page.evaluate(`(${FIT_TO_BOX})(${JSON.stringify(options.fitSelector)})`);
       return Buffer.from(await page.pdf({ format: "A4", landscape: false, printBackground: true, waitForFonts: false, preferCSSPageSize: false, margin: { top: "0", bottom: "0", left: "0", right: "0" } }));
@@ -358,6 +372,8 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
       // own padding keeps the content in.
       margin: { top: running ? running.height : theme.margin.top, bottom: theme.margin.bottom, left: "0", right: "0" },
     });
+    lap("pdf");
+    logger.info({ steps, bytes: html.length }, "PDF render steps (ms from start)");
     return Buffer.from(pdf);
   } finally {
     await page.close().catch(() => undefined);
