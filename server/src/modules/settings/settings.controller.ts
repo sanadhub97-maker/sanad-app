@@ -84,6 +84,7 @@ export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, r
 });
 import { isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { employeeProfilePdf, paymentReceiptPdf, tableReportPdf } from "@/modules/pdf/templates";
+import { domesticMatcher } from "@/services/domesticInsurance";
 import * as paymentsService from "@/modules/payments/payments.service";
 import * as employeesService from "@/modules/employees/employees.service";
 import { renderHtmlToPdf } from "@/services/pdf";
@@ -120,7 +121,7 @@ export const previewPrintTheme = asyncHandler(async (req: Request, res: Response
     const latest = await prisma.payment.findFirst({ where: { deletedAt: null }, orderBy: { paymentDate: "desc" }, select: { id: true } });
     if (latest) {
       const payment = await paymentsService.getById(latest.id);
-      return send(await renderHtmlToPdf(paymentReceiptPdf(payment as never, branding), { footerLabel: L("سند صرف", "Payment Receipt") }), "voucher");
+      return send(await renderHtmlToPdf(paymentReceiptPdf(payment as never, branding, { domestic: (await domesticMatcher())(payment.employee?.profession, payment.employee?.professionEn) }), { footerLabel: L("سند صرف", "Payment Receipt") }), "voucher");
     }
   }
   if (doc === "profile") {

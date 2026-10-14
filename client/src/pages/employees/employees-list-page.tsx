@@ -277,7 +277,7 @@ export default function EmployeesListPage() {
                           </span>
                           <div>
                             <b>{name}</b>
-                            <small className="mono">{e.employeeNumber}</small>
+                            <EmpNo value={e.employeeNumber} />
                           </div>
                         </div>
                       </td>
@@ -387,5 +387,22 @@ export default function EmployeesListPage() {
         }}
       />
     </div>
+  );
+}
+
+/** The employee number as an engraved tag: the prefix (EMP) faint, the digits bold. */
+function EmpNo({ value }: { value: string }) {
+  const m = /^([A-Za-z]+)[-\s]?(.+)$/.exec(value);
+  return (
+    <span className="px-empno" dir="ltr">
+      {m ? (
+        <>
+          <i>{m[1]}</i>
+          <span>{m[2]}</span>
+        </>
+      ) : (
+        <span>{value}</span>
+      )}
+    </span>
   );
 }

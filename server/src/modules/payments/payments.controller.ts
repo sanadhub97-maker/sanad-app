@@ -5,6 +5,7 @@ import * as service from "@/modules/payments/payments.service";
 import { renderHtmlToPdf } from "@/services/pdf";
 import { getBrandingContext } from "@/services/branding";
 import { paymentReceiptPdf } from "@/modules/pdf/templates";
+import { domesticMatcher } from "@/services/domesticInsurance";
 import { L } from "@/services/lang";
 import { pdfContentDisposition } from "@/utils/pdfHeaders";
 import { logger } from "@/lib/logger";
@@ -41,7 +42,7 @@ export const remove = asyncHandler(async (req: Request, res: Response) => {
 export const receiptPdf = asyncHandler(async (req: Request, res: Response) => {
   const payment = await service.getById(String(req.params.id));
   const branding = await getBrandingContext("voucher");
-  const html = paymentReceiptPdf(payment as never, branding);
+  const html = paymentReceiptPdf(payment as never, branding, { domestic: (await domesticMatcher())(payment.employee?.profession, payment.employee?.professionEn) });
   const pdf = await renderHtmlToPdf(html, { footerLabel: L("سند صرف", "Payment Receipt") });
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", pdfContentDisposition(`receipt-${payment.paymentNumber}.pdf`));

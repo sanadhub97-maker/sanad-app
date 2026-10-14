@@ -12,7 +12,7 @@ type ListQuery = z.infer<typeof listPaymentsQuerySchema>;
 
 const includeRelations = {
   branch: { select: { id: true, name: true, nameEn: true, code: true } },
-  employee: { select: { id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true } },
+  employee: { select: { id: true, employeeNumber: true, fullNameAr: true, fullNameEn: true, profession: true, professionEn: true, iqamaNumber: true, sponsorName: true } },
   createdBy: { select: { id: true, fullName: true } },
 } as const;
 

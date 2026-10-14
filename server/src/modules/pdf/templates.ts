@@ -254,9 +254,96 @@ export function employeeProfilePdf(
   });
 }
 
-/**
- * 💰 Official Payment Voucher & Disbursement Order PDF
- */
+/* ---------- Amounts in words (Arabic), for the voucher ---------- */
+
+const ONES = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+const TENS = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+const HUNDREDS = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+/** 0–999 in Arabic words. */
+function under1000(n: number): string {
+  const h = Math.floor(n / 100), r = n % 100;
+  const parts: string[] = [];
+  if (h) parts.push(HUNDREDS[h]);
+  if (r) parts.push(r < 20 ? ONES[r] : r % 10 ? `${ONES[r % 10]} و${TENS[Math.floor(r / 10)]}` : TENS[Math.floor(r / 10)]);
+  return parts.join(" و");
+}
+
+/** A scale word for a count: ألف / ألفان / آلاف / ألفًا, and the same for مليون. */
+function scaled(n: number, one: string, two: string, few: string, many: string): string {
+  if (n === 1) return one;
+  if (n === 2) return two;
+  if (n >= 3 && n <= 10) return `${under1000(n)} ${few}`;
+  return `${under1000(n)} ${n % 100 >= 3 && n % 100 <= 10 ? few : many}`;
+}
+
+/** A whole number in Arabic words (up to 999,999,999). */
+export function arabicWords(n: number): string {
+  n = Math.floor(Math.abs(n));
+  if (n === 0) return "صفر";
+  const m = Math.floor(n / 1_000_000), t = Math.floor((n % 1_000_000) / 1000), r = n % 1000;
+  const parts: string[] = [];
+  if (m) parts.push(scaled(m, "مليون", "مليونان", "ملايين", "مليونًا"));
+  if (t) parts.push(scaled(t, "ألف", "ألفان", "آلاف", "ألفًا"));
+  if (r) parts.push(under1000(r));
+  return parts.join(" و");
+}
+
+/** "ألف وأربعمائة وتسعون ريالًا سعوديًا وخمسون هللة فقط لا غير". */
+export function riyalsInWords(amount: number): string {
+  const riyals = Math.floor(amount + 1e-9);
+  const halalas = Math.round((amount - riyals) * 100);
+  // After a round hundred, thousand or million the riyal is singular (مائة ريال، ألف ريال).
+  const unit = (n: number) => (n === 1 ? "ريال سعودي" : n === 2 ? "ريالان سعوديان" : n % 100 === 0 ? "ريال سعودي" : n % 100 >= 3 && n % 100 <= 10 ? "ريالات سعودية" : "ريالًا سعوديًا");
+  const r = riyals === 1 ? "ريال سعودي واحد" : riyals === 2 ? "ريالان سعوديان" : `${arabicWords(riyals)} ${unit(riyals)}`;
+  const h = halalas ? ` و${halalas === 1 ? "هللة واحدة" : halalas === 2 ? "هللتان" : `${arabicWords(halalas)} ${halalas >= 3 && halalas <= 10 ? "هللات" : "هللة"}`}` : "";
+  return `${r}${h} فقط لا غير`;
+}
+
+const VOUCHER_CSS = `<style>
+  .vc-top { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4mm; margin: 0 0 4mm; break-inside: avoid; }
+  .vc-amt { position: relative; display: flex; flex-direction: column; justify-content: center; padding: 5.4mm 7mm 4.6mm; background: #15120c; color: #f3e3bd; border-radius: 1.4mm; box-shadow: inset 0 0 0 1.2mm #15120c, inset 0 0 0 1.45mm #b8904a, inset 0 0 0 2.2mm #15120c, inset 0 0 0 2.35mm #5e4a26; text-align: center; }
+  .vc-amt::before, .vc-amt::after { content: ""; position: absolute; width: 5mm; height: 5mm; border: 0 solid #d9b877; }
+  .vc-amt::before { top: 3.4mm; right: 3.4mm; border-top-width: .45mm; border-right-width: .45mm; }
+  .vc-amt::after { bottom: 3.4mm; left: 3.4mm; border-bottom-width: .45mm; border-left-width: .45mm; }
+  .vc-amt small { display: block; font-size: 8.4pt; letter-spacing: .05em; color: #c9a464; font-weight: 700; }
+  .vc-amt b { display: block; font-size: 31pt; font-weight: 900; line-height: 1.2; color: #f3dfae; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; margin: 1.2mm 0 1mm; }
+  .vc-amt b span { font-size: 11pt; font-weight: 700; color: #d8c49a; padding-inline-start: 1.8mm; }
+  .vc-amt em { display: block; font-style: normal; font-size: 10pt; font-weight: 700; color: #eadcb8; border-top: .25mm solid #6b5530; padding-top: 2.2mm; margin: 1.2mm 6mm 0; line-height: 1.6; }
+  .vc-meta { display: grid; grid-template-columns: 1fr 1fr; border: .3mm solid #d4c194; background: #fff; box-shadow: inset 0 0 0 1mm #fff, inset 0 0 0 1.25mm #ece1c4; }
+  .vc-meta > div { padding: 2.7mm 3.6mm; border-bottom: .25mm solid #ece3cd; }
+  .vc-meta > div:nth-child(odd) { border-inline-end: .25mm solid #ece3cd; }
+  .vc-meta > div:nth-last-child(-n+2) { border-bottom: 0; }
+  .vc-meta small { display: block; font-size: 7.8pt; color: #8a7c62; font-weight: 700; }
+  .vc-meta b { display: block; font-size: 10.4pt; font-weight: 800; color: #1a1610; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vc-meta b.num { direction: ltr; unicode-bidi: isolate; text-align: start; font-variant-numeric: tabular-nums; }
+  .vc-meta .chip { display: inline-block; font-size: 8.6pt; font-weight: 800; color: #6b4e1d; border: .25mm solid #c9a464; border-radius: 99px; padding: 0 2.6mm; background: #fbf6ea; }
+
+  /* the statement: a framed certificate with its title on the top rule */
+  .vc-deed { position: relative; margin: 4mm 0 5mm; padding: 7mm 7mm 5mm; background: #fffdf8; border: .35mm solid #b8904a; box-shadow: inset 0 0 0 1.1mm #fffdf8, inset 0 0 0 1.3mm #d9c69a; break-inside: avoid; }
+  .vc-deed::before, .vc-deed::after { content: ""; position: absolute; width: 5mm; height: 5mm; border: 0 solid #9a7433; }
+  .vc-deed::before { top: 2.4mm; right: 2.4mm; border-top-width: .45mm; border-right-width: .45mm; }
+  .vc-deed::after { bottom: 2.4mm; left: 2.4mm; border-bottom-width: .45mm; border-left-width: .45mm; }
+  .vc-deed-t { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #15120c; color: #f3dfae; font-size: 10pt; font-weight: 900; padding: 1.2mm 7mm; border-radius: 99px; box-shadow: 0 0 0 .8mm #fffdf8, 0 0 0 1.05mm #b8904a; white-space: nowrap; }
+  .vc-line { display: grid; grid-template-columns: 34mm 1fr; align-items: baseline; gap: 3mm; margin: 0 0 3.2mm; font-size: 10.6pt; }
+  .vc-line:last-child { margin-bottom: 0; }
+  .vc-line > span { color: #5e4418; font-weight: 800; white-space: nowrap; }
+  .vc-line > span::before { content: "◆"; font-size: 6pt; color: #b8904a; padding-inline-end: 1.8mm; vertical-align: .25em; }
+  .vc-line > b { min-width: 0; font-weight: 800; color: #1a1610; border-bottom: .3mm dotted #b9a67a; padding: 0 1.6mm .7mm; line-height: 1.6; }
+  .vc-line > b .n { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; font-weight: 900; color: #6b4e1d; }
+
+  /* information bands: label over value, cells divided by hairlines */
+  .vc-band { display: grid; grid-auto-columns: 1fr; grid-auto-flow: column; border: .3mm solid #d4c194; background: #fff; box-shadow: inset 0 0 0 1mm #fff, inset 0 0 0 1.25mm #ece1c4; margin: 0 0 4.5mm; break-inside: avoid; }
+  .vc-band > div { padding: 2.6mm 3.4mm; text-align: center; }
+  .vc-band > div + div { border-inline-start: .25mm solid #ece3cd; }
+  .vc-band small { display: block; font-size: 7.8pt; color: #8a7c62; font-weight: 700; margin-bottom: .6mm; }
+  .vc-band b { display: block; font-size: 10.4pt; font-weight: 800; color: #1a1610; }
+  .vc-band b.num { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+  .vc-band > div.tot { background: #15120c; box-shadow: inset 0 0 0 .8mm #15120c, inset 0 0 0 1mm #8a6a35; }
+  .vc-band > div.tot small { color: #c9a464; }
+  .vc-band > div.tot b { color: #f3dfae; font-size: 12pt; font-weight: 900; }
+</style>`;
+
 export function paymentReceiptPdf(
   payment: {
     paymentNumber: string;
@@ -268,104 +355,88 @@ export function paymentReceiptPdf(
     vat: unknown;
     total: unknown;
     method: string;
-    paidBy: string | null;
     referenceNumber: string | null;
-    branch: { name: string; nameEn?: string | null } | null;
-    employee: { fullNameAr: string; fullNameEn: string | null } | null;
-    supplierName: string | null;
+    branch?: { name: string; nameEn?: string | null } | null;
+    employee: {
+      employeeNumber?: string | null;
+      fullNameAr: string;
+      fullNameEn: string | null;
+      profession?: string | null;
+      professionEn?: string | null;
+      iqamaNumber?: string | null;
+      sponsorName?: string | null;
+    } | null;
   },
-  branding: Branding
+  branding: Branding,
+  // A domestic worker's payments are made by the sponsor, whose name the voucher carries.
+  opts: { domestic?: boolean } = {}
 ) {
-  const amountNum = Number(payment.amount || 0).toFixed(2);
-  const vatNum = Number(payment.vat || 0).toFixed(2);
-  const totalNum = Number(payment.total || 0).toFixed(2);
+  const money = (v: unknown) => Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = Number(payment.total || 0);
+  const cur = L("ر.س", "SAR");
+  const emp = payment.employee;
+  const domestic = !!(emp && opts.domestic);
+  let hijri = "";
+  try {
+    hijri = new Date(payment.paymentDate).toLocaleDateString(isEn() ? "en-u-ca-islamic-umalqura" : "ar-SA-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Riyadh" });
+  } catch {
+    /* no Hijri calendar here */
+  }
+  const words = isEn() ? `${money(total)} Saudi riyals only` : riyalsInWords(total);
+  const purpose = payment.description || paymentCategoryLabel(payment.category, payment.type);
+  const est = payment.branch ? pick(payment.branch.name, payment.branch.nameEn) : "";
+  const cell = (label: string, value: string, num = false) => `<div><small>${label}</small><b${num ? ' class="num"' : ""}>${value}</b></div>`;
 
-  const body = `
-    <!-- 💰 Total Amount Highlight Banner -->
-    <div class="kpi-total-card">
-      <div>
-        <div class="amount-label">${L("المبلغ الإجمالي المصروف (شامل ضريبة القيمة المضافة)", "Total paid (VAT included)")}</div>
+  const person = emp
+    ? `<div class="section-header"><span>${domestic ? L("بيانات العامل", "Worker") : L("بيانات الموظف", "Employee")}</span></div>
+    <div class="vc-band">
+      ${cell(domestic ? L("العامل", "Worker") : L("الموظف", "Employee"), pick(emp.fullNameAr, emp.fullNameEn))}
+      ${domestic ? cell(L("رقم الإقامة", "Iqama no."), escapeHtml(emp.iqamaNumber || "—"), true) : cell(L("الرقم الوظيفي", "Employee no."), escapeHtml(emp.employeeNumber || "—"), true)}
+      ${cell(L("المهنة", "Profession"), emp.profession || emp.professionEn ? pick(emp.profession, emp.professionEn) : "—")}
+      ${!domestic && est ? cell(L("المنشأة", "Establishment"), est) : ""}
+    </div>`
+    : "";
+
+  const body = `${VOUCHER_CSS}
+    <div class="vc-top">
+      <div class="vc-amt">
+        <small>${L("المبلغ المدفوع · شامل ضريبة القيمة المضافة", "Amount paid · VAT included")}</small>
+        <b>${money(total)}<span>${cur}</span></b>
+        <em>${escapeHtml(words)}</em>
       </div>
-      <div class="amount-val">
-        ${totalNum} <span style="font-size:11pt; font-weight:700;">${L("ر.س", "SAR")}</span>
+      <div class="vc-meta">
+        ${cell(L("رقم السند", "Voucher no."), escapeHtml(payment.paymentNumber), true)}
+        ${cell(L("تاريخ السند", "Date"), fmtDate(payment.paymentDate), true)}
+        ${cell(L("الموافق", "Hijri"), escapeHtml(hijri || "—"))}
+        ${cell(L("طريقة الدفع", "Method"), `<span class="chip">${paymentMethodLabel(payment.method)}</span>`)}
+        ${cell(L("بند الصرف", "Category"), paymentCategoryLabel(payment.category, payment.type))}
+        ${cell(L("رقم المرجع / الفاتورة", "Reference"), escapeHtml(payment.referenceNumber || "—"), true)}
       </div>
     </div>
 
-    <!-- 📋 Section 1: Voucher & Transaction Details -->
-    <div class="section-card">
-      <div class="section-header">
-        <span>${L("بيانات قيد الصرف والمؤسسة", "Voucher & Establishment Details")}</span>
-        <span class="ref-code">#${escapeHtml(payment.paymentNumber)}</span>
-      </div>
-      <div class="section-body">
-        <table>
-          <tr>
-            <th style="width:20%;">${L("رقم سند الصرف", "Voucher no.")}</th>
-            <td style="width:30%; font-family:monospace; font-weight:700;">${escapeHtml(payment.paymentNumber)}</td>
-            <th style="width:20%;">${L("تاريخ السند", "Voucher date")}</th>
-            <td style="width:30%; font-weight:700;">${fmtDate(payment.paymentDate)}</td>
-          </tr>
-          <tr>
-            <th>${L("بند الصرف", "Category")}</th>
-            <td style="font-weight:700;">${paymentCategoryLabel(payment.category, payment.type)}</td>
-            <th>${L("طريقة الدفع", "Payment method")}</th>
-            <td style="font-weight:700;">${paymentMethodLabel(payment.method)}</td>
-          </tr>
-          <tr>
-            <th>${L("المؤسسة / الفرع", "Establishment")}</th>
-            <td>${pick(payment.branch?.name, payment.branch?.nameEn)}</td>
-            <th>${L("القائم بالصرف", "Paid by")}</th>
-            <td>${escapeHtml(payment.paidBy ?? "—")}</td>
-          </tr>
-          <tr>
-            <th>${L("الموظف المستفيد", "Employee")}</th>
-            <td>${payment.employee ? pick(payment.employee.fullNameAr, payment.employee.fullNameEn) : "—"}</td>
-            <th>${L("المورد / الجهة المستفيدة", "Supplier / payee")}</th>
-            <td style="font-weight:700;">${escapeHtml(payment.supplierName ?? "—")}</td>
-          </tr>
-          <tr>
-            <th>${L("رقم المرجع / الفاتورة", "Reference / invoice no.")}</th>
-            <td colspan="3" style="font-family:monospace;">${escapeHtml(payment.referenceNumber ?? "—")}</td>
-          </tr>
-        </table>
-      </div>
+    <div class="vc-deed">
+      <div class="vc-deed-t">${L("بيان الدفع", "Payment statement")}</div>
+      ${domestic && emp?.sponsorName ? `<div class="vc-line"><span>${L("الكفيل", "Sponsor")}</span><b>${escapeHtml(emp.sponsorName)}</b></div>` : ""}
+      <div class="vc-line"><span>${L("تم دفع مبلغ وقدره", "The sum of")}</span><b><span class="n">${money(total)} ${cur}</span> — ${escapeHtml(words)}</b></div>
+      <div class="vc-line"><span>${L("وذلك عن", "For")}</span><b>${escapeHtml(purpose)}</b></div>
+      ${!emp && est ? `<div class="vc-line"><span>${L("المنشأة", "Establishment")}</span><b>${est}</b></div>` : ""}
     </div>
 
-    <!-- 📝 Section 2: Description & Breakdown -->
-    <div class="section-card">
-      <div class="section-header">
-        <span>${L("البيان والتفاصيل المالية", "Description & Amounts")}</span>
-      </div>
-      <div class="section-body">
-        <p class="desc-box">
-          <strong>${L("البيان:", "Description:")} </strong>${escapeHtml(payment.description ?? L("لا يوجد بيان مسجل لهذا السند.", "No description on this voucher."))}
-        </p>
+    ${person}
 
-        <table>
-          <thead>
-            <tr>
-              <th style="text-align:center;">${L("المبلغ الأساسي (بدون ضريبة)", "Amount (before VAT)")}</th>
-              <th style="text-align:center;">${L("ضريبة القيمة المضافة", "VAT")}</th>
-              <th class="total-th" style="text-align:center;">${L("المبلغ الإجمالي", "Total")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="text-align:center; font-family:'Cairo',monospace; font-size:11pt; font-weight:700;">
-              <td style="text-align:center;">${amountNum} ${L("ر.س", "SAR")}</td>
-              <td style="text-align:center;">${vatNum} ${L("ر.س", "SAR")}</td>
-              <td class="total-cell" style="text-align:center;">${totalNum} ${L("ر.س", "SAR")}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="section-header"><span>${L("تفاصيل المبلغ", "Amount")}</span><span>${L("بالريال السعودي", "In Saudi riyals")}</span></div>
+    <div class="vc-band">
+      ${cell(L("المبلغ قبل الضريبة", "Before VAT"), `${money(payment.amount)} ${cur}`, true)}
+      ${cell(L("ضريبة القيمة المضافة", "VAT"), `${money(payment.vat)} ${cur}`, true)}
+      <div class="tot"><small>${L("الإجمالي المدفوع", "Total paid")}</small><b class="num">${money(total)} ${cur}</b></div>
     </div>
 
     ${signatureBlock("voucher", branding)}
   `;
 
   return pdfDocumentShell({
-    title: "سند صرف مالي رسمي معتمد",
-    titleEn: "Official Payment Voucher & Disbursement Order",
+    title: "سند صرف",
+    titleEn: "Payment Voucher",
     dir: "rtl",
     companyNameAr: branding.company?.nameAr,
     companyNameEn: branding.company?.nameEn,
@@ -374,7 +445,7 @@ export function paymentReceiptPdf(
     classification: "سند صرف معتمد | Payment Voucher",
     theme: branding.printTheme,
     brandColor: branding.brandColor,
-    highlight: { value: totalNum, label: L("ريال سعودي", "Saudi riyals") },
+    highlight: { value: money(total), label: L("ريال سعودي", "Saudi riyals") },
     bodyHtml: body,
   });
 }
