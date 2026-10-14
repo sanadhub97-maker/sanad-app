@@ -23,6 +23,10 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   MAINTENANCE: "صيانة",
   PURCHASES: "مشتريات",
   SUBSCRIPTION: "اشتراك",
+  WAGE_PROTECTION: "حماية الأجور",
+  HEALTH_CERTIFICATE: "شهادة صحية",
+  TECHNICAL_REPORT: "تقرير فني",
+  MAINTENANCE_CONTRACT: "عقد صيانة",
 
   // Older categories no longer offered in the form, kept for existing records
   // السجل التجاري والتراخيص
@@ -83,6 +87,10 @@ const PAYMENT_CATEGORY_LABELS_EN: Record<string, string> = {
   MAINTENANCE: "Maintenance",
   PURCHASES: "Purchases",
   SUBSCRIPTION: "Subscription",
+  WAGE_PROTECTION: "Wage protection",
+  HEALTH_CERTIFICATE: "Health certificate",
+  TECHNICAL_REPORT: "Technical report",
+  MAINTENANCE_CONTRACT: "Maintenance contract",
   COMMERCIAL_REGISTRATION_ISSUE: "Commercial registration — issue",
   COMMERCIAL_REGISTRATION_RENEWAL: "Commercial registration — renewal",
   COMMERCIAL_REGISTRATION_AMENDMENT: "Commercial registration — amendment",

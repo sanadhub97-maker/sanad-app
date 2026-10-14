@@ -8,7 +8,7 @@ export const paymentMethodEnum = z.enum(["CASH", "BANK_TRANSFER", "CARD", "ONLIN
 export const paymentCategoryEnum = z.nativeEnum(PaymentCategory);
 
 // Categories that are always about a specific employee.
-const EMPLOYEE_CATEGORIES: string[] = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
+const EMPLOYEE_CATEGORIES: string[] = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA", "HEALTH_CERTIFICATE"];
 
 const basePaymentSchema = z.object({
   paymentNumber: emptyToUndefined(z.string().max(50).optional()),

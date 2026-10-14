@@ -42,7 +42,7 @@ import type { Payment } from "@/types/models";
 import { LiveAside, LiveVoucher } from "@/components/royal/live-cards";
 
 // Keep in sync with server/src/modules/payments/payments.schemas.ts.
-const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA"];
+const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA", "HEALTH_CERTIFICATE"];
 
 function needsEmployee(category?: string, type?: string) {
   return !!category && EMPLOYEE_CATEGORIES.includes(category) && !(category === "VISA" && type === "WORK_VISA");

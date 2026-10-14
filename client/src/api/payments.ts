@@ -62,6 +62,11 @@ export const PAYMENT_CATEGORIES = [
   "MAINTENANCE",
   "PURCHASES",
   "SUBSCRIPTION",
+  "WAGE_PROTECTION",
+  "HEALTH_CERTIFICATE",
+  "TECHNICAL_REPORT",
+  "MAINTENANCE_CONTRACT",
+  "OTHER",
 ] as const;
 
 /** Sub-types a category requires (labels in i18n paymentSubtypes.*). Keep in
