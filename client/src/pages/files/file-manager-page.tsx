@@ -1,5 +1,6 @@
 import { fileTypeLabel } from "@/lib/names";
-import { useRef, useState, type DragEvent } from "react";
+import { AuthedFileImage } from "@/components/common/authed-file-image";
+import { useRef, useState, type DragEvent, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, FileImage, FileSpreadsheet, FileText, Folder, IdCard, Loader2, Palette, Receipt, Search, Upload } from "lucide-react";
@@ -202,7 +203,9 @@ export default function FileManagerPage() {
                   return (
                     <button key={f.id} type="button" className="rp-card rp-file rp-lift" onClick={() => setSelectedFile(f)} title={name}>
                       <span className="thumb" style={{ ["--c" as string]: k.tone }}>
-                        {k.ext === "PDF" || k.ext === "FILE" ? (
+                        {f.mimeType?.toLowerCase().startsWith("image/") ? (
+                          <ImageThumb fileId={f.id} alt={name} />
+                        ) : k.ext === "PDF" || k.ext === "FILE" ? (
                           <span className="lines">
                             <i />
                             <i />
@@ -233,4 +236,18 @@ export default function FileManagerPage() {
       <ConfirmDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)} title={t("files.deleteConfirmTitle")} onConfirm={handleDelete} />
     </div>
   );
+}
+
+/** An image file's own picture as its thumbnail, fetched only once the card scrolls into view. */
+function ImageThumb({ fileId, alt }: { fileId: string; alt: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || seen) return;
+    const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setSeen(true), { rootMargin: "200px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [seen]);
+  return <span ref={ref} className="pic">{seen ? <AuthedFileImage fileId={fileId} alt={alt} className="pic-img" /> : <FileImage />}</span>;
 }
