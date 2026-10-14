@@ -315,3 +315,39 @@ html.rx-light .rx-dc.dc-visa { background: radial-gradient(300px 200px at 100% 1
 html.rx-light .rx-dc.dc-visa .vs-stamp { border: 2px double rgba(154, 116, 51, 0.7); }
 html.rx-light .rx-dc.dc-ticket { background: radial-gradient(320px 200px at 90% -10%, rgba(201, 164, 100, 0.22), transparent 65%), linear-gradient(140deg, #ffffff, #f7f2e8 55%, #f0e6d0); }
 html.rx-light .rx-dc.dc-ticket .tk-stub { background: linear-gradient(180deg, rgba(184, 144, 74, 0.12), rgba(184, 144, 74, 0.03)); }
+
+/* the big card numbers by day */
+html.rx-light .rx-dc.dc-iqama .num, html.rx-light .rx-dc.dc-est .num { color: #6b4e1d !important; text-shadow: none; }
+html.rx-light .rx-dc.dc-est .num::before { background: linear-gradient(90deg, transparent, rgba(154, 116, 51, 0.6)); }
+html.rx-light .rx-dc.dc-est .num::after { background: linear-gradient(90deg, rgba(154, 116, 51, 0.6), transparent); }
+html.rx-light .rx-dc.dc-est .fl > span:not(.wide) { background: rgba(154, 116, 51, 0.06); border-top-color: rgba(154, 116, 51, 0.2); }
+html.rx-light .rx-dc.dc-est .fl > span:not(.wide):nth-child(3) { border-inline-start-color: rgba(154, 116, 51, 0.25); }
+html.rx-light .rx-dc.dc-est .fl > span:not(.wide) b.mono { color: #6b4e1d; }
+
+/* the centred numbers and date bands by day */
+html.rx-light .rx-dc .num, html.rx-light .rx-ins > .num { color: #6b4e1d !important; text-shadow: none; }
+html.rx-light .rx-dc .num::before, html.rx-light .rx-ins > .num::before { background: linear-gradient(90deg, transparent, rgba(154, 116, 51, 0.6)); }
+html.rx-light .rx-dc .num::after, html.rx-light .rx-ins > .num::after { background: linear-gradient(90deg, rgba(154, 116, 51, 0.6), transparent); }
+html.rx-light .rx-dc .dts, html.rx-light .rx-ins .dts { background: rgba(154, 116, 51, 0.06); border-top-color: rgba(154, 116, 51, 0.2); }
+html.rx-light .rx-dc .dts > span + span, html.rx-light .rx-ins .dts > span + span { border-inline-start-color: rgba(154, 116, 51, 0.25); }
+html.rx-light .rx-dc .dts small, html.rx-light .rx-ins .dts small { color: #7a6c55; }
+html.rx-light .rx-dc .dts b, html.rx-light .rx-ins .dts b { color: #6b4e1d; }
+
+/* details pages by day */
+html.rx-light .lu-app .rc-hero.rx-lux { background: radial-gradient(700px 360px at 85% -30%, rgba(201, 164, 100, 0.3), transparent 65%), linear-gradient(120deg, #fffdf8, #f7efdf 55%, #eadbb8) !important;
+  box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.45), 0 30px 60px -36px rgba(90, 64, 20, 0.45), inset 0 0 0 6px #fffaf0, inset 0 0 0 7px rgba(154, 116, 51, 0.25) !important; }
+html.rx-light .rc-hero.rx-lux > .rx-lux-gw { opacity: 0.4; filter: sepia(1) saturate(1.2) brightness(.75); }
+html.rx-light .rc-hero.rx-lux > .rx-lux-c { border-color: #9a7433; }
+html.rx-light .rx-lux-medal { color: #9a7433; }
+html.rx-light .rc-hero.rx-lux .rx-lux-in { background: radial-gradient(circle at 35% 30%, #fffaf0, #efe3c8); box-shadow: inset 0 0 0 3px #fffaf0, inset 0 0 0 4px rgba(154, 116, 51, 0.45); color: #6b4e1d; text-shadow: none; }
+html.rx-light .rc-hero.rx-lux .sub, html.rx-light .rc-hero.rx-lux .rc-dstats small { color: #7a6c55 !important; }
+html.rx-light .rc-hero.rx-lux .rc-chips > * { border-color: rgba(154, 116, 51, 0.3) !important; background: #fffdf8 !important; }
+html.rx-light .rc-hero.rx-lux .rc-dstats { border-top-color: rgba(154, 116, 51, 0.22) !important; }
+html.rx-light .lu-app .rc .rc-dcard::before, html.rx-light .lu-app .rc .rc-dcard::after { border-color: #9a7433; }
+html.rx-light .lu-app .rc .rc-dcard > h2 { color: #6b4e1d; }
+html.rx-light .lu-app .rc .rc-fact small { color: #9a7433 !important; }
+html.rx-light .rx-dc.dc-cr { background: radial-gradient(320px 200px at 90% -10%, rgba(184, 144, 74, 0.2), transparent 65%), linear-gradient(140deg, #ffffff, #f8f1e2 50%, #f0e3c4); }
+html.rx-light .rx-dc.dc-muni { background: radial-gradient(320px 200px at 90% -10%, rgba(23, 128, 111, 0.16), transparent 65%), linear-gradient(140deg, #ffffff, #eef7f5 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-cd { background: radial-gradient(320px 200px at 90% -10%, rgba(168, 40, 27, 0.13), transparent 65%), linear-gradient(140deg, #ffffff, #fbefec 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-clean { background: radial-gradient(320px 200px at 90% -10%, rgba(107, 75, 184, 0.13), transparent 65%), linear-gradient(140deg, #ffffff, #f3effa 50%, #f3ead6); }
+html.rx-light .rx-dc.dc-h24 { background: radial-gradient(320px 200px at 90% -10%, rgba(47, 106, 168, 0.15), transparent 65%), linear-gradient(140deg, #ffffff, #eff3fa 50%, #f3ead6); }

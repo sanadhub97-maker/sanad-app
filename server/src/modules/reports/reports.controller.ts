@@ -6,10 +6,10 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { buildWorkbook, buildCsv, ColumnDef } from "@/services/excel";
 import { renderHtmlToPdf } from "@/services/pdf";
-import { getBrandingContext, getSpreadsheetBranding } from "@/services/branding";
+import { getBrandingContext, getSpreadsheetBranding, branchLogoDataUrls } from "@/services/branding";
 import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCategories";
 import { actionLabel, moduleLabel } from "@/constants/auditLabels";
-import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, employeesDocumentsReportPdf, type ScopedEmployeeGroup, type ScopedEstablishment, type EmployeeDocsRow } from "@/modules/pdf/templates";
+import { tableReportPdf, statusBadge, scopedDocumentsReportPdf, employeesDocumentsReportPdf, type ScopedEmployeeGroup, type ScopedEstablishment, type EmployeeDocsRow, type EstablishmentInfo } from "@/modules/pdf/templates";
 import { hasPermission } from "@/lib/security";
 import { prisma } from "@/lib/prisma";
 import { daysUntil } from "@/services/expiration";
@@ -119,7 +119,8 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
     const docRows: EmployeeDocsRow[] = r.map((e) => ({
       name: L(e.fullName ?? "—", e.fullNameEn ?? e.fullName ?? "—"),
       employeeNumber: e.employeeNumber ?? null,
-      jobTitle: L(e.jobTitle ?? "", e.jobTitleEn ?? e.jobTitle ?? "") || null,
+      // The profession on the iqama, as the report shows it (not the job title).
+      profession: L(e.profession ?? "", e.professionEn ?? e.profession ?? "") || null,
       establishment: e.branch ? L(e.branch, e.branchEn ?? e.branch) : companyName,
       docs: {
         iqama: { number: e.iqamaNumber, expiry: e.iqamaExpiryDate, status: e.iqamaStatus },
@@ -130,7 +131,18 @@ export const employees = asyncHandler(async (req: Request, res: Response) => {
       },
     }));
     docRows.sort((a, b) => a.establishment.localeCompare(b.establishment, "ar") || (a.employeeNumber ?? "").localeCompare(b.employeeNumber ?? ""));
-    const pdf = await renderHtmlToPdf(employeesDocumentsReportPdf(docRows, branding), { footerLabel: L("تقرير الموظفين ووثائقهم", "Employees and their documents") });
+    // Each establishment's logo, owner and commercial register, for its plate.
+    const [branches, registers] = await Promise.all([
+      prisma.branch.findMany({ where: { deletedAt: null }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, logoFileId: true } }),
+      prisma.companyDocument.findMany({ where: { deletedAt: null, category: "COMMERCIAL_REGISTRATION", branchId: { not: null } }, orderBy: { expiryDate: "desc" }, select: { branchId: true, documentNumber: true, licenseNumber: true } }),
+    ]);
+    const logos = await branchLogoDataUrls(branches);
+    const establishments = new Map<string, EstablishmentInfo>();
+    for (const b of branches) {
+      const cr = registers.find((r) => r.branchId === b.id);
+      establishments.set(L(b.name, b.nameEn ?? b.name), { logo: logos.get(b.id) ?? null, owner: b.ownerName, cr: cr?.documentNumber || cr?.licenseNumber || null, code: b.code });
+    }
+    const pdf = await renderHtmlToPdf(employeesDocumentsReportPdf(docRows, branding, establishments), { footerLabel: L("تقرير الموظفين ووثائقهم", "Employees and their documents") });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", 'inline; filename="employees-report.pdf"');
     return res.send(pdf);

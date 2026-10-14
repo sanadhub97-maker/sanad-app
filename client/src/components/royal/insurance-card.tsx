@@ -47,15 +47,8 @@ export function InsuranceCard({ isAr, company, name, nameEn, iqamaNumber, iqamaE
         <b>{name}</b>
         {nameEn && nameEn !== name && <bdi>{nameEn}</bdi>}
       </div>
+      <div className="num mono">{iqamaNumber || "—"}</div>
       <div className="grid">
-        <span>
-          <small>{isAr ? "رقم العضوية (الإقامة)" : "Member no. (iqama)"}</small>
-          <b className="mono">{iqamaNumber || "—"}</b>
-        </span>
-        <span>
-          <small>{isAr ? "سارية حتى" : "Valid until"}</small>
-          <b className="mono">{iqamaExpiryDate ? dmy(iqamaExpiryDate) : "—"}</b>
-        </span>
         <span>
           <small>{isAr ? "المهنة" : "Profession"}</small>
           <b>{profession || "—"}</b>
@@ -63,6 +56,12 @@ export function InsuranceCard({ isAr, company, name, nameEn, iqamaNumber, iqamaE
         <span>
           <small>{isAr ? "الجنسية" : "Nationality"}</small>
           <b>{nationality || "—"}</b>
+        </span>
+      </div>
+      <div className="dts">
+        <span>
+          <small>{isAr ? "سارية حتى" : "Valid until"}</small>
+          <b className="mono">{iqamaExpiryDate ? dmy(iqamaExpiryDate) : "—"}</b>
         </span>
       </div>
       <div className="foot">{isAr ? "مرتبطة بالإقامة · سارية طول ما الإقامة سارية، وبتتجدد مع تجديدها" : "Runs with the iqama · valid while it is, renewed with it"}</div>

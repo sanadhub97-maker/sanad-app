@@ -17,7 +17,9 @@ import { paymentsApi } from "@/api/payments";
 import { vehiclesApi } from "@/api/vehicles";
 import { Pill } from "@/components/royal/rp";
 import { daysFromToday, dmy, weekday } from "@/components/royal/rp";
-import { BigRing, CoverHero, DCard, DetailBar, Fact, History, MiniDoc, Ticker, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory, useReminderDays } from "@/components/royal/cards";
+import { EstDocCard } from "@/components/royal/doc-cards";
+import { AuthedFileImage } from "@/components/common/authed-file-image";
+import { BigRing, CoverHero, DCard, DetailBar, Fact, History, Ticker, compColor, dateEm, estColor, initialsOf, useBack, useRecordHistory, useReminderDays } from "@/components/royal/cards";
 import { BranchDialog } from "@/pages/branches/branch-dialog";
 import { CompanyDocumentDialog } from "@/pages/companyDocuments/company-document-dialog";
 
@@ -85,7 +87,7 @@ export default function BranchDetailsPage() {
 
       <CoverHero
         color={color}
-        tile={initialsOf(name)}
+        tile={b.logoFileId ? <AuthedFileImage fileId={b.logoFileId} alt={name} className="rx-lux-logo" /> : initialsOf(name)}
         title={name}
         sub={
           <>
@@ -154,9 +156,20 @@ export default function BranchDetailsPage() {
           {hasPermission("companyDocuments.view") && (
             <DCard title={isAr ? "المستندات" : "Documents"} icon={FileText} right={isAr ? `${docs.length} مستندات · اضغط للتفاصيل` : `${docs.length} documents · open for details`}>
               {docs.length ? (
-                <div className="rc-mdocs">
+                <div className="rx-dcards">
                   {docs.map((d) => (
-                    <MiniDoc key={d.id} title={t(`documentCategories.${d.category}`)} sub={<span className="rp-mono">{d.documentNumber || d.licenseNumber || "—"}</span>} expiryDate={d.expiryDate} onClick={() => navigate(`/company-documents/${d.id}`)} />
+                    <EstDocCard
+                      key={d.id}
+                      isAr={isAr}
+                      label={t(`documentCategories.${d.category}`)}
+                      category={d.category}
+                      number={d.documentNumber || d.licenseNumber}
+                      authority={d.issuingAuthority}
+                      issueDate={d.issueDate}
+                      expiryDate={d.expiryDate}
+                      establishment={name}
+                      onOpen={() => navigate(`/company-documents/${d.id}`)}
+                    />
                   ))}
                 </div>
               ) : (

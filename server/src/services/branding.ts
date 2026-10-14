@@ -196,6 +196,19 @@ export async function getEstablishmentBranding(branchId: string | null | undefin
   };
 }
 
+/** Every establishment's logo (as a data: URL), by branch id, for reports listing several. */
+export async function branchLogoDataUrls(branches: { id: string; logoFileId: string | null }[]) {
+  const out = new Map<string, string>();
+  await Promise.all(
+    branches.map(async (b) => {
+      if (!b.logoFileId) return;
+      const logo = await readBranchLogo(b.logoFileId).catch(() => null);
+      if (logo) out.set(b.id, `data:${logo.mimeType};base64,${logo.buffer.toString("base64")}`);
+    })
+  );
+  return out;
+}
+
 export async function getSpreadsheetBranding() {
   const company = await prisma.companySettings.findUnique({ where: { id: 1 } });
   return { company, logo: await getPrintLogoPng() };

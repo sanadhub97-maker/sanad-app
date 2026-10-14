@@ -655,14 +655,39 @@ export function DocHero({ kind, kindCode, icon: Icon, owner, ownerIcon: OwnerIco
   );
 }
 
-/** A cover hero for a person or an establishment. */
+/** The rippled rings turning round the hero's medallion. */
+const ROSE = Array.from({ length: 10 }, (_, k) => {
+  let p = "";
+  for (let i = 0; i <= 360; i += 2) {
+    const t = (i / 360) * Math.PI * 2;
+    const r = 66 + 4 * Math.sin(24 * t + k * 0.6);
+    p += (i ? "L" : "M") + (73 + r * Math.cos(t)).toFixed(1) + " " + (73 + r * Math.sin(t)).toFixed(1);
+  }
+  return p + "Z";
+});
+
+/** A cover hero for a person or an establishment: a lacquered plate with guilloche, a gold medallion, the name in foil. */
 export function CoverHero({ color, tile, round, title, sub, chips, ring, stats }: { color: string; tile: ReactNode; round?: boolean; title: string; sub?: ReactNode; chips?: ReactNode; ring?: ReactNode; stats?: { value: ReactNode; label: string; color?: string }[] }) {
   return (
-    <div className="rc-hero cov rp-rise" style={css({ "--i": 1, "--kc": color })}>
+    <div className="rc-hero cov rx-lux rp-rise" style={css({ "--i": 1, "--kc": color })}>
+      <i className="rx-lux-gw" aria-hidden="true" />
+      <i className="rx-lux-c c1" aria-hidden="true" />
+      <i className="rx-lux-c c2" aria-hidden="true" />
       <div className="rc-cover" />
       <div className="rc-hero-in">
         <div className="rc-id">
-          <span className={cn("rc-tile", round && "round")}>{tile}</span>
+          <span className="rx-lux-medal">
+            <svg viewBox="0 0 146 146" aria-hidden="true">
+              <g fill="none" stroke="currentColor" strokeWidth=".6" opacity=".75">
+                {ROSE.map((d, k) => (
+                  <path key={k} d={d} />
+                ))}
+              </g>
+            </svg>
+            <span className={cn("rc-tile", round && "round")}>
+              <span className="rx-lux-in">{tile}</span>
+            </span>
+          </span>
           <div>
             <h1>{title}</h1>
             {sub && <div className="sub">{sub}</div>}
