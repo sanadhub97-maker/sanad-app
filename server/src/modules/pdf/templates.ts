@@ -1086,7 +1086,9 @@ export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, 
     })
     .join("");
 
-  const watermark = est?.logo ? `<style>.pr-wm { position: fixed; left: 50%; top: 53%; width: 118mm; height: 118mm; transform: translate(-50%, -50%); z-index: -1; pointer-events: none; display: grid; place-items: center; } .pr-wm img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: .065; filter: grayscale(1) sepia(.7); }</style><div class="pr-wm" aria-hidden="true"><img src="${est.logo}" alt="" /></div><style>.mk-wm { display: none !important; }</style>` : "";
+  // The watermark: the establishment's logo on its statement, the company's (from the settings) on the whole report.
+  const wmLogo = est ? est.logo : branding.logoDataUrl;
+  const watermark = wmLogo ? `<style>.pr-wm { position: fixed; left: 50%; top: 53%; width: 118mm; height: 118mm; transform: translate(-50%, -50%); z-index: -1; pointer-events: none; display: grid; place-items: center; } .pr-wm img { max-width: 100%; max-height: 100%; object-fit: contain; opacity: .065; filter: grayscale(1) sepia(.7); }</style><div class="pr-wm" aria-hidden="true"><img src="${wmLogo}" alt="" /></div><style>.mk-wm { display: none !important; }</style>` : "";
   const words = isEn() ? "" : escapeHtml(riyalsInWords(total));
 
   const body = `${PAY_REP_CSS}${watermark}
