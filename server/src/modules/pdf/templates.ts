@@ -966,8 +966,8 @@ const PAY_REP_CSS = `<style>
   /* the ledger: gold-ruled, months as small ribbons, the total between double rules */
   table.pr-led { width: 100%; border-collapse: collapse; table-layout: fixed; }
   .pr-led thead th { background: #fbf6ea !important; color: #6b4e1d !important; font-size: 7.9pt !important; font-weight: 900; padding: 2.2mm 2mm !important; text-align: start; border: 0 !important; border-top: 1mm double #b8904a !important; border-bottom: .3mm solid #b8904a !important; white-space: nowrap; }
-  .pr-led thead th.m { text-align: end; }
-  .pr-led td { padding: 1.5mm 2mm !important; font-size: 8.8pt !important; border: 0 !important; border-bottom: .2mm solid #efe7d4 !important; vertical-align: middle; color: #1a1610; background: transparent !important; }
+  .pr-led thead th.m { text-align: left; }
+  .pr-led td { padding: 1.6mm 2mm !important; font-size: 8.8pt !important; border: 0 !important; border-bottom: .2mm solid #efe7d4 !important; vertical-align: middle; color: #1a1610; background: transparent !important; }
   .pr-led tbody tr:nth-child(odd):not(.mo) td { background: #fffdf8 !important; }
   .pr-led tr { break-inside: avoid; }
   .pr-led tr.mo td { padding: 2.4mm 2mm 1.2mm !important; border-bottom: .3mm solid #d9c69a !important; font-size: 8.8pt !important; font-weight: 900; color: #9a7433; background: transparent !important; }
@@ -981,13 +981,17 @@ const PAY_REP_CSS = `<style>
   .pr-led td b { line-height: 1.4; }
   .pr-led tr.mo td.sub { text-align: end; color: #a8925f; font-weight: 700; font-size: 7.6pt !important; }
   .pr-led .no { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .pr-led td.m { text-align: end; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+  .pr-led td.m { text-align: left; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
   .pr-led td.t { font-weight: 900; color: #5e4418; }
+  .pr-led td.m, .pr-led tfoot td { line-height: 1.4; vertical-align: middle; }
   .pr-led td.z { color: #c2b69c; }
   .pr-led td .self { color: #8a7c62; font-weight: 700; }
   .pr-led tfoot { display: table-row-group; }
   .pr-led tfoot td { padding: 2.6mm 2mm !important; font-size: 9.8pt !important; font-weight: 900; color: #5e4418; background: #fbf6ea !important; border: 0 !important; border-top: .4mm solid #b8904a !important; border-bottom: 1.2mm double #b8904a !important; }
-  .pr-led tfoot td.t { font-size: 11pt !important; }
+  .pr-led tfoot td.t { font-size: 9.8pt !important; }
+  .pr-led tr.mo td .mo-in { display: flex; justify-content: space-between; align-items: baseline; }
+  .pr-led tr.mo td .mo-in > span:last-child { white-space: nowrap; color: #8a7c62; font-size: 7.8pt; font-weight: 700; }
+  .pr-led tr.mo td .mo-in > span:last-child b { display: inline !important; color: #5e4418; font-size: 8.8pt; font-weight: 900; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; margin-right: 2mm; }
   table.pr-led ~ .signature-matrix { margin-top: 3.5mm !important; }
   table.pr-led ~ .signature-matrix .sig-card-header { padding: 1.4mm 1mm !important; }
   table.pr-led ~ .signature-matrix .sig-card-body { padding: 2.2mm 3mm !important; }
@@ -1061,7 +1065,7 @@ export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, 
   let n = 0;
   const ledger = months
     .map((m) => {
-      const head = `<tr class="mo"><td colspan="4"><span class="dm"></span><bdi>${escapeHtml(m.label)}</bdi><small><bdi>${L(`${m.rows.length} سند`, `${m.rows.length} vouchers`)}</bdi></small></td><td colspan="2" class="sub">${L("مجموع الشهر", "Month total")}</td><td class="m">${money(sum(m.rows, "total"))}</td></tr>`;
+      const head = `<tr class="mo"><td colspan="7"><div class="mo-in"><span><span class="dm"></span><bdi>${escapeHtml(m.label)}</bdi><small><bdi>${L(`${m.rows.length} سند`, `${m.rows.length} vouchers`)}</bdi></small></span><span>${L("مجموع الشهر", "Month total")}<b>${money(sum(m.rows, "total"))}</b></span></div></td></tr>`;
       const body = m.rows
         .map((r) => {
           const place = name(r.branch, r.branchEn);
@@ -1070,8 +1074,8 @@ export function paymentsReportPdf(rows: PaymentReportRow[], branding: Branding, 
           const z = (v: number) => (Number(v) ? "" : " z");
           return `<tr>
         <td class="i">${++n}</td>
-        <td><b class="no">${escapeHtml(r.paymentNumber)}</b><small class="one"><span class="no">${fmtDate(r.paymentDate)}</span></small></td>
-        <td><b>${paymentCategoryLabel(r.category, r.type ?? null)}</b><small>${paymentMethodLabel(r.method)}${r.description ? ` · ${escapeHtml(r.description)}` : ""}</small></td>
+        <td><b class="no">${escapeHtml(r.paymentNumber)}</b><small class="one"><span class="no">${fmtDate(r.paymentDate)}</span></small><small class="one">${paymentMethodLabel(r.method)}</small></td>
+        <td><b>${paymentCategoryLabel(r.category, r.type ?? null)}</b>${r.description ? `<small>${escapeHtml(r.description)}</small>` : ""}</td>
         <td><b>${payee}</b>${!est && place && person ? `<small class="one">${person}</small>` : ""}</td>
         <td class="m${z(r.amount)}">${money(Number(r.amount))}</td>
         <td class="m${z(r.vat)}">${money(Number(r.vat))}</td>
@@ -1113,10 +1117,10 @@ ${est ? "" : `<div>${L("عدد المنشآت", "Establishments")}<b class="n">$
 
     ${orn(L("سجل السندات", "The vouchers"), L(`${rows.length} سند · بالريال السعودي`, `${rows.length} vouchers · SAR`))}
     <table class="pr-led">
-      <colgroup><col style="width:4.5%"><col style="width:14%"><col style="width:27.5%"><col style="width:23%"><col style="width:11.5%"><col style="width:8%"><col style="width:11.5%"></colgroup>
+      <colgroup><col style="width:4.5%"><col style="width:15%"><col style="width:27%"><col style="width:22.5%"><col style="width:11.5%"><col style="width:8%"><col style="width:11.5%"></colgroup>
       <thead><tr>
         <th style="text-align:center">#</th>
-        <th>${L("السند والتاريخ", "Voucher · date")}</th>
+        <th>${L("السند", "Voucher")}</th>
         <th>${L("البيان", "Details")}</th>
         <th>${est ? L("المستفيد", "Payee") : L("المنشأة / المستفيد", "Establishment · payee")}</th>
         <th class="m">${L("قبل الضريبة", "Before VAT")}</th>
