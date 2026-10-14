@@ -21,6 +21,7 @@ import {
   type ReturnCondition,
 } from "@/api/custody";
 import { PrintsAs, dmy, money, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
+import { DateInput } from "@/components/common/date-input";
 
 export function printClearance(c: { id: string; number: string }) {
   return openPdfInNewTab(`/custody/clearances/${c.id}/pdf`, {}, `${c.number}.pdf`).catch(() => undefined);
@@ -151,7 +152,7 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
           <div className="cu-grid3">
             <div className="cu-f">
               <label htmlFor="cl-last">{tr("آخر يوم عمل", "Last working day")} <i>*</i></label>
-              <input id="cl-last" type="date" className="cu-in" value={lastDay} onChange={(e) => setLastDay(e.target.value)} />
+              <DateInput id="cl-last" className="cu-in" value={lastDay} onChange={setLastDay} />
             </div>
             <div className="cu-f">
               <label htmlFor="cl-dues">{tr("المستحقات (ر.س)", "Dues (SAR)")}</label>

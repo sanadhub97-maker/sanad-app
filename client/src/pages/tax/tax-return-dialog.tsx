@@ -30,6 +30,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { listActiveBranches } from "@/api/branches";
 import { taxReturnsApi, type TaxReturnInput } from "@/api/taxReturns";
+import { DateInput } from "@/components/common/date-input";
 import type { TaxReturn, TaxReturnKind, TaxReturnStatus } from "@/types/models";
 
 interface TaxReturnDialogProps {
@@ -398,13 +399,7 @@ export function TaxReturnDialog({
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">{isAr ? "تاريخ الاستحقاق (ZATCA)" : "Due Date"}</Label>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                required
-                className="rounded-xl border-border/60"
-              />
+              <DateInput value={dueDate} onChange={setDueDate} required className="rounded-xl border-border/60" />
             </div>
           </div>
 
@@ -661,12 +656,7 @@ export function TaxReturnDialog({
               <Label className="text-xs font-semibold">
                 {isAr ? "تاريخ التقديم الفعلي (إن وُجد)" : "Actual Filed Date"}
               </Label>
-              <Input
-                type="date"
-                value={filedDate}
-                onChange={(e) => setFiledDate(e.target.value)}
-                className="rounded-xl border-border/60"
-              />
+              <DateInput value={filedDate} onChange={setFiledDate} className="rounded-xl border-border/60" />
             </div>
           </div>
 

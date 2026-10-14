@@ -10,6 +10,7 @@ import { getErrorMessage } from "@/lib/api";
 import { openPdfInNewTab } from "@/lib/download";
 import { useAuthStore } from "@/stores/authStore";
 import { CONDITIONS, ITEM_KINDS, RETURN_CONDITIONS, custodyApi, type CustodyHandover, type ItemCondition, type ReturnCondition } from "@/api/custody";
+import { DateInput } from "@/components/common/date-input";
 import { PrintsAs, money, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
 
 type Row = { key: string; id?: string; kind: string; description: string; serialNumber: string; condition: ItemCondition; value: string; locked?: boolean };
@@ -104,7 +105,7 @@ export function HandoverDialog({ open, onOpenChange, handover }: { open: boolean
             </div>
             <div className="cu-f">
               <label htmlFor="ho-date">{tr("تاريخ التسليم", "Handover date")} <i>*</i></label>
-              <input id="ho-date" type="date" className="cu-in" value={date} onChange={(e) => setDate(e.target.value)} required />
+              <DateInput id="ho-date" className="cu-in" value={date} onChange={setDate} required />
             </div>
           </div>
           {(employee || handover) && <PrintsAs branch={branch} />}
@@ -226,7 +227,7 @@ export function ReturnDialog({ handover, onOpenChange }: { handover: CustodyHand
         <div className="cu-dbody">
           <div className="cu-f">
             <label htmlFor="ret-date">{tr("تاريخ الاسترجاع", "Return date")}</label>
-            <input id="ret-date" type="date" className="cu-in" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateInput id="ret-date" className="cu-in" value={date} onChange={setDate} />
           </div>
           {out.length === 0 ? (
             <p className="cu-hint">{tr("كل أصناف المحضر ده رجعت.", "Every item on this record is back.")}</p>

@@ -11,6 +11,7 @@ import { listActiveBranches } from "@/api/branches";
 import { employeesApi } from "@/api/employees";
 import { useAuthStore } from "@/stores/authStore";
 import { LiveAside, LiveDates, LivePlate } from "@/components/royal/live-cards";
+import { DateInput } from "@/components/common/date-input";
 import { DATE_LOOK, vehiclesApi, type InsuranceType, type Vehicle, type VehicleDate } from "@/api/vehicles";
 
 const day = (v?: string | null) => (v ? v.slice(0, 10) : "");
@@ -127,13 +128,13 @@ export function VehicleDialog({ open, onOpenChange, vehicle }: { open: boolean; 
 
           <div className="vh-sec">{tr("الفحص الدوري", "Periodic inspection")}</div>
           <div className="vh-g2">
-            <div className="vh-f"><label htmlFor="v-insp">{tr("تاريخ انتهاء الفحص", "Inspection expiry")} <i>*</i></label><input id="v-insp" type="date" className={cls("inspectionExpiry")} value={f.inspectionExpiry} onChange={(e) => set("inspectionExpiry", e.target.value)} /></div>
+            <div className="vh-f"><label htmlFor="v-insp">{tr("تاريخ انتهاء الفحص", "Inspection expiry")} <i>*</i></label><DateInput id="v-insp" className={cls("inspectionExpiry")} value={f.inspectionExpiry} onChange={(v) => set("inspectionExpiry", v)} /></div>
             {file("inspectionFileId", tr("شهادة الفحص", "Inspection certificate"))}
           </div>
 
           <div className="vh-sec">{tr("التأمين", "Insurance")}</div>
           <div className="vh-g3">
-            <div className="vh-f"><label htmlFor="v-ins">{tr("تاريخ انتهاء التأمين", "Insurance expiry")} <i>*</i></label><input id="v-ins" type="date" className={cls("insuranceExpiry")} value={f.insuranceExpiry} onChange={(e) => set("insuranceExpiry", e.target.value)} /></div>
+            <div className="vh-f"><label htmlFor="v-ins">{tr("تاريخ انتهاء التأمين", "Insurance expiry")} <i>*</i></label><DateInput id="v-ins" className={cls("insuranceExpiry")} value={f.insuranceExpiry} onChange={(v) => set("insuranceExpiry", v)} /></div>
             <div className="vh-f"><label htmlFor="v-insurer">{tr("شركة التأمين", "Insurer")}</label><input id="v-insurer" className="vh-in" value={f.insurer} onChange={(e) => set("insurer", e.target.value)} placeholder={tr("التعاونية", "Tawuniya")} maxLength={120} /></div>
             <div className="vh-f">
               <label htmlFor="v-instype">{tr("نوع التأمين", "Cover")}</label>
@@ -147,7 +148,7 @@ export function VehicleDialog({ open, onOpenChange, vehicle }: { open: boolean; 
 
           <div className="vh-sec">{tr("الاستمارة", "Registration")}</div>
           <div className="vh-g2">
-            <div className="vh-f"><label htmlFor="v-reg">{tr("تاريخ انتهاء الاستمارة", "Registration expiry")}</label><input id="v-reg" type="date" className="vh-in" value={f.registrationExpiry} onChange={(e) => set("registrationExpiry", e.target.value)} /></div>
+            <div className="vh-f"><label htmlFor="v-reg">{tr("تاريخ انتهاء الاستمارة", "Registration expiry")}</label><DateInput id="v-reg" className="vh-in" value={f.registrationExpiry} onChange={(v) => set("registrationExpiry", v)} /></div>
             {file("registrationFileId", tr("صورة الاستمارة", "Registration card"))}
           </div>
           <div className="vh-f"><label htmlFor="v-notes">{tr("ملاحظات", "Notes")}</label><textarea id="v-notes" className="vh-in" rows={2} value={f.notes} onChange={(e) => set("notes", e.target.value)} maxLength={2000} /></div>
@@ -224,7 +225,7 @@ export function RenewDialog({ vehicle, onOpenChange }: { vehicle: Vehicle | null
             </select>
             <span className="vh-hint">{tr("بينتهي حاليًا:", "Currently ends:")} <span className="n">{current ? day(current).split("-").reverse().join("/") : "—"}</span></span>
           </div>
-          <div className="vh-f"><label htmlFor="r-date">{tr("تاريخ الانتهاء الجديد", "New expiry date")}</label><input id="r-date" type="date" className="vh-in" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+          <div className="vh-f"><label htmlFor="r-date">{tr("تاريخ الانتهاء الجديد", "New expiry date")}</label><DateInput id="r-date" className="vh-in" value={date} onChange={setDate} /></div>
           <div className="vh-f"><label>{tr("المستند الجديد", "New document")}</label><FileUpload module="vehicle" fileId={fileId} fileName={fileId ? tr("المرفق", "Attachment") : null} onUploaded={(id) => setFileId(id)} onRemoved={() => setFileId(null)} /></div>
           {canPay && (
             <div className="vh-g2">

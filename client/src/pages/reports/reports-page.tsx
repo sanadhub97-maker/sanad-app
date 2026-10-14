@@ -15,6 +15,7 @@ import { localized } from "@/lib/names";
 import { DayHeader, Initials, LeftPill, daysFromToday, dayKey, dayOf, dmy, groupByDay, hijri, weekday } from "@/components/royal/rp";
 import { Seg, actionLook, kindColor, timeOf } from "@/components/royal/cards";
 import { COMPANY_DOCUMENT_CATEGORY_ICONS, EMPLOYEE_DOCUMENT_TYPE_ICONS } from "@/lib/document-type-icons";
+import { DateInput } from "@/components/common/date-input";
 import { useAuthStore } from "@/stores/authStore";
 
 /* Reports in the Royal card design: the figures that matter, a card per
@@ -265,11 +266,11 @@ export default function ReportsPage() {
               <div className="rc-range">
                 <label>
                   {L("من", "From")}
-                  <input type="date" value={from} max={to} onChange={(e) => e.target.value && (setFrom(e.target.value), setShown(STEP))} />
+                  <DateInput value={from} max={to} onChange={(v) => v && (setFrom(v), setShown(STEP))} />
                 </label>
                 <label>
                   {L("إلى", "To")}
-                  <input type="date" value={to} min={from} onChange={(e) => e.target.value && (setTo(e.target.value), setShown(STEP))} />
+                  <DateInput value={to} min={from} onChange={(v) => v && (setTo(v), setShown(STEP))} />
                 </label>
                 {[7, 30, 90].map((n) => (
                   <button key={n} type="button" className="rc-btn" onClick={() => (setFrom(isoDay(daysAgo(n))), setTo(isoDay(dayOf(new Date()))), setShown(STEP))}>

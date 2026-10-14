@@ -13,6 +13,7 @@ import { downloadFile, openPdfInNewTab } from "@/lib/download";
 import { getErrorMessage } from "@/lib/api";
 import { tr, isRtlLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
+import { DateInput } from "@/components/common/date-input";
 import "@/styles/tasks-royal.css";
 
 /* Daily tasks in the Royal design, as in the approved preview: every task
@@ -699,7 +700,7 @@ export default function DailyTasksPage() {
                   </option>
                 ))}
               </select>
-              <input type="date" className="tk-in" value={formDate} onChange={(e) => setFormDate(e.target.value)} aria-label={tr("التاريخ", "Date")} />
+              <DateInput className="tk-in" value={formDate} onChange={setFormDate} aria-label={tr("التاريخ", "Date")} />
               <input type="time" className="tk-in" value={time} onChange={(e) => setTime(e.target.value)} aria-label={tr("الوقت", "Time")} />
             </div>
           </form>

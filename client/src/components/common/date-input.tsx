@@ -22,6 +22,11 @@ interface DateInputProps {
   disabled?: boolean;
   className?: string;
   placeholder?: string;
+  /** The earliest / latest day that can be picked (ISO "yyyy-mm-dd"). */
+  min?: string;
+  max?: string;
+  required?: boolean;
+  "aria-label"?: string;
 }
 
 const AR_MONTHS = [
@@ -118,6 +123,10 @@ export function DateInput({
   disabled,
   className,
   placeholder,
+  min,
+  max,
+  required,
+  "aria-label": ariaLabel,
 }: DateInputProps) {
   const { i18n } = useTranslation();
   const isRtl = i18n.language !== "en";
@@ -152,7 +161,7 @@ export function DateInput({
     setDisplay(formatted);
     if (digits.length === 8) {
       const iso = displayToIso(formatted);
-      if (iso) {
+      if (iso && !outOfRange(iso)) {
         onChange(iso);
         const p = parseIso(iso);
         if (p) setViewDate({ year: p.year, month: p.month });
@@ -162,8 +171,11 @@ export function DateInput({
     }
   }
 
+  const outOfRange = (iso: string) => (!!min && iso < min) || (!!max && iso > max);
+
   function handleSelectDate(year: number, month: number, day: number) {
     const iso = toIsoString(year, month, day);
+    if (outOfRange(iso)) return;
     onChange(iso);
     setDisplay(isoToDisplay(iso));
     setOpen(false);
@@ -290,6 +302,8 @@ export function DateInput({
           onClick={() => setOpen(true)}
           onBlur={onBlur}
           disabled={disabled}
+          required={required}
+          aria-label={ariaLabel}
           placeholder={placeholder ?? (isRtl ? "يوم/شهر/سنة" : "dd/mm/yyyy")}
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
@@ -409,9 +423,10 @@ export function DateInput({
                   <button
                     key={`${item.year}-${item.month}-${item.day}-${idx}`}
                     type="button"
+                    disabled={outOfRange(toIsoString(item.year, item.month, item.day))}
                     onClick={() => handleSelectDate(item.year, item.month, item.day)}
                     className={cn(
-                      "h-8 w-8 mx-auto flex items-center justify-center rounded-xl text-xs font-semibold transition-all cursor-pointer relative",
+                      "h-8 w-8 mx-auto flex items-center justify-center rounded-xl text-xs font-semibold transition-all cursor-pointer relative disabled:cursor-not-allowed disabled:opacity-25",
                       isSelected
                         ? "bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white font-black shadow-md shadow-blue-500/30 scale-105 ring-2 ring-blue-400/40"
                         : isTod
