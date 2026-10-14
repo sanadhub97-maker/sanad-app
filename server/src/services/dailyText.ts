@@ -46,7 +46,7 @@ const footer = () => [CROWN, `🔱 *SanaD* · _${L("إدارة الوثائق و
 const SHORT = [L("منتهية", "expired"), L("الأسبوع", "week"), L("الشهر", "month"), L("القادم", "next")];
 const countRows = (c: number[], tasks: TaskLine[], fmt: (dot: string, label: string, n: number, short: string) => string) => [
   ...([0, 1, 2, 3] as Urgency[]).filter((u) => u === 0 || u === 1 || u === 2 || c[u] > 0).map((u) => fmt(URGENCY[u].dot, urgencyLabel(u), c[u], SHORT[u])),
-  fmt("📌", L("المهام المطلوبة العمل عليها", "Open tasks"), tasks.length, L("مهام", "tasks")),
+  fmt("📌", L("المهام المطلوب إنجازها", "Open tasks"), tasks.length, L("مهام", "tasks")),
 ];
 
 export interface DailyText {
@@ -88,7 +88,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       }),
       empty: `> ✅ _${L("كل الوثائق سارية، ولا شيء قريب من الانتهاء.", "Every document is valid; nothing ends soon.")}_`,
       tail: [
-        ...(tasks.length ? [`◈ *${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length}${lateCount(tasks) ? ` _(${L(`منها ${lateCount(tasks)} متأخرة`, `${lateCount(tasks)} late`)})_` : ""}`, "", taskRows.join("\n\n"), ...(tasks.length > SHOWN ? ["", moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`◈ *${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}${lateCount(tasks) ? ` _(${L(`منها ${lateCount(tasks)} متأخرة`, `${lateCount(tasks)} late`)})_` : ""}`, "", taskRows.join("\n\n"), ...(tasks.length > SHOWN ? ["", moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         footer(),
       ].join("\n"),
     };
@@ -121,7 +121,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       empty: `✅ _${L("مفيش وثائق منتهية أو قريبة من الانتهاء.", "No document has expired or ends soon.")}_`,
       tail: [
         ...(tasks.length
-          ? [`📌 ━━ *${L("المهام المطلوبة العمل عليها", "Open tasks")}* ━━ (${tasks.length})`, ...tasks.slice(0, SHOWN).map((t) => `- ${PRI[t.priority][0]} ${t.title}  ┈  _${lateText(t)}_${t.assignee ? ` · ${t.assignee}` : ""}`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""]
+          ? [`📌 ━━ *${L("المهام المطلوب إنجازها", "Open tasks")}* ━━ (${tasks.length})`, ...tasks.slice(0, SHOWN).map((t) => `- ${PRI[t.priority][0]} ${t.title}  ┈  _${lateText(t)}_${t.assignee ? ` · ${t.assignee}` : ""}`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""]
           : []),
         footer(),
       ].join("\n"),
@@ -149,7 +149,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       header: [CROWN, `🏛️ *${company}*`, `👑 _${L("ملخص الوثائق والمهام", "Documents and tasks")}_ · ${g}`, CROWN, "", ...countRows(c, tasks, (dot, label, n) => `> ${dot} *${n}*  ${label}`)].join("\n"),
       entries,
       empty: `> ✅ _${L("كل الوثائق سارية.", "Every document is valid.")}_`,
-      tail: [...(tasks.length ? [`◈ *${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length}`, "", taskCards.join("\n\n"), ...(tasks.length > SHOWN ? ["", moreTasks(tasks.length - SHOWN)] : []), ""] : []), footer()].join("\n"),
+      tail: [...(tasks.length ? [`◈ *${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", taskCards.join("\n\n"), ...(tasks.length > SHOWN ? ["", moreTasks(tasks.length - SHOWN)] : []), ""] : []), footer()].join("\n"),
     };
   },
 
@@ -170,7 +170,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       tail: [
         THIN,
         ...(rest > 0 ? [`_${L(`و${rest} ${rest <= 10 ? "وثائق" : "وثيقة"} أخرى في الموقع`, `and ${rest} more on the site`)}_`] : []),
-        ...(tasks.length ? [`📌 ${L(`${tasks.length} مهمة مطلوبة العمل عليها، منها ${lateCount(tasks)} متأخرة`, `${tasks.length} open tasks, ${lateCount(tasks)} late`)}`] : []),
+        ...(tasks.length ? [`📌 ${L(`${tasks.length} مهمة مطلوب إنجازها، منها ${lateCount(tasks)} متأخرة`, `${tasks.length} open tasks, ${lateCount(tasks)} late`)}`] : []),
         `🔱 _SanaD_`,
       ].join("\n"),
     };
@@ -191,7 +191,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
         "",
         L("السلام عليكم ورحمة الله وبركاته،", "Good morning,"),
         L("تحية طيبة وبعد،", ""),
-        L(`نفيدكم بأن لدينا اليوم ${parts.join("، و")}، و*${tasks.length}* مهمة مطلوبة العمل عليها، وتفاصيلها كما يلي:`, `Today we have ${parts.join(", ")}, and *${tasks.length}* open tasks:`),
+        L(`نفيدكم بأن لدينا اليوم ${parts.join("، و")}، و*${tasks.length}* مهمة مطلوب إنجازها، وتفاصيلها كما يلي:`, `Today we have ${parts.join(", ")}, and *${tasks.length}* open tasks:`),
         "",
         `◈ *${L("أولًا: الوثائق المطلوب متابعتها", "First: documents to follow up")}*`,
       ]
@@ -204,7 +204,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       }),
       empty: L("لا توجد وثائق منتهية أو قريبة من الانتهاء.", "No document has expired or ends soon."),
       tail: [
-        ...(tasks.length ? [`◈ *${L("ثانيًا: المهام المطلوبة العمل عليها", "Second: open tasks")}*`, ...tasks.slice(0, SHOWN).map((t, i) => `*${i + 1}.* ${t.title}${t.assignee ? ` — ${t.assignee}` : ""} _(${lateText(t)})_`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`◈ *${L("ثانيًا: المهام المطلوب إنجازها", "Second: open tasks")}*`, ...tasks.slice(0, SHOWN).map((t, i) => `*${i + 1}.* ${t.title}${t.assignee ? ` — ${t.assignee}` : ""} _(${lateText(t)})_`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         L("نأمل التكرم بالاطلاع واتخاذ اللازم،", "Kindly review and follow up."),
         L("وتقبلوا خالص التحية والتقدير،", "With our best regards,"),
         "",
@@ -237,12 +237,12 @@ const DESIGNS: Record<DailyTextId, Render> = {
         `_${L("الملخص التنفيذي", "Executive summary")} · ${g}${h ? ` · ${h}` : ""}_`,
         THIN,
         "",
-        `> 💡 *${L("الخلاصة", "In short")}:* ${said.length ? said.join(L("، و", ", ")) : L("كل الوثائق سارية", "every document is valid")}${tasks.length ? L(`، ولديك *${tasks.length}* من المهام المطلوبة العمل عليها${late ? `، منها *${late}* متأخرة` : ""}.`, `; and *${tasks.length}* open tasks${late ? `, *${late}* late` : ""}.`) : "."}`,
+        `> 💡 *${L("الخلاصة", "In short")}:* ${said.length ? said.join(L("، و", ", ")) : L("كل الوثائق سارية", "every document is valid")}${tasks.length ? L(`، ولديك *${tasks.length}* من المهام المطلوب إنجازها${late ? `، منها *${late}* متأخرة` : ""}.`, `; and *${tasks.length}* open tasks${late ? `, *${late}* late` : ""}.`) : "."}`,
       ].join("\n"),
       entries,
       empty: `✅ _${L("لا يوجد ما يحتاج إجراءً في الوثائق اليوم.", "No document needs action today.")}_`,
       tail: [
-        ...(tasks.length ? [`📌 *${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t, i) => `${i + 1}. ${PRI[t.priority][0]} *${t.title}*\n${lateText(t)}${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`📌 *${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t, i) => `${i + 1}. ${PRI[t.priority][0]} *${t.title}*\n${lateText(t)}${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         THIN,
         `🔱 *SanaD* · _${L("إدارة الوثائق والتراخيص", "Documents & Licenses")}_`,
       ].join("\n"),
@@ -267,14 +267,14 @@ const DESIGNS: Record<DailyTextId, Render> = {
         `_${g}_`,
         "",
         ...([0, 1, 2, 3] as Urgency[]).filter((u) => u < 3 || c[u] > 0).map((u) => `> ${URGENCY[u].dot} ${bar(c[u], docs.length)}  *${c[u]}*  ${urgencyLabel(u)}`),
-        `> 📌 ${bar(late, tasks.length)}  *${tasks.length}*  ${L(`المهام المطلوبة العمل عليها${late ? ` (${late} متأخرة)` : ""}`, `open tasks${late ? ` (${late} late)` : ""}`)}`,
+        `> 📌 ${bar(late, tasks.length)}  *${tasks.length}*  ${L(`المهام المطلوب إنجازها${late ? ` (${late} متأخرة)` : ""}`, `open tasks${late ? ` (${late} late)` : ""}`)}`,
         "",
         `*${L("الوثائق", "Documents")}* · ${docs.length}`,
       ].join("\n"),
       entries,
       empty: `> ✅ _${L("كل الوثائق سارية.", "Every document is valid.")}_`,
       tail: [
-        ...(tasks.length ? [`*${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*\n_${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`*${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*\n_${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         footer(),
       ].join("\n"),
     };
@@ -310,7 +310,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       entries,
       empty: `✅ _${L("لا توجد وثائق على الجدول.", "Nothing on the timeline.")}_`,
       tail: [
-        ...(tasks.length ? [`━━ *📌 ${L("المهام المطلوبة العمل عليها", "Open tasks")}* · ${tasks.length} ━━`, tasks.slice(0, SHOWN).map((t) => `┃ ${PRI[t.priority][0]} *${t.title}*\n┃ _${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`━━ *📌 ${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length} ━━`, tasks.slice(0, SHOWN).map((t) => `┃ ${PRI[t.priority][0]} *${t.title}*\n┃ _${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         footer(),
       ].join("\n"),
     };

@@ -45,7 +45,7 @@ describe("WhatsApp daily summary", () => {
     const docs = [-3, 7].map((d) => { const item = iqama(d); return { item, context: alertContext(item, "سمو") }; });
     const header = renderDailyHeader("سمو", docs, tasks);
     expect(header).toContain("> 🔴 منتهية: *1*");
-    expect(header).toContain("> 📌 المهام المطلوبة العمل عليها: *2*");
+    expect(header).toContain("> 📌 المهام المطلوب إنجازها: *2*");
     expect(renderDailyEntry(docs[0])).toContain("🪪 *الإقامة — أحمد*");
     expect(renderDailyEntry(docs[0])).toContain("منتهية منذ 3 أيام");
     const tail = renderDailyTail(tasks);

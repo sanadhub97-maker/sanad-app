@@ -210,7 +210,7 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
     return `<div class="row ${cls}"><span class="check">${icon("task")}</span><div class="rtx"><b>${esc(t.title)}</b><div class="meta">${meta}</div></div>${state}</div>`;
   });
   const tasksHtml = data.tasks.length
-    ? `<section class="sec"><div class="sh">${icon("task")}<h2>${esc(L("المهام المطلوبة العمل عليها", "Open tasks"))}</h2><span class="cnt">${data.tasks.length}</span></div><div class="list">${taskRows.join("")}${data.tasks.length > MAX_TASKS ? `<div class="more">${esc(L(`و${data.tasks.length - MAX_TASKS} مهام أخرى في صفحة المهام اليومية`, `and ${data.tasks.length - MAX_TASKS} more on the Daily tasks page`))}</div>` : ""}</div></section>`
+    ? `<section class="sec"><div class="sh">${icon("task")}<h2>${esc(L("المهام المطلوب إنجازها", "Open tasks"))}</h2><span class="cnt">${data.tasks.length}</span></div><div class="list">${taskRows.join("")}${data.tasks.length > MAX_TASKS ? `<div class="more">${esc(L(`و${data.tasks.length - MAX_TASKS} مهام أخرى في صفحة المهام اليومية`, `and ${data.tasks.length - MAX_TASKS} more on the Daily tasks page`))}</div>` : ""}</div></section>`
     : "";
 
   const weekday = today.toLocaleDateString(en ? "en-GB" : "ar-EG", { timeZone: RIYADH, weekday: "long" });
@@ -244,7 +244,7 @@ export function digestCardDocument(id: DigestCardId, data: DigestCardData): stri
     ${kpi("warn", "hourglass", urgencyLabel(1), c[1], total)}
     ${kpi("soon", "calendar", urgencyLabel(2), c[2], total)}
     ${c[3] ? kpi("next", "calendar", urgencyLabel(3), c[3], total) : ""}
-    ${kpi("gold", "task", L("المهام المطلوبة العمل عليها", "Open tasks"), data.tasks.length, total)}
+    ${kpi("gold", "task", L("المهام المطلوب إنجازها", "Open tasks"), data.tasks.length, total)}
   </div>
   <section class="sec"><div class="sh">${icon("document")}<h2>${esc(L("الوثائق", "Documents"))}</h2><span class="cnt">${docs.length}</span></div>${docsHtml}</section>
   ${tasksHtml}
