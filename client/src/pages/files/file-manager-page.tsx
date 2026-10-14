@@ -1,5 +1,6 @@
 import { fileTypeLabel } from "@/lib/names";
 import { AuthedFileImage } from "@/components/common/authed-file-image";
+import { PdfThumb } from "@/components/common/pdf-thumb";
 import { useRef, useState, type DragEvent, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -205,6 +206,8 @@ export default function FileManagerPage() {
                       <span className="thumb" style={{ ["--c" as string]: k.tone }}>
                         {f.mimeType?.toLowerCase().startsWith("image/") ? (
                           <ImageThumb fileId={f.id} alt={name} />
+                        ) : f.mimeType?.toLowerCase() === "application/pdf" ? (
+                          <ImageThumb fileId={f.id} alt={name} pdf />
                         ) : k.ext === "PDF" || k.ext === "FILE" ? (
                           <span className="lines">
                             <i />
@@ -238,8 +241,8 @@ export default function FileManagerPage() {
   );
 }
 
-/** An image file's own picture as its thumbnail, fetched only once the card scrolls into view. */
-function ImageThumb({ fileId, alt }: { fileId: string; alt: string }) {
+/** An image file's own picture (a PDF's first page) as its thumbnail, fetched only once the card scrolls into view. */
+function ImageThumb({ fileId, alt, pdf }: { fileId: string; alt: string; pdf?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [seen, setSeen] = useState(false);
   useEffect(() => {
@@ -249,5 +252,10 @@ function ImageThumb({ fileId, alt }: { fileId: string; alt: string }) {
     io.observe(el);
     return () => io.disconnect();
   }, [seen]);
-  return <span ref={ref} className="pic">{seen ? <AuthedFileImage fileId={fileId} alt={alt} className="pic-img" /> : <FileImage />}</span>;
+  const idle = pdf ? <span className="lines"><i /><i /><i /></span> : <FileImage />;
+  return (
+    <span ref={ref} className={pdf ? "pic doc" : "pic"}>
+      {!seen ? idle : pdf ? <PdfThumb fileId={fileId} alt={alt} className="pic-img" fallback={idle} /> : <AuthedFileImage fileId={fileId} alt={alt} className="pic-img" />}
+    </span>
+  );
 }
