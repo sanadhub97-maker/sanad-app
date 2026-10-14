@@ -46,7 +46,7 @@ export function EmployeePeek({ employee: e, isAr, onClose, onEdit }: { employee:
   return (
     <PxDrawer open onClose={onClose} label={name}>
       <div className="px-dh">
-        <span className="px-av">
+        <span className="px-av px-lit">
           <SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />
         </span>
         <div className="min-w-0">

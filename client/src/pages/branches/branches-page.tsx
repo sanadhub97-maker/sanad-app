@@ -190,7 +190,7 @@ export default function BranchesPage() {
                     <tr key={b.id} className="click" style={{ ["--j" as string]: j }} onClick={open}>
                       <td>
                         <div className="px-who">
-                          <span className="px-av">{b.logoFileId ? <BranchMedal fileId={b.logoFileId} name={name} /> : initialsOf(name)}</span>
+                          <span className="px-av px-lit">{b.logoFileId ? <BranchMedal fileId={b.logoFileId} name={name} /> : <span className="px-ini">{initialsOf(name)}</span>}</span>
                           <div>
                             <b>{name}</b>
                             {other && other !== name && (
