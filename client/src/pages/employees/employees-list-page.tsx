@@ -272,7 +272,7 @@ export default function EmployeesListPage() {
                     <tr key={e.id} className="click" style={{ ["--j" as string]: j }} onClick={() => setPeek(e)}>
                       <td>
                         <div className="px-who">
-                          <span className="px-av">
+                          <span className="px-av px-lit">
                             <SaudiAvatar gender={e.gender} size="md" className="h-full w-full" />
                           </span>
                           <div>

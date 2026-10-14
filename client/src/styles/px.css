@@ -231,3 +231,14 @@ table.px-t { width: 100%; border-collapse: collapse; font-size: 14px; }
 html.rx-light .px-empno { border-color: rgba(154, 116, 51, 0.4); background: #fffaf0; }
 html.rx-light .px-empno > i { color: #9a7433; background: rgba(154, 116, 51, 0.1); border-inline-end-color: rgba(154, 116, 51, 0.3); }
 html.rx-light .px-empno > span { color: #5e4418; }
+
+/* the employee's photo in the list: a gold foil ring, a soft key light and a glow (pages/employees) */
+.px-av.px-lit { position: relative; width: 46px; height: 46px; padding: 2px; overflow: visible; background: conic-gradient(from 210deg, #7a5c2b, #f3dfae 18%, #b8904a 36%, #5e4418 55%, #e9cf94 75%, #7a5c2b) !important; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 16px -3px rgba(243, 223, 174, 0.45), 0 8px 16px -8px #000 !important; transition: box-shadow 0.25s, transform 0.25s; }
+.px-av.px-lit > * { border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 35% 25%, #3d3322, #0e0c09); box-shadow: inset 0 0 0 1.5px #0e0c09; }
+.px-av.px-lit::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 30% 16%, rgba(255, 250, 235, 0.55), transparent 40%), radial-gradient(circle at 75% 108%, rgba(243, 223, 174, 0.3), transparent 55%); box-shadow: inset 0 1px 1px rgba(255, 250, 235, 0.5), inset 0 -3px 6px rgba(0, 0, 0, 0.45); mix-blend-mode: screen; }
+.px-who:has(.px-lit) { gap: 13px; }
+tr:hover .px-av.px-lit { transform: scale(1.06); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 22px -2px rgba(243, 223, 174, 0.7), 0 10px 18px -8px #000 !important; }
+html.rx-light .px-av.px-lit { background: conic-gradient(from 210deg, #8a6a35, #f0d9a0 18%, #b8904a 36%, #6b4e1d 55%, #e2c27f 75%, #8a6a35) !important; box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.25), 0 0 14px -4px rgba(184, 144, 74, 0.55), 0 8px 14px -8px rgba(90, 64, 20, 0.5) !important; }
+html.rx-light .px-av.px-lit > * { background: radial-gradient(circle at 35% 25%, #fffaf0, #eadfc6); box-shadow: inset 0 0 0 1.5px #fffaf0; }
+html.rx-light .px-av.px-lit::after { background: radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.7), transparent 42%); mix-blend-mode: normal; opacity: 0.6; }
+html.rx-light tr:hover .px-av.px-lit { box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.3), 0 0 20px -3px rgba(184, 144, 74, 0.75), 0 10px 16px -8px rgba(90, 64, 20, 0.55) !important; }
