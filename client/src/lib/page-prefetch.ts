@@ -58,6 +58,11 @@ export function warmUpPages(client: QueryClient, can: (permission: string) => bo
   let cancelled = false;
   const steps: (() => void)[] = [];
   for (const path of WARM_PATHS) steps.push(() => { preloadPage(path); prefetchPageData(client, path, can); });
+  // The print preview viewer (PDF.js and its worker, ~0.5 MB), so the first preview opens without fetching it.
+  steps.push(() => {
+    void import("@/components/pdf-preview-document").catch(() => undefined);
+    void import("pdfjs-dist/build/pdf.worker.min.mjs?url").then((m) => fetch(m.default)).catch(() => undefined);
+  });
   for (const e of EXTRA) steps.push(() => { if (!e.needs || can(e.needs)) void client.prefetchQuery({ queryKey: e.key, queryFn: e.fn, staleTime: 60_000 }); });
   const run = (i: number) => {
     if (cancelled || i >= steps.length) return;

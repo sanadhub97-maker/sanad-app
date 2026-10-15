@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { isEn } from "@/services/lang";
@@ -375,7 +376,7 @@ async function renderOnce(browser: Browser, html: string, options: RenderPdfOpti
     await waitForSiteFonts(page);
     lap("fonts");
     const settled = await Promise.race([
-      page.waitForNetworkIdle({ idleTime: 250, timeout: 5000 }).then(() => true),
+      page.waitForNetworkIdle({ idleTime: 100, timeout: 5000 }).then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),
     ]).catch(() => false);
     // Stop anything still loading past the budget (a design's own extra font).
@@ -463,8 +464,35 @@ async function renderPngWithRetry(html: string, width: number, height: number, m
   }
 }
 
-export function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
-  return withRenderBudget(html, () => renderPdfWithRetry(html, options));
+/* The same document printed again (the preview, then Print or Download) is the
+   same HTML but for the print time, so a warm server keeps the PDF for a few
+   minutes. Any change to the document changes the key; the time printed on a
+   copy from memory is the first print's (at most 10 minutes earlier). */
+// Off under tests, which print the same page on purpose to exercise retries.
+const PDF_CACHE_MS = process.env.NODE_ENV === "test" ? 0 : 10 * 60_000;
+const PDF_CACHE_BYTES = 60 * 1024 * 1024;
+const pdfCache = new Map<string, { at: number; pdf: Buffer }>();
+let pdfCacheBytes = 0;
+function pdfCacheKey(html: string, options: RenderPdfOptions) {
+  return createHash("sha256").update(html.replace(/<!--pt-->[^<]*<!--\/pt-->/g, "")).update(JSON.stringify(options)).digest("base64");
+}
+function rememberPdf(key: string, pdf: Buffer) {
+  pdfCache.set(key, { at: Date.now(), pdf });
+  pdfCacheBytes += pdf.length;
+  for (const [k, v] of pdfCache) {
+    if (pdfCacheBytes <= PDF_CACHE_BYTES && Date.now() - v.at < PDF_CACHE_MS) break;
+    pdfCache.delete(k);
+    pdfCacheBytes -= v.pdf.length;
+  }
+}
+
+export async function renderHtmlToPdf(html: string, options: RenderPdfOptions = {}): Promise<Buffer> {
+  const key = pdfCacheKey(html, options);
+  const hit = pdfCache.get(key);
+  if (hit && Date.now() - hit.at < PDF_CACHE_MS) return hit.pdf;
+  const pdf = await withRenderBudget(html, () => renderPdfWithRetry(html, options));
+  if (PDF_CACHE_MS) rememberPdf(key, pdf);
+  return pdf;
 }
 export function renderHtmlToPng(html: string, width: number, height: number): Promise<Buffer> {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width * height > 4_000_000) throw ApiError.badRequest("Invalid print image dimensions.");
@@ -522,7 +550,7 @@ export function pdfDocumentShell(opts: {
     referenceNumber: opts.referenceNumber,
     classification,
     dateStr,
-    timeStr,
+    timeStr: `<!--pt-->${timeStr}<!--/pt-->`,
     highlight: opts.highlight,
   };
   // Every design is a house design now; the plain fallback header stays for a theme with no letterhead.
