@@ -37,7 +37,6 @@ const names = ({ context: c }: DailyDoc) => {
   return { doc: en ? c.documentEn : c.documentAr, who: en ? c.employeeEn ?? c.employeeAr : c.employeeAr, branch: en ? c.branchEn ?? c.branch : c.branch };
 };
 const state = (n: number) => (n < 0 ? L(`منتهية منذ ${daysAr(-n)}`, `expired ${daysEn(-n)} ago`) : n === 0 ? L("تنتهي اليوم", "ends today") : L(`باقي ${daysAr(n)}`, `${daysEn(n)} left`));
-const lateText = (t: TaskLine) => (t.daysLate > 0 ? L(`متأخرة ${daysAr(t.daysLate)}`, `${daysEn(t.daysLate)} late`) : L("مهمة اليوم", "due today"));
 const moreTasks = (n: number) => `_${L(`و${n} ${n <= 10 ? "مهام" : "مهمة"} أخرى في صفحة المهام اليومية`, `and ${n} more on the Daily tasks page`)}_`;
 const lateCount = (tasks: TaskLine[]) => tasks.filter((t) => t.daysLate > 0).length;
 const footer = () => [CROWN, `🔱 *SanaD* · _${L("إدارة الوثائق والتراخيص", "Documents & Licenses")}_`].join("\n");
@@ -64,7 +63,8 @@ const DESIGNS: Record<DailyTextId, Render> = {
     const c = urgencyCounts(docs.map((d) => d.context.daysLeft), today);
     const { g, h } = dayLine(today);
     const SHOWN = 25;
-    const taskRows = tasks.slice(0, SHOWN).map((t) => [`${PRI[t.priority][0]} *${t.title}*`, `⏳ ${lateText(t)}${t.assignee ? `  ·  👤 ${t.assignee}` : ""}${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}`].join("\n"));
+    // Each task by its title (and its time when set): no lateness or assignee line.
+    const taskRows = tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}`);
     return {
       header: [
         CROWN,
@@ -121,7 +121,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       empty: `✅ _${L("مفيش وثائق منتهية أو قريبة من الانتهاء.", "No document has expired or ends soon.")}_`,
       tail: [
         ...(tasks.length
-          ? [`📌 ━━ *${L("المهام المطلوب إنجازها", "Open tasks")}* ━━ (${tasks.length})`, ...tasks.slice(0, SHOWN).map((t) => `- ${PRI[t.priority][0]} ${t.title}  ┈  _${lateText(t)}_${t.assignee ? ` · ${t.assignee}` : ""}`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""]
+          ? [`📌 ━━ *${L("المهام المطلوب إنجازها", "Open tasks")}* ━━ (${tasks.length})`, ...tasks.slice(0, SHOWN).map((t) => `- ${PRI[t.priority][0]} ${t.title}`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""]
           : []),
         footer(),
       ].join("\n"),
@@ -144,7 +144,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       ].join("\n");
     });
     const SHOWN = 15;
-    const taskCards = tasks.slice(0, SHOWN).map((t, i) => [`> ◇ *${String(i + 1).padStart(2, "0")}*  ┃  ${PRI[t.priority][0]} *${t.title}*`, `> ⏳ ${lateText(t)}${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}${t.assignee ? `  ·  👤 ${t.assignee}` : ""}`].join("\n"));
+    const taskCards = tasks.slice(0, SHOWN).map((t, i) => `> ◇ *${String(i + 1).padStart(2, "0")}*  ┃  ${PRI[t.priority][0]} *${t.title}*${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}`);
     return {
       header: [CROWN, `🏛️ *${company}*`, `👑 _${L("ملخص الوثائق والمهام", "Documents and tasks")}_ · ${g}`, CROWN, "", ...countRows(c, tasks, (dot, label, n) => `> ${dot} *${n}*  ${label}`)].join("\n"),
       entries,
@@ -204,7 +204,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       }),
       empty: L("لا توجد وثائق منتهية أو قريبة من الانتهاء.", "No document has expired or ends soon."),
       tail: [
-        ...(tasks.length ? [`◈ *${L("ثانيًا: المهام المطلوب إنجازها", "Second: open tasks")}*`, ...tasks.slice(0, SHOWN).map((t, i) => `*${i + 1}.* ${t.title}${t.assignee ? ` — ${t.assignee}` : ""} _(${lateText(t)})_`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`◈ *${L("ثانيًا: المهام المطلوب إنجازها", "Second: open tasks")}*`, ...tasks.slice(0, SHOWN).map((t, i) => `*${i + 1}.* ${t.title}`), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         L("نأمل التكرم بالاطلاع واتخاذ اللازم،", "Kindly review and follow up."),
         L("وتقبلوا خالص التحية والتقدير،", "With our best regards,"),
         "",
@@ -242,7 +242,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       entries,
       empty: `✅ _${L("لا يوجد ما يحتاج إجراءً في الوثائق اليوم.", "No document needs action today.")}_`,
       tail: [
-        ...(tasks.length ? [`📌 *${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t, i) => `${i + 1}. ${PRI[t.priority][0]} *${t.title}*\n${lateText(t)}${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`📌 *${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t, i) => `${i + 1}. ${PRI[t.priority][0]} *${t.title}*`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         THIN,
         `🔱 *SanaD* · _${L("إدارة الوثائق والتراخيص", "Documents & Licenses")}_`,
       ].join("\n"),
@@ -274,7 +274,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       entries,
       empty: `> ✅ _${L("كل الوثائق سارية.", "Every document is valid.")}_`,
       tail: [
-        ...(tasks.length ? [`*${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*\n_${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`*${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length}`, "", tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         footer(),
       ].join("\n"),
     };
@@ -310,7 +310,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       entries,
       empty: `✅ _${L("لا توجد وثائق على الجدول.", "Nothing on the timeline.")}_`,
       tail: [
-        ...(tasks.length ? [`━━ *📌 ${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length} ━━`, tasks.slice(0, SHOWN).map((t) => `┃ ${PRI[t.priority][0]} *${t.title}*\n┃ _${lateText(t)}_${t.assignee ? ` · 👤 ${t.assignee}` : ""}`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
+        ...(tasks.length ? [`━━ *📌 ${L("المهام المطلوب إنجازها", "Open tasks")}* · ${tasks.length} ━━`, tasks.slice(0, SHOWN).map((t) => `┃ ${PRI[t.priority][0]} *${t.title}*`).join("\n\n"), ...(tasks.length > SHOWN ? [moreTasks(tasks.length - SHOWN)] : []), ""] : []),
         footer(),
       ].join("\n"),
     };

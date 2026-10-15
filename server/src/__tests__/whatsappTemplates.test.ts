@@ -49,8 +49,9 @@ describe("WhatsApp daily summary", () => {
     expect(renderDailyEntry(docs[0])).toContain("🪪 *الإقامة — أحمد*");
     expect(renderDailyEntry(docs[0])).toContain("منتهية منذ 3 أيام");
     const tail = renderDailyTail(tasks);
-    expect(tail).toContain("متأخرة يومان");
-    expect(tail).toContain("مهمة اليوم");
+    // A task line is its title, time and priority: no lateness or assignee.
+    expect(tail).not.toContain("متأخرة يومان");
+    expect(tail).not.toContain("👤");
     expect(renderDailyTail([])).toContain("SanaD");
     const parts = dailyMessageParts(Array.from({ length: 40 }, () => "x".repeat(300)), header, "empty", tail);
     expect(parts.length).toBeGreaterThan(1);

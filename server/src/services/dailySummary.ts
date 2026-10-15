@@ -96,9 +96,9 @@ export function renderDailyTail(tasks: TaskLine[]) {
   const late = tasks.filter((t) => t.daysLate > 0).length;
   const rows = tasks.slice(0, SHOWN_TASKS).map((t) => {
     const [dot, ar, enLabel] = PRIORITY[t.priority];
-    const meta = [t.time && `🕘 ${mono(t.time)}`, t.assignee && `👤 ${t.assignee}`, `🏷️ ${L(ar, enLabel)}`].filter(Boolean).join("  ·  ");
-    const when = t.daysLate > 0 ? `⏳ _${L(`متأخرة ${daysAr(t.daysLate)}`, `${daysEn(t.daysLate)} late`)}_` : `🟢 _${L("مهمة اليوم", "Due today")}_`;
-    return [`${dot} *${t.title}*`, meta, when].join("\n");
+    // No lateness or assignee line: the title, then its time and priority.
+    const meta = [t.time && `🕘 ${mono(t.time)}`, `🏷️ ${L(ar, enLabel)}`].filter(Boolean).join("  ·  ");
+    return [`${dot} *${t.title}*`, meta].join("\n");
   });
   const more = tasks.length - SHOWN_TASKS;
   return [
