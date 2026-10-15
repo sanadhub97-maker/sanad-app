@@ -274,6 +274,10 @@ export async function beginLinking(pairPhone?: string) {
 }
 
 export async function logoutWhatsappWeb() {
+  if (!sock && (await hasStoredSession())) {
+    await startWhatsappWeb().catch(() => undefined);
+    await waitForConnection(20_000).catch(() => null);
+  }
   const current = sock;
   sock = null;
   if (current) await current.logout().catch(() => current.end(undefined));
@@ -292,6 +296,20 @@ export async function flushWhatsappWeb() {
 
 export function getWhatsappWebStatus() {
   return { ...state };
+}
+
+/** The status for the settings page: a saved session is a linked number even while no instance holds it open. */
+export async function getWhatsappWebStatusLinked() {
+  if (state.status !== "disconnected") return { ...state };
+  try {
+    const row = await prisma.setting.findUnique({ where: { key: AUTH_KEY } });
+    const encrypted = (row?.value as { data?: string } | undefined)?.data;
+    if (!encrypted) return { ...state };
+    const me = /"me":\{"id":"(\d+)[:@]/.exec(decryptSecret(encrypted));
+    return { ...state, status: "connected" as const, phone: me ? `+${me[1]}` : state.phone };
+  } catch {
+    return { ...state };
+  }
 }
 
 async function waitForConnection(timeoutMs: number) {

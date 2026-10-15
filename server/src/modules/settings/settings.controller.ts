@@ -228,7 +228,7 @@ export const updateWhatsappRecipients = asyncHandler(async (req: Request, res: R
 });
 
 export const getWhatsappWebStatus = asyncHandler(async (_req: Request, res: Response) => {
-  res.json({ data: whatsappWeb.getWhatsappWebStatus() });
+  res.json({ data: await whatsappWeb.getWhatsappWebStatusLinked() });
 });
 export const connectWhatsappWeb = asyncHandler(async (req: Request, res: Response) => {
   await whatsappWeb.beginLinking((req.body as { phone?: string } | undefined)?.phone);
