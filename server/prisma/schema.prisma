@@ -377,6 +377,8 @@ model Branch {
   logoFileId String?
   /// The establishment's own stamp (module "branch-stamp"): pressed on its employees' certificates and custody papers.
   stampFileId String?
+  /// Its social accounts and website ({ website, whatsapp, x, instagram, ... }), printed at the foot of its documents.
+  socials Json?
   selectedTaxReturns TaxReturnBranch[]
   id        String       @id @default(cuid())
   name      String

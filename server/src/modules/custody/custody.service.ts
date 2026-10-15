@@ -6,6 +6,7 @@ import { paginationMeta, skipTake } from "@/utils/pagination";
 import { riyadhNow } from "@/services/push";
 import { branchStampDataUrl, getEstablishmentBranding } from "@/services/branding";
 import { L } from "@/services/lang";
+import type { Socials } from "@/services/socials";
 import { CLEARANCE_DEPARTMENTS } from "./custody.schemas";
 import type { CreateClearanceInput, CreateHandoverInput, DepartmentSignOff, ListQuery, ReturnItemsInput, UpdateClearanceInput, UpdateHandoverInput } from "./custody.schemas";
 import type { PrintEmployee, PrintEstablishment } from "./custody.print";
@@ -348,6 +349,7 @@ export async function printParty(employee: EmployeeSummary): Promise<{ est: Prin
     logoDataUrl,
     brandColor,
     logoTransparent: logoDataUrl ? await hasTransparency(logoDataUrl) : false,
+    socials: (branch?.socials as Socials | null) ?? null,
   };
   const emp: PrintEmployee = {
     name: L(employee.fullNameAr, employee.fullNameEn || employee.fullNameAr).trim(),

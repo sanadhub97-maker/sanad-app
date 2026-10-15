@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { amountInWords, arabicNumber, englishNumber } from "@/modules/certificates/money-words";
 import { serviceLength } from "@/modules/certificates/certificates.print";
 import { salaryQuerySchema } from "@/modules/certificates/certificates.schemas";
+import { socialLabel, socialList } from "@/services/socials";
 
 describe("amounts in words", () => {
   it("writes Arabic numbers as Saudi letters do", () => {
@@ -38,5 +39,19 @@ describe("salary certificate input", () => {
     expect(() => salaryQuerySchema.parse({ employeeId: "e1" })).toThrow();
     expect(() => salaryQuerySchema.parse({ employeeId: "e1", basic: "100", others: "not json" })).toThrow();
     expect(() => salaryQuerySchema.parse({ employeeId: "e1", basic: "100", establishment: "manual" })).toThrow();
+  });
+});
+
+describe("establishment social accounts", () => {
+  it("prints a handle, a domain or a number", () => {
+    expect(socialLabel("instagram", "https://www.instagram.com/sumou.sa/")).toBe("@sumou.sa");
+    expect(socialLabel("x", "@sumou_sa")).toBe("@sumou_sa");
+    expect(socialLabel("linkedin", "linkedin.com/company/sumou")).toBe("@sumou");
+    expect(socialLabel("website", "https://www.sumou.sa/ar/home")).toBe("sumou.sa");
+    expect(socialLabel("whatsapp", "0555 006 855")).toBe("+966555006855");
+    expect(socialLabel("whatsapp", "00966555006855")).toBe("+966555006855");
+  });
+  it("keeps only the filled accounts, in print order", () => {
+    expect(socialList({ x: "a", website: "b.sa", instagram: " " }).map((s) => s.key)).toEqual(["website", "x"]);
   });
 });

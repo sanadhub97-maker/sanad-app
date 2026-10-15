@@ -53,12 +53,14 @@ export async function getById(id: string) {
   return branch;
 }
 
+const jsonOrNull = (v: Record<string, unknown> | null | undefined) => (v === undefined ? undefined : v === null ? Prisma.DbNull : (v as Prisma.InputJsonValue));
+
 export async function create(input: CreateInput) {
   await assertBrandFile(input.logoFileId, ["branch-logo"]);
   await assertBrandFile(input.stampFileId, ["branch-stamp"]);
   const existing = await prisma.branch.findFirst({ where: { code: input.code, deletedAt: null } });
   if (existing) throw ApiError.badRequest("A branch with this code already exists.");
-  return prisma.branch.create({ data: { ...input, email: input.email || undefined } });
+  return prisma.branch.create({ data: { ...input, email: input.email || undefined, socials: jsonOrNull(input.socials) } });
 }
 
 export async function update(id: string, input: UpdateInput) {
@@ -69,7 +71,7 @@ export async function update(id: string, input: UpdateInput) {
     const existing = await prisma.branch.findFirst({ where: { code: input.code, id: { not: id }, deletedAt: null } });
     if (existing) throw ApiError.badRequest("A branch with this code already exists.");
   }
-  return prisma.branch.update({ where: { id }, data: { ...input, email: input.email || undefined } });
+  return prisma.branch.update({ where: { id }, data: { ...input, email: input.email || undefined, socials: jsonOrNull(input.socials) } });
 }
 
 export async function softDelete(id: string) {

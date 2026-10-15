@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AppleIcon } from "@/components/common/apple-icon";
 import { FormField } from "@/components/common/form-field";
 import { branchesApi } from "@/api/branches";
+import { BranchSocialsSection } from "@/pages/branches/branch-socials";
 import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ const makeSchema = () =>
     notes: z.string().optional(),
     logoFileId: z.string().nullable().optional(),
     stampFileId: z.string().nullable().optional(),
+    socials: z.record(z.string(), z.string()).nullable().optional(),
   });
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
@@ -98,6 +100,7 @@ export function BranchDialog({
               notes: branch.notes ?? "",
               logoFileId: branch.logoFileId ?? null,
               stampFileId: branch.stampFileId ?? null,
+              socials: (branch.socials as Record<string, string> | null) ?? {},
             }
           : { status: "ACTIVE" }
       );
@@ -334,6 +337,9 @@ export function BranchDialog({
               </FormField>
             </div>
           </div>
+
+          {/* Section 3: the social accounts, as they print */}
+          <Controller control={control} name="socials" render={({ field }) => <BranchSocialsSection value={field.value} onChange={field.onChange} isAr={isAr} />} />
         </form>
 
         {/* 📌 Executive Actions Footer */}

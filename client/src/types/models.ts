@@ -21,6 +21,8 @@ export interface Branch {
   logoFileId?: string | null;
   /** Its own stamp, pressed on its employees' certificates and custody papers. */
   stampFileId?: string | null;
+  /** Its social accounts and website, printed at the foot of its documents. */
+  socials?: Partial<Record<string, string>> | null;
   id: string;
   name: string;
   nameEn?: string | null;

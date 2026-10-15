@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { escapeHtml as esc } from "@/lib/security";
 import { L, isEn } from "@/services/lang";
+import { socialList, type Socials } from "@/services/socials";
 
 /**
  * The royal letterhead the custody handover and the clearance certificate print
@@ -20,6 +21,8 @@ export interface PrintEstablishment {
   brandColor: string | null;
   /** A see-through logo also prints faintly behind the page; a solid one would show as a grey block. */
   logoTransparent?: boolean;
+  /** Its social accounts and website, printed in a row above the footer. */
+  socials?: Socials | null;
 }
 export interface PrintEmployee {
   name: string;
@@ -215,6 +218,17 @@ html, body { margin: 0; padding: 0; background: #fffdf7; }
 .ry-foot .mid { text-align: center; line-height: 1.5; }
 .ry-foot .mid b { color: #fff; font-weight: 600; }
 .ry-foot .pg { color: #e8cf8b; letter-spacing: .12em; font-weight: 600; }
+/* the establishment's accounts: gold medallions with their handles, in one centred row above the footer */
+.ry.has-soc .body { bottom: 124px; }
+.ry-soc { position: absolute; bottom: 90px; left: 46px; right: 46px; direction: ltr; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 0; }
+.ry-soc .it { display: inline-flex; align-items: center; gap: 5px; padding: 0 11px; }
+.ry-soc .it + .it { border-inline-start: .6px solid var(--gold-l); }
+.ry-soc .ic { width: 17px; height: 17px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--deep); box-shadow: 0 0 0 .8px var(--gold), 0 0 0 2px #fffdf7, 0 0 0 2.6px var(--gold-l); }
+.ry-soc .ic svg { width: 9px; height: 9px; fill: #ecd594; display: block; }
+.ry-soc b { font-size: 9.6px; font-weight: 700; color: var(--deep); direction: ltr; unicode-bidi: isolate; letter-spacing: .01em; }
+.ry-soc.many .it { padding: 0 8px; }
+.ry-soc.many b { font-size: 8.8px; }
+.ry.has-soc .ry-micro { bottom: 79px; }
 .ry-micro { position: absolute; bottom: 80px; left: 58px; right: 58px; font-size: 4.4px; line-height: 1; letter-spacing: .1em; color: var(--gold); white-space: nowrap; overflow: hidden; direction: ltr; }
 `;
 
@@ -269,8 +283,9 @@ export async function royalSheet(input: SheetInput) {
   const qr = await QRCode.toDataURL(qrText, { margin: 0, width: 160, errorCorrectionLevel: "M" });
   const logo = est.logoDataUrl;
   const micro = `${est.nameEn || ""} · ${est.name} · ${input.number} · `.repeat(14);
+  const socials = socialList(est.socials);
   const html = `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8"><title>${esc(input.number)}</title><style>${CSS}${input.extraCss ?? ""}</style></head><body>
-  <div class="ry${input.sheetClass ? ` ${input.sheetClass}` : ""}" style="--brand:${brand};--deep:${deep}">
+  <div class="ry${input.sheetClass ? ` ${input.sheetClass}` : ""}${socials.length ? " has-soc" : ""}" style="--brand:${brand};--deep:${deep}">
     <div class="edge t" style="background-image:${edgeTile}"></div><div class="edge b" style="background-image:${edgeTile}"></div><div class="edge r" style="background-image:${edgeTile}"></div><div class="edge l" style="background-image:${edgeTile}"></div>
     <div class="rule"></div>
     ${logo && est.logoTransparent ? `<img class="bg" src="${logo}" alt="">` : ""}
@@ -283,6 +298,7 @@ export async function royalSheet(input: SheetInput) {
       ${input.noGrid ? "" : sec(input.extraCells?.length ? L("بيانات الموظف والإخلاء", "Employee & clearance") : L("بيانات الموظف", "Employee"), grid)}
       ${input.body(sec, sigs, deep)}
     </div>
+    ${socials.length ? `<div class="ry-soc${socials.length > 5 ? " many" : ""}">${socials.map((s) => `<span class="it"><span class="ic"><svg viewBox="0 0 24 24" aria-label="${esc(L(s.ar, s.en))}"><path d="${s.path}"/></svg></span><b>${esc(s.label)}</b></span>`).join("")}</div>` : ""}
     <div class="ry-micro">${esc(micro)}</div>
     <div class="ry-foot"><div class="qr"><img src="${qr}" alt=""></div><div class="mid">${contact}<br>${L("مستند صادر إلكترونيًا من نظام سند · امسح الرمز لعرض بيانات المستند", "Issued electronically by Sanad · scan the code for the document's details")}</div><div class="pg">${L("صفحة", "Page")} <span class="n">1</span> ${L("من", "of")} <span class="n">1</span></div></div>
   </div></body></html>`;

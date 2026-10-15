@@ -16,6 +16,7 @@ export interface BranchInput {
   notes?: string;
   logoFileId?: string | null;
   stampFileId?: string | null;
+  socials?: Partial<Record<string, string>> | null;
 }
 
 const baseBranchesApi = createResourceApi<Branch, BranchInput>("/branches");
