@@ -8,6 +8,7 @@ import { listActiveBranches, branchesApi } from "@/api/branches";
 import { workforceDocumentsApi } from "@/api/workforceDocuments";
 import { companyDocumentsApi } from "@/api/companyDocuments";
 import { preloadPage } from "@/lib/page-preload";
+import { warmPrintingFor } from "@/lib/print-warm";
 
 /* A page's first data, fetched when the pointer reaches its menu item, so the
    page opens on it instead of waiting. Each entry uses the same key and call
@@ -58,6 +59,8 @@ export function warmUpPages(client: QueryClient, can: (permission: string) => bo
   let cancelled = false;
   const steps: (() => void)[] = [];
   for (const path of WARM_PATHS) steps.push(() => { preloadPage(path); prefetchPageData(client, path, can); });
+  // The print browser and print pictures on the server, so the first print after sign-in does not wait for them.
+  steps.unshift(() => warmPrintingFor("/reports"));
   // The print preview viewer (PDF.js and its worker, ~0.5 MB), so the first preview opens without fetching it.
   steps.push(() => {
     void import("@/components/pdf-preview-document").catch(() => undefined);

@@ -13,6 +13,9 @@ import { PRINT_NAME_IMAGE_MODULES } from "@/modules/files/files.access";
  * never changes its content, so a kept copy is never stale.
  */
 const KEPT_PREFIX = "print.asset:";
+/** Palette PNG for printed pictures: a third of the size of a full-colour one, the same on paper. */
+const PRINT_PNG = { palette: true, quality: 90, effort: 10, compressionLevel: 9 } as const;
+
 async function kept<T>(key: string, make: () => Promise<T>): Promise<T> {
   // The database copy is a speed-up only: when it cannot be read or written, the image is simply made.
   try {
@@ -42,11 +45,11 @@ async function readPrintLogo(company: { printLogoFileId: string | null; logoFile
   return pending;
 }
 async function loadPrintLogo(printLogoId: string, module = "company-logo") {
-  const b64 = await kept(`logo:${module}:${printLogoId}`, async () => {
+  const b64 = await kept(`logo2:${module}:${printLogoId}`, async () => {
     const logoFile = await prisma.file.findUnique({ where: { id: printLogoId } });
     if (!logoFile || logoFile.module !== module || !["image/png", "image/jpeg"].includes(logoFile.mimeType)) return null;
     const raw = await storage.read(logoFile.storedName);
-    return (await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png().toBuffer()).toString("base64");
+    return (await sharp(raw).resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }).png(PRINT_PNG).toBuffer()).toString("base64");
   });
   return b64 ? { buffer: Buffer.from(b64, "base64"), mimeType: "image/png" } : null;
 }
@@ -61,11 +64,11 @@ async function fileDataUrl(fileId: string | null | undefined, modules: readonly 
   const cached = printAssetCache.get(cacheKey);
   if (cached) return cached;
   try {
-    const url = await kept(`img:${cacheKey}`, async () => {
+    const url = await kept(`img2:${cacheKey}`, async () => {
       const file = await prisma.file.findUnique({ where: { id: fileId } });
       if (!file || !modules.includes(file.module ?? "") || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
       const raw = await storage.read(file.storedName);
-      const png = await sharp(raw).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true }).png().toBuffer();
+      const png = await sharp(raw).resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true }).png(PRINT_PNG).toBuffer();
       return `data:image/png;base64,${png.toString("base64")}`;
     });
     if (!url) return null;
