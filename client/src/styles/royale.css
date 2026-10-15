@@ -779,3 +779,113 @@ select option { background: #0f1014; color: #f1e9d8; }
 .rc-hero.rx-doc .rc-step.done .n { background: var(--sc); border-color: var(--sc); color: #fff; }
 .rc-hero.rx-doc .rc-now i { background: #14120e; }
 .rc-hero.rx-doc .rc-acts .rc-btn:not(.pri) { background: rgba(255, 255, 255, 0.04); border-color: rgba(214, 182, 120, 0.3); color: #f2ead8; }
+
+/* ===== WhatsApp settings (pages/settings WhatsappTab): lacquered sections in gold ===== */
+.wa-lux .rc-hero.rx-lux .rx-lux-in svg { width: 50px; height: 50px; color: #f3dfae; filter: drop-shadow(0 0 12px rgba(37, 211, 102, 0.45)); }
+.wa-lux .rc-hero.rx-lux .rc-chips { gap: 8px; }
+.wa-chip { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #e9dcc0; border: 1px solid rgba(214, 182, 120, 0.25); background: rgba(255, 255, 255, 0.03); }
+.wa-chip svg { width: 14px; height: 14px; color: #c9a464; }
+.wa-chip.on { color: #b8f5cf; border-color: rgba(37, 211, 102, 0.45); background: rgba(37, 211, 102, 0.08); }
+.wa-chip.on svg { color: #25d366; }
+.wa-chip.off { color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
+.wa-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+.wa-num { display: inline-flex; align-items: center; gap: 8px; }
+.wa-num svg { width: 20px; height: 20px; color: #c9a464; }
+
+/* every section: a dark lacquer card with a gold hairline frame and two engraved corners */
+.wa-lux > form > .lux-glass, .wa-lux > .lux-glass, .wa-lux > div > .lux-glass {
+  position: relative; border-radius: 20px !important; border: 0 !important;
+  background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.10), transparent 60%), linear-gradient(180deg, #13110d, #0d0c0a) !important;
+  box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.28), inset 0 0 0 5px #0d0c0a, inset 0 0 0 6px rgba(214, 182, 120, 0.12), 0 30px 60px -40px #000 !important;
+}
+/* the card's own glow spot is dropped here: the gold frame is the ornament */
+.wa-lux .lux-glass::before, .wa-lux .lux-glass::after { display: none !important; }
+
+/* section headers: foil title, a gold rule fading out under it, the icon in a jewel */
+.wa-lux .lux-glass > div:first-child { background: none !important; border-bottom: 0 !important; position: relative; padding-bottom: 18px !important; }
+.wa-lux .lux-glass > div:first-child::after { content: ""; position: absolute; bottom: 0; inset-inline: 24px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.55), transparent); }
+.wa-lux .lux-glass h3, .wa-lux .lux-glass [class*="CardTitle"] { font-weight: 900 !important; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; }
+.wa-lux .lux-glass > div:first-child [class*="rounded-xl"][class*="h-10"], .wa-lux .lux-glass > div:first-child [class*="apple-icon"] { box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.45), 0 0 18px -6px rgba(243, 223, 174, 0.5) !important; }
+
+/* inner panels and choices: quiet ivory-on-ink tiles with a gold edge when chosen */
+.wa-lux .lux-glass [class*="rounded-2xl"][class*="border"]:not(button) { border-color: rgba(214, 182, 120, 0.16) !important; }
+.wa-lux .lux-glass button[class*="rounded-2xl"][class*="border"] { border-color: rgba(214, 182, 120, 0.2) !important; background: rgba(255, 255, 255, 0.02) !important; }
+.wa-lux .lux-glass button[class*="rounded-2xl"][class*="border-emerald"], .wa-lux .lux-glass button[aria-pressed="true"], .wa-lux .lux-glass button[data-state="checked"] { border-color: rgba(201, 164, 100, 0.75) !important; box-shadow: 0 0 0 1px rgba(201, 164, 100, 0.35), 0 12px 30px -18px rgba(201, 164, 100, 0.6) !important; }
+.wa-lux .lux-glass input { border-color: rgba(214, 182, 120, 0.22) !important; background: rgba(0, 0, 0, 0.25) !important; }
+.wa-lux .lux-glass input:focus { border-color: rgba(201, 164, 100, 0.7) !important; box-shadow: 0 0 0 3px rgba(201, 164, 100, 0.15) !important; }
+.rc-hero.rx-lux .rc-chips > .wa-chip.on { color: #b8f5cf !important; border-color: rgba(37, 211, 102, 0.5) !important; background: rgba(37, 211, 102, 0.1) !important; }
+.rc-hero.rx-lux .rc-chips > .wa-chip.off { color: #fca5a5 !important; border-color: rgba(239, 68, 68, 0.45) !important; background: rgba(239, 68, 68, 0.08) !important; }
+/* headers that follow a top hairline strip, and the strips themselves (the gold frame replaces them) */
+.wa-lux .lux-glass > div[class*="border-b"] { background: none !important; border-bottom: 0 !important; position: relative; }
+.wa-lux .lux-glass > div[class*="border-b"]::after { content: ""; position: absolute; bottom: 0; inset-inline: 24px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.55), transparent); }
+.wa-lux .lux-glass > div.absolute[class*="top-0"][class*="inset-x-0"] { display: none !important; }
+
+/* ===== WhatsApp desk: a gold side menu and one section at a time ===== */
+.wa-desk { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 22px; margin-top: 22px; align-items: start; }
+.wa-nav { position: sticky; top: 90px; display: grid; gap: 6px; padding: 12px; border-radius: 20px; background: linear-gradient(180deg, #13110d, #0d0c0a); box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.28), inset 0 0 0 5px #0d0c0a, inset 0 0 0 6px rgba(214, 182, 120, 0.12); }
+.wa-nav button { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 14px; text-align: start; border: 1px solid transparent; background: none; color: #e9dcc0; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.wa-nav button:hover { background: rgba(214, 182, 120, 0.06); }
+.wa-nav button.on { background: linear-gradient(120deg, rgba(201, 164, 100, 0.18), rgba(201, 164, 100, 0.04)); border-color: rgba(201, 164, 100, 0.45); box-shadow: 0 10px 26px -18px rgba(201, 164, 100, 0.7); }
+.wa-nav .ic { width: 38px; height: 38px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #c9a464; background: rgba(255, 255, 255, 0.03); box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.25); }
+.wa-nav .ic svg { width: 18px; height: 18px; }
+.wa-nav button.on .ic { color: #15120c; background: var(--rx-foil); background-size: 220% 100%; box-shadow: 0 0 16px -4px rgba(243, 223, 174, 0.6); }
+.wa-nav .tx { min-width: 0; display: grid; gap: 2px; }
+.wa-nav b { font-size: 14.5px; font-weight: 800; }
+.wa-nav button.on b { color: #f3dfae; }
+.wa-nav small { font-size: 12px; color: rgba(242, 234, 216, 0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wa-nav small.ok { color: #6ee7a8; } .wa-nav small.bad { color: #fca5a5; }
+
+.wa-pane { min-width: 0; animation: rp-rise-in 0.35s ease both; }
+.wa-pane-h { display: flex; align-items: center; gap: 14px; margin: 2px 4px 16px; }
+.wa-pane-h .ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #15120c; background: var(--rx-foil); background-size: 220% 100%; box-shadow: 0 0 22px -6px rgba(243, 223, 174, 0.55); }
+.wa-pane-h .ic svg { width: 22px; height: 22px; }
+.wa-pane-h h2 { margin: 0; font-size: 24px; font-weight: 900; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.wa-pane-h p { margin: 2px 0 0; font-size: 13px; color: rgba(242, 234, 216, 0.6); }
+@keyframes rp-rise-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.wa-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.wa-tile { position: relative; display: grid; gap: 6px; padding: 18px 18px 16px; border-radius: 18px; text-align: start; cursor: pointer; color: #e9dcc0; border: 0; background: radial-gradient(220px 120px at 100% 0%, rgba(201, 164, 100, 0.14), transparent 70%), linear-gradient(180deg, #15130f, #0e0d0b); box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.26), inset 0 0 0 4px #0e0d0b, inset 0 0 0 5px rgba(214, 182, 120, 0.1); transition: transform 0.2s, box-shadow 0.2s; }
+.wa-tile:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.5), inset 0 0 0 4px #0e0d0b, inset 0 0 0 5px rgba(214, 182, 120, 0.16), 0 18px 34px -22px rgba(201, 164, 100, 0.6); }
+.wa-tile .ic { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: #c9a464; box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.3); }
+.wa-tile .ic svg { width: 18px; height: 18px; }
+.wa-tile small { font-size: 12.5px; color: rgba(242, 234, 216, 0.6); font-weight: 700; margin-top: 4px; }
+.wa-tile b { font-size: 26px; font-weight: 900; line-height: 1.15; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wa-tile .ft { font-size: 12px; color: rgba(242, 234, 216, 0.55); }
+.wa-tile .ft.ok { color: #6ee7a8; } .wa-tile .ft.bad { color: #fca5a5; }
+@media (max-width: 1100px) { .wa-desk { grid-template-columns: 1fr; } .wa-nav { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); } .wa-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .wa-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wa-nav small { display: none; } .wa-tiles { grid-template-columns: 1fr 1fr; } .wa-tile b { font-size: 20px; } }
+/* the desk's sections sit in the pane: the old one-page spacing above each is not needed */
+.wa-pane-b > form > .lux-glass, .wa-pane-b > .lux-glass, .wa-pane-b > div > .lux-glass {
+  position: relative; border-radius: 20px !important; border: 0 !important;
+  background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.10), transparent 60%), linear-gradient(180deg, #13110d, #0d0c0a) !important;
+  box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.28), inset 0 0 0 5px #0d0c0a, inset 0 0 0 6px rgba(214, 182, 120, 0.12), 0 30px 60px -40px #000 !important;
+}
+/* the WhatsApp mark in the crown's medallion: its own green, glowing */
+.wa-lux .rc-hero.rx-lux .rx-lux-in svg.wa-logo { width: 56px; height: 56px; color: #25d366; filter: drop-shadow(0 0 14px rgba(37, 211, 102, 0.55)); }
+
+/* ===== Settings desk (pages/settings SettingsDesk) ===== */
+.st-desk { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 22px; margin-top: 22px; align-items: start; }
+.st-pane { min-width: 0; animation: rp-rise-in 0.35s ease both; }
+.st-lux .rc-hero.rx-lux .rx-lux-in svg { width: 48px; height: 48px; color: #f3dfae; }
+.st-lux .rc-hero.rx-lux .rc-dstats b:not([style]) { font-size: 22px !important; }
+.st-lux .wa-chip svg { width: 14px; height: 14px; }
+/* every section's cards: the lacquer and gold frame of the WhatsApp page */
+.st-lux .wa-pane-b .lux-glass { border-radius: 20px !important; border: 0 !important;
+  background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.10), transparent 60%), linear-gradient(180deg, #13110d, #0d0c0a) !important;
+  box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.28), inset 0 0 0 5px #0d0c0a, inset 0 0 0 6px rgba(214, 182, 120, 0.12), 0 30px 60px -40px #000 !important; }
+.st-lux .wa-pane-b .lux-glass .lux-glass { background: rgba(255, 255, 255, 0.02) !important; box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.16) !important; }
+.st-lux .lux-glass::before, .st-lux .lux-glass::after { display: none !important; }
+.st-lux .lux-glass > div[class*="border-b"] { background: none !important; border-bottom: 0 !important; position: relative; }
+.st-lux .lux-glass > div[class*="border-b"]::after { content: ""; position: absolute; bottom: 0; inset-inline: 24px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.55), transparent); }
+.st-lux .lux-glass > div.absolute[class*="top-0"][class*="inset-x-0"] { display: none !important; }
+.st-lux .lux-glass h3 { font-weight: 900 !important; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; }
+.st-lux .lux-glass input, .st-lux .lux-glass textarea { border-color: rgba(214, 182, 120, 0.22) !important; background: rgba(0, 0, 0, 0.25) !important; }
+.st-lux .lux-glass input:focus, .st-lux .lux-glass textarea:focus { border-color: rgba(201, 164, 100, 0.7) !important; box-shadow: 0 0 0 3px rgba(201, 164, 100, 0.15) !important; }
+/* inside the settings desk the WhatsApp page lays its own menu across the top */
+.st-pane .wa-lux > .rc-hero { margin-bottom: 0; }
+.st-pane .wa-desk { grid-template-columns: 1fr; }
+.st-pane .wa-nav:not(.st-nav) { position: static; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.st-pane .wa-nav:not(.st-nav) button { flex-direction: column; text-align: center; gap: 8px; padding: 12px 8px; }
+.st-pane .wa-nav:not(.st-nav) small { display: none; }
+@media (max-width: 1100px) { .st-desk { grid-template-columns: 1fr; } .st-nav { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); } .st-pane .wa-nav:not(.st-nav) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .st-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

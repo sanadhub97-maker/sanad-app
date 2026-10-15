@@ -363,3 +363,47 @@ html.rx-light .rc-hero.rx-doc .rc-step .n { background: #fffaf0; border-color: r
 html.rx-light .rc-hero.rx-doc .rc-step.done .n { background: var(--sc); border-color: var(--sc); color: #fff; }
 html.rx-light .rc-hero.rx-doc .rc-now i { background: #fffdf8; }
 html.rx-light .rc-hero.rx-doc .rc-acts .rc-btn:not(.pri) { background: #fffdf8; border-color: rgba(154, 116, 51, 0.3); color: #3d3428; }
+
+/* WhatsApp settings by day */
+html.rx-light .wa-chip { color: #3d3428; border-color: rgba(154, 116, 51, 0.3); background: #fffdf8; }
+html.rx-light .wa-chip svg { color: #9a7433; }
+html.rx-light .wa-chip.on { color: #166534; border-color: rgba(22, 163, 74, 0.4); background: #f0fdf4; }
+html.rx-light .wa-chip.on svg { color: #16a34a; }
+html.rx-light .wa-chip.off { color: #b91c1c; border-color: rgba(220, 38, 38, 0.35); background: #fef2f2; }
+html.rx-light .wa-lux .rc-hero.rx-lux .rx-lux-in svg { color: #6b4e1d; filter: none; }
+html.rx-light .wa-lux > form > .lux-glass, html.rx-light .wa-lux > .lux-glass, html.rx-light .wa-lux > div > .lux-glass {
+  background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.14), transparent 60%), linear-gradient(180deg, #fffdf8, #fbf6ea) !important;
+  box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.3), inset 0 0 0 5px #fffdf8, inset 0 0 0 6px rgba(154, 116, 51, 0.14), 0 24px 50px -36px rgba(90, 64, 20, 0.35) !important;
+}
+html.rx-light .wa-lux .lux-glass input { border-color: rgba(154, 116, 51, 0.28) !important; background: #fff !important; }
+html.rx-light .wa-lux .lux-glass button[class*="rounded-2xl"][class*="border"] { border-color: rgba(154, 116, 51, 0.22) !important; background: #fffdf8 !important; }
+html.rx-light .rc-hero.rx-lux .rc-chips > .wa-chip.on { color: #166534 !important; border-color: rgba(22, 163, 74, 0.45) !important; background: #f0fdf4 !important; }
+html.rx-light .rc-hero.rx-lux .rc-chips > .wa-chip.off { color: #b91c1c !important; border-color: rgba(220, 38, 38, 0.4) !important; background: #fef2f2 !important; }
+/* WhatsApp desk by day */
+html.rx-light .wa-nav { background: linear-gradient(180deg, #fffdf8, #fbf6ea); box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.3), inset 0 0 0 5px #fffdf8, inset 0 0 0 6px rgba(154, 116, 51, 0.12); }
+html.rx-light .wa-nav button { color: #3d3428; }
+html.rx-light .wa-nav button:hover { background: rgba(154, 116, 51, 0.06); }
+html.rx-light .wa-nav button.on { background: linear-gradient(120deg, rgba(201, 164, 100, 0.22), rgba(201, 164, 100, 0.05)); border-color: rgba(154, 116, 51, 0.45); }
+html.rx-light .wa-nav button.on b { color: #6b4e1d; }
+html.rx-light .wa-nav .ic { color: #9a7433; background: #fffaf0; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.3); }
+html.rx-light .wa-nav button.on .ic { color: #fffdf8; }
+html.rx-light .wa-nav small { color: #7a6c55; } html.rx-light .wa-nav small.ok { color: #15803d; } html.rx-light .wa-nav small.bad { color: #b91c1c; }
+html.rx-light .wa-pane-h .ic { color: #fffdf8; }
+html.rx-light .wa-pane-h p { color: #7a6c55; }
+html.rx-light .wa-tile { color: #3d3428; background: radial-gradient(220px 120px at 100% 0%, rgba(201, 164, 100, 0.16), transparent 70%), linear-gradient(180deg, #fffdf8, #fbf6ea); box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.28), inset 0 0 0 4px #fffdf8, inset 0 0 0 5px rgba(154, 116, 51, 0.12); }
+html.rx-light .wa-tile .ic { color: #9a7433; box-shadow: inset 0 0 0 1px rgba(154, 116, 51, 0.32); }
+html.rx-light .wa-tile small, html.rx-light .wa-tile .ft { color: #7a6c55; }
+html.rx-light .wa-tile .ft.ok { color: #15803d; } html.rx-light .wa-tile .ft.bad { color: #b91c1c; }
+html.rx-light .wa-pane-b > form > .lux-glass, html.rx-light .wa-pane-b > .lux-glass, html.rx-light .wa-pane-b > div > .lux-glass {
+  background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.14), transparent 60%), linear-gradient(180deg, #fffdf8, #fbf6ea) !important;
+  box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.3), inset 0 0 0 5px #fffdf8, inset 0 0 0 6px rgba(154, 116, 51, 0.14), 0 24px 50px -36px rgba(90, 64, 20, 0.35) !important;
+}
+html.rx-light .wa-lux .rc-hero.rx-lux .rx-lux-in svg.wa-logo { color: #1da851; filter: drop-shadow(0 0 8px rgba(37, 211, 102, 0.3)); }
+
+/* settings desk by day */
+html.rx-light .st-lux .rc-hero.rx-lux .rx-lux-in svg { color: #6b4e1d; }
+html.rx-light .st-lux .wa-pane-b .lux-glass { background: radial-gradient(900px 260px at 100% -20%, rgba(201, 164, 100, 0.14), transparent 60%), linear-gradient(180deg, #fffdf8, #fbf6ea) !important;
+  box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.3), inset 0 0 0 5px #fffdf8, inset 0 0 0 6px rgba(154, 116, 51, 0.14), 0 24px 50px -36px rgba(90, 64, 20, 0.35) !important; }
+html.rx-light .st-lux .wa-pane-b .lux-glass .lux-glass { background: #fffdf8 !important; box-shadow: 0 0 0 1px rgba(154, 116, 51, 0.18) !important; }
+html.rx-light .st-lux .lux-glass input, html.rx-light .st-lux .lux-glass textarea { border-color: rgba(154, 116, 51, 0.28) !important; background: #fff !important; }
+html.rx-light .wa-nav button.on .ic { background: linear-gradient(135deg, #c9a464, #8a6a35) !important; color: #fffdf8 !important; box-shadow: 0 6px 16px -8px rgba(122, 92, 43, 0.7) !important; }

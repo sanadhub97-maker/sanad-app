@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { PxTabs } from "@/components/royal/px";
 import { localizeServerMessage } from "@/lib/server-messages";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -10,7 +9,6 @@ import {
   Palette,
   Clock,
   Mail,
-  MessageSquare,
   Send,
   Loader2,
   UploadCloud,
@@ -45,7 +43,6 @@ import {
   Smartphone,
   Printer,
   Hourglass,
-  MessageCircle,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -66,6 +63,9 @@ import { cn } from "@/lib/utils";
 import { PrintDesignsTab } from "./print-designs-tab";
 import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 import { WhatsappDigestCardPicker } from "./whatsapp-digest-card-picker";
+import { WhatsappHero, WhatsappDesk } from "@/pages/settings/whatsapp-hero";
+import { WhatsappLogo } from "@/components/common/whatsapp-logo";
+import { SettingsDesk } from "@/pages/settings/settings-desk";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
 /* The settings in the Royal design, as in the approved preview: the sections
@@ -77,7 +77,7 @@ const SECTIONS = [
   { key: "print", icon: Printer, Tab: PrintDesignsTab },
   { key: "expiration", icon: Hourglass, Tab: ExpirationTab },
   { key: "email", icon: Mail, Tab: EmailTab },
-  { key: "whatsapp", icon: MessageCircle, Tab: WhatsappTab },
+  { key: "whatsapp", icon: WhatsappLogo, Tab: WhatsappTab },
 ] as const;
 
 export default function SettingsPage() {
@@ -107,14 +107,9 @@ export default function SettingsPage() {
         }
       />
 
-      <section className="px-card no-print" style={{ ["--i" as string]: 1 }}>
-        <div className="px-toolbar" style={{ borderBottom: 0 }}>
-          <PxTabs label={t("settings.title")} value={current.key} onChange={(k) => navigate(`/settings/${k}`, { replace: true })} items={SECTIONS.map((x) => ({ key: x.key, label: t(`settings.tabs.${x.key}`) }))} />
-        </div>
-      </section>
-      <section key={current.key} className="px-setbody min-w-0" style={{ ["--i" as string]: 2 }}>
+      <SettingsDesk isRtl={isRtl} current={current.key} onPick={(k) => navigate(`/settings/${k}`, { replace: true })}>
         <Current canEdit={canEdit} isRtl={isRtl} />
-      </section>
+      </SettingsDesk>
     </div>
   );
 }
@@ -1197,14 +1192,18 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="wa-lux">
+      <WhatsappHero isRtl={isRtl} />
+      <WhatsappDesk
+        isRtl={isRtl}
+        connect={<>
       <form onSubmit={handleSubmit((v) => mutation.isPending ? undefined : mutation.mutateAsync(v).catch(() => undefined))} className="space-y-6">
         {/* Gateway Master Switch & Form */}
         <Card className="specular-border overflow-hidden border-border/80">
           <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                <AppleIcon icon={MessageSquare} tone="emerald" size="md" />
+                <AppleIcon icon={WhatsappLogo as never} tone="emerald" size="md" />
                 <div>
                   <CardTitle className="text-base sm:text-lg font-black text-foreground">
                     {t("settings.whatsapp.title")}
@@ -1461,10 +1460,12 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
       {isWhatsappWeb && (
         <WhatsappWebLinkCard canEdit={canEdit} isRtl={isRtl} saved={data.provider === "WHATSAPP_WEB" && data.enabled} />
       )}
-      <WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />
-      <WhatsappDigestCardPicker canEdit={canEdit} isRtl={isRtl} />
-      <WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />
-      <WhatsappLiveFeed isRtl={isRtl} />
+        </>}
+        schedule={<WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />}
+        look={<WhatsappDigestCardPicker canEdit={canEdit} isRtl={isRtl} />}
+        people={<WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />}
+        log={<WhatsappLiveFeed isRtl={isRtl} />}
+      />
     </div>
   );
 }
