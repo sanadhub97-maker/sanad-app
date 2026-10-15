@@ -243,7 +243,19 @@ export async function activityReport(query: z.infer<typeof activityReportQuerySc
     include: { user: { select: { fullName: true } } },
   });
 
-  return requireCompleteReport(rows).map((r) => ({
+  // The same file downloaded again by the same user within 12 hours is one row (thumbnails fetch it repeatedly).
+  const lastDownload = new Map<string, number>();
+  const kept = requireCompleteReport(rows).filter((r) => {
+    if (r.action !== "DOWNLOAD" || !r.recordId) return true;
+    const key = `${r.userId ?? ""}|${r.recordId}`;
+    const t = r.createdAt.getTime();
+    const prev = lastDownload.get(key);
+    if (prev !== undefined && prev - t < 12 * 3_600_000) return false;
+    lastDownload.set(key, t);
+    return true;
+  });
+
+  return kept.map((r) => ({
     date: r.createdAt,
     user: r.user?.fullName ?? "System",
     action: r.action,
