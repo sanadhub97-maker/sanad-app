@@ -8,9 +8,11 @@ import { paymentCategoryLabel, paymentMethodLabel } from "@/constants/paymentCat
 import { withLang } from "@/services/lang";
 import { riyadhDay } from "@/services/whatsappDigest";
 
-/* The evening WhatsApp message: the payments recorded that day. Each payment
-   goes to each recipient once only — it never comes back in a later message,
-   and it is not part of the expiry alerts. */
+/* The evening WhatsApp message: the day's payments — paid that day and recorded
+   in the last two days. A payment typed in today for an earlier date (a late
+   entry, an import of old payments) is not "today's" and is left out. Each
+   payment goes to each recipient once only — it never comes back in a later
+   message, and it is not part of the expiry alerts. */
 
 const money = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const MAX_TEXT = 3500;
@@ -26,8 +28,12 @@ export async function runDailyPaymentsDigest(now = new Date()) {
   // Today's payments, and yesterday's in case last evening's message could not go out.
   const since = new Date(`${day}T00:00:00+03:00`);
   since.setUTCDate(since.getUTCDate() - 1);
+  // The payment date is a calendar day (stored at midnight UTC): yesterday or today only.
+  const paidTo = new Date(`${day}T00:00:00Z`);
+  const paidFrom = new Date(paidTo);
+  paidFrom.setUTCDate(paidFrom.getUTCDate() - 1);
   const payments = await prisma.payment.findMany({
-    where: { deletedAt: null, createdAt: { gte: since, lte: now } },
+    where: { deletedAt: null, createdAt: { gte: since, lte: now }, paymentDate: { gte: paidFrom, lte: paidTo } },
     orderBy: { createdAt: "asc" },
     include: { branch: { select: { name: true, nameEn: true } }, employee: { select: { fullNameAr: true, fullNameEn: true } } },
   });

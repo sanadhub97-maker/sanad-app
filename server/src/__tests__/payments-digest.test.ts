@@ -35,6 +35,13 @@ describe("the evening payments message", () => {
     expect(second).toContain("PAY-3");
     expect(second).not.toContain("PAY-1");
   });
+  it("asks only for payments paid yesterday or today, not old ones recorded today", async () => {
+    const { prisma } = await import("@/lib/prisma");
+    await runDailyPaymentsDigest(new Date("2026-10-15T18:00:00Z"));
+    const where = (prisma.payment.findMany as unknown as { mock: { calls: any[][] } }).mock.calls.at(-1)![0].where;
+    expect(where.paymentDate.gte.toISOString()).toBe("2026-10-14T00:00:00.000Z");
+    expect(where.paymentDate.lte.toISOString()).toBe("2026-10-15T00:00:00.000Z");
+  });
   it("sends nothing on a day without payments", async () => {
     await runDailyPaymentsDigest(new Date("2026-10-12T18:00:00Z"));
     expect(mock.send).not.toHaveBeenCalled();
