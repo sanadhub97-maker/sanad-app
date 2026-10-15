@@ -10,7 +10,7 @@ import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { WhatsappText } from "./whatsapp-text";
 
-const DESIGNS: { id: Exclude<DigestCardSetting, "none">; nameAr: string; nameEn: string; descAr: string; descEn: string }[] = [
+export const DESIGNS: { id: Exclude<DigestCardSetting, "none">; nameAr: string; nameEn: string; descAr: string; descEn: string }[] = [
   { id: "noir", nameAr: "الملكي الأسود", nameEn: "Royal noir", descAr: "أسود مخملي ودهبي، بنفس تصميم الموقع.", descEn: "Black velvet and gold, as the site." },
   { id: "ivory", nameAr: "العاجي التنفيذي", nameEn: "Ivory", descAr: "ورق عاجي بالكحلي والدهبي، شكل تقرير مطبوع.", descEn: "Ivory paper with navy and gold." },
   { id: "emerald", nameAr: "الزمردي", nameEn: "Emerald", descAr: "أخضر زمردي عميق بلمسات دهبي.", descEn: "Deep emerald with gold." },
@@ -35,7 +35,7 @@ const TEXT_KINDS = [
 ];
 
 /** The server's page for one design, drawn at WhatsApp size and shrunk to the column, as tall as its content. */
-function Shot({ html, width, maxHeight }: { html: string; width: number; maxHeight?: number }) {
+export function Shot({ html, width, maxHeight }: { html: string; width: number; maxHeight?: number }) {
   const box = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const [scale, setScale] = useState(0.3);
@@ -72,21 +72,21 @@ function Shot({ html, width, maxHeight }: { html: string; width: number; maxHeig
 }
 
 /** A WhatsApp chat on its own wallpaper, holding the morning message. */
-function Chat({ children }: { children: ReactNode }) {
+export function Chat({ children }: { children: ReactNode }) {
   return (
     <div className="flex-1 space-y-2 rounded-2xl bg-[#0b141a] p-3 sm:p-4" dir="rtl">
       {children}
     </div>
   );
 }
-const Time = () => (
+export const Time = ({ at = "08:00" }: { at?: string }) => (
   <div className="px-2 pb-1 text-left text-[10px] opacity-70" dir="ltr">
-    08:00
+    {at}
   </div>
 );
 
 /** One column's head: picking it picks that form of the message. */
-function Pick({ on, inUse, disabled, onPick, icon: Icon, title, desc, isRtl }: {
+export function Pick({ on, inUse, disabled, onPick, icon: Icon, title, desc, isRtl }: {
   on: boolean; inUse: boolean; disabled: boolean; onPick: () => void; icon: typeof ImageIcon; title: string; desc: string; isRtl: boolean;
 }) {
   return (

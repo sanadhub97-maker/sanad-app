@@ -13,7 +13,7 @@ export type DigestCardSetting = DigestCardId | "none";
 export const isDigestCardSetting = (v: unknown): v is DigestCardSetting => v === "none" || (DIGEST_CARD_IDS as readonly string[]).includes(String(v));
 
 export const DIGEST_CARD_WIDTH = 1080;
-const FONTS = "https://fonts.googleapis.com/css2?family=Zain:wght@400;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap";
+export const FONTS = "https://fonts.googleapis.com/css2?family=Zain:wght@400;700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap";
 const MAX_DOCS = 12;
 const MAX_TASKS = 8;
 
@@ -25,11 +25,11 @@ export interface DigestCardData {
   tasks: TaskLine[];
 }
 
-const esc = (s: string | null | undefined) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+export const esc = (s: string | null | undefined) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const RIYADH = "Asia/Riyadh";
 const dateStr = (d: Date) => d.toLocaleDateString("en-GB", { timeZone: RIYADH, day: "2-digit", month: "2-digit", year: "numeric" });
 
-const PATHS: Record<string, string> = {
+export const PATHS: Record<string, string> = {
   iqama: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16.2c.7-1.6 1.8-2.4 3.2-2.4s2.5.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/>',
   passport: '<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="10" r="3.2"/><path d="M8.8 10h6.4M12 6.8c1 .9 1.4 2 1.4 3.2s-.4 2.3-1.4 3.2c-1-.9-1.4-2-1.4-3.2s.4-2.3 1.4-3.2M9 17h6"/>',
   document: '<path d="M14 2.5H7A2.5 2.5 0 0 0 4.5 5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h4.5"/>',
@@ -46,11 +46,11 @@ const PATHS: Record<string, string> = {
   flag: '<path d="M5 21V4M5 4.5c4-2 7 2 14 0v9c-7 2-10-2-14 0"/>',
   shield: '<path d="M12 2.8 4.5 5.8v5.4c0 4.7 3.2 8.3 7.5 10 4.3-1.7 7.5-5.3 7.5-10V5.8z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/>',
 };
-const icon = (name: string, cls = "ic") =>
+export const icon = (name: string, cls = "ic") =>
   `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${PATHS[name] ?? PATHS.document}</svg>`;
 const docIcon = (t?: string) => (t === "EMPLOYEE_IQAMA" ? "iqama" : t === "EMPLOYEE_PASSPORT" ? "passport" : t === "VEHICLE" ? "car" : t === "COMPANY_DOCUMENT" ? "company" : "document");
 
-const PALETTES: Record<DigestCardId, string> = {
+export const PALETTES: Record<DigestCardId, string> = {
   // Black velvet and gold, as the site.
   noir: `--ground: radial-gradient(1100px 700px at 100% 0%, rgba(201,164,100,.20), transparent 60%), radial-gradient(800px 600px at 0% 100%, rgba(120,90,40,.16), transparent 60%), #09090c;
     --ink: #f3ebda; --ink2: #d9cfbb; --mut: #9c927e; --line: rgba(214,182,120,.20); --hair: rgba(214,182,120,.12);
@@ -85,7 +85,7 @@ const PALETTES: Record<DigestCardId, string> = {
     --bad: #ff8f9a; --warn: #f5b862; --soon: #e3d17e; --ok: #7fd6b0; --badT: rgba(255,143,154,.12); --warnT: rgba(245,184,98,.12); --soonT: rgba(227,209,126,.12); --next: #8fb3f0; --nextT: rgba(143,179,240,.12); --okT: rgba(127,214,176,.12);`,
 };
 
-const CSS = `
+export const CSS = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { background: var(--ground); background-color: #000; }
 html, body { width: ${DIGEST_CARD_WIDTH}px; }

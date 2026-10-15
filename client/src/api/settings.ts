@@ -136,6 +136,20 @@ export interface WhatsappDailyPreview {
   language: "ar" | "en";
   generatedAt: string;
 }
+export type PaymentTextId = "receipt" | "ledger" | "grouped" | "executive" | "dashboard" | "brief";
+export interface WhatsappPaymentsPreview {
+  /** The form in use: a picture design ("none" for the text) and the text design. */
+  format: { card: DigestCardSetting; text: PaymentTextId };
+  canSendCards: boolean;
+  width: number;
+  /** No payments today yet: the designs are shown on the latest few. */
+  sample: boolean;
+  canSee: boolean;
+  count: number;
+  caption: string;
+  designs: Partial<Record<PaymentTextId, string[]>>;
+  cards: Partial<Record<Exclude<DigestCardSetting, "none">, string>>;
+}
 export type WhatsappDispatchMode = "text_only" | "card_only" | "both";
 
 export interface WhatsappScheduleSettings {
@@ -165,6 +179,10 @@ export const settingsApi = {
     (await api.put<{ data: { card: DigestCardSetting }; message: string }>("/settings/whatsapp/digest-card", { card })).data,
   updateWhatsappDailyText: async (design: DailyTextId) =>
     (await api.put<{ data: { design: DailyTextId }; message: string }>("/settings/whatsapp/daily-text", { design })).data,
+  getWhatsappPaymentsPreview: async () =>
+    (await api.get<{ data: WhatsappPaymentsPreview }>("/settings/whatsapp/payments-preview")).data.data,
+  updateWhatsappPaymentsFormat: async (format: { card: DigestCardSetting; text: PaymentTextId }) =>
+    (await api.put<{ data: { card: DigestCardSetting; text: PaymentTextId }; message: string }>("/settings/whatsapp/payments-format", format)).data,
   getWhatsappDailyPreview: async () =>
     (await api.get<{ data: WhatsappDailyPreview }>("/settings/whatsapp/daily-preview")).data.data,
   getWhatsappSchedule: async () =>

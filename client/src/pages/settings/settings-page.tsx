@@ -63,6 +63,7 @@ import { cn } from "@/lib/utils";
 import { PrintDesignsTab } from "./print-designs-tab";
 import { WhatsappLiveFeed } from "./whatsapp-live-feed";
 import { WhatsappDigestCardPicker } from "./whatsapp-digest-card-picker";
+import { WhatsappPaymentsPicker } from "./whatsapp-payments-picker";
 import { WhatsappHero, WhatsappDesk } from "@/pages/settings/whatsapp-hero";
 import { WhatsappLogo } from "@/components/common/whatsapp-logo";
 import { SettingsDesk } from "@/pages/settings/settings-desk";
@@ -1522,6 +1523,7 @@ function WhatsappTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
         </>}
         schedule={<WhatsappDispatchCard canEdit={canEdit} isRtl={isRtl} />}
         look={<WhatsappDigestCardPicker canEdit={canEdit} isRtl={isRtl} />}
+        evening={<WhatsappPaymentsPicker canEdit={canEdit} isRtl={isRtl} />}
         people={<WhatsappRecipientsCard canEdit={canEdit} isRtl={isRtl} isCallMeBot={isCallMeBot} />}
         log={<WhatsappLiveFeed isRtl={isRtl} />}
       />

@@ -20,6 +20,10 @@ import { DIGEST_CARD_IDS, DIGEST_CARD_WIDTH, digestCardCaption, digestCardDocume
 import { dailyPicture, gatherDailySummary } from "@/services/dailySummary";
 import { DAILY_TEXT_IDS, dailyTextMessages, type DailyTextId } from "@/services/dailyText";
 import { getCardAssets } from "@/services/branding";
+import { getWhatsappPaymentsFormat, setWhatsappPaymentsFormat } from "@/services/settingsStore";
+import { eveningPayments } from "@/services/paymentsDigest";
+import { PAYMENT_TEXT_IDS, paymentLines, paymentParties, paymentsCardCaption, paymentsCardDocument, paymentsTextMessages, type PaymentTextId } from "@/services/paymentsMessage";
+import { riyadhDay } from "@/services/whatsappDigest";
 
 /** Settings → WhatsApp: the morning summary exactly as it will go out tomorrow, message by message, on today's real data. */
 export const getWhatsappDailyPreview = asyncHandler(async (req: Request, res: Response) => {
@@ -44,6 +48,57 @@ export const getWhatsappDigestCards = asyncHandler(async (req: Request, res: Res
   const data = { company, logo: assets.logo ?? assets.mark, documents: docs.map((d) => ({ ...d.context, sourceType: d.item.sourceType })), tasks };
   const cards = withLang(lang, () => Object.fromEntries(DIGEST_CARD_IDS.map((id) => [id, digestCardDocument(id, data)])));
   res.json({ data: { card, canSendCards: provider === WHATSAPP_WEB_PROVIDER, width: DIGEST_CARD_WIDTH, caption: withLang(lang, () => digestCardCaption(data)), cards } });
+});
+
+/**
+ * Settings → WhatsApp: the evening payments message in every design, on today's
+ * real payments; on a day without any yet, on the latest few as an example.
+ */
+export const getWhatsappPaymentsPreview = asyncHandler(async (req: Request, res: Response) => {
+  const [format, provider, assets, { language }, branding, today] = await Promise.all([
+    getWhatsappPaymentsFormat(),
+    getWhatsappProvider(),
+    getCardAssets(),
+    getWhatsappScheduleSetting(),
+    getBrandingContext(),
+    eveningPayments(),
+  ]);
+  const lang = language === "en" ? "en" : "ar";
+  const company = (lang === "en" ? branding.company?.nameEn || branding.company?.nameAr : branding.company?.nameAr || branding.company?.nameEn) ?? "";
+  const canSee = hasPermission(req.auth, "payments.view");
+  let rows = canSee ? today.payments : [];
+  const sample = canSee && !rows.length;
+  if (sample) {
+    rows = await prisma.payment.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      include: { branch: { select: { name: true, nameEn: true } }, employee: { select: { fullNameAr: true, fullNameEn: true, branch: { select: { name: true, nameEn: true } } } } },
+    });
+  }
+  const day = riyadhDay();
+  const parties = await paymentParties(rows);
+  const lines = withLang(lang, () => paymentLines(rows, parties));
+  const designs = lines.length ? withLang(lang, () => Object.fromEntries(PAYMENT_TEXT_IDS.map((id) => [id, paymentsTextMessages(id, company, day, lines)]))) : {};
+  const cards = lines.length ? withLang(lang, () => Object.fromEntries(DIGEST_CARD_IDS.map((id) => [id, paymentsCardDocument(id, { company, logo: assets.logo ?? assets.mark, day, lines })]))) : {};
+  res.json({
+    data: {
+      format,
+      canSendCards: provider === WHATSAPP_WEB_PROVIDER,
+      width: DIGEST_CARD_WIDTH,
+      sample,
+      canSee,
+      count: lines.length,
+      caption: lines.length ? withLang(lang, () => paymentsCardCaption(company, lines)) : "",
+      designs,
+      cards,
+    },
+  });
+});
+
+export const updateWhatsappPaymentsFormat = asyncHandler(async (req: Request, res: Response) => {
+  const format = await setWhatsappPaymentsFormat(req.body as { card: DigestCardSetting; text: PaymentTextId });
+  res.json({ data: format, message: L("تم حفظ شكل رسالة المساء.", "Evening message saved.") });
 });
 
 export const updateWhatsappDigestCard = asyncHandler(async (req: Request, res: Response) => {

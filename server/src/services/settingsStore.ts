@@ -3,6 +3,7 @@ import { DEFAULT_EXPIRATION_RULES, ExpirationRules } from "@/services/expiration
 import { DEFAULT_PRINT_THEME, isPrintThemeId, type PrintThemeId } from "@/services/printThemes";
 import { isDigestCardSetting, type DigestCardSetting } from "@/services/whatsappDigestCard";
 import { isDailyTextId, type DailyTextId } from "@/services/dailyTextIds";
+import { isPaymentTextId, type PaymentTextId } from "@/services/paymentTextIds";
 
 const EXPIRATION_RULES_KEY = "expirationRules";
 
@@ -113,6 +114,19 @@ export async function getWhatsappDigestCardSetting(): Promise<DigestCardSetting>
 export async function setWhatsappDigestCardSetting(card: DigestCardSetting) {
   await setSetting(WHATSAPP_DIGEST_CARD_KEY, { card });
   return card;
+}
+
+const WHATSAPP_PAYMENTS_FORMAT_KEY = "whatsapp.paymentsFormat";
+
+/** The evening payments message: its picture design ("none" sends the text) and its text design. Text in the first design until chosen. */
+export async function getWhatsappPaymentsFormat(): Promise<{ card: DigestCardSetting; text: PaymentTextId }> {
+  const v = await getSetting<{ card: string; text: string }>(WHATSAPP_PAYMENTS_FORMAT_KEY, { card: "none", text: "receipt" });
+  return { card: isDigestCardSetting(v.card) ? v.card : "none", text: isPaymentTextId(v.text) ? v.text : "receipt" };
+}
+
+export async function setWhatsappPaymentsFormat(value: { card: DigestCardSetting; text: PaymentTextId }) {
+  await setSetting(WHATSAPP_PAYMENTS_FORMAT_KEY, value);
+  return value;
 }
 
 const WHATSAPP_DAILY_TEXT_KEY = "whatsapp.dailyText";

@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarClock, CheckCheck, Clock3, Globe2, LayoutDashboard, Link2, Palette, Radio, ScrollText, Users, XCircle, type LucideIcon } from "lucide-react";
+import { CalendarClock, CheckCheck, Clock3, Globe2, LayoutDashboard, Link2, Palette, Radio, ScrollText, Users, XCircle, type LucideIcon, Moon } from "lucide-react";
 import { CoverHero } from "@/components/royal/cards";
 import { WhatsappLogo } from "@/components/common/whatsapp-logo";
 import { settingsApi } from "@/api/settings";
@@ -69,11 +69,11 @@ export function WhatsappHero({ isRtl }: { isRtl: boolean }) {
   );
 }
 
-type SectionId = "overview" | "connect" | "schedule" | "look" | "people" | "log";
+type SectionId = "overview" | "connect" | "schedule" | "look" | "evening" | "people" | "log";
 const KEEP = "sanad.whatsapp.section";
 
 /** The page as a desk: a gold side menu, and one section at a time beside it. */
-export function WhatsappDesk({ isRtl, connect, schedule, look, people, log }: { isRtl: boolean; connect: ReactNode; schedule: ReactNode; look: ReactNode; people: ReactNode; log: ReactNode }) {
+export function WhatsappDesk({ isRtl, connect, schedule, look, evening, people, log }: { isRtl: boolean; connect: ReactNode; schedule: ReactNode; look: ReactNode; evening: ReactNode; people: ReactNode; log: ReactNode }) {
   const L = (ar: string, en: string) => (isRtl ? ar : en);
   const g = useWhatsappGlance();
   const [open, setOpen] = useState<SectionId>(() => {
@@ -96,10 +96,11 @@ export function WhatsappDesk({ isRtl, connect, schedule, look, people, log }: { 
     { id: "connect", icon: Link2, title: L("الربط والخدمة", "Link & provider"), note: g.linked ? L("الرقم مربوط", "Number linked") : L("لا يوجد رقم مربوط", "No number linked"), tone: g.linked ? "ok" : "bad" },
     { id: "schedule", icon: CalendarClock, title: L("الجدولة واللغة", "Schedule & language"), note: L(`يوميًا ${g.schedule?.sendTime ?? ""}`, `Daily ${g.schedule?.sendTime ?? ""}`) },
     { id: "look", icon: Palette, title: L("شكل رسالة الصبح", "Morning message"), note: L("معاينة حية واختيار التصميم", "Live preview & design") },
+    { id: "evening", icon: Moon, title: L("شكل رسالة المساء", "Evening message"), note: L("مدفوعات اليوم الساعة 9", "Today's payments at 9 pm") },
     { id: "people", icon: Users, title: L("المستلمون", "Recipients"), note: L(`${g.active} رقم مفعّل`, `${g.active} active`) },
     { id: "log", icon: ScrollText, title: L("سجل الرسائل", "Message log"), note: L(`${g.feed?.stats.sentToday ?? 0} رسالة اليوم`, `${g.feed?.stats.sentToday ?? 0} today`) },
   ];
-  const body: Record<SectionId, ReactNode> = { overview: <Overview isRtl={isRtl} go={setOpen} g={g} log={log} />, connect, schedule, look, people, log };
+  const body: Record<SectionId, ReactNode> = { overview: <Overview isRtl={isRtl} go={setOpen} g={g} log={log} />, connect, schedule, look, evening, people, log };
   const cur = items.find((i) => i.id === open) ?? items[0];
 
   return (

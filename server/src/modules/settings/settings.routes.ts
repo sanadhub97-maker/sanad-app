@@ -3,6 +3,7 @@ import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { DIGEST_CARD_IDS } from "@/services/whatsappDigestCard";
 import { DAILY_TEXT_IDS } from "@/services/dailyTextIds";
+import { PAYMENT_TEXT_IDS } from "@/services/paymentTextIds";
 import { AuditAction } from "@prisma/client";
 import { requireAuth } from "@/middleware/auth";
 import { requirePermission } from "@/middleware/rbac";
@@ -151,6 +152,14 @@ router.put(
   controller.updateWhatsappDailyText
 );
 router.get("/whatsapp/digest-cards", requirePermission("settings.view"), controller.getWhatsappDigestCards);
+router.get("/whatsapp/payments-preview", requirePermission("settings.view"), controller.getWhatsappPaymentsPreview);
+router.put(
+  "/whatsapp/payments-format",
+  requirePermission("settings.edit"),
+  validate({ body: z.object({ card: z.enum(["none", ...DIGEST_CARD_IDS]), text: z.enum(PAYMENT_TEXT_IDS) }) }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  controller.updateWhatsappPaymentsFormat
+);
 router.put(
   "/whatsapp/digest-card",
   requirePermission("settings.edit"),
