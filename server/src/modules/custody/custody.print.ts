@@ -271,7 +271,7 @@ export async function royalSheet(input: SheetInput) {
   const sealFor = () => (input.seal && !input.seal.show ? "" : input.seal?.stamp ? `<img class="ry-stamp" src="${input.seal.stamp}" alt="">` : royalSeal(est.name, deep));
   // The seal sits on the approving (last) signature, or between the signatures when asked (the certificates).
   const mid = !!input.seal?.center;
-  const sigs = (list: [string, string, (string | null)?][]) => `<div class="grow"></div>` + sec(L("التوقيعات والاعتماد", "Signatures & approval"), `<div class="ry-sigs${mid ? " mid" : ""}">${mid && sealFor() ? `<div class="ry-mid">${sealFor()}<span class="cap">${L("الختم الرسمي", "OFFICIAL SEAL")}</span></div>` : ""}${list.map(([t, n, img], i) => `<div class="ry-sig">${!mid && i === list.length - 1 ? sealFor() : ""}<div class="ln">${img && !n ? `<img class="ry-name-img" src="${img}" alt="">` : ""}</div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`);
+  const sigs = (list: [string, string, (string | null)?][]) => `<div class="grow"></div>` + sec(L("الاعتماد الرسمي", "Official Approval"), `<div class="ry-sigs${mid ? " mid" : ""}">${mid && sealFor() ? `<div class="ry-mid">${sealFor()}<span class="cap">${L("الختم الرسمي", "OFFICIAL SEAL")}</span></div>` : ""}${list.map(([t, n, img], i) => `<div class="ry-sig">${!mid && i === list.length - 1 ? sealFor() : ""}<div class="ln">${img && !n ? `<img class="ry-name-img" src="${img}" alt="">` : ""}</div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`);
   const meta = [
     est.cr ? `<span>${L("سجل تجاري", "CR")} <b class="n">${esc(est.cr)}</b></span>` : "",
     est.vat ? `<span>${L("الرقم الضريبي", "VAT")} <b class="n">${esc(est.vat)}</b></span>` : "",

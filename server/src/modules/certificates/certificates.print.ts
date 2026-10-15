@@ -96,7 +96,10 @@ const XCSS = `
 .xc-strip div + div { border-inline-start: .5px solid #eee4cc; }
 .xc-strip small { display: block; font-size: 9.4px; color: var(--ink2); }
 .xc-strip b { display: block; margin-top: 1px; font-size: 13px; font-weight: 700; color: var(--deep); overflow-wrap: anywhere; }
-.xc .ry-sigs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 170px; padding-inline: 10px; }
+.xc .ry-sigs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 170px; padding-inline: 10px; margin-top: 2px; }
+/* the signatures sit close under their heading: room only for the name plates and the stamp on the line */
+.xc .ry-sig { padding-top: 64px; }
+.xc .ry-sigs.mid { --line: 64px; --stamp: 100px; }
 .xc .ry-sigs:has(> .ry-sig:nth-child(3 of .ry-sig)) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 34px; padding-inline: 0; }
 .xc .ry-sigs:not(:has(> .ry-sig:nth-child(2 of .ry-sig))) { grid-template-columns: minmax(0, 300px); justify-content: center; }
 /* both signature lines on one level, named or not */
@@ -177,10 +180,10 @@ const SCSS = `
 .xs .xc-lead { margin-bottom: 4px; }
 .xs .xc-p { font-size: 14.2px; line-height: 1.85; margin-bottom: 6px; }
 .xs .xc-close { margin-top: 8px; padding-top: 6px; font-size: 12.2px; line-height: 1.7; }
-.xs .ry-sig { padding-top: 80px; }
+.xs .ry-sig { padding-top: 64px; }
 .xs .ry-seal { width: 72px; top: -12px; }
 .xs .ry-stamp { width: 96px; height: 96px; top: -10px; }
-.xs .ry-sigs.mid { --line: 80px; --stamp: 92px; }
+.xs .ry-sigs.mid { --line: 64px; --stamp: 94px; }
 .xs .ry-sec { margin-top: 10px; }
 /* the salary in its parts: a formal statement, ruled in gold, the currency once in its head,
    the amounts on one line, the total and the total in words closing the table */
