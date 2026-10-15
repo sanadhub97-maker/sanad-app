@@ -60,22 +60,22 @@ function NameImagePicker({
     <div className="flex items-center gap-2">
       <input id={inputId} type="file" accept=".png,.jpg,.jpeg" className="hidden" disabled={disabled} onChange={(e) => upload(e.target.files?.[0])} />
       {fileId ? (
-        <div className="flex h-10 min-w-[96px] max-w-[160px] items-center justify-center rounded-xl border border-border/70 bg-white px-2">
-          <AuthedFileImage fileId={fileId} alt={isRtl ? "صورة الاسم" : "Name image"} className="max-h-8 max-w-full object-contain" />
+        <div className="flex h-14 min-w-[140px] max-w-[220px] items-center justify-center rounded-xl border border-border/70 bg-white px-3">
+          <AuthedFileImage fileId={fileId} alt={isRtl ? "صورة الاسم" : "Name image"} className="max-h-11 max-w-full object-contain" />
         </div>
       ) : null}
       <label
         htmlFor={inputId}
         className={cn(
-          "inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-border px-3 text-xs font-semibold text-muted-foreground hover:bg-muted/50",
+          "inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 text-sm font-semibold text-foreground/80 hover:bg-muted/50",
           (disabled || uploading) && "pointer-events-none opacity-50"
         )}
       >
-        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
         {fileId ? (isRtl ? "تغيير" : "Replace") : isRtl ? "رفع صورة الاسم" : "Upload name image"}
       </label>
       {fileId && (
-        <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={() => onChange(null)} className="h-10 rounded-xl text-xs text-destructive hover:bg-destructive/10">
+        <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={() => onChange(null)} className="h-11 rounded-xl text-sm text-destructive hover:bg-destructive/10">
           {isRtl ? "إزالة" : "Remove"}
         </Button>
       )}
@@ -220,53 +220,52 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-bold">
-              <PenLine className="h-4 w-4 text-muted-foreground" />
+            <div className="flex flex-wrap items-center gap-2 text-base font-bold">
+              <PenLine className="h-5 w-5 text-muted-foreground" />
               {isRtl ? "خانات التوقيع" : "Signature boxes"}
-              <span className="text-xs font-normal text-muted-foreground">
+              <span className="text-[13px] font-normal text-muted-foreground">
                 {isRtl ? `(حتى ${MAX_BOXES} خانات، والختم بيتحط قبل آخر خانة)` : `(up to ${MAX_BOXES}; the seal sits before the last one)`}
               </span>
             </div>
             {current.boxes.map((b, i) => (
-              <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end rounded-xl border border-border/60 p-3">
-                <div className="space-y-1">
-                  <Label htmlFor={`box-${doc}-${i}-ar`} className="text-xs">{isRtl ? `الخانة ${i + 1} (عربي)` : `Box ${i + 1} (Arabic)`}</Label>
-                  <Input
-                    id={`box-${doc}-${i}-ar`}
-                    value={b.ar}
+              <div key={i} className="space-y-4 rounded-2xl border border-border/60 bg-muted/10 p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-[15px] font-bold">
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-[13px] text-primary-foreground">{i + 1}</span>
+                    {b.ar.trim() || (isRtl ? `الخانة ${i + 1}` : `Box ${i + 1}`)}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
                     disabled={!canEdit}
-                    onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].ar = e.target.value))}
-                    className="h-10 rounded-xl"
-                  />
+                    onClick={() => update((d) => void d.signatures[doc].boxes.splice(i, 1))}
+                    className="h-10 gap-1.5 rounded-xl px-3 text-sm text-destructive hover:bg-destructive/10"
+                    aria-label={isRtl ? "حذف الخانة" : "Remove box"}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isRtl ? "حذف" : "Remove"}
+                  </Button>
                 </div>
-                <div className="space-y-1">
-                  <Label htmlFor={`box-${doc}-${i}-en`} className="text-xs">{isRtl ? "بالإنجليزي (اختياري)" : "English (optional)"}</Label>
-                  <Input
-                    id={`box-${doc}-${i}-en`}
-                    dir="ltr"
-                    value={b.en}
-                    disabled={!canEdit}
-                    onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].en = e.target.value))}
-                    className="h-10 rounded-xl"
-                  />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`box-${doc}-${i}-ar`} className="text-sm font-semibold">{isRtl ? "المسمى (عربي)" : "Title (Arabic)"}</Label>
+                    <Input id={`box-${doc}-${i}-ar`} value={b.ar} disabled={!canEdit} onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].ar = e.target.value))} className="h-11 rounded-xl text-[15px]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`box-${doc}-${i}-en`} className="text-sm font-semibold">{isRtl ? "المسمى بالإنجليزي (اختياري)" : "Title in English (optional)"}</Label>
+                    <Input id={`box-${doc}-${i}-en`} dir="ltr" value={b.en} disabled={!canEdit} onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].en = e.target.value))} className="h-11 rounded-xl text-[15px]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`box-${doc}-${i}-nar`} className="text-sm font-semibold">{isRtl ? "اسم المعتمد بالعربي" : "Approver name in Arabic"}</Label>
+                    <Input id={`box-${doc}-${i}-nar`} value={b.nameAr ?? ""} disabled={!canEdit} maxLength={150} onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].nameAr = e.target.value))} className="h-11 rounded-xl text-[15px]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`box-${doc}-${i}-nen`} className="text-sm font-semibold">{isRtl ? "اسم المعتمد بالإنجليزي (اختياري)" : "Approver name in English (optional)"}</Label>
+                    <Input id={`box-${doc}-${i}-nen`} dir="ltr" value={b.nameEn ?? ""} disabled={!canEdit} maxLength={150} onChange={(e) => update((d) => void (d.signatures[doc].boxes[i].nameEn = e.target.value))} className="h-11 rounded-xl text-[15px]" />
+                  </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={!canEdit}
-                  onClick={() => update((d) => void d.signatures[doc].boxes.splice(i, 1))}
-                  className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10"
-                  aria-label={isRtl ? "حذف الخانة" : "Remove box"}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <div className="space-y-1 sm:col-span-3">
-                  <Label>{isRtl ? "اسم المعتمد بالعربية" : "Approver name in Arabic"}</Label>
-                  <Input value={b.nameAr ?? ""} disabled={!canEdit} maxLength={150} onChange={e => update(d => void (d.signatures[doc].boxes[i].nameAr = e.target.value))} className="h-10 rounded-xl" />
-                  <Label>{isRtl ? "اسم المعتمد بالإنجليزية (اختياري)" : "Approver name in English (optional)"}</Label>
-                  <Input value={b.nameEn ?? ""} disabled={!canEdit} maxLength={150} dir="ltr" onChange={e => update(d => void (d.signatures[doc].boxes[i].nameEn = e.target.value))} className="h-10 rounded-xl" />
-                  <span className="text-xs text-muted-foreground">{isRtl ? "صورة الاسم (بتظهر في سطر الاسم)" : "Name image (printed on the name line)"}</span>
+                <div className="space-y-2 border-t border-border/50 pt-3">
+                  <span className="block text-sm font-semibold">{isRtl ? "صورة الاسم" : "Name image"} <span className="font-normal text-muted-foreground">{isRtl ? "(بتظهر على سطر التوقيع لو الاسم فاضي)" : "(printed on the signature line when no name is typed)"}</span></span>
                   <NameImagePicker
                     fileId={b.nameFileId}
                     disabled={!canEdit}
@@ -279,53 +278,52 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
             <Button
               type="button"
               variant="outline"
-              size="sm"
               disabled={!canEdit || current.boxes.length >= MAX_BOXES}
               onClick={() => update((d) => void d.signatures[doc].boxes.push({ ar: isRtl ? "اعتماد" : "Approval", en: "" }))}
-              className="gap-1.5 rounded-xl text-xs"
+              className="h-11 gap-2 rounded-xl px-4 text-sm"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               {isRtl ? "إضافة خانة توقيع" : "Add a signature box"}
             </Button>
           </div>
 
           {doc === "certificate" && (
-            <p className="rounded-xl bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
+            <p className="rounded-xl bg-muted/40 p-3.5 text-[13.5px] leading-relaxed text-muted-foreground">
               {isRtl
-                ? "دول المعتمدين اللي بيتطبعوا على «شهادة خبرة» و«تعريف بالراتب». الختم بيتحط على آخر خانة: صورة ختم الشركة لو رافعها، أو ختم ذهبي باسم المنشأة. وتقدر تغيّر الأسماء لطباعة واحدة من صفحة الشهادة نفسها."
-                : "These approvers print on the experience and salary certificates. The seal goes on the last box: the uploaded company stamp, or a gold seal with the establishment's name. Names can be changed for one print on the certificate page."}
+                ? "دول المعتمدين اللي بيتطبعوا على «شهادة خبرة» و«تعريف بالراتب». الختم بيتحط في النص بين التوقيعات: ختم المنشأة اللي رافعاه في صفحة المؤسسات والشركات، ولو ملهاش ختم بيتطبع ختم ذهبي باسمها. وتقدر تغيّر الأسماء لطباعة واحدة من صفحة الشهادة نفسها."
+                : "These approvers print on the experience and salary certificates. The seal sits between the signatures: the establishment's own stamp (uploaded on the establishments page), or a gold seal with its name. Names can be changed for one print on the certificate page."}
             </p>
           )}
           <div className={cn("grid gap-3 sm:grid-cols-2", doc === "certificate" && "hidden")}>
             <div className="space-y-1">
-              <Label htmlFor={`seal-${doc}-ar`} className="text-xs">{isRtl ? "نص الختم (عربي)" : "Seal text (Arabic)"}</Label>
+              <Label htmlFor={`seal-${doc}-ar`} className="text-sm font-semibold">{isRtl ? "نص الختم (عربي)" : "Seal text (Arabic)"}</Label>
               <Input
                 id={`seal-${doc}-ar`}
                 value={current.sealAr.replace(/\n/g, " / ")}
                 disabled={!canEdit}
                 onChange={(e) => update((d) => void (d.signatures[doc].sealAr = e.target.value.replace(/\s*\/\s*/g, "\n")))}
-                className="h-10 rounded-xl"
+                className="h-11 rounded-xl text-[15px]"
               />
-              <p className="text-[11px] text-muted-foreground">{isRtl ? "استخدم / لتقسيم النص على سطرين" : "Use / to split it over two lines"}</p>
+              <p className="text-[13px] text-muted-foreground">{isRtl ? "استخدم / لتقسيم النص على سطرين" : "Use / to split it over two lines"}</p>
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`seal-${doc}-en`} className="text-xs">{isRtl ? "نص الختم بالإنجليزي (اختياري)" : "Seal text in English (optional)"}</Label>
+              <Label htmlFor={`seal-${doc}-en`} className="text-sm font-semibold">{isRtl ? "نص الختم بالإنجليزي (اختياري)" : "Seal text in English (optional)"}</Label>
               <Input
                 id={`seal-${doc}-en`}
                 dir="ltr"
                 value={current.sealEn}
                 disabled={!canEdit}
                 onChange={(e) => update((d) => void (d.signatures[doc].sealEn = e.target.value))}
-                className="h-10 rounded-xl"
+                className="h-11 rounded-xl text-[15px]"
               />
             </div>
           </div>
-          <p className={cn("flex items-center gap-1.5 text-xs text-muted-foreground", doc === "certificate" && "hidden")}>
-            <CalendarDays className="h-3.5 w-3.5" />
+          <p className={cn("flex items-center gap-1.5 text-[13px] text-muted-foreground", doc === "certificate" && "hidden")}>
+            <CalendarDays className="h-4 w-4" />
             {isRtl ? "سطر التاريخ بيتكتب تلقائياً بتاريخ يوم الطباعة، وسطر التوقيع فاضي للتوقيع بخط اليد." : "The date line is filled in with the print date; the signature line is left blank for signing by hand."}
           </p>
           {form.stampFileId && doc !== "certificate" && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-[13px] text-amber-600 dark:text-amber-400">
               {isRtl ? "نص الختم مش هيظهر لأنك رافع صورة ختم الشركة، والصورة هي اللي بتتطبع." : "The seal text is not printed while a stamp image is uploaded."}
             </p>
           )}
