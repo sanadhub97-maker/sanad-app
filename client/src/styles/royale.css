@@ -884,10 +884,11 @@ select option { background: #0f1014; color: rgb(var(--g-f1e9d8, 241 233 216)); }
 /* inside the settings desk the WhatsApp page lays its own menu across the top */
 .st-pane .wa-lux > .rc-hero { margin-bottom: 0; }
 .st-pane .wa-desk { grid-template-columns: 1fr; }
-.st-pane .wa-nav:not(.st-nav) { position: static; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.st-pane .wa-nav:not(.st-nav) { position: static; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); } /* every section on one line, however many */
 .st-pane .wa-nav:not(.st-nav) button { flex-direction: column; text-align: center; gap: 8px; padding: 12px 8px; }
 .st-pane .wa-nav:not(.st-nav) small { display: none; }
-@media (max-width: 1100px) { .st-desk { grid-template-columns: 1fr; } .st-nav { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); } .st-pane .wa-nav:not(.st-nav) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.st-pane .wa-nav:not(.st-nav) b { white-space: nowrap; font-size: clamp(12px, 0.98vw, 14.5px); }
+@media (max-width: 1100px) { .st-desk { grid-template-columns: 1fr; } .st-nav { position: static; grid-template-columns: repeat(3, minmax(0, 1fr)); } .st-pane .wa-nav:not(.st-nav) { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .st-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* ===== Appearance section (pages/settings AppearanceTab) ===== */
