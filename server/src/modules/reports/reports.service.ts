@@ -232,7 +232,8 @@ export async function paymentsReport(query: z.infer<typeof paymentsReportQuerySc
 export async function activityReport(query: z.infer<typeof activityReportQuerySchema>) {
   const where: Prisma.AuditLogWhereInput = {
     ...(query.module ? { module: query.module } : {}),
-    ...(query.dateFrom || query.dateTo ? { createdAt: { gte: query.dateFrom, lte: query.dateTo } } : {}),
+    // No range chosen: the last 30 days, as the tile says (the whole log is long).
+    createdAt: query.dateFrom || query.dateTo ? { gte: query.dateFrom, lte: query.dateTo } : { gte: new Date(Date.now() - 30 * 86_400_000) },
   };
 
   const rows = await prisma.auditLog.findMany({

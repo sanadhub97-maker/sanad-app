@@ -4,7 +4,9 @@ import { employeesApi } from "@/api/employees";
 import { paymentsApi } from "@/api/payments";
 import { tasksApi } from "@/api/tasks";
 import { fetchReportSummary } from "@/api/reports";
-import { listActiveBranches } from "@/api/branches";
+import { listActiveBranches, branchesApi } from "@/api/branches";
+import { workforceDocumentsApi } from "@/api/workforceDocuments";
+import { companyDocumentsApi } from "@/api/companyDocuments";
 import { preloadPage } from "@/lib/page-preload";
 
 /* A page's first data, fetched when the pointer reaches its menu item, so the
@@ -25,6 +27,11 @@ const ENTRIES: Record<string, () => Entry[]> = {
   "/payments": () => [
     { key: ["payments", { page: 1, search: "", category: "" }], fn: () => paymentsApi.list({ page: 1, pageSize: 30, q: undefined, category: undefined, sortBy: "paymentDate", sortDir: "desc" }), needs: "payments.view" },
     { key: ["dashboard", "charts"], fn: dashboardApi.charts },
+  ],
+  "/branches": () => [
+    { key: ["branches", { page: 1, search: "" }], fn: () => branchesApi.list({ page: 1, pageSize: 24, q: undefined }), needs: "branches.view" },
+    { key: ["workforce-documents-unified", { page: 1, pageSize: 200 }], fn: () => workforceDocumentsApi.listUnified({ page: 1, pageSize: 200 }), needs: "employees.view" },
+    { key: ["companyDocuments", { page: 1, pageSize: 200 }], fn: () => companyDocumentsApi.list({ page: 1, pageSize: 200 }), needs: "companyDocuments.view" },
   ],
   "/daily-tasks": () => [
     { key: ["tasks", "day", localIso()], fn: () => tasksApi.day(localIso()), needs: "tasks.view" },
