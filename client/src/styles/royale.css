@@ -911,3 +911,108 @@ select option { background: #0f1014; color: rgb(var(--g-f1e9d8, 241 233 216)); }
 .ap-swatch .dot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .ap-swatch b { display: block; font-size: 13.5px; font-weight: 800; color: #e9dcc0; }
 .ap-swatch small { font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; color: rgba(242, 234, 216, 0.55); }
+
+/* ===== The side menu, in state: lacquer with a slow aurora, a lit edge, the living name, a highlight that sweeps ===== */
+.lu-side { position: relative; isolation: isolate; overflow: hidden;
+  background: radial-gradient(420px 260px at 50% -6%, rgb(var(--g-c9a464, 201 164 100) / 0.16), transparent 70%), linear-gradient(180deg, #100e0b, #0a0908 60%, #0d0b08) !important; }
+.lu-side::after { content: ""; position: absolute; inset: -40% -60%; z-index: -1; pointer-events: none; opacity: 0.55;
+  background: radial-gradient(closest-side, rgb(var(--g-c9a464, 201 164 100) / 0.14), transparent 70%) 10% 20% / 60% 40% no-repeat, radial-gradient(closest-side, rgb(var(--g-e8cc8e, 232 204 142) / 0.10), transparent 70%) 90% 70% / 55% 40% no-repeat;
+  animation: lu-aurora 22s ease-in-out infinite alternate; }
+@keyframes lu-aurora { 0% { transform: translate3d(0, 0, 0) rotate(0deg); } 50% { transform: translate3d(-6%, 8%, 0) rotate(8deg); } 100% { transform: translate3d(5%, -6%, 0) rotate(-6deg); } }
+.lu-edge { position: absolute; top: 0; bottom: 0; inset-inline-end: 0; width: 1px; z-index: 2; pointer-events: none; background: linear-gradient(180deg, transparent, rgb(var(--g-c9a464, 201 164 100) / 0.35) 20%, rgb(var(--g-c9a464, 201 164 100) / 0.35) 80%, transparent); }
+.lu-edge::after { content: ""; position: absolute; inset-inline-end: -1px; width: 3px; height: 120px; border-radius: 3px; background: linear-gradient(180deg, transparent, rgb(var(--g-fff3d6, 255 243 214)), transparent); box-shadow: 0 0 14px rgb(var(--g-f3dfae, 243 223 174) / 0.9); animation: lu-run 7s cubic-bezier(.45, 0, .55, 1) infinite; }
+@keyframes lu-run { 0% { top: -130px; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+/* the mark with a turning gold halo and a breathing glow */
+.lu-mark { position: relative; flex: none; display: grid; place-items: center; }
+.lu-mark img { position: relative; z-index: 1; animation: lu-breathe 4.5s ease-in-out infinite; }
+.lu-mark .halo { position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 55%, rgb(var(--g-f3dfae, 243 223 174)) 70%, rgb(var(--g-c9a464, 201 164 100)) 78%, transparent 92%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px)); animation: lu-spin 4.8s linear infinite; }
+@keyframes lu-spin { to { transform: rotate(360deg); } }
+@keyframes lu-breathe { 0%, 100% { box-shadow: 0 0 0 1px rgb(var(--g-f3dfae, 243 223 174) / 0.5), 0 0 16px -4px rgb(var(--g-f3dfae, 243 223 174) / 0.4); } 50% { box-shadow: 0 0 0 1px rgb(var(--g-f3dfae, 243 223 174) / 0.7), 0 0 30px -2px rgb(var(--g-f3dfae, 243 223 174) / 0.75); } }
+
+/* the name: letters rise one after another, then the foil keeps running across them */
+.lu-brand b.lu-name { display: inline-flex; background: none !important; -webkit-text-fill-color: initial; color: inherit !important; animation: none !important; font-size: 24px !important; letter-spacing: 0; overflow: visible !important; padding-block: 3px; }
+.lu-name > span { display: inline-block; color: rgb(var(--g-c9a464, 201 164 100)); text-shadow: 0 0 10px rgb(var(--g-c9a464, 201 164 100) / 0.35);
+  animation: lu-letter 0.9s cubic-bezier(.2, .9, .25, 1.25) backwards, lu-wave 3.6s ease-in-out infinite; animation-delay: calc(var(--k) * 0.14s), calc(1s + var(--k) * 0.22s); }
+@keyframes lu-letter { from { opacity: 0; transform: translateY(14px) scale(0.6); } }
+@keyframes lu-wave { 0%, 100% { color: rgb(var(--g-c9a464, 201 164 100)); text-shadow: 0 0 10px rgb(var(--g-c9a464, 201 164 100) / 0.35); transform: none; }
+  45% { color: rgb(var(--g-fff3d6, 255 243 214)); text-shadow: 0 0 6px rgb(var(--g-fff3d6, 255 243 214) / 0.9), 0 0 22px rgb(var(--g-f3dfae, 243 223 174) / 0.8); transform: translateY(-2px); } }
+@keyframes lu-foil { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+.lu-brand small { animation: lu-fade-up 0.8s ease 0.5s both; }
+@keyframes lu-fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* the highlight glides with a soft bounce, a sweep of light crosses it and a spark lands on each new page */
+.lu-side .lu-glide { display: block !important; }
+.lu-glide { transition: top 0.55s cubic-bezier(.2, .9, .25, 1.15), height 0.3s ease, width 0.3s ease !important; overflow: hidden;
+  background: linear-gradient(270deg, rgb(var(--g-c9a464, 201 164 100) / 0.38), rgb(var(--g-c9a464, 201 164 100) / 0.08) 70%, transparent) !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--g-f3dfae, 243 223 174) / 0.32), 0 0 34px -8px rgb(var(--g-c9a464, 201 164 100) / 0.85), 0 0 0 1px rgb(0 0 0 / 0.3) !important; }
+.lu-glide > .sweep { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 30%, rgb(var(--g-fff3d6, 255 243 214) / 0.55) 48%, transparent 66%); transform: translateX(110%); animation: lu-sweep 0.9s ease 0.25s both; }
+[dir="rtl"] .lu-glide > .sweep { transform: translateX(-110%); animation-name: lu-sweep-rtl; }
+@keyframes lu-sweep { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
+@keyframes lu-sweep-rtl { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
+.lu-glide > .spark { position: absolute; top: 50%; inset-inline-start: 2px; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: rgb(var(--g-fff3d6, 255 243 214)); box-shadow: 0 0 12px 4px rgb(var(--g-f3dfae, 243 223 174) / 0.9); animation: lu-spark 0.9s ease-out 0.2s both; }
+@keyframes lu-spark { 0% { transform: scale(0); opacity: 0; } 30% { transform: scale(1.6); opacity: 1; } 100% { transform: scale(0.4); opacity: 0; } }
+
+/* items: the icon lifts and takes its own colour's glow on hover; the chosen one shines */
+.lu-side .lu-nav { transition: color 0.25s, background 0.25s, transform 0.25s !important; }
+.lu-side .lu-nav:hover { transform: translateX(-3px); }
+[dir="ltr"] .lu-side .lu-nav:hover { transform: translateX(3px); }
+.lu-side .lu-nav .i { transition: transform 0.35s cubic-bezier(.2, .9, .25, 1.4), filter 0.3s, color 0.3s !important; }
+.lu-side .lu-nav:hover .i { transform: translateY(-2px) scale(1.12); color: var(--nc, rgb(var(--g-f3dfae, 243 223 174))) !important; filter: drop-shadow(0 0 8px var(--nc, rgb(var(--g-f3dfae, 243 223 174)))) !important; }
+.lu-side .lu-nav.on .i { animation: lu-pop 0.6s cubic-bezier(.2, .9, .25, 1.5) both; }
+@keyframes lu-pop { 0% { transform: scale(0.7) rotate(-12deg); } 60% { transform: scale(1.18) rotate(4deg); } 100% { transform: none; } }
+.lu-side .lu-nav.on .txt { background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-weight: 800; animation: rx-shimmer 8s linear infinite; }
+
+/* section titles: a small gold diamond and a rule that fades out */
+.lu-side .lu-grp-h > span:first-child:not(:empty)::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-inline-end: 8px; vertical-align: 0.15em; background: rgb(var(--g-c9a464, 201 164 100)); transform: rotate(45deg); box-shadow: 0 0 8px rgb(var(--g-c9a464, 201 164 100) / 0.8); }
+
+/* motion off (Settings → Appearance) or asked for less by the system */
+.lu-still .lu-side::after, .lu-still .lu-edge::after, .lu-still .lu-mark .halo, .lu-still .lu-mark img, .lu-still .lu-name > span, .lu-still .lu-glide > *, .lu-still .lu-side .lu-nav.on .i { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .lu-side::after, .lu-edge::after, .lu-mark .halo, .lu-mark img, .lu-name > span, .lu-glide > *, .lu-side .lu-nav.on .i { animation: none !important; } }
+/* the narrow menu keeps the mark and the living name, one under the other */
+.lu-side.rail .lu-brand { flex-direction: column; gap: 6px; padding-inline: 0; }
+.lu-side.rail .lu-brand > span.lu-mark { display: grid; }
+.lu-side.rail .lu-brand > span.min-w-0 { display: block; text-align: center; }
+.lu-side.rail .lu-brand > span.min-w-0 small { display: none; }
+.lu-side.rail .lu-brand b.lu-name { font-size: 19px !important; justify-content: center; }
+.lu-side.rail .lu-mark img { width: 46px; height: 46px; }
+
+/* ===== Every page's head: the home page's lacquered band ===== */
+.lu-app .ry-head.rx-band { position: relative; overflow: hidden; isolation: isolate; align-items: center; gap: 16px 22px; min-height: 150px; padding: 20px 26px !important; margin-top: 8px;
+  border-radius: 8px; border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.3); color: rgb(var(--g-f1e9d8, 241 233 216));
+  background: radial-gradient(600px 320px at 15% -20%, rgb(var(--g-f3dfae, 243 223 174) / 0.22), transparent 65%), linear-gradient(120deg, #0a0a0d, #15130f 55%, #2a2112);
+  box-shadow: 0 40px 80px -40px #000, inset 0 0 0 5px #0d0c0b, inset 0 0 0 6px rgb(var(--g-d6b678, 214 182 120) / 0.18); }
+.ry-head.rx-band::before { content: ""; position: absolute; z-index: -1; width: 460px; height: 460px; border-radius: 50%; inset-inline-start: 30%; top: -260px; pointer-events: none; background: radial-gradient(circle, rgb(var(--g-f3dfae, 243 223 174) / 0.25), transparent 66%); }
+.ry-head.rx-band > .rx-guil { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0.9; }
+.ry-head.rx-band .t { flex: 1 1 320px; gap: 18px; }
+.rx-band-medal { flex: none; display: grid; animation: lu-pop 0.7s cubic-bezier(.2, .9, .25, 1.4) both; }
+.ry-head.rx-band .rx-medal { width: 104px; height: 104px; }
+.ry-head.rx-band .rx-medal b svg { width: 30px; height: 30px; stroke-width: 1.9; color: rgb(var(--g-f6e7c4, 246 231 196)); filter: drop-shadow(0 0 8px rgb(var(--g-f3dfae, 243 223 174) / 0.6)); }
+.ry-head.rx-band h1, .ry-head.rx-band .lux-title { font-size: 36px !important; }
+.ry-head.rx-band p { color: rgb(var(--g-f1e9d8, 241 233 216) / 0.82) !important; }
+.ry-head.rx-band .rx-eyebrow { color: rgb(var(--g-f3dfae, 243 223 174)); }
+.ry-head.rx-band .acts { position: relative; z-index: 1; }
+.lu-still .rx-band-medal { animation: none; }
+@media (prefers-reduced-motion: reduce) { .rx-band-medal { animation: none; } }
+@media (max-width: 599px) {
+  .lu-app .ry-head.rx-band { padding: 18px 16px !important; min-height: 0; }
+  .ry-head.rx-band .rx-medal { width: 76px; height: 76px; }
+  .ry-head.rx-band .rx-medal b svg { width: 24px; height: 24px; }
+  .ry-head.rx-band h1, .ry-head.rx-band .lux-title { font-size: 26px !important; }
+}
+@media print { .ry-head.rx-band { display: none; } }
+
+/* the home page's own welcome is its band, so the shared one steps aside there */
+.lu-wrap:has(.px-home) .ry-head.rx-band { display: none; }
+.px-welcome .rx-eyebrow { display: block; margin-bottom: 2px; color: rgb(var(--g-f3dfae, 243 223 174)); }
+/* pages that open on their own crown (settings, a profile, a branch) keep just the crown */
+.lu-wrap:has(.rc-hero) .ry-head.rx-band { display: none; }
+
+/* the custody pages' head and the tasks' week band, in the same band */
+.cu-hero.rx-cu-band { border-radius: 8px !important; align-items: center; min-height: 150px; }
+.cu-hero.rx-cu-band::before, .cu-hero.rx-cu-band::after, .cu-hero.rx-cu-band .fl { display: none; }
+.cu-hero.rx-cu-band > .rx-guil { position: absolute !important; inset: 0; width: 100%; height: 100%; z-index: 0 !important; pointer-events: none; opacity: 0.9; }
+.cu-hero.rx-cu-band .rx-medal { width: 104px; height: 104px; }
+.cu-hero.rx-cu-band .rx-medal b svg { width: 30px; height: 30px; stroke-width: 1.9; color: rgb(var(--g-f6e7c4, 246 231 196)); filter: drop-shadow(0 0 8px rgb(var(--g-f3dfae, 243 223 174) / 0.6)); }
+.cu-hero.rx-cu-band h1 { font-size: 36px !important; }
+@media (max-width: 599px) { .cu-hero.rx-cu-band .rx-medal { width: 76px; height: 76px; } .cu-hero.rx-cu-band h1 { font-size: 26px !important; } }

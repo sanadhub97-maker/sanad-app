@@ -6,6 +6,7 @@ import { listActiveBranches } from "@/api/branches";
 import { employeesApi } from "@/api/employees";
 import type { CustodyEmployee } from "@/api/custody";
 import { BranchMedal } from "@/pages/branches/branch-logo";
+import { Guilloche, Medal } from "@/components/royal/royale-fx";
 import "@/styles/custody.css";
 
 /* The pieces both custody pages share, in the approved royal look. */
@@ -18,8 +19,13 @@ export const branchName = (b?: { name: string; nameEn?: string | null } | null) 
 
 export function CuHero({ icon: Icon, eyebrow, title, sub, actions }: { icon: LucideIcon; eyebrow: string; title: string; sub: string; actions?: ReactNode }) {
   return (
-    <header className="cu-hero">
-      <span className="icon"><Icon /></span>
+    <header className="cu-hero rx-cu-band">
+      <Guilloche />
+      <span className="rx-band-medal" aria-hidden="true">
+        <Medal>
+          <Icon />
+        </Medal>
+      </span>
       <div className="tt">
         <div className="eyebrow">{eyebrow}</div>
         <h1 className="cu-foil">{title}</h1>

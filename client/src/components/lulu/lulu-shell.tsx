@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PageHeaderSlotProvider, usePageHeaderSlots } from "@/components/layout/page-header-slot";
+import { Guilloche, Medal } from "@/components/royal/royale-fx";
 import { RouteProgressBar } from "@/components/layout/route-progress-bar";
 import { LuluCommand } from "@/components/lulu/lulu-command";
 import { LuluNotifications, useNotificationsBell } from "@/components/lulu/lulu-notifications";
@@ -224,9 +225,18 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
       <div className="lu-side-top">
         {/* The sidebar always shows the system itself; the company branding is for print. */}
         <button type="button" className="lu-brand" onClick={() => navigate("/")} title="SanaD">
-          <img src="/brand/sanad-mark.webp" alt="" />
+          <span className="lu-mark">
+            <i className="halo" aria-hidden="true" />
+            <img src="/brand/sanad-mark.webp" alt="" />
+          </span>
           <span className="min-w-0">
-            <b>{isAr ? "سند" : "SanaD"}</b>
+            <b className="lu-name" aria-label={isAr ? "سند" : "SanaD"}>
+              {(isAr ? ["س\u200d", "\u200dن\u200d", "\u200dد"] : ["S", "a", "n", "a", "D"]).map((ch, k) => (
+                <span key={k} aria-hidden="true" style={{ ["--k" as string]: k }}>
+                  {ch}
+                </span>
+              ))}
+            </b>
             <small>{isAr ? "الموارد البشرية والوثائق" : "People and documents"}</small>
           </span>
         </button>
@@ -236,13 +246,17 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
           </button>
         )}
       </div>
+      <i className="lu-edge" aria-hidden="true" />
       <nav ref={wrap} className="lu-navs">
         {glide && (
           <span
             aria-hidden="true"
             className="lu-glide"
             style={{ top: glide.top, left: glide.left, width: glide.width, height: glide.height, ["--gt" as string]: `var(--l-${glide.tone}-t)`, ["--gc" as string]: `var(--l-${glide.tone})` }}
-          />
+          >
+            <i key={path} className="sweep" />
+            <i key={path + "s"} className="spark" />
+          </span>
         )}
         {groups.map((g) => {
           const holdsCurrent = g.items.some((i) => isOnPath(path, i.href));
@@ -402,11 +416,15 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
         </span>
         <LuluNotifications open={open} anchor={bell} onClose={close} />
       </header>
-      <div className="ry-head no-print">
+      {/* every page opens on the home page's lacquered band: the engraved waves, the page's medallion, its words and buttons */}
+      <div className="ry-head rx-band no-print">
+        <Guilloche />
         <div className="t">
           {current && (
-            <span className="ry-title-ico" key={current.href} aria-hidden="true" style={{ ["--nc" as string]: current.color }}>
-              <current.icon />
+            <span className="rx-band-medal" key={current.href} aria-hidden="true">
+              <Medal>
+                <current.icon />
+              </Medal>
             </span>
           )}
           <div ref={slots?.setTitle} data-slot="title" className="peer min-w-0" />

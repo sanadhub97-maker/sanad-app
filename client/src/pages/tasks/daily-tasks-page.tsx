@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Building2, CalendarDays, Check, ChevronLeft, ChevronRight, Clock, Columns3, FileSpreadsheet, FileText, List, Loader2, Plus, Printer, Sparkles, Star, Trash2, User, Users, Wallet, type LucideIcon, AlertTriangle, CheckCircle2, ListChecks, Layers } from "lucide-react";
 import { PxBadge, PxDrawer, PxStat } from "@/components/royal/px";
+import { Guilloche, Medal } from "@/components/royal/royale-fx";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/common/page-header";
 import { luluPop } from "@/components/lulu/lulu-effects";
@@ -620,13 +621,8 @@ export default function DailyTasksPage() {
       <div className="tk">
         {/* The numbers of the week (or month) on screen */}
         <section className="px-welcome" style={{ marginBottom: 16 }}>
-          <svg className="px-ring" viewBox="0 0 64 64" aria-hidden="true">
-            <circle className="tr" cx="32" cy="32" r="27" fill="none" strokeWidth="6" />
-            <circle className="v" cx="32" cy="32" r="27" fill="none" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${(2 * Math.PI * 27 * pct) / 100} ${2 * Math.PI * 27}`} transform="rotate(-90 32 32)" />
-            <text x="32" y="37" textAnchor="middle">
-              {pct}%
-            </text>
-          </svg>
+          <Guilloche />
+          <Medal>{pct}%</Medal>
           <div className="tx">
             <h2>{tr(`إنجاز ${scopeWord}`, `This ${scopeWord}'s progress`)}</h2>
             <p>

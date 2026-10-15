@@ -417,3 +417,28 @@ html.rx-light .ap-status-h small, html.rx-light .ap-swatch small { color: #7a6c5
 html.rx-light .ap-swatch { background: #fffdf8; }
 html.rx-light .ap-swatch b { color: #3d3428; }
 html.rx-light .ap-swatch .dot { box-shadow: 0 0 0 3px #fffdf8, 0 0 0 4px rgba(0, 0, 0, 0.12); }
+
+/* the side menu by day */
+html.rx-light .lu-side { background: radial-gradient(420px 260px at 50% -6%, rgb(var(--g-c9a464, 201 164 100) / 0.18), transparent 70%), linear-gradient(180deg, #fffdf8, #f8f1e2 60%, #f3ead6) !important; }
+html.rx-light .lu-side::after { opacity: 0.8; }
+html.rx-light .lu-glide { background: linear-gradient(270deg, rgb(var(--g-c9a464, 201 164 100) / 0.3), rgb(var(--g-c9a464, 201 164 100) / 0.06) 70%, transparent) !important; box-shadow: inset 0 0 0 1px rgb(var(--g-9a7433, 154 116 51) / 0.3), 0 10px 26px -14px rgb(var(--g-9a7433, 154 116 51) / 0.7) !important; }
+html.rx-light .lu-glide > .sweep { background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.85) 48%, transparent 66%); }
+html.rx-light .lu-glide > .spark { background: #fff; box-shadow: 0 0 12px 4px rgb(var(--g-c9a464, 201 164 100) / 0.8); }
+html.rx-light .lu-edge::after { background: linear-gradient(180deg, transparent, rgb(var(--g-c9a464, 201 164 100)), transparent); box-shadow: 0 0 12px rgb(var(--g-c9a464, 201 164 100) / 0.7); }
+html.rx-light .lu-name > span { color: rgb(var(--g-9a7433, 154 116 51)); text-shadow: 0 1px 0 rgb(255 255 255 / 0.8); animation-name: lu-letter, lu-wave-day; }
+@keyframes lu-wave-day { 0%, 100% { color: rgb(var(--g-9a7433, 154 116 51)); transform: none; } 45% { color: rgb(var(--g-c9a464, 201 164 100)); text-shadow: 0 0 14px rgb(var(--g-c9a464, 201 164 100) / 0.7); transform: translateY(-2px); } }
+html.rx-light .lu-side .lu-brand small { color: rgb(var(--g-7d5d27, 125 93 39)); font-weight: 700; }
+html.rx-light .lu-side .lu-collapse { color: rgb(var(--g-9a7433, 154 116 51)); }
+
+/* every page's band by day */
+html.rx-light .lu-app .ry-head.rx-band { border-color: rgb(var(--g-9a7433, 154 116 51) / 0.32); color: #1f1a10;
+  background: radial-gradient(600px 320px at 15% -20%, rgb(var(--g-c9a464, 201 164 100) / 0.3), transparent 65%), linear-gradient(120deg, #fffdf8, rgb(var(--g-f7efdf, 247 239 223)) 55%, rgb(var(--g-eadbb8, 234 219 184)));
+  box-shadow: 0 30px 60px -36px rgb(var(--g-5a4014, 90 64 20) / 0.45), inset 0 0 0 5px #fffaf0, inset 0 0 0 6px rgb(var(--g-9a7433, 154 116 51) / 0.2); }
+html.rx-light .ry-head.rx-band::before { background: radial-gradient(circle, rgb(var(--g-c9a464, 201 164 100) / 0.3), transparent 66%); }
+html.rx-light .ry-head.rx-band p { color: rgb(var(--g-3d3423, 61 52 35)) !important; }
+html.rx-light .ry-head.rx-band .rx-eyebrow { color: rgb(var(--g-7d5d27, 125 93 39)); }
+html.rx-light .ry-head.rx-band .rx-medal b svg { color: rgb(var(--g-6b4e1d, 107 78 29)); filter: none; }
+
+html.rx-light .px-welcome .rx-eyebrow { color: rgb(var(--g-7d5d27, 125 93 39)); }
+
+html.rx-light .cu-hero.rx-cu-band .rx-medal b svg { color: rgb(var(--g-6b4e1d, 107 78 29)); filter: none; }

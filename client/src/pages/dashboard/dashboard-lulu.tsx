@@ -155,10 +155,11 @@ export default function DashboardLulu() {
         </div>
       ))}
 
-      <section className="px-welcome" style={v({ "--i": 0 })}>
+      <section className="px-welcome px-home" style={v({ "--i": 0 })}>
         <Guilloche />
         <Medal>{pct}%</Medal>
         <div className="tx">
+          <span className="rx-eyebrow">{dateLine}</span>
           <h2>
             {greeting}
             {firstName && (isAr ? ` يا ${firstName}` : `, ${firstName}`)}
@@ -201,6 +202,11 @@ export default function DashboardLulu() {
           {hasPermission("reports.view") && (
             <button type="button" className="wb" onClick={() => navigate("/reports")}>
               <Download /> {isAr ? "تقرير اليوم" : "Today’s report"}
+            </button>
+          )}
+          {hasPermission("employees.create") && (
+            <button type="button" className="wb" onClick={() => navigate("/employees?new=true")}>
+              <Plus /> {isAr ? "إضافة موظف" : "Add employee"}
             </button>
           )}
           <button type="button" className="wb gold" onClick={() => navigate("/notifications")}>
