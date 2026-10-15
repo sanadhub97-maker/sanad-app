@@ -64,16 +64,16 @@ function sendPdf(res: Response, name: string, pdf: Buffer) {
 
 export const handoverPdf = asyncHandler(async (req: Request, res: Response) => {
   const h = await service.getHandover(id(req));
-  const { est, emp } = await service.printParty(h.employee);
-  const html = await handoverHtml({ est, emp, number: h.number, date: h.date, deliveredBy: h.deliveredBy, notes: h.notes, items: h.items });
+  const { est, emp, stamp } = await service.printParty(h.employee);
+  const html = await handoverHtml({ est, emp, number: h.number, date: h.date, deliveredBy: h.deliveredBy, notes: h.notes, items: h.items, stamp });
   sendPdf(res, h.number, await renderHtmlToPdf(html, { bare: true, fitSelector: ".ry .body" }));
 });
 
 export const clearancePdf = asyncHandler(async (req: Request, res: Response) => {
   const c = await service.getClearance(id(req));
-  const { est, emp } = await service.printParty(c.employee);
+  const { est, emp, stamp } = await service.printParty(c.employee);
   const html = await clearanceHtml({
-    est, emp, number: c.number, lastWorkingDay: c.lastWorkingDay, reason: c.reason, dues: c.dues, notes: c.notes,
+    est, emp, stamp, number: c.number, lastWorkingDay: c.lastWorkingDay, reason: c.reason, dues: c.dues, notes: c.notes,
     issued: c.status === "ISSUED", departments: c.departments, items: c.items,
   });
   sendPdf(res, c.number, await renderHtmlToPdf(html, { bare: true, fitSelector: ".ry .body" }));

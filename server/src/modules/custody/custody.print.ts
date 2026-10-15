@@ -194,6 +194,19 @@ html, body { margin: 0; padding: 0; background: #fffdf7; }
 .ry-sig b { display: block; margin-top: 5px; font-size: 11.2px; font-weight: 700; color: var(--deep); }
 .ry-sig small { font-size: 9.8px; color: var(--ink2); }
 .ry-seal { position: absolute; left: 50%; top: -2px; width: 86px; transform: translateX(-50%); z-index: 1; }
+/* the stamp uploaded in Settings, pressed over the approving signature */
+.ry-stamp { position: absolute; left: 50%; top: -6px; width: 104px; height: 104px; object-fit: contain; transform: translateX(-50%) rotate(-8deg); z-index: 1; opacity: .92; }
+/* the seal centred between the signatures */
+.ry-sigs.mid { position: relative; }
+/* between the signatures the seal sits on their line (its middle on the line, tilted like a real stamp), named underneath */
+.ry-sigs.mid { --line: 112px; --stamp: 104px; }
+.ry-mid { position: absolute; left: 50%; top: calc(var(--line) - var(--stamp) / 2 - 12px); width: 150px; transform: translateX(-50%); z-index: 1; display: flex; flex-direction: column; align-items: center; }
+.ry-mid .ry-stamp { position: static; width: var(--stamp); height: var(--stamp); transform: rotate(-9deg); opacity: .94; }
+.ry-mid .ry-seal { position: static; transform: none; width: calc(var(--stamp) * .6); margin-top: calc(var(--stamp) * .08); }
+.ry-mid .cap { margin-top: 1px; padding: 1px 12px; font-size: 9.6px; font-weight: 700; letter-spacing: .14em; color: var(--gold); border-top: .6px solid var(--gold-l); white-space: nowrap; }
+/* a signer's name plate (an image uploaded in Settings) on the line */
+.ry-sig .ln { position: relative; }
+.ry-name-img { position: absolute; left: 50%; bottom: -2px; max-width: 150px; max-height: 44px; object-fit: contain; transform: translateX(-50%); }
 .ry .grow { flex: 1; }
 .ry-foot { position: absolute; bottom: 26px; left: 26px; right: 26px; height: 52px; background: var(--deep); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 0 16px; color: #c9d2e3; font-size: 9.4px; }
 .ry-foot::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--foil); }
@@ -220,7 +233,9 @@ interface SheetInput {
   /** More rules for this sheet, and a class on it to scope them. */
   extraCss?: string;
   sheetClass?: string;
-  body: (sec: (title: string, inner: string) => string, sigs: (list: [string, string][]) => string, deep: string) => string;
+  /** The seal over the last signature: hidden, the uploaded stamp image, or the drawn seal (the default). */
+  seal?: { show: boolean; stamp: string | null; center?: boolean };
+  body: (sec: (title: string, inner: string) => string, sigs: (list: [string, string, (string | null)?][]) => string, deep: string) => string;
 }
 
 export async function royalSheet(input: SheetInput) {
@@ -239,7 +254,10 @@ export async function royalSheet(input: SheetInput) {
     ...(input.extraCells ?? []),
   ];
   const grid = `<div class="ry-grid">${cells.map(([k, v, n]) => `<div><span>${k}</span><b class="${n ? "n" : ""}">${esc(v)}</b></div>`).join("")}</div>`;
-  const sigs = (list: [string, string][]) => `<div class="grow"></div>` + sec(L("التوقيعات والاعتماد", "Signatures & approval"), `<div class="ry-sigs">${list.map(([t, n], i) => `<div class="ry-sig">${i === list.length - 1 ? royalSeal(est.name, deep) : ""}<div class="ln"></div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`);
+  const sealFor = () => (input.seal && !input.seal.show ? "" : input.seal?.stamp ? `<img class="ry-stamp" src="${input.seal.stamp}" alt="">` : royalSeal(est.name, deep));
+  // The seal sits on the approving (last) signature, or between the signatures when asked (the certificates).
+  const mid = !!input.seal?.center;
+  const sigs = (list: [string, string, (string | null)?][]) => `<div class="grow"></div>` + sec(L("التوقيعات والاعتماد", "Signatures & approval"), `<div class="ry-sigs${mid ? " mid" : ""}">${mid && sealFor() ? `<div class="ry-mid">${sealFor()}<span class="cap">${L("الختم الرسمي", "OFFICIAL SEAL")}</span></div>` : ""}${list.map(([t, n, img], i) => `<div class="ry-sig">${!mid && i === list.length - 1 ? sealFor() : ""}<div class="ln">${img && !n ? `<img class="ry-name-img" src="${img}" alt="">` : ""}</div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`);
   const meta = [
     est.cr ? `<span>${L("سجل تجاري", "CR")} <b class="n">${esc(est.cr)}</b></span>` : "",
     est.vat ? `<span>${L("الرقم الضريبي", "VAT")} <b class="n">${esc(est.vat)}</b></span>` : "",
@@ -275,12 +293,13 @@ const th = (labels: string[]) => `<thead><tr>${labels.map((l) => `<th><span>${l}
 
 export { foilText, starRule };
 
-export function handoverHtml(input: { est: PrintEstablishment; emp: PrintEmployee; number: string; date: Date; deliveredBy: string | null; notes: string | null; items: PrintItem[] }) {
+export function handoverHtml(input: { est: PrintEstablishment; emp: PrintEmployee; number: string; date: Date; deliveredBy: string | null; notes: string | null; items: PrintItem[]; stamp?: string | null }) {
   const { est, emp, items } = input;
   const total = items.reduce((a, i) => a + Number(i.value || 0), 0);
   return royalSheet({
     est, emp, number: input.number, date: input.date,
     title: ["محضر تسليم عهدة", "Custody Handover Record"],
+    seal: { show: true, stamp: input.stamp ?? null },
     subtitle: "Custody Handover Record",
     body: (sec, sigs) =>
       sec(L("العهد المسلّمة", "Items handed over"), `<table class="ry-tbl">${th(["#", L("الصنف", "Item"), L("الوصف", "Description"), L("الرقم التسلسلي", "Serial no."), L("الحالة", "Condition"), L("القيمة (ر.س)", "Value (SAR)")])}<tbody>
@@ -298,6 +317,7 @@ export function handoverHtml(input: { est: PrintEstablishment; emp: PrintEmploye
 export function clearanceHtml(input: {
   est: PrintEstablishment; emp: PrintEmployee; number: string; lastWorkingDay: Date; reason: string; dues: number; notes: string | null;
   issued: boolean; departments: Record<string, { done: boolean; by?: string }>; items: (PrintItem & { returnCondition: string | null })[];
+  stamp?: string | null;
 }) {
   const { est, emp, items } = input;
   const certText = input.issued
@@ -309,6 +329,8 @@ export function clearanceHtml(input: {
   return royalSheet({
     est, emp, number: input.number, date: input.lastWorkingDay,
     title: ["شهادة إخلاء طرف", "Certificate of Clearance"],
+    // a draft clearance is not sealed with the establishment's stamp
+    seal: { show: true, stamp: input.issued ? input.stamp ?? null : null },
     subtitle: "Certificate of Clearance",
     extraCells: [
       [L("سبب الإخلاء", "Reason"), label(REASON_LABELS, input.reason)],

@@ -375,6 +375,8 @@ model Branch {
   vatRegistrationNumber String?
   /// The establishment's own logo (module "branch-logo"): printed on its employees' documents.
   logoFileId String?
+  /// The establishment's own stamp (module "branch-stamp"): pressed on its employees' certificates and custody papers.
+  stampFileId String?
   selectedTaxReturns TaxReturnBranch[]
   id        String       @id @default(cuid())
   name      String

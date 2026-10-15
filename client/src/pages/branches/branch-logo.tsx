@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, Stamp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { filesApi } from "@/api/files";
 import { getErrorMessage } from "@/lib/api";
@@ -53,6 +53,57 @@ export function BranchLogoField({ fileId, name, onChange }: { fileId?: string | 
           <button type="button" className="cu-btn" disabled={busy} onClick={() => input.current?.click()}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
             {fileId ? tr("تغيير الشعار", "Change logo") : tr("رفع الشعار", "Upload logo")}
+          </button>
+          {fileId && (
+            <button type="button" className="cu-btn ghost" onClick={() => onChange(null)}>
+              <Trash2 className="h-4 w-4" />
+              {tr("إزالة", "Remove")}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Uploads the establishment's own stamp: shown on paper as it will press, its white background taken away when printed. */
+export function BranchStampField({ fileId, onChange }: { fileId?: string | null; onChange: (id: string | null) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File | undefined) {
+    if (!file) return;
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      toast.error(tr("الختم لازم يكون صورة PNG أو JPG", "The stamp must be a PNG or JPG image"));
+      return;
+    }
+    setBusy(true);
+    try {
+      const uploaded = await filesApi.upload(file, "branch-stamp");
+      onChange(uploaded.id);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = "";
+    }
+  }
+
+  return (
+    <div className="cu-logo-field cu-stamp-field">
+      <span className={`cu-stamp-paper ${fileId ? "" : "empty"}`}>
+        {fileId ? <AuthedFileImage fileId={fileId} alt={tr("ختم المؤسسة", "Establishment stamp")} className="cu-stamp-img" /> : <Stamp aria-hidden="true" />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <b className="block text-sm">{tr("ختم المؤسسة", "Establishment stamp")}</b>
+        <small className="block text-xs text-muted-foreground">
+          {tr("بيتختم بيه على شهادات الخبرة وتعريفات الراتب ومحاضر العهد وشهادات إخلاء الطرف لموظفين المؤسسة. ارفع صورة الختم أو اتصوره على ورقة بيضا: الخلفية البيضا بتتشال لوحدها وقت الطباعة.", "Pressed on this establishment's employees' experience and salary certificates, custody records and clearances. Upload the stamp image or a photo of it on white paper: the white is taken away when printed.")}
+        </small>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <input ref={input} type="file" accept="image/png,image/jpeg" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
+          <button type="button" className="cu-btn" disabled={busy} onClick={() => input.current?.click()}>
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+            {fileId ? tr("تغيير الختم", "Change stamp") : tr("رفع الختم", "Upload stamp")}
           </button>
           {fileId && (
             <button type="button" className="cu-btn ghost" onClick={() => onChange(null)}>

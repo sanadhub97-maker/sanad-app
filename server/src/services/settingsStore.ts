@@ -195,13 +195,15 @@ export interface DocumentSignatures {
   sealAr: string;
   sealEn: string;
 }
-export type SignatureDocument = "report" | "voucher" | "profile";
+export type SignatureDocument = "report" | "voucher" | "profile" | "certificate";
 export interface PrintSignatures {
   showSignatures: boolean;
   showSeal: boolean;
   report: DocumentSignatures;
   voucher: DocumentSignatures;
   profile: DocumentSignatures;
+  /** The experience and salary certificates. */
+  certificate: DocumentSignatures;
 }
 
 export const DEFAULT_PRINT_SIGNATURES: PrintSignatures = {
@@ -232,12 +234,28 @@ export const DEFAULT_PRINT_SIGNATURES: PrintSignatures = {
     sealAr: "شؤون الموظفين\nمعتمد",
     sealEn: "HR DEPARTMENT",
   },
+  certificate: {
+    boxes: [
+      { ar: "مدير الموارد البشرية", en: "HR Manager" },
+      { ar: "المدير العام", en: "General Manager" },
+    ],
+    sealAr: "مختوم ومعتمد",
+    sealEn: "SEALED & APPROVED",
+  },
 };
 
 const PRINT_SIGNATURES_KEY = "print.signatures";
 
-export function getPrintSignatures(): Promise<PrintSignatures> {
-  return getSetting(PRINT_SIGNATURES_KEY, DEFAULT_PRINT_SIGNATURES);
+export async function getPrintSignatures(): Promise<PrintSignatures> {
+  const stored = await getSetting<PrintSignatures & { certificate?: DocumentSignatures }>(PRINT_SIGNATURES_KEY, { ...DEFAULT_PRINT_SIGNATURES, certificate: undefined as never });
+  if (stored.certificate) return stored;
+  // Certificates not set up yet: their two signers start with the employee profile's names and name images.
+  const base = DEFAULT_PRINT_SIGNATURES.certificate;
+  const from = stored.profile?.boxes ?? [];
+  return {
+    ...stored,
+    certificate: { ...base, boxes: base.boxes.map((b, i) => ({ ...b, nameAr: from[i]?.nameAr, nameEn: from[i]?.nameEn, nameFileId: from[i]?.nameFileId ?? null })) },
+  };
 }
 
 export function setPrintSignatures(value: PrintSignatures) {

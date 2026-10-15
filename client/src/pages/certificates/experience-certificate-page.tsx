@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { openPdfInNewTab } from "@/lib/download";
 import { useAuthStore } from "@/stores/authStore";
 import { dmy, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
-import { LetterheadSection, Sec, SheetHead, SheetSigs, useLetterhead } from "@/pages/certificates/certificate-shared";
+import { LetterheadSection, Sec, SheetHead, SheetSigs, SignerFields, useLetterhead, useSigners } from "@/pages/certificates/certificate-shared";
 
 /* The experience certificate, as approved in the preview: the employee, whose
    letterhead it prints on (their establishment or a name typed by hand), the
@@ -48,8 +48,7 @@ export default function ExperienceCertificatePage() {
   const [still, setStill] = useState(true);
   const [conduct, setConduct] = useState(true);
   const [note, setNote] = useState("");
-  const [hrName, setHrName] = useState("");
-  const [gmName, setGmName] = useState("");
+  const sg = useSigners();
   const [issue, setIssue] = useState(todayRiyadh());
   const [busy, setBusy] = useState(false);
 
@@ -109,7 +108,7 @@ export default function ExperienceCertificatePage() {
         {
           employeeId, ...lh.params,
           jobTitle: job, startDate: start, endDate: still ? "" : end, stillWorking: String(still), conduct: String(conduct),
-          note, hrName, gmName, issueDate: issue,
+          note, names: sg.param, issueDate: issue,
         },
         `${tr("شهادة خبرة", "Experience certificate")} - ${name}.pdf`
       );
@@ -181,14 +180,7 @@ export default function ExperienceCertificatePage() {
                 <Label>{tr("سطر إضافي (اختياري)", "An extra line (optional)")}</Label>
                 <Textarea rows={2} maxLength={600} value={note} onChange={(e) => setNote(e.target.value)} placeholder={tr("مثلًا: وكان آخر راتب أساسي له …", "e.g. their last basic salary was …")} />
               </div>
-              <div>
-                <Label>{tr("اسم مدير الموارد البشرية", "HR manager's name")}</Label>
-                <Input value={hrName} onChange={(e) => setHrName(e.target.value)} />
-              </div>
-              <div>
-                <Label>{tr("اسم المدير العام", "General manager's name")}</Label>
-                <Input value={gmName} onChange={(e) => setGmName(e.target.value)} placeholder={estName} />
-              </div>
+              <SignerFields sg={sg} lh={lh} />
               <div>
                 <Label>{tr("تاريخ الإصدار", "Issue date")}</Label>
                 <DateInput value={issue} onChange={(v) => setIssue(v || todayRiyadh())} />
@@ -221,7 +213,7 @@ export default function ExperienceCertificatePage() {
               <div><small>{tr("الانتهاء", "Ended")}</small><b dir={still ? undefined : "ltr"}>{still ? tr("على رأس العمل", "In service") : end ? dmy(end) : "—"}</b></div>
               <div><small>{tr("مدة الخدمة", "Length")}</small><b>{length}</b></div>
             </div>
-            <SheetSigs hrName={hrName} gmName={gmName} estName={estName} />
+            <SheetSigs sg={sg} lh={lh} estName={estName} />
           </div>
           {problem && emp && <p className="xp-warn">{problem}</p>}
         </aside>

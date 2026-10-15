@@ -4,7 +4,7 @@ import { prisma, type TransactionClient } from "@/lib/prisma";
 import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { riyadhNow } from "@/services/push";
-import { getEstablishmentBranding } from "@/services/branding";
+import { branchStampDataUrl, getEstablishmentBranding } from "@/services/branding";
 import { L } from "@/services/lang";
 import { CLEARANCE_DEPARTMENTS } from "./custody.schemas";
 import type { CreateClearanceInput, CreateHandoverInput, DepartmentSignOff, ListQuery, ReturnItemsInput, UpdateClearanceInput, UpdateHandoverInput } from "./custody.schemas";
@@ -332,8 +332,9 @@ async function hasTransparency(dataUrl: string) {
 type EmployeeSummary = Prisma.EmployeeGetPayload<{ select: typeof employeeSelect }>;
 
 /** The letterhead of the establishment the employee is on (the company's when none). */
-export async function printParty(employee: EmployeeSummary): Promise<{ est: PrintEstablishment; emp: PrintEmployee }> {
+export async function printParty(employee: EmployeeSummary): Promise<{ est: PrintEstablishment; emp: PrintEmployee; stamp: string | null }> {
   const { company, branch, logoDataUrl, brandColor } = await getEstablishmentBranding(employee.branchId);
+  const stamp = await branchStampDataUrl(branch?.stampFileId);
   const cr = branch
     ? await prisma.companyDocument.findFirst({ where: { branchId: branch.id, deletedAt: null, category: "COMMERCIAL_REGISTRATION" }, orderBy: { expiryDate: "desc" }, select: { documentNumber: true, licenseNumber: true } })
     : null;
@@ -349,11 +350,11 @@ export async function printParty(employee: EmployeeSummary): Promise<{ est: Prin
     logoTransparent: logoDataUrl ? await hasTransparency(logoDataUrl) : false,
   };
   const emp: PrintEmployee = {
-    name: L(employee.fullNameAr, employee.fullNameEn || employee.fullNameAr),
+    name: L(employee.fullNameAr, employee.fullNameEn || employee.fullNameAr).trim(),
     number: employee.employeeNumber,
     iqama: employee.iqamaNumber,
     job: L(employee.jobTitle || "", employee.jobTitleEn || employee.jobTitle || "") || null,
     nationality: L(employee.nationality || "", employee.nationalityEn || employee.nationality || "") || null,
   };
-  return { est, emp };
+  return { est, emp, stamp };
 }

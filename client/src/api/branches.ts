@@ -15,6 +15,7 @@ export interface BranchInput {
   status: "ACTIVE" | "INACTIVE";
   notes?: string;
   logoFileId?: string | null;
+  stampFileId?: string | null;
 }
 
 const baseBranchesApi = createResourceApi<Branch, BranchInput>("/branches");
@@ -28,6 +29,6 @@ export const branchesApi = {
 };
 
 export async function listActiveBranches() {
-  const res = await api.get<{ data: { id: string; name: string; nameEn?: string | null; ownerName?: string | null; vatRegistrationNumber?: string | null; code: string; logoFileId?: string | null }[] }>("/branches/active");
+  const res = await api.get<{ data: { id: string; name: string; nameEn?: string | null; ownerName?: string | null; vatRegistrationNumber?: string | null; code: string; logoFileId?: string | null; stampFileId?: string | null }[] }>("/branches/active");
   return res.data.data;
 }

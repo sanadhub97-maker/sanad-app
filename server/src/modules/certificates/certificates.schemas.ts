@@ -17,8 +17,22 @@ const base = {
   jobTitle: optText(120),
   startDate: emptyToUndefined(day.optional()),
   note: optText(600),
-  hrName: optText(120),
-  gmName: optText(120),
+  /** This print's names, box by box (JSON); an empty one keeps the name saved in Settings. */
+  names: emptyToUndefined(
+    z
+      .string()
+      .max(1200)
+      .optional()
+      .transform((v, ctx) => {
+        if (!v) return [];
+        try {
+          return z.array(z.string().trim().max(120)).max(3).parse(JSON.parse(v));
+        } catch {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid names" });
+          return z.NEVER;
+        }
+      })
+  ),
   issueDate: emptyToUndefined(day.optional()),
 };
 const needsName = { message: "Type the establishment's name", path: ["estName"] };

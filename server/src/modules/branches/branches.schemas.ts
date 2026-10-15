@@ -10,6 +10,8 @@ export const createBranchSchema = z.object({
   vatRegistrationNumber: z.string().trim().regex(/^$|^3[0-9]{13}3$/).nullable().optional().transform(value => value === "" ? null : value),
   // The establishment's own logo (an uploaded "branch-logo" image); null removes it.
   logoFileId: z.string().max(150).nullable().optional().transform(value => value === "" ? null : value),
+  // Its own stamp (an uploaded "branch-stamp" image); null removes it.
+  stampFileId: z.string().max(150).nullable().optional().transform(value => value === "" ? null : value),
   nameEn: emptyToUndefined(z.string().max(150).optional()),
   code: z.string().min(1).max(30),
   city: emptyToUndefined(z.string().max(100).optional()),

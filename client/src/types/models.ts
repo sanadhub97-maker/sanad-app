@@ -19,6 +19,8 @@ export interface Branch {
   ownerName?: string | null;
   /** The establishment's own logo (printed on its employees' custody and clearance documents). */
   logoFileId?: string | null;
+  /** Its own stamp, pressed on its employees' certificates and custody papers. */
+  stampFileId?: string | null;
   id: string;
   name: string;
   nameEn?: string | null;

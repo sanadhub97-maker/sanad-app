@@ -14,7 +14,7 @@ import { openPdfInNewTab } from "@/lib/download";
 import { amountInWords } from "@/lib/money-words";
 import { useAuthStore } from "@/stores/authStore";
 import { dmy, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
-import { LetterheadSection, Sec, SheetHead, SheetSigs, useLetterhead } from "@/pages/certificates/certificate-shared";
+import { LetterheadSection, Sec, SheetHead, SheetSigs, SignerFields, useLetterhead, useSigners } from "@/pages/certificates/certificate-shared";
 
 /* The salary certificate (تعريف بالراتب), as approved in the preview: the
    employee, the letterhead, the salary in its parts with the total written in
@@ -53,8 +53,7 @@ export default function SalaryCertificatePage() {
   const [bankName, setBankName] = useState("");
   const [iban, setIban] = useState("");
   const [note, setNote] = useState("");
-  const [hrName, setHrName] = useState("");
-  const [gmName, setGmName] = useState("");
+  const sg = useSigners();
   const [issue, setIssue] = useState(todayRiyadh());
   const [busy, setBusy] = useState(false);
 
@@ -130,7 +129,7 @@ export default function SalaryCertificatePage() {
           basic: String(num(basic) || ""), housing: String(num(housing) || ""), transport: String(num(transport) || ""),
           others: JSON.stringify(others.filter((o) => o.label.trim() && num(o.amount) > 0).map((o) => ({ label: o.label.trim(), amount: num(o.amount) }))),
           bankName: toBank ? bankName : "", iban: toBank ? cleanIban : "",
-          note, hrName, gmName, issueDate: issue,
+          note, names: sg.param, issueDate: issue,
         },
         `${tr("تعريف بالراتب", "Salary certificate")} - ${name}.pdf`
       );
@@ -257,14 +256,7 @@ export default function SalaryCertificatePage() {
                 <Label>{tr("سطر إضافي (اختياري)", "An extra line (optional)")}</Label>
                 <Textarea rows={2} maxLength={600} value={note} onChange={(e) => setNote(e.target.value)} />
               </div>
-              <div>
-                <Label>{tr("اسم مدير الموارد البشرية", "HR manager's name")}</Label>
-                <Input value={hrName} onChange={(e) => setHrName(e.target.value)} />
-              </div>
-              <div>
-                <Label>{tr("اسم المدير العام", "General manager's name")}</Label>
-                <Input value={gmName} onChange={(e) => setGmName(e.target.value)} placeholder={lh.name} />
-              </div>
+              <SignerFields sg={sg} lh={lh} />
               <div>
                 <Label>{tr("تاريخ الإصدار", "Issue date")}</Label>
                 <DateInput value={issue} onChange={(v) => setIssue(v || todayRiyadh())} />
@@ -306,7 +298,7 @@ export default function SalaryCertificatePage() {
                 <p className="empty">{tr("اختار الموظف واكتب الراتب، وهتشوف التعريف هنا وهو بيتكتب.", "Choose the employee and enter the salary; the letter writes itself here.")}</p>
               )}
             </div>
-            <SheetSigs hrName={hrName} gmName={gmName} estName={lh.name} />
+            <SheetSigs sg={sg} lh={lh} estName={lh.name} />
           </div>
           {problem && emp && <p className="xp-warn">{problem}</p>}
         </aside>

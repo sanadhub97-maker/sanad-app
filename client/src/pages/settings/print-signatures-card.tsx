@@ -24,6 +24,7 @@ const DOCS: { id: SignatureDocument; ar: string; en: string }[] = [
   { id: "report", ar: "التقارير", en: "Reports" },
   { id: "voucher", ar: "سند الصرف", en: "Payment voucher" },
   { id: "profile", ar: "ملف الموظف", en: "Employee profile" },
+  { id: "certificate", ar: "الشهادات والتعريفات", en: "Certificates" },
 ];
 const MAX_BOXES = 3;
 
@@ -286,7 +287,14 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
             </Button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          {doc === "certificate" && (
+            <p className="rounded-xl bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
+              {isRtl
+                ? "دول المعتمدين اللي بيتطبعوا على «شهادة خبرة» و«تعريف بالراتب». الختم بيتحط على آخر خانة: صورة ختم الشركة لو رافعها، أو ختم ذهبي باسم المنشأة. وتقدر تغيّر الأسماء لطباعة واحدة من صفحة الشهادة نفسها."
+                : "These approvers print on the experience and salary certificates. The seal goes on the last box: the uploaded company stamp, or a gold seal with the establishment's name. Names can be changed for one print on the certificate page."}
+            </p>
+          )}
+          <div className={cn("grid gap-3 sm:grid-cols-2", doc === "certificate" && "hidden")}>
             <div className="space-y-1">
               <Label htmlFor={`seal-${doc}-ar`} className="text-xs">{isRtl ? "نص الختم (عربي)" : "Seal text (Arabic)"}</Label>
               <Input
@@ -310,11 +318,11 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
               />
             </div>
           </div>
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <p className={cn("flex items-center gap-1.5 text-xs text-muted-foreground", doc === "certificate" && "hidden")}>
             <CalendarDays className="h-3.5 w-3.5" />
             {isRtl ? "سطر التاريخ بيتكتب تلقائياً بتاريخ يوم الطباعة، وسطر التوقيع فاضي للتوقيع بخط اليد." : "The date line is filled in with the print date; the signature line is left blank for signing by hand."}
           </p>
-          {form.stampFileId && (
+          {form.stampFileId && doc !== "certificate" && (
             <p className="text-xs text-amber-600 dark:text-amber-400">
               {isRtl ? "نص الختم مش هيظهر لأنك رافع صورة ختم الشركة، والصورة هي اللي بتتطبع." : "The seal text is not printed while a stamp image is uploaded."}
             </p>
@@ -322,7 +330,7 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" variant="outline" className="gap-1.5 rounded-xl" disabled={previewing || dirty} onClick={preview} title={dirty ? (isRtl ? "احفظ الأول عشان تعاين" : "Save first to preview") : undefined}>
+          <Button type="button" variant="outline" className={cn("gap-1.5 rounded-xl", doc === "certificate" && "hidden")} disabled={previewing || dirty} onClick={preview} title={dirty ? (isRtl ? "احفظ الأول عشان تعاين" : "Save first to preview") : undefined}>
             {previewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
             {isRtl ? "معاينة على تقرير" : "Preview on a report"}
           </Button>

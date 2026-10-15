@@ -63,12 +63,12 @@
 .xp-sheet .strip div + div { border-inline-start: 0.5px solid #eee4cc; }
 .xp-sheet .strip small { display: block; font-size: 9.5px; color: #3c4659; }
 .xp-sheet .strip b { display: block; font-size: 11.5px; font-weight: 800; color: #0f2d4a; overflow-wrap: anywhere; }
-.xp-sheet .sigs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin: 22px 30px 0; }
+.xp-sheet .sigs { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 90px; margin: 22px 18px 0; }
 .xp-sheet .sigs div { position: relative; text-align: center; padding-top: 46px; }
 .xp-sheet .sigs i { display: block; height: 1px; background: linear-gradient(90deg, transparent, #1f2937 18%, #1f2937 82%, transparent); }
 .xp-sheet .sigs b { display: block; margin-top: 4px; font-size: 11.5px; color: #0f2d4a; }
 .xp-sheet .sigs small { display: block; font-size: 10px; color: #3c4659; min-height: 1.5em; }
-.xp-sheet .seal { position: absolute; top: 0; left: 50%; width: 44px; height: 44px; margin-left: -22px; border-radius: 50%; background: radial-gradient(circle, #0f2d4a 58%, transparent 60%), conic-gradient(#7a5a22, #ecd594, #b48a3c, #f7e7b0, #8f6a2a, #ecd594, #7a5a22); }
+.xp-sheet .seal { position: absolute; top: 26px; left: 50%; width: 44px; height: 44px; margin-left: -22px; border-radius: 50%; background: radial-gradient(circle, #0f2d4a 58%, transparent 60%), conic-gradient(#7a5a22, #ecd594, #b48a3c, #f7e7b0, #8f6a2a, #ecd594, #7a5a22); }
 
 /* by day */
 html.rx-light .xp-sec { background: radial-gradient(420px 200px at 100% 0%, rgb(var(--g-c9a464, 201 164 100) / 0.12), transparent 70%), linear-gradient(160deg, #fffdf8, rgb(var(--g-f7efdf, 247 239 223)));
@@ -126,6 +126,13 @@ html.rx-light .xp-add, html.rx-light .xp-total b { color: rgb(var(--g-6b4e1d, 10
 html.rx-light .xp-total .w { color: rgb(var(--g-7d5d27, 125 93 39)); }
 html.rx-light .xp-chips button { color: rgb(var(--g-6b4e1d, 107 78 29) / 0.85); border-color: rgb(var(--g-9a7433, 154 116 51) / 0.35); }
 html.rx-light .xp-chips button.on { color: #fffaf0; }
+
+/* the approvers' note: where the stamp comes from */
+.xp-stamp { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 8px; border: 1px dashed rgb(var(--g-c9a464, 201 164 100) / 0.35); }
+.xp-stamp svg { width: 16px; height: 16px; flex: none; margin-top: 2px; color: rgb(var(--g-c9a464, 201 164 100)); }
+.xp-link { font-weight: 800; color: rgb(var(--g-f3dfae, 243 223 174)); text-decoration: underline; text-underline-offset: 3px; }
+html.rx-light .xp-link { color: rgb(var(--g-7d5d27, 125 93 39)); }
+.xp-sheet .seal.stamp { background: radial-gradient(circle, transparent 52%, #a33a3a 53%, #a33a3a 58%, transparent 59%), radial-gradient(circle, transparent 66%, #a33a3a 67%, #a33a3a 70%, transparent 71%); transform: rotate(-8deg); opacity: 0.8; }
 
 .lu-still .xp-sec, .lu-still .xp-sheet { animation: none; }
 @media (prefers-reduced-motion: reduce) { .xp-sec, .xp-sheet { animation: none; } }

@@ -11,6 +11,7 @@ import { experienceQuerySchema, salaryQuerySchema } from "./certificates.schemas
 const router = Router();
 router.use(requireAuth);
 
+router.get("/signers", requirePermission("employees.export"), controller.signersInfo);
 router.get(
   "/experience/pdf",
   requirePermission("employees.export"),

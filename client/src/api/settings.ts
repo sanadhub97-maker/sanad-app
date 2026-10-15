@@ -88,13 +88,15 @@ export interface DocumentSignatures {
   sealAr: string;
   sealEn: string;
 }
-export type SignatureDocument = "report" | "voucher" | "profile";
+export type SignatureDocument = "report" | "voucher" | "profile" | "certificate";
 export interface PrintSignatures {
   showSignatures: boolean;
   showSeal: boolean;
   report: DocumentSignatures;
   voucher: DocumentSignatures;
   profile: DocumentSignatures;
+  /** The experience and salary certificates. */
+  certificate: DocumentSignatures;
 }
 export interface PrintSignaturesSettings {
   signatures: PrintSignatures;

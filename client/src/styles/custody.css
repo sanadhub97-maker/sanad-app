@@ -171,3 +171,9 @@ textarea.cu-in { height: auto; min-height: 70px; padding: 9px 12px; resize: vert
 /* the dialog's close button sits on the dark header */
 .cu-dlg > button:last-child { color: #e8edf7; }
 .cu-dlg > button:last-child:hover { background: rgba(255, 255, 255, .12); }
+
+/* the establishment's stamp, shown on paper as it will press */
+.cu-stamp-paper { width: 72px; height: 72px; flex: none; display: grid; place-items: center; border-radius: 12px; background: #fffdf7; box-shadow: inset 0 0 0 1px rgba(176, 138, 64, 0.35), 0 6px 14px -10px rgba(0, 0, 0, 0.4); overflow: hidden; }
+.cu-stamp-paper.empty { color: rgba(176, 138, 64, 0.8); }
+.cu-stamp-paper.empty svg { width: 28px; height: 28px; }
+.cu-stamp-img { width: 88%; height: 88%; object-fit: contain; mix-blend-mode: multiply; transform: rotate(-8deg); }

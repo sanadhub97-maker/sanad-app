@@ -55,6 +55,7 @@ export async function getById(id: string) {
 
 export async function create(input: CreateInput) {
   await assertBrandFile(input.logoFileId, ["branch-logo"]);
+  await assertBrandFile(input.stampFileId, ["branch-stamp"]);
   const existing = await prisma.branch.findFirst({ where: { code: input.code, deletedAt: null } });
   if (existing) throw ApiError.badRequest("A branch with this code already exists.");
   return prisma.branch.create({ data: { ...input, email: input.email || undefined } });
@@ -63,6 +64,7 @@ export async function create(input: CreateInput) {
 export async function update(id: string, input: UpdateInput) {
   await getById(id);
   await assertBrandFile(input.logoFileId, ["branch-logo"]);
+  await assertBrandFile(input.stampFileId, ["branch-stamp"]);
   if (input.code) {
     const existing = await prisma.branch.findFirst({ where: { code: input.code, id: { not: id }, deletedAt: null } });
     if (existing) throw ApiError.badRequest("A branch with this code already exists.");
@@ -101,5 +103,5 @@ export async function getNextCode(): Promise<string> {
 }
 
 export async function listAllActive() {
-  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true, logoFileId: true }, orderBy: { name: "asc" } });
+  return prisma.branch.findMany({ where: { deletedAt: null, status: "ACTIVE" }, select: { id: true, name: true, nameEn: true, code: true, ownerName: true, vatRegistrationNumber: true, logoFileId: true, stampFileId: true }, orderBy: { name: "asc" } });
 }

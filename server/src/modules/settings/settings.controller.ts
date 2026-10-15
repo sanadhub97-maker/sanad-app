@@ -72,7 +72,7 @@ export const updatePrintSignaturesSettings = asyncHandler(async (req: Request, r
   await Promise.all([
     assertBrandFile(body.stampFileId, ["company-stamp"]),
     assertBrandFile(body.signatureFileId, ["company-signature", "company-stamp"]),
-    ...[body.signatures.report, body.signatures.voucher, body.signatures.profile].flatMap((doc) => doc.boxes.map((box) => assertBrandFile(box.nameFileId, PRINT_NAME_IMAGE_MODULES))),
+    ...[body.signatures.report, body.signatures.voucher, body.signatures.profile, body.signatures.certificate].filter(Boolean).flatMap((doc) => doc.boxes.map((box) => assertBrandFile(box.nameFileId, PRINT_NAME_IMAGE_MODULES))),
   ]);
   await setPrintSignatures(body.signatures);
   // The stamp and signature images live on the company record.

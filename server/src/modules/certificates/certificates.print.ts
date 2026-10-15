@@ -10,6 +10,12 @@ import { amountInWords } from "./money-words";
  * and two signatures, the last under the establishment's seal.
  */
 
+/** The signatures closing a certificate, from Settings → Print → Certificates, with this print's names. */
+export interface CertSigners {
+  boxes: { title: string; name: string; image: string | null }[];
+  seal: { show: boolean; stamp: string | null };
+}
+
 export interface ExperienceInput {
   est: PrintEstablishment;
   emp: PrintEmployee & { female: boolean };
@@ -21,8 +27,7 @@ export interface ExperienceInput {
   stillWorking: boolean;
   conduct: boolean;
   note: string | null;
-  hrName: string | null;
-  gmName: string | null;
+  signers: CertSigners;
 }
 
 /** Whole years, months and days from a to b (b counted as a working day). */
@@ -91,7 +96,9 @@ const XCSS = `
 .xc-strip div + div { border-inline-start: .5px solid #eee4cc; }
 .xc-strip small { display: block; font-size: 9.4px; color: var(--ink2); }
 .xc-strip b { display: block; margin-top: 1px; font-size: 13px; font-weight: 700; color: var(--deep); overflow-wrap: anywhere; }
-.xc .ry-sigs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 150px; padding-inline: 40px; }
+.xc .ry-sigs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 170px; padding-inline: 10px; }
+.xc .ry-sigs:has(> .ry-sig:nth-child(3 of .ry-sig)) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 34px; padding-inline: 0; }
+.xc .ry-sigs:not(:has(> .ry-sig:nth-child(2 of .ry-sig))) { grid-template-columns: minmax(0, 300px); justify-content: center; }
 /* both signature lines on one level, named or not */
 .xc .ry-sig small { display: block; min-height: 3.2em; line-height: 1.6; }
 `;
@@ -127,6 +134,7 @@ export function experienceHtml(input: ExperienceInput) {
   return royalSheet({
     est, emp, number: input.number, date: input.issueDate,
     title: ["شهادة خبرة", "Experience Certificate"],
+    seal: { ...input.signers.seal, center: true },
     subtitle: "Experience Certificate",
     numberLabel: ["رقم الشهادة", "Certificate no."],
     noGrid: true,
@@ -141,7 +149,7 @@ export function experienceHtml(input: ExperienceInput) {
         ${input.note ? `<p class="xc-p">${esc(input.note)}</p>` : ""}
         <p class="xc-close">${close}</p>
       </div>
-      ${sigs([[L("مدير الموارد البشرية", "HR manager"), input.hrName || ""], [L("المدير العام", "General manager"), input.gmName || est.name]])}`,
+      ${input.signers.boxes.length ? sigs(input.signers.boxes.map((b) => [esc(b.title), b.name, b.image] as [string, string, string | null])) : ""}`,
   });
 }
 
@@ -158,8 +166,7 @@ export interface SalaryInput {
   parts: { label: string; amount: number }[];
   bank: { name: string; iban: string | null } | null;
   note: string | null;
-  hrName: string | null;
-  gmName: string | null;
+  signers: CertSigners;
 }
 
 const sar = (n: number) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -172,6 +179,8 @@ const SCSS = `
 .xs .xc-close { margin-top: 8px; padding-top: 6px; font-size: 12.2px; line-height: 1.7; }
 .xs .ry-sig { padding-top: 80px; }
 .xs .ry-seal { width: 72px; top: -12px; }
+.xs .ry-stamp { width: 96px; height: 96px; top: -10px; }
+.xs .ry-sigs.mid { --line: 80px; --stamp: 92px; }
 .xs .ry-sec { margin-top: 10px; }
 /* the salary in its parts: a formal statement, ruled in gold, the currency once in its head,
    the amounts on one line, the total and the total in words closing the table */
@@ -231,6 +240,7 @@ export function salaryHtml(input: SalaryInput) {
   return royalSheet({
     est, emp, number: input.number, date: input.issueDate,
     title: ["تعريف بالراتب", "Salary Certificate"],
+    seal: { ...input.signers.seal, center: true },
     subtitle: "Salary Certificate",
     numberLabel: ["رقم التعريف", "Letter no."],
     noGrid: true,
@@ -246,6 +256,6 @@ export function salaryHtml(input: SalaryInput) {
         ${input.note ? `<p class="xc-p">${esc(input.note)}</p>` : ""}
         <p class="xc-close">${close}</p>
       </div>
-      ${sigs([[L("مدير الموارد البشرية", "HR manager"), input.hrName || ""], [L("المدير العام", "General manager"), input.gmName || est.name]])}`,
+      ${input.signers.boxes.length ? sigs(input.signers.boxes.map((b) => [esc(b.title), b.name, b.image] as [string, string, string | null])) : ""}`,
   });
 }

@@ -31,7 +31,7 @@ import { getErrorMessage } from "@/lib/api";
 import { tr } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { Branch } from "@/types/models";
-import { BranchLogoField } from "@/pages/branches/branch-logo";
+import { BranchLogoField, BranchStampField } from "@/pages/branches/branch-logo";
 
 const makeSchema = () =>
   z.object({
@@ -48,6 +48,7 @@ const makeSchema = () =>
     status: z.enum(["ACTIVE", "INACTIVE"]),
     notes: z.string().optional(),
     logoFileId: z.string().nullable().optional(),
+    stampFileId: z.string().nullable().optional(),
   });
 type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 
@@ -96,6 +97,7 @@ export function BranchDialog({
               phone: branch.phone ?? "",
               notes: branch.notes ?? "",
               logoFileId: branch.logoFileId ?? null,
+              stampFileId: branch.stampFileId ?? null,
             }
           : { status: "ACTIVE" }
       );
@@ -178,6 +180,7 @@ export function BranchDialog({
             </div>
 
             <Controller control={control} name="logoFileId" render={({ field }) => <BranchLogoField fileId={field.value} name={watch("name") ?? ""} onChange={field.onChange} />} />
+            <Controller control={control} name="stampFileId" render={({ field }) => <BranchStampField fileId={field.value} onChange={field.onChange} />} />
 
             <div className="grid gap-4 sm:grid-cols-12">
               <FormField label={t("branches.fields.name")} required error={errors.name?.message} icon={Building2} className="sm:col-span-6">

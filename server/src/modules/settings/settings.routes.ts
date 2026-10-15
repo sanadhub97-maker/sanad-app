@@ -87,6 +87,7 @@ router.put(
         report: documentSignatures,
         voucher: documentSignatures,
         profile: documentSignatures,
+        certificate: documentSignatures.optional(),
       }),
       stampFileId: z.string().min(1).nullable(),
       signatureFileId: z.string().min(1).nullable(),

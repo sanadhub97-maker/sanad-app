@@ -152,7 +152,7 @@ export async function getBrandingContext(kind?: SignatureDocument) {
     brandColorOf(company?.printLogoFileId || company?.logoFileId, logo?.buffer),
   ]);
   // Name images of every signature box, by file id.
-  const documents = kind ? [signatures[kind]] : [signatures.report, signatures.voucher, signatures.profile];
+  const documents = kind ? [signatures[kind]] : [signatures.report, signatures.voucher, signatures.profile, signatures.certificate];
   const nameIds = [...new Set(documents.flatMap((d) => d.boxes.map((b) => b.nameFileId)).filter(Boolean))] as string[];
   const nameImages: Record<string, string> = {};
   await Promise.all(
@@ -181,6 +181,39 @@ function readBranchLogo(fileId: string) {
  * logo and the logo's colour), falling back to the company's logo and colour
  * when the establishment has no logo of its own.
  */
+/** A stamp image made ready to press: its paper made see-through (softly, so the ink keeps its edges), its empty margin trimmed. */
+export async function cleanStamp(raw: Buffer) {
+  const { data, info } = await sharp(raw).rotate().resize({ width: 700, height: 700, fit: "inside", withoutEnlargement: true }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < data.length; i += 4) {
+    const light = Math.min(data[i], data[i + 1], data[i + 2]);
+    const chroma = Math.max(data[i], data[i + 1], data[i + 2]) - light;
+    // near-white, low-colour pixels are paper: fully clear above 235, fading in down to 200
+    if (chroma < 40 && light > 200) data[i + 3] = Math.round(data[i + 3] * Math.max(0, Math.min(1, (235 - light) / 35)));
+  }
+  const clean = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  return sharp(clean).trim({ threshold: 1 }).png(PRINT_PNG).toBuffer().catch(() => sharp(clean).png(PRINT_PNG).toBuffer());
+}
+
+/**
+ * An establishment's stamp as printed: the white or cream paper of a scanned or
+ * photographed stamp becomes see-through (softly, so the ink keeps its edges),
+ * the empty margin is trimmed, and it is kept as a palette PNG.
+ */
+export async function branchStampDataUrl(fileId: string | null | undefined) {
+  if (!fileId) return null;
+  try {
+    return await kept(`stamp1:${fileId}`, async () => {
+      const file = await prisma.file.findUnique({ where: { id: fileId } });
+      if (!file || file.module !== "branch-stamp" || !["image/png", "image/jpeg"].includes(file.mimeType)) return null;
+      const raw = await storage.read(file.storedName);
+      return `data:image/png;base64,${(await cleanStamp(raw)).toString("base64")}`;
+    });
+  } catch (err) {
+    logger.warn({ err, fileId }, "Could not prepare an establishment stamp");
+    return null;
+  }
+}
+
 export async function getEstablishmentBranding(branchId: string | null | undefined) {
   const [company, branch] = await Promise.all([
     prisma.companySettings.findUnique({ where: { id: 1 } }),
