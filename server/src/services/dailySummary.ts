@@ -87,7 +87,7 @@ export function renderDailyEntry({ item, context: c }: DailyDoc) {
 export const dailyEmptyText = () => `✅ _${L("كل الوثائق سارية، ولا شيء قريب من الانتهاء.", "Every document is valid; nothing ends soon.")}_`;
 
 const PRIORITY = { URGENT: ["🔴", "عاجلة", "Urgent"], HIGH: ["🟠", "مهمة", "High"], NORMAL: ["⚪", "عادية", "Normal"] } as const;
-const SHOWN_TASKS = 25;
+const SHOWN_TASKS = Infinity;
 
 /** The open tasks, then the signature; the closing section of the summary. */
 export function renderDailyTail(tasks: TaskLine[]) {

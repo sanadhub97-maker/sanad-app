@@ -99,7 +99,15 @@ export function dailyMessageParts(texts: string[], header: string, emptyText: st
   if (tail) {
     const sep = "\n\n━━━━━━━━━━━━━━━\n\n";
     if (parts[parts.length - 1].length + sep.length + tail.length <= 3500) parts[parts.length - 1] += sep + tail;
-    else parts.push(tail.slice(0, 3500));
+    else {
+      let cur = "";
+      for (const block of tail.split("\n\n")) {
+        const piece = block.slice(0, 3400);
+        if (cur && cur.length + piece.length + 2 > 3500) { parts.push(cur); cur = ""; }
+        cur = cur ? `${cur}\n\n${piece}` : piece;
+      }
+      if (cur) parts.push(cur);
+    }
   }
   return parts;
 }

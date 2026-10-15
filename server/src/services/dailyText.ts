@@ -62,7 +62,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
   report: (company, docs, tasks, today) => {
     const c = urgencyCounts(docs.map((d) => d.context.daysLeft), today);
     const { g, h } = dayLine(today);
-    const SHOWN = 25;
+    const SHOWN = Infinity;
     // Each task by its title (and its time when set): no lateness or assignee line.
     const taskRows = tasks.slice(0, SHOWN).map((t) => `${PRI[t.priority][0]} *${t.title}*${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}`);
     return {
@@ -107,7 +107,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       shown = u;
       return `${URGENCY[u].dot} ━━ *${urgencyLabel(u, true)}* ━━ (${c[u]})\n${line}`;
     });
-    const SHOWN = 20;
+    const SHOWN = Infinity;
     return {
       header: [
         CROWN,
@@ -143,7 +143,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
         `> ${URGENCY[urgency(n, today)].dot} *${state(n)}*`,
       ].join("\n");
     });
-    const SHOWN = 15;
+    const SHOWN = Infinity;
     const taskCards = tasks.slice(0, SHOWN).map((t, i) => `> ◇ *${String(i + 1).padStart(2, "0")}*  ┃  ${PRI[t.priority][0]} *${t.title}*${t.time ? `  ·  🕘 ${mono(t.time)}` : ""}`);
     return {
       header: [CROWN, `🏛️ *${company}*`, `👑 _${L("ملخص الوثائق والمهام", "Documents and tasks")}_ · ${g}`, CROWN, "", ...countRows(c, tasks, (dot, label, n) => `> ${dot} *${n}*  ${label}`)].join("\n"),
@@ -181,7 +181,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
     const c = urgencyCounts(docs.map((d) => d.context.daysLeft), today);
     const { g, h } = dayLine(today);
     const parts = ([0, 1, 2, 3] as Urgency[]).filter((u) => u < 3 || c[u] > 0).map((u) => L(`*${c[u]}* ${u === 0 ? "وثيقة منتهية" : `تنتهي ${URGENCY[u].ar}`}`, `*${c[u]}* ${URGENCY[u].en.toLowerCase()}`));
-    const SHOWN = 20;
+    const SHOWN = Infinity;
     return {
       header: [
         `🏛️ *${company}*`,
@@ -230,7 +230,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       shown = u;
       return `${URGENCY[u].dot} *${ACTION[u]}* · ${c[u]}\n\n${line}`;
     });
-    const SHOWN = 20;
+    const SHOWN = Infinity;
     return {
       header: [
         `🏛️ *${company}*`,
@@ -260,7 +260,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       const n = d.context.daysLeft;
       return [`${URGENCY[urgency(n, today)].dot} *${doc}*${who ? ` · ${who}` : ""}`, `_${state(n)}_ · ${mono(dateStr(d.context.expiryDate))}${branch && branch !== doc && branch !== who ? ` · 📍 ${branch}` : ""}`].join("\n");
     });
-    const SHOWN = 20;
+    const SHOWN = Infinity;
     return {
       header: [
         `📊 *${L("لوحة اليوم", "Today's board")}* · ${company}`,
@@ -297,7 +297,7 @@ const DESIGNS: Record<DailyTextId, Render> = {
       shown = sec;
       return `━━ *${sec}* ━━\n${line}`;
     });
-    const SHOWN = 20;
+    const SHOWN = Infinity;
     return {
       header: [
         CROWN,
