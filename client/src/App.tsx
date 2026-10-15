@@ -31,6 +31,8 @@ const ViolationDetailsPage = lazy(() => import("@/pages/violations/violation-det
 const HandoversPage = lazy(() => import("@/pages/custody/handovers-page"));
 const VehiclesPage = lazy(() => import("@/pages/vehicles/vehicles-page"));
 const ClearancesPage = lazy(() => import("@/pages/custody/clearances-page"));
+const ExperienceCertificatePage = lazy(() => import("@/pages/certificates/experience-certificate-page"));
+const SalaryCertificatePage = lazy(() => import("@/pages/certificates/salary-certificate-page"));
 const PaymentsPage = lazy(() => import("@/pages/payments/payments-page"));
 const TaxDeclarationsPage = lazy(() => import("@/pages/tax/tax-declarations-page"));
 const NotificationsPage = lazy(() => import("@/pages/notifications/notifications-page"));
@@ -117,6 +119,8 @@ export default function App() {
                 <Route element={<RequirePermission permission="custody.view" />}>
                   <Route path="/custody" element={<HandoversPage />} />
                   <Route path="/clearances" element={<ClearancesPage />} />
+                  <Route path="/experience-certificate" element={<ExperienceCertificatePage />} />
+                  <Route path="/salary-certificate" element={<SalaryCertificatePage />} />
                 </Route>
                 <Route element={<RequirePermission permission="violations.view" />}>
                   <Route path="/violations" element={<ViolationsPage />} />

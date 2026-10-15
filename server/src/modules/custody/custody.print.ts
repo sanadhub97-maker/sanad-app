@@ -213,10 +213,17 @@ interface SheetInput {
   title: [string, string];
   subtitle: string;
   extraCells?: [string, string, boolean?][];
+  /** A letter (the experience certificate) writes the employee into its text instead of a data grid. */
+  noGrid?: boolean;
+  /** The ribbon's first cell, "Document no." by default. */
+  numberLabel?: [string, string];
+  /** More rules for this sheet, and a class on it to scope them. */
+  extraCss?: string;
+  sheetClass?: string;
   body: (sec: (title: string, inner: string) => string, sigs: (list: [string, string][]) => string, deep: string) => string;
 }
 
-async function royalSheet(input: SheetInput) {
+export async function royalSheet(input: SheetInput) {
   const { est, emp } = input;
   const brand = validHex(est.brandColor) ?? "#1e40af";
   const deep = shade(brand, 0.38);
@@ -244,8 +251,8 @@ async function royalSheet(input: SheetInput) {
   const qr = await QRCode.toDataURL(qrText, { margin: 0, width: 160, errorCorrectionLevel: "M" });
   const logo = est.logoDataUrl;
   const micro = `${est.nameEn || ""} · ${est.name} · ${input.number} · `.repeat(14);
-  const html = `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8"><title>${esc(input.number)}</title><style>${CSS}</style></head><body>
-  <div class="ry" style="--brand:${brand};--deep:${deep}">
+  const html = `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8"><title>${esc(input.number)}</title><style>${CSS}${input.extraCss ?? ""}</style></head><body>
+  <div class="ry${input.sheetClass ? ` ${input.sheetClass}` : ""}" style="--brand:${brand};--deep:${deep}">
     <div class="edge t" style="background-image:${edgeTile}"></div><div class="edge b" style="background-image:${edgeTile}"></div><div class="edge r" style="background-image:${edgeTile}"></div><div class="edge l" style="background-image:${edgeTile}"></div>
     <div class="rule"></div>
     ${logo && est.logoTransparent ? `<img class="bg" src="${logo}" alt="">` : ""}
@@ -254,8 +261,8 @@ async function royalSheet(input: SheetInput) {
     <div class="ry-medal"><div class="disc">${logo ? `<img src="${logo}" alt="">` : `<span class="ini">${esc(est.name.trim().charAt(0))}</span>`}</div></div>
     <div class="body">
       <div class="ry-title"><div>${starRule("rl")}</div><div class="t"><h2>${foilText(L(...input.title), 27, { head: true })}</h2><div class="sub">${esc(input.subtitle)}</div></div><div style="transform:scaleX(-1)">${starRule("rr")}</div></div>
-      <div class="ry-ribbon"><div><small>${L("رقم المستند", "Document no.")}</small><b class="n">${esc(input.number)}</b></div><div><small>${L("التاريخ", "Date")}</small><b class="n">${dmy(input.date)}</b></div><div><small>${L("الموافق", "Hijri")}</small><b>${esc(hijri(input.date))}</b></div></div>
-      ${sec(input.extraCells?.length ? L("بيانات الموظف والإخلاء", "Employee & clearance") : L("بيانات الموظف", "Employee"), grid)}
+      <div class="ry-ribbon"><div><small>${L(...(input.numberLabel ?? ["رقم المستند", "Document no."]))}</small><b class="n">${esc(input.number)}</b></div><div><small>${L("التاريخ", "Date")}</small><b class="n">${dmy(input.date)}</b></div><div><small>${L("الموافق", "Hijri")}</small><b>${esc(hijri(input.date))}</b></div></div>
+      ${input.noGrid ? "" : sec(input.extraCells?.length ? L("بيانات الموظف والإخلاء", "Employee & clearance") : L("بيانات الموظف", "Employee"), grid)}
       ${input.body(sec, sigs, deep)}
     </div>
     <div class="ry-micro">${esc(micro)}</div>
@@ -265,6 +272,8 @@ async function royalSheet(input: SheetInput) {
 }
 
 const th = (labels: string[]) => `<thead><tr>${labels.map((l) => `<th><span>${l}</span></th>`).join("")}</tr></thead>`;
+
+export { foilText, starRule };
 
 export function handoverHtml(input: { est: PrintEstablishment; emp: PrintEmployee; number: string; date: Date; deliveredBy: string | null; notes: string | null; items: PrintItem[] }) {
   const { est, emp, items } = input;

@@ -23,6 +23,7 @@ import taxReturnsRoutes from "@/modules/taxReturns/taxReturns.routes";
 import maintenanceRoutes from "@/modules/maintenance/maintenance.routes";
 import alertsRoutes from "@/modules/alerts/alerts.routes";
 import custodyRoutes from "@/modules/custody/custody.routes";
+import certificatesRoutes from "@/modules/certificates/certificates.routes";
 import vehiclesRoutes from "@/modules/vehicles/vehicles.routes";
 import { restoringSystem } from "@/modules/maintenance/backups.service";
 import { ApiError } from "@/utils/apiError";
@@ -54,6 +55,7 @@ router.use("/tasks", tasksRoutes);
 router.use("/push", pushRoutes);
 router.use("/violations", violationsRoutes);
 router.use("/custody", custodyRoutes);
+router.use("/certificates", certificatesRoutes);
 router.use("/vehicles", vehiclesRoutes);
 
 export default router;

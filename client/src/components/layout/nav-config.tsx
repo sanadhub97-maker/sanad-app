@@ -17,8 +17,7 @@ import {
   ShieldCheck,
   UserCog,
   Users,
-  Wallet,
-} from "lucide-react";
+  Wallet, Award, Banknote } from "lucide-react";
 import type { AppleTone } from "@/components/common/apple-icon";
 
 export interface NavItem {
@@ -58,6 +57,8 @@ export const NAV_ITEMS: NavItem[] = [
   },
   { label: "nav.custody", href: "/custody", icon: PackageCheck, tone: "amber", permission: "custody.view", section: "nav.workforceSection" },
   { label: "nav.clearances", href: "/clearances", icon: ClearanceIcon, tone: "amber", permission: "custody.view", section: "nav.workforceSection" },
+  { label: "nav.experienceCertificate", href: "/experience-certificate", icon: Award, tone: "amber", permission: "employees.export", section: "nav.workforceSection" },
+  { label: "nav.salaryCertificate", href: "/salary-certificate", icon: Banknote, tone: "amber", permission: "employees.export", section: "nav.workforceSection" },
 
   // Compliance & Assets
   { label: "nav.companyDocuments", href: "/company-documents", icon: FileText, tone: "amber", permission: "companyDocuments.view", section: "nav.complianceSection" },
