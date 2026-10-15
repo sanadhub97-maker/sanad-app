@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { settingsApi } from "@/api/settings";
 import { useUiStore, resolveEffectiveTheme } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
+import { applyGoldTone } from "@/lib/gold-tone";
 
 /** Applies the effective light/dark class and the admin's Settings →
  * Appearance: brand colours (in both themes, lightened for dark mode so they
@@ -69,6 +70,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [effective, appearance]);
+
+  // The royal design's metal, for everyone.
+  useEffect(() => {
+    applyGoldTone(appearance?.goldTone);
+  }, [appearance?.goldTone]);
+
+  // The status colours (valid, ending soon, expired, information), when the admin set their own:
+  // each with its soft tint and border, readable in the current mode.
+  useEffect(() => {
+    const root = document.documentElement.style;
+    const keys = ["green", "amber", "rose", "sky"];
+    if (!appearance?.statusCustom) {
+      for (const k of keys) for (const sfx of ["", "-t", "-d"]) root.removeProperty(`--l-${k}${sfx}`);
+      return;
+    }
+    const dark = effective === "dark";
+    const pairs: [string, string][] = [["green", appearance.successColor], ["amber", appearance.warningColor], ["rose", appearance.dangerColor], ["sky", appearance.infoColor]];
+    for (const [k, hex] of pairs) {
+      const hsl = hexToHsl(hex, dark ? { min: 62, max: 74 } : { min: 30, max: 46 });
+      if (!hsl) continue;
+      root.setProperty(`--l-${k}`, `hsl(${hsl})`);
+      root.setProperty(`--l-${k}-t`, `hsl(${hsl} / ${dark ? 0.12 : 0.1})`);
+      root.setProperty(`--l-${k}-d`, `hsl(${hsl} / ${dark ? 0.2 : 0.18})`);
+    }
+  }, [effective, appearance?.statusCustom, appearance?.successColor, appearance?.warningColor, appearance?.dangerColor, appearance?.infoColor]);
 
   // Compact mode scales the whole interface (Tailwind sizes are in rem).
   useEffect(() => {

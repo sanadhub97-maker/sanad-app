@@ -7,23 +7,23 @@
 
 .g-app {
   --g-surface: #ffffff; --g-ground: #f6f7fb; --g-line: #e6e9f1; --g-ink: #172033; --g-muted: #5e6a7d; --g-faint: #98a2b3;
-  --g-brand: #0a84c6; --g-violet: #8b5cf6; --g-green: #1f9d5b; --g-green-t: #e7f6ee; --g-amber: #c97a06; --g-amber-t: #fff4de;
+  --g-brand: #0a84c6; --g-violet: #8b5cf6; --g-green: #1f9d5b; --g-green-t: #e7f6ee; --g-amber: rgb(var(--g-c97a06, 201 122 6)); --g-amber-t: #fff4de;
   --g-rose: #e0475b; --g-rose-t: #fdedef; --g-teal: #0e9f8e; --g-teal-t: #e4f7f4; --g-sky-t: #e7f4fc;
   --g-glass: rgba(255, 255, 255, 0.72); --g-edge: rgba(255, 255, 255, 0.85);
-  --g-sky1: #a9d8f5; --g-sky2: #d9eefa; --g-sky3: #fde7c4;
-  --g-dune1: #f2d6a2; --g-dune2: #e6bc74; --g-dune3: #d49e49;
-  --g-sun1: #ffd27a; --g-sun2: #f4a62a; --g-halo: rgba(255, 196, 92, 0.55);
+  --g-sky1: #a9d8f5; --g-sky2: #d9eefa; --g-sky3: rgb(var(--g-fde7c4, 253 231 196));
+  --g-dune1: rgb(var(--g-f2d6a2, 242 214 162)); --g-dune2: rgb(var(--g-e6bc74, 230 188 116)); --g-dune3: rgb(var(--g-d49e49, 212 158 73));
+  --g-sun1: rgb(var(--g-ffd27a, 255 210 122)); --g-sun2: rgb(var(--g-f4a62a, 244 166 42)); --g-halo: rgb(var(--g-ffc45c, 255 196 92) / 0.55);
   --px: 0; --py: 0;
   position: relative; min-height: 100vh; min-height: 100dvh; overflow-x: clip; color: var(--g-ink); font-family: var(--font-sans); font-size: 14px; color-scheme: light;
 }
 .g-app.night {
   --g-surface: #151b2b; --g-ground: #0d1220; --g-line: #232b3e; --g-ink: #e8ecf4; --g-muted: #9aa5b8; --g-faint: #66708a;
-  --g-brand: #4db5ee; --g-violet: #b69bfb; --g-green: #5ad190; --g-green-t: #102e1f; --g-amber: #f4b955; --g-amber-t: #33270f;
+  --g-brand: #4db5ee; --g-violet: #b69bfb; --g-green: #5ad190; --g-green-t: #102e1f; --g-amber: rgb(var(--g-f4b955, 244 185 85)); --g-amber-t: rgb(var(--g-33270f, 51 39 15));
   --g-rose: #f57b8b; --g-rose-t: #33191f; --g-teal: #45d3c0; --g-teal-t: #0f2e2b; --g-sky-t: #132a3b;
   --g-glass: rgba(18, 24, 40, 0.72); --g-edge: rgba(255, 255, 255, 0.09);
   --g-sky1: #070c22; --g-sky2: #16204a; --g-sky3: #3a3f74;
   --g-dune1: #2b3566; --g-dune2: #212a55; --g-dune3: #182046;
-  --g-sun1: #f4f1e6; --g-sun2: #c9cfe6; --g-halo: rgba(190, 205, 255, 0.35);
+  --g-sun1: rgb(var(--g-f4f1e6, 244 241 230)); --g-sun2: #c9cfe6; --g-halo: rgba(190, 205, 255, 0.35);
   color-scheme: dark;
 }
 .g-app :where(button, input) { font: inherit; color: inherit; }
@@ -53,7 +53,7 @@
 .g-palm { transform-box: fill-box; transform-origin: 50% 100%; animation: g-sway 6s ease-in-out infinite; }
 @keyframes g-sway { 50% { transform: rotate(-2deg); } }
 .g-sparks { position: absolute; inset: 0; pointer-events: none; }
-.g-sparks i { position: absolute; bottom: -10px; width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle, #fff, rgba(255, 214, 140, 0) 70%); animation: g-rise var(--d) linear infinite; animation-delay: var(--dl); opacity: 0; }
+.g-sparks i { position: absolute; bottom: -10px; width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle, #fff, rgb(var(--g-ffd68c, 255 214 140) / 0) 70%); animation: g-rise var(--d) linear infinite; animation-delay: var(--dl); opacity: 0; }
 @keyframes g-rise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(var(--dx), -90vh); opacity: 0; } }
 
 .g-layout { position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 440px); gap: 40px; padding: 36px 64px; align-items: center; }
@@ -67,7 +67,7 @@
 @keyframes g-sunup { from { transform: translateY(70%) scale(0.8); opacity: 0; } }
 .g-sun .crater { position: absolute; border-radius: 50%; background: rgba(120, 130, 170, 0.18); opacity: 0; transition: opacity 1s; }
 .night .g-sun .crater { opacity: 1; }
-.g-rays { width: calc(var(--e) * 2.4); aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255, 220, 150, 0.38) 0deg 6deg, transparent 6deg 20deg); -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%); animation: g-spin 60s linear infinite; transition: opacity 1s; }
+.g-rays { width: calc(var(--e) * 2.4); aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgb(var(--g-ffdc96, 255 220 150) / 0.38) 0deg 6deg, transparent 6deg 20deg); -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%); animation: g-spin 60s linear infinite; transition: opacity 1s; }
 .night .g-rays { opacity: 0.25; }
 @keyframes g-spin { to { transform: rotate(360deg); } }
 .g-emblem { position: relative; z-index: 2; width: var(--e); animation: g-float 6s ease-in-out infinite; filter: drop-shadow(0 26px 34px rgba(10, 25, 70, 0.35)); }

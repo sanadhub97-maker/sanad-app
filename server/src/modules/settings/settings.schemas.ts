@@ -35,6 +35,8 @@ export const appearanceSettingsSchema = z.object({
   sidebarStyle: z.enum(["expanded", "collapsed"]),
   animationsEnabled: z.boolean(),
   compactMode: z.boolean(),
+  goldTone: z.enum(["royal", "champagne", "rose", "bronze", "platinum", "emerald"]).optional(),
+  statusCustom: z.boolean().optional(),
 });
 
 export const expirationRulesSchema = z.object({

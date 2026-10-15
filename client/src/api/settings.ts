@@ -31,6 +31,8 @@ export interface AppearanceSettings {
   sidebarStyle: "expanded" | "collapsed";
   animationsEnabled: boolean;
   compactMode: boolean;
+  goldTone?: "royal" | "champagne" | "rose" | "bronze" | "platinum" | "emerald";
+  statusCustom?: boolean;
 }
 
 export interface ExpirationRules {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, Suspense } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, Suspense, useSyncExternalStore } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ import { translateRoleName } from "@/lib/role-display";
 import { cn } from "@/lib/utils";
 import { preloadPage } from "@/lib/page-preload";
 import { prefetchPageData, warmUpPages } from "@/lib/page-prefetch";
+import { shownTone, tonedHex } from "@/lib/gold-tone";
 import { warmPrintingFor } from "@/lib/print-warm";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
@@ -512,7 +513,9 @@ export function LuluShell() {
   const dark = useUiStore((s) => s.themeMode) !== "light";
   const { items, current } = useLuluNav();
   // The Royale palette: gold on black velvet, a deeper gold on ivory by day.
-  const accent = dark ? ROYALE_GOLD : ROYALE_GOLD_DAY;
+  // The accent follows the system's metal (Settings → Appearance).
+  const tone = useSyncExternalStore(shownTone.subscribe, shownTone.get);
+  const accent = tonedHex(dark ? ROYALE_GOLD : ROYALE_GOLD_DAY, tone);
   const [cmd, setCmd] = useState(false);
 
   useLuluEffects(main, animationsEnabled);

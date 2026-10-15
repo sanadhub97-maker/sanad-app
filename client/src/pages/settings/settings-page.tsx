@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { localizeServerMessage } from "@/lib/server-messages";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -66,6 +66,9 @@ import { WhatsappDigestCardPicker } from "./whatsapp-digest-card-picker";
 import { WhatsappHero, WhatsappDesk } from "@/pages/settings/whatsapp-hero";
 import { WhatsappLogo } from "@/components/common/whatsapp-logo";
 import { SettingsDesk } from "@/pages/settings/settings-desk";
+import { GOLD_TONES, applyGoldTone, toneSwatch } from "@/lib/gold-tone";
+import { useUiStore as useUiPrefs } from "@/stores/uiStore";
+import { Moon, Sun as SunIcon } from "lucide-react";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 
 /* The settings in the Royal design, as in the approved preview: the sections
@@ -455,15 +458,37 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
     onError: (err) => toast.error(getErrorMessage(err)),
   });
 
-  const colorFields: { key: keyof AppearanceSettings; label: string; tone: string }[] = [
-    { key: "primaryColor", label: t("settings.appearance.primary"), tone: "bg-blue-600" },
-    { key: "secondaryColor", label: t("settings.appearance.secondary"), tone: "bg-slate-600" },
-    { key: "accentColor", label: t("settings.appearance.accent"), tone: "bg-indigo-600" },
-    { key: "successColor", label: t("settings.appearance.success"), tone: "bg-emerald-600" },
-    { key: "warningColor", label: t("settings.appearance.warning"), tone: "bg-amber-500" },
-    { key: "dangerColor", label: t("settings.appearance.danger"), tone: "bg-rose-600" },
-    { key: "infoColor", label: t("settings.appearance.information"), tone: "bg-cyan-600" },
+  const colorFields: { key: keyof AppearanceSettings; label: string }[] = [
+    { key: "successColor", label: isRtl ? "سارية" : "Valid" },
+    { key: "warningColor", label: isRtl ? "قريبة من الانتهاء" : "Ending soon" },
+    { key: "dangerColor", label: isRtl ? "منتهية" : "Expired" },
+    { key: "infoColor", label: isRtl ? "معلومة" : "Information" },
   ];
+
+  // A tone tried here but not saved goes back to the saved one on leaving.
+  const savedTone = data?.goldTone;
+  useEffect(() => () => applyGoldTone(savedTone), [savedTone]);
+
+  // Every choice shows at once, before saving; leaving without saving puts the saved ones back.
+  const liveSidebar = watch("sidebarStyle");
+  const liveAnim = watch("animationsEnabled");
+  const liveCompact = watch("compactMode");
+  useEffect(() => {
+    if (liveSidebar) useUiStore.getState().setSidebarCollapsed(liveSidebar === "collapsed");
+  }, [liveSidebar]);
+  useEffect(() => {
+    if (typeof liveAnim === "boolean") useUiStore.getState().setAnimationsEnabled(liveAnim);
+  }, [liveAnim]);
+  useEffect(() => {
+    if (typeof liveCompact === "boolean") document.documentElement.classList.toggle("compact", liveCompact);
+  }, [liveCompact]);
+  useEffect(() => () => {
+    if (!data) return;
+    const ui = useUiStore.getState();
+    ui.setSidebarCollapsed(data.sidebarStyle === "collapsed");
+    ui.setAnimationsEnabled(data.animationsEnabled);
+    document.documentElement.classList.toggle("compact", Boolean(data.compactMode));
+  }, [data]);
 
   if (isLoading || !data) {
     return (
@@ -493,6 +518,9 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
             </div>
           </div>
         </CardHeader>
+        <CardContent className="pt-0">
+          <ModePicker isRtl={isRtl} />
+        </CardContent>
       </Card>
 
       {/* Sidebar Layout */}
@@ -565,50 +593,81 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
         </CardContent>
       </Card>
 
-      {/* Brand Color Swatches */}
+      {/* The design's metal and the status colours */}
       <Card className="specular-border overflow-hidden border-border/80">
         <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
           <div className="flex items-center gap-3.5">
             <AppleIcon icon={Palette} tone="purple" size="md" />
             <div>
-              <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                {isRtl ? "منظومة ألوان العلامة التجارية" : "Brand Color System"}
-              </CardTitle>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">{isRtl ? "لون النظام" : "The system's colour"}</CardTitle>
               <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                {isRtl ? "تخصيص لوحة الألوان الأساسية والحالات التنبيهية في واجهة النظام" : "Customize interface primary accent swatches and status alerts"}
+                {isRtl ? "لون المعدن اللي بيتلوّن بيه التصميم كله: الإطارات والعناوين والأزرار والأيقونات. اضغط على أي لون تشوفه على طول، واحفظ لما يعجبك." : "The metal the whole design is drawn in: frames, titles, buttons and icons. Click a tone to see it at once, then save."}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {colorFields.map((f) => {
-              const currentValue = watch(f.key as keyof AppearanceSettings) as string;
-              return (
-                <div
-                  key={f.key}
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="space-y-0.5">
-                    <Label className="text-xs font-bold text-foreground">{f.label}</Label>
-                    <div className="font-mono text-[11px] text-muted-foreground uppercase">
-                      {currentValue || "#000000"}
-                    </div>
-                  </div>
-                  <div className="relative flex items-center justify-center">
-                    <input
-                      type="color"
-                      {...register(f.key as never)}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                    />
-                    <div
-                      className="h-8 w-8 rounded-full border-2 border-white dark:border-slate-800 shadow-md ring-1 ring-black/10 transition-transform hover:scale-110"
-                      style={{ backgroundColor: currentValue || "#000" }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+        <CardContent className="pt-6 space-y-6">
+          <Controller
+            control={control}
+            name="goldTone"
+            render={({ field }) => (
+              <div className="ap-tones">
+                {GOLD_TONES.map((tone) => {
+                  const on = (field.value ?? "royal") === tone.id;
+                  return (
+                    <button
+                      key={tone.id}
+                      type="button"
+                      aria-pressed={on}
+                      className={on ? "ap-tone on" : "ap-tone"}
+                      onClick={() => {
+                        field.onChange(tone.id);
+                        applyGoldTone(tone.id);
+                      }}
+                    >
+                      <span className="sw" style={{ background: toneSwatch(tone.id) }} />
+                      <b>{isRtl ? tone.ar : tone.en}</b>
+                      {on && <Check className="ok" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+
+          <div className="ap-status">
+            <div className="ap-status-h">
+              <div>
+                <b>{isRtl ? "ألوان الحالات" : "Status colours"}</b>
+                <small>{isRtl ? "لون «سارية» و«قريبة من الانتهاء» و«منتهية» و«معلومة» في كل الموقع." : "The colours of valid, ending soon, expired and information across the site."}</small>
+              </div>
+              <Controller
+                control={control}
+                name="statusCustom"
+                render={({ field }) => (
+                  <label className="flex items-center gap-2 text-xs font-bold">
+                    {isRtl ? "ألوان خاصة بيّا" : "My own colours"}
+                    <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+                  </label>
+                )}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" style={{ opacity: watch("statusCustom") ? 1 : 0.45 }}>
+              {colorFields.map((f) => {
+                const currentValue = watch(f.key as keyof AppearanceSettings) as string;
+                return (
+                  <label key={f.key} className="ap-swatch">
+                    <span className="dot" style={{ backgroundColor: currentValue || "#000" }}>
+                      <input type="color" disabled={!watch("statusCustom")} {...register(f.key as never)} />
+                    </span>
+                    <span>
+                      <b>{f.label}</b>
+                      <small dir="ltr">{(currentValue || "").toUpperCase()}</small>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -2330,6 +2389,26 @@ export function AssetUploadCard({
           <span className="text-[11px] text-muted-foreground mt-1 font-medium">{aspectHint}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Light or dark for the person using the site (kept on their device), like the top bar's button. */
+function ModePicker({ isRtl }: { isRtl: boolean }) {
+  const mode = useUiPrefs((u) => u.themeMode);
+  const setMode = useUiPrefs((u) => u.setThemeMode);
+  const opts = [
+    { id: "dark" as const, icon: Moon, ar: "غامق", en: "Dark" },
+    { id: "light" as const, icon: SunIcon, ar: "فاتح", en: "Light" },
+  ];
+  return (
+    <div className="ap-modes">
+      {opts.map((o) => (
+        <button key={o.id} type="button" aria-pressed={(mode === "light" ? "light" : "dark") === o.id} className={(mode === "light" ? "light" : "dark") === o.id ? "on" : undefined} onClick={() => setMode(o.id)}>
+          <o.icon />
+          {isRtl ? o.ar : o.en}
+        </button>
+      ))}
     </div>
   );
 }

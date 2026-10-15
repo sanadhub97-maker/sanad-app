@@ -70,7 +70,7 @@
     --lux-spot-edge: rgba(37, 99, 235, 0.45);
     --lux-a1: rgba(56, 189, 248, 0.35);
     --lux-a2: rgba(45, 212, 176, 0.28);
-    --lux-a3: rgba(246, 196, 120, 0.28);
+    --lux-a3: rgb(var(--g-f6c478, 246 196 120) / 0.28);
     --lux-a4: rgba(168, 85, 247, 0.2);
   }
 
@@ -134,7 +134,7 @@
     --lux-spot-edge: rgba(125, 211, 252, 0.7);
     --lux-a1: rgba(56, 189, 248, 0.24);
     --lux-a2: rgba(45, 212, 176, 0.18);
-    --lux-a3: rgba(232, 197, 138, 0.14);
+    --lux-a3: rgb(var(--g-e8c58a, 232 197 138) / 0.14);
     --lux-a4: rgba(168, 85, 247, 0.2);
   }
 
@@ -277,7 +277,7 @@
   }
 
   .glow-amber {
-    box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.25);
+    box-shadow: 0 0 25px -4px rgb(var(--g-f59e0b, 245 158 11) / 0.25);
   }
 
   .glow-rose {
@@ -553,6 +553,8 @@
 html.compact {
   font-size: 14px;
 }
+html.compact .lu-main { zoom: 0.9; }
+
 
 /* Settings → WhatsApp live feed: news-ticker strip. The track holds two
    copies of the row and slides by exactly one copy, so it loops seamlessly. */
@@ -591,7 +593,7 @@ html.compact {
   background-size: 16px 16px;
 }
 .wa-chat-pattern-light {
-  background-color: #efeae2;
+  background-color: rgb(var(--g-efeae2, 239 234 226));
   background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 16px 16px;
 }
@@ -786,7 +788,7 @@ html[dir="ltr"] .task-title { background-position: left 58%; }
   border-radius: inherit;
   padding: 1.5px;
   pointer-events: none;
-  background: conic-gradient(from var(--lux-ang), transparent 0 60%, #e8c58a 75%, hsl(var(--destructive)) 85%, transparent 95%);
+  background: conic-gradient(from var(--lux-ang), transparent 0 60%, rgb(var(--g-e8c58a, 232 197 138)) 75%, hsl(var(--destructive)) 85%, transparent 95%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -802,7 +804,7 @@ html[dir="ltr"] .task-title { background-position: left 58%; }
   box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.35);
 }
 .glow-aura-amber {
-  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 25px -4px rgb(var(--g-f59e0b, 245 158 11) / 0.35);
 }
 .glow-aura-rose {
   box-shadow: 0 0 25px -4px rgba(244, 63, 94, 0.35);

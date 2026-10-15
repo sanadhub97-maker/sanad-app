@@ -18,6 +18,10 @@ export interface AppearanceSettings {
   sidebarStyle: "expanded" | "collapsed";
   animationsEnabled: boolean;
   compactMode: boolean;
+  /** The metal of the royal design (client lib/gold-tone). */
+  goldTone?: "royal" | "champagne" | "rose" | "bronze" | "platinum" | "emerald";
+  /** The status colours replace the design's own only when the admin turns this on. */
+  statusCustom?: boolean;
 }
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
@@ -33,6 +37,8 @@ export const DEFAULT_APPEARANCE: AppearanceSettings = {
   sidebarStyle: "expanded",
   animationsEnabled: true,
   compactMode: false,
+  goldTone: "royal",
+  statusCustom: false,
 };
 
 const APPEARANCE_KEY = "appearance";
