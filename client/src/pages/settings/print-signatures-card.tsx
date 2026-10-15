@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarDays, Eye, ImagePlus, Loader2, PenLine, Plus, Save, Stamp, Trash2 } from "lucide-react";
+import { Award, CalendarDays, Eye, FileBarChart, ImagePlus, Loader2, PenLine, Plus, Receipt, Save, Stamp, Trash2, UserRound, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,11 +20,11 @@ import { AuthedFileImage } from "@/components/common/authed-file-image";
 import { filesApi } from "@/api/files";
 import { AssetUploadCard } from "./settings-page";
 
-const DOCS: { id: SignatureDocument; ar: string; en: string }[] = [
-  { id: "report", ar: "التقارير", en: "Reports" },
-  { id: "voucher", ar: "سند الصرف", en: "Payment voucher" },
-  { id: "profile", ar: "ملف الموظف", en: "Employee profile" },
-  { id: "certificate", ar: "الشهادات والتعريفات", en: "Certificates" },
+const DOCS: { id: SignatureDocument; ar: string; en: string; icon: LucideIcon }[] = [
+  { id: "report", ar: "التقارير", en: "Reports", icon: FileBarChart },
+  { id: "voucher", ar: "سند الصرف", en: "Payment voucher", icon: Receipt },
+  { id: "profile", ar: "ملف الموظف", en: "Employee profile", icon: UserRound },
+  { id: "certificate", ar: "الشهادات والتعريفات", en: "Certificates", icon: Award },
 ];
 const MAX_BOXES = 3;
 
@@ -199,7 +199,8 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
 
         {/* Per-document texts */}
         <div className="space-y-4 rounded-2xl border border-border/70 p-4">
-          <div className="flex flex-wrap gap-2" role="tablist">
+          {/* the documents, large enough to read and pick */}
+          <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border/70 bg-muted/30 p-1.5 lg:grid-cols-4" role="tablist">
             {DOCS.map((d) => (
               <button
                 key={d.id}
@@ -208,10 +209,11 @@ export function PrintSignaturesCard({ canEdit, isRtl }: { canEdit: boolean; isRt
                 aria-selected={doc === d.id}
                 onClick={() => setDoc(d.id)}
                 className={cn(
-                  "rounded-xl px-3.5 py-1.5 text-xs font-bold transition-colors",
-                  doc === d.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  "flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[15px] font-bold transition-all",
+                  doc === d.id ? "bg-primary text-primary-foreground shadow-md" : "text-foreground/80 hover:bg-muted hover:text-foreground"
                 )}
               >
+                <d.icon className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
                 {isRtl ? d.ar : d.en}
               </button>
             ))}
