@@ -764,3 +764,18 @@ select option { background: #0f1014; color: #f1e9d8; }
 .lu-app .rx-dcards > .rx-ins { padding: 14px 16px 12px !important; overflow: hidden; }
 .rx-dcards > * { min-width: 0; }
 .rx-ins .num::before, .rx-ins .num::after { min-width: 0; }
+
+/* the document hero (DocHero) on the lacquer: its ring, status pill and life track in gold */
+.rc-hero.rx-doc { --surf: #14120e; --track: rgba(214, 182, 120, 0.16); --muted: rgba(242, 234, 216, 0.6); --ink2: #e9dcc0; }
+.rc-hero.rx-doc .rx-lux-in svg { width: 46px; height: 46px; color: #f3dfae; filter: drop-shadow(0 0 10px rgba(243, 223, 174, 0.35)); }
+.rc-hero.rx-doc .sub > span { display: inline-flex; align-items: center; gap: 6px; }
+.rc-hero.rx-doc .sub svg { width: 15px; height: 15px; color: #c9a464; }
+.rc-hero.rx-doc .sub .rp-mono { color: #f3dfae; letter-spacing: 0.04em; }
+.rc-hero.rx-doc .rc-chips .rp-pill { font-weight: 800; }
+.rc-hero.rx-doc .rc-big b { text-shadow: 0 0 18px color-mix(in srgb, var(--sc) 45%, transparent); }
+.rc-hero.rx-doc .rc-life { margin: 0 22px; padding: 18px 8px 30px; border-top: 1px solid rgba(214, 182, 120, 0.2); }
+.rc-hero.rx-doc .rc-step b { color: #f3dfae; }
+.rc-hero.rx-doc .rc-step .n { background: #1b1811; border-color: rgba(214, 182, 120, 0.35); color: #c9a464; }
+.rc-hero.rx-doc .rc-step.done .n { background: var(--sc); border-color: var(--sc); color: #fff; }
+.rc-hero.rx-doc .rc-now i { background: #14120e; }
+.rc-hero.rx-doc .rc-acts .rc-btn:not(.pri) { background: rgba(255, 255, 255, 0.04); border-color: rgba(214, 182, 120, 0.3); color: #f2ead8; }

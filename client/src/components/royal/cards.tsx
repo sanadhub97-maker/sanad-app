@@ -592,11 +592,25 @@ export function DocHero({ kind, kindCode, icon: Icon, owner, ownerIcon: OwnerIco
   const { days, used, left } = lifeOf(issueDate, expiryDate);
   const st = stateOf(days);
   return (
-    <div className={cn("rc-hero rp-rise", st.cls)} style={css({ "--i": 1, "--sc": st.c, "--kc": kindColor(kindCode) })}>
+    <div className={cn("rc-hero rx-lux rx-doc rp-rise", st.cls)} style={css({ "--i": 1, "--sc": st.c, "--kc": kindColor(kindCode) })}>
+      <i className="rx-lux-gw" aria-hidden="true" />
+      <i className="rx-lux-c c1" aria-hidden="true" />
+      <i className="rx-lux-c c2" aria-hidden="true" />
       <div className="rc-hero-in">
         <div className="rc-id">
-          <span className="rc-tile">
-            <Icon />
+          <span className="rx-lux-medal">
+            <svg viewBox="0 0 146 146" aria-hidden="true">
+              <g fill="none" stroke="currentColor" strokeWidth=".6" opacity=".75">
+                {ROSE.map((d, k) => (
+                  <path key={k} d={d} />
+                ))}
+              </g>
+            </svg>
+            <span className="rc-tile">
+              <span className="rx-lux-in">
+                <Icon />
+              </span>
+            </span>
           </span>
           <div>
             <h1>{kind}</h1>

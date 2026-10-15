@@ -351,3 +351,15 @@ html.rx-light .rx-dc.dc-muni { background: radial-gradient(320px 200px at 90% -1
 html.rx-light .rx-dc.dc-cd { background: radial-gradient(320px 200px at 90% -10%, rgba(168, 40, 27, 0.13), transparent 65%), linear-gradient(140deg, #ffffff, #fbefec 50%, #f3ead6); }
 html.rx-light .rx-dc.dc-clean { background: radial-gradient(320px 200px at 90% -10%, rgba(107, 75, 184, 0.13), transparent 65%), linear-gradient(140deg, #ffffff, #f3effa 50%, #f3ead6); }
 html.rx-light .rx-dc.dc-h24 { background: radial-gradient(320px 200px at 90% -10%, rgba(47, 106, 168, 0.15), transparent 65%), linear-gradient(140deg, #ffffff, #eff3fa 50%, #f3ead6); }
+
+/* the document hero by day */
+html.rx-light .rc-hero.rx-doc { --surf: #fffdf8; --track: rgba(154, 116, 51, 0.16); --muted: #7a6c55; --ink2: #3d3428; }
+html.rx-light .rc-hero.rx-doc .rx-lux-in svg { color: #6b4e1d; filter: none; }
+html.rx-light .rc-hero.rx-doc .sub svg { color: #9a7433; }
+html.rx-light .rc-hero.rx-doc .sub .rp-mono { color: #5e4418; }
+html.rx-light .rc-hero.rx-doc .rc-life { border-top-color: rgba(154, 116, 51, 0.22); }
+html.rx-light .rc-hero.rx-doc .rc-step b { color: #5e4418; }
+html.rx-light .rc-hero.rx-doc .rc-step .n { background: #fffaf0; border-color: rgba(154, 116, 51, 0.35); color: #9a7433; }
+html.rx-light .rc-hero.rx-doc .rc-step.done .n { background: var(--sc); border-color: var(--sc); color: #fff; }
+html.rx-light .rc-hero.rx-doc .rc-now i { background: #fffdf8; }
+html.rx-light .rc-hero.rx-doc .rc-acts .rc-btn:not(.pri) { background: #fffdf8; border-color: rgba(154, 116, 51, 0.3); color: #3d3428; }
