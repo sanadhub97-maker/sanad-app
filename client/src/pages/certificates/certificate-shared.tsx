@@ -113,6 +113,8 @@ export function useSigners() {
   const saved = (b: SignerBox) => tr(b.nameAr || b.nameEn, b.nameEn || b.nameAr).trim();
   return {
     info: data,
+    names,
+    setNames,
     boxes: boxes.map((b, i) => ({ title: tr(b.ar || b.en, b.en || b.ar), saved: saved(b), hasNameImage: b.hasNameImage, name: names[i] ?? "" })),
     setName: (i: number, v: string) => setNames((prev) => { const next = [...prev]; next[i] = v; return next; }),
     param: JSON.stringify(boxes.map((_, i) => (names[i] ?? "").trim())),

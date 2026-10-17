@@ -1017,3 +1017,29 @@ select option { background: #0f1014; color: rgb(var(--g-f1e9d8, 241 233 216)); }
 .cu-hero.rx-cu-band .rx-medal b svg { width: 30px; height: 30px; stroke-width: 1.9; color: rgb(var(--g-f6e7c4, 246 231 196)); filter: drop-shadow(0 0 8px rgb(var(--g-f3dfae, 243 223 174) / 0.6)); }
 .cu-hero.rx-cu-band h1 { font-size: 36px !important; }
 @media (max-width: 599px) { .cu-hero.rx-cu-band .rx-medal { width: 76px; height: 76px; } .cu-hero.rx-cu-band h1 { font-size: 26px !important; } }
+
+/* ===== One type scale for the whole site =====
+   1. the page title (its band, the settings crown, the WhatsApp registry, the home welcome)  36
+   2. a secondary band's title (the week on Daily tasks)                                    28
+   3. a section heading in a page                                                           22
+   4. a card or panel title                                                                 18
+   5. a small group title (a day, a list's group)                                           15
+   and their words: under the page title 16, under a card title 13.5 */
+:root { --ts-title: 36px; --ts-band: 28px; --ts-section: 22px; --ts-card: 18px; --ts-group: 15px; --ts-lead: 16px; --ts-desc: 13.5px; }
+@media (max-width: 599px) { :root { --ts-title: 27px; --ts-band: 23px; --ts-section: 19px; --ts-card: 16.5px; --ts-group: 14.5px; --ts-lead: 15px; --ts-desc: 13px; } }
+
+/* card titles and descriptions outside a page (in a dialog) */
+.ts-card { font-size: 17px; }
+.ts-desc { font-size: 14px; }
+
+/* what is drawn as a small copy of a printed sheet keeps its own sizes */
+.lu-main h1:not(.xp-sheet *, [role="dialog"] *),
+.lu-main .rc-hero h1, .lu-main .wr-title, .lu-main .px-welcome.px-home h2, .lu-main .cu-hero h1 { font-size: var(--ts-title) !important; font-weight: 900 !important; line-height: 1.3 !important; }
+.lu-main .px-welcome:not(.px-home) h2 { font-size: var(--ts-band) !important; font-weight: 900 !important; line-height: 1.35 !important; }
+.lu-main h2:not(.xp-sheet *, [role="dialog"] *, .px-welcome *, .wr-title) { font-size: var(--ts-section) !important; font-weight: 900 !important; line-height: 1.35 !important; }
+.lu-main h3:not(.xp-sheet *, [role="dialog"] *), .lu-main .ts-card { font-size: var(--ts-card) !important; font-weight: 800 !important; line-height: 1.4 !important; }
+.lu-main h4:not(.xp-sheet *, [role="dialog"] *) { font-size: var(--ts-group) !important; font-weight: 700 !important; line-height: 1.45 !important; }
+.lu-main .ry-head p, .lu-main .rc-hero .sub, .lu-main .px-welcome .tx > p { font-size: var(--ts-lead) !important; line-height: 1.6 !important; }
+.lu-main .ts-desc, .lu-main .px-chd small, .lu-main .xp-hint { font-size: var(--ts-desc) !important; line-height: 1.55 !important; }
+/* the cards on the WhatsApp page whose titles were in the registry's own scale */
+.lu-main .ts-card + .ts-desc { margin-top: 3px; }

@@ -59,7 +59,9 @@ export const createClearanceSchema = z.object({
   /** The employee's open items checked back in on this clearance (null condition = still out). */
   returns: z.array(z.object({ id: z.string().min(1), condition: z.enum(RETURN_CONDITIONS).nullable() })).max(200).default([]),
 });
-export const updateClearanceSchema = createClearanceSchema.omit({ employeeId: true });
+export const updateClearanceSchema = createClearanceSchema.extend({
+  employeeId: z.string().min(1).optional(),
+});
 
 export type ListQuery = z.infer<typeof listQuerySchema>;
 export type CreateHandoverInput = z.infer<typeof createHandoverSchema>;

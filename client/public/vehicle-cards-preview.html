@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>سند رويال — الإصدار الإمبراطوري الفائق لبطاقات الأسطول (Imperial Showcase)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zain:wght@400;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Exact Sanad Royale Tokens (royale.css & px.css) */
+      --bg: #07070a;
+      --bg-2: #0a0b10;
+      --surface: #0f1014;
+      --surface-2: #14161e;
+      --surface-3: #1b1e29;
+      --line: rgba(214, 182, 120, 0.20);
+      --line-2: rgba(214, 182, 120, 0.38);
+      --fg: #f5f0e4;
+      --fg-2: #e6decb;
+      --muted: #a39c8c;
+      --dim: #6b665b;
+
+      --accent: #c9a464;
+      --gold-bright: #fff3d6;
+      --gold-mid: #e8cc8e;
+      --gold-deep: #8a6a35;
+
+      /* Exact Site Status Colors */
+      --l-green: #7ccfa2;
+      --l-amber: #e6b964;
+      --l-rose: #ee8f86;
+      --l-blue: #90b8e8;
+
+      --rx-foil: linear-gradient(115deg, #7d5d27 0%, #f3dfae 18%, #c9a464 36%, #fff3d6 50%, #a5803f 68%, #e8cc8e 84%, #8a6a35 100%);
+      --font-sans: 'Zain', system-ui, -apple-system, sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    }
+
+    @property --rx-ang {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--fg);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, rgba(201, 164, 100, 0.18), transparent 62%),
+        radial-gradient(1000px 650px at 10% 110%, rgba(124, 92, 38, 0.15), transparent 62%),
+        radial-gradient(700px 500px at 50% 35%, rgba(201, 164, 100, 0.07), transparent 70%),
+        #07070a;
+      min-height: 100vh;
+      padding: 24px 26px 72px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Royal Architectural Diamond Mesh Background */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(232, 204, 142, 0.07) 1px, transparent 1px),
+        linear-gradient(rgba(214, 182, 120, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(214, 182, 120, 0.02) 1px, transparent 1px);
+      background-size: 36px 36px, 72px 72px, 72px 72px;
+      mask-image: radial-gradient(circle at 50% 35%, #000 35%, transparent 90%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .rx-motes {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.78;
+    }
+
+    .px-page {
+      position: relative;
+      z-index: 2;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .font-mono-num {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    /* ═══════════ IMPERIAL CROWN HEADER BAR ═══════════ */
+    .px-top {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 26px;
+      margin-bottom: 22px;
+      border-radius: 14px;
+      background:
+        radial-gradient(650px 220px at 80% 0%, rgba(201, 164, 100, 0.18), transparent 70%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0)),
+        #0f1014;
+      border: 1px solid rgba(214, 182, 120, 0.34);
+      box-shadow:
+        0 30px 65px -28px #000,
+        0 0 40px -15px rgba(201, 164, 100, 0.25),
+        inset 0 0 0 4px #0f1014,
+        inset 0 0 0 5px rgba(214, 182, 120, 0.14);
+      flex-wrap: wrap;
+      overflow: hidden;
+    }
+    .px-top::after {
+      content: "";
+      position: absolute;
+      inset: 0 8% auto 8%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #c9a464, #fff3d6, #c9a464, transparent);
+      box-shadow: 0 0 18px #fff3d6;
+    }
+    .px-TitleArea {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .px-av {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%, #fff3d6, #c9a464 55%, #5c441c);
+      color: #120e06;
+      box-shadow:
+        0 0 0 3px #0f1014,
+        0 0 0 4.5px rgba(243, 223, 174, 0.72),
+        0 10px 26px -4px rgba(201, 164, 100, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .px-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #fff3d6;
+      background: linear-gradient(90deg, rgba(201, 164, 100, 0.22), rgba(201, 164, 100, 0.08));
+      border: 1px solid rgba(243, 223, 174, 0.42);
+      padding: 2.5px 13px;
+      border-radius: 999px;
+      margin-bottom: 5px;
+      box-shadow: 0 0 18px -4px rgba(201, 164, 100, 0.45);
+    }
+    .px-eyebrow i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff3d6;
+      box-shadow: 0 0 10px #fff3d6;
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.4; }
+    }
+    .px-h1 {
+      font-size: 32px;
+      font-weight: 900;
+      background: var(--rx-foil);
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: rx-foil-shift 6s ease-in-out infinite;
+      line-height: 1.15;
+      filter: drop-shadow(0 2px 12px rgba(201, 164, 100, 0.22));
+    }
+    @keyframes rx-foil-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .px-sub {
+      font-size: 14.5px;
+      color: var(--fg-2);
+      opacity: 0.88;
+    }
+
+    /* ═══════════ SITE BUTTONS (.px-btn) ═══════════ */
+    .px-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .px-btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(214, 182, 120, 0.38);
+      color: #f5ecda;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(.2, .9, .2, 1);
+      text-decoration: none;
+    }
+    .px-btn:hover {
+      background: rgba(201, 164, 100, 0.18);
+      border-color: #fff3d6;
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px -6px rgba(201, 164, 100, 0.48);
+    }
+    .px-btn.pri {
+      background: var(--rx-foil);
+      background-size: 200% 100%;
+      color: #140f06;
+      border: 1px solid #fff3d6;
+      font-weight: 900;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.65) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.45) inset,
+        0 10px 28px -6px rgba(201, 164, 100, 0.78);
+    }
+    .px-btn.pri:hover {
+      filter: brightness(1.09);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.75) inset,
+        0 16px 36px -4px rgba(243, 223, 174, 0.95);
+    }
+
+    /* ═══════════ KPI STAT ROW (.px-stats / .px-stat) ═══════════ */
+    .px-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 980px) {
+      .px-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    .px-stat {
+      position: relative;
+      background:
+        radial-gradient(260px 130px at 85% 0%, rgba(201, 164, 100, 0.16), transparent 70%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        #0f1014;
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      border-radius: 11px;
+      padding: 15px 18px;
+      box-shadow:
+        0 22px 48px -28px #000,
+        inset 0 0 0 3px #0f1014,
+        inset 0 0 0 4px rgba(214, 182, 120, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .px-stat::after {
+      content: "";
+      position: absolute;
+      inset: 0 14% auto 14%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, #fff3d6, transparent);
+    }
+    .px-stat .l {
+      font-size: 13.5px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .px-stat .v {
+      font-size: 32px;
+      font-weight: 900;
+      background: var(--rx-foil);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ═══════════ FILTER TABS (.px-seg) ═══════════ */
+    .px-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .px-seg {
+      display: inline-flex;
+      background: #0a0b0f;
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      border-radius: 9px;
+      padding: 4px;
+      gap: 4px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.8);
+    }
+    .px-seg button {
+      height: 32px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s;
+    }
+    .px-seg button.on {
+      background: linear-gradient(180deg, rgba(201, 164, 100, 0.28), rgba(201, 164, 100, 0.10));
+      color: #fff3d6;
+      box-shadow: inset 0 0 0 1px rgba(243, 223, 174, 0.5), 0 4px 14px -4px rgba(201, 164, 100, 0.4);
+    }
+    .px-seg .cnt {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--fg-2);
+    }
+    .px-in {
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: #0a0b0f;
+      border: 1px solid rgba(214, 182, 120, 0.30);
+      color: var(--fg);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .px-in:focus {
+      border-color: #fff3d6;
+      box-shadow: 0 0 0 3px rgba(201, 164, 100, 0.20);
+    }
+
+    /* ═══════════ EXACT OUTLINED GLOWING STATUS BADGE (.px-bd from royale.css) ═══════════ */
+    .px-bd {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(0, 0, 0, 0.42);
+      box-shadow: inset 0 0 0 1px currentColor;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .px-bd::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+    .px-bd.g { color: var(--l-green); }
+    .px-bd.a { color: var(--l-amber); }
+    .px-bd.r {
+      color: var(--l-rose);
+      animation: rx-pulse-bad 1.9s ease-in-out infinite;
+    }
+    @keyframes rx-pulse-bad {
+      0%, 100% { box-shadow: inset 0 0 0 1px currentColor, 0 0 0 0 rgba(238, 143, 134, 0); }
+      50%      { box-shadow: inset 0 0 0 1px currentColor, 0 0 18px 0px rgba(238, 143, 134, 0.9); }
+    }
+
+    /* ═══════════ IMPERIAL JEWEL-BOX VEHICLE CARDS GRID ═══════════ */
+    .rx-fleet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+      gap: 26px;
+    }
+    @media (max-width: 520px) {
+      .rx-fleet-grid { grid-template-columns: 1fr; }
+    }
+
+    .rx-vcard {
+      position: relative;
+      background:
+        radial-gradient(125% 65% at 50% 0%, var(--paint-ambient, rgba(201, 164, 100, 0.14)), transparent 70%),
+        linear-gradient(180deg, #141720 0%, #0d0e14 52%, #08090d 100%);
+      border: 1px solid rgba(214, 182, 120, 0.34);
+      border-radius: 16px;
+      box-shadow:
+        0 38px 80px -28px rgba(0, 0, 0, 0.98),
+        0 0 48px -16px var(--card-accent, rgba(201, 164, 100, 0.35)),
+        inset 0 0 0 4px #0a0b0f,
+        inset 0 0 0 5.5px rgba(214, 182, 120, 0.18);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      animation: cardEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(26px) scale(0.975); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .rx-vcard:hover {
+      border-color: rgba(255, 243, 214, 0.65);
+    }
+
+    /* Dual Counter-Rotating Conic 24K Gold Beams (.rx-beam) */
+    .rx-beam {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.8px;
+      background: conic-gradient(
+        from var(--rx-ang),
+        transparent 0 58%,
+        rgba(201, 164, 100, 0.45) 68%,
+        #fff3d6 78%,
+        #c9a464 85%,
+        transparent 92%
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.78;
+      animation: rx-spin-beam 5.5s linear infinite;
+      z-index: 8;
+    }
+    @keyframes rx-spin-beam {
+      to { --rx-ang: 360deg; }
+    }
+
+    /* Intricate SVG Royal Filigree Corner Ornaments */
+    .rx-filigree {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      pointer-events: none;
+      z-index: 9;
+      color: #e8cc8e;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 6px rgba(201, 164, 100, 0.45));
+    }
+    .rx-filigree.tr { top: 6px; right: 6px; }
+    .rx-filigree.tl { top: 6px; left: 6px; transform: scaleX(-1); }
+    .rx-filigree.br { bottom: 6px; right: 6px; transform: scaleY(-1); }
+    .rx-filigree.bl { bottom: 6px; left: 6px; transform: scale(-1, -1); }
+
+    /* ═══════════ 1. IMPERIAL 60FPS MULTI-LAYER PARALLAX STAGE ═══════════ */
+    .stage-wrap {
+      position: relative;
+      height: 288px;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(214, 182, 120, 0.30);
+      background:
+        radial-gradient(115% 85% at 50% 12%, var(--paint-ambient, rgba(201, 164, 100, 0.24)), transparent 72%),
+        linear-gradient(180deg, #040508 0%, #090b12 58%, #07080d 100%);
+      user-select: none;
+    }
+    .stage-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Top Telemetry HUD Bar inside Stage */
+    .stage-top-bar {
+      position: relative;
+      z-index: 22;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 16px 0;
+      flex-wrap: wrap;
+    }
+    .rx-stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3.5px 12px;
+      border-radius: 999px;
+      background: rgba(8, 9, 13, 0.86);
+      border: 1px solid rgba(243, 223, 174, 0.38);
+      backdrop-filter: blur(12px);
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff3d6;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65);
+    }
+    .rx-speed-hud {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3.5px 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(201, 164, 100, 0.24), rgba(9, 10, 14, 0.92));
+      border: 1px solid rgba(255, 243, 214, 0.55);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #fff3d6;
+      box-shadow: 0 0 18px -4px rgba(201, 164, 100, 0.55);
+    }
+    .rx-speed-hud i {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: var(--l-green);
+      box-shadow: 0 0 9px var(--l-green);
+    }
+    .paint-sphere {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.65), inset 2px 2px 4px rgba(255,255,255,0.75), 0 0 10px var(--sphere-glow, transparent);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* 3 Interactive Holographic Gantry Portals (الفحص • التأمين • الاستمارة) */
+    .stage-gates-grid {
+      position: relative;
+      z-index: 22;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      padding: 10px 16px 0;
+    }
+    .checkpoint-gate {
+      position: relative;
+      border-radius: 10px;
+      padding: 7px 10px;
+      background: linear-gradient(180deg, rgba(18, 20, 29, 0.92), rgba(9, 10, 15, 0.88));
+      border: 1px solid rgba(214, 182, 120, 0.26);
+      backdrop-filter: blur(12px);
+      transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+    .checkpoint-gate::before {
+      content: "";
+      position: absolute;
+      inset: 0 15% auto 15%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--gate-color), transparent);
+      opacity: 0.65;
+    }
+    .checkpoint-gate::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--gate-color), transparent 78%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .checkpoint-gate.gate-active {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow:
+        0 10px 26px -4px rgba(0, 0, 0, 0.85),
+        0 0 26px -2px var(--gate-color),
+        inset 0 0 0 1px var(--gate-color);
+      border-color: var(--gate-color);
+    }
+    .checkpoint-gate.gate-active::after {
+      opacity: 0.22;
+    }
+    .gate-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--fg);
+    }
+    .gate-dot {
+      width: 7.5px;
+      height: 7.5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .gate-bot {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    /* Moving Showcase Car + Wet Asphalt Reflection */
+    .stage-car-mover {
+      position: absolute;
+      bottom: 24px;
+      width: 252px;
+      height: 94px;
+      z-index: 20;
+      pointer-events: none;
+      will-change: right, transform;
+    }
+    .car-reflection {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -38px;
+      height: 46px;
+      transform: scaleY(-0.48);
+      opacity: 0.28;
+      filter: blur(2.2px);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 88%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 88%);
+      pointer-events: none;
+    }
+
+    /* High-Speed Alloy Wheel Spin */
+    .wheel-spin-fast {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: spinWheel 0.2s linear infinite;
+    }
+    @keyframes spinWheel {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(-360deg); }
+    }
+
+    /* ═══════════ 2. PER-CARD LIVE MODEL & COLOR QUICK TESTER ═══════════ */
+    .rx-tester-bar {
+      padding: 8px 16px;
+      background: linear-gradient(90deg, rgba(201, 164, 100, 0.08), rgba(201, 164, 100, 0.02));
+      border-bottom: 1px solid rgba(214, 182, 120, 0.20);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .rx-tester-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .rx-tester-lbl {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #f3dfae;
+    }
+    .rx-chip-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .rx-chip {
+      padding: 1.5px 9px;
+      border-radius: 5px;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(214, 182, 120, 0.26);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--fg-2);
+      transition: all 0.18s;
+    }
+    .rx-chip:hover {
+      border-color: #fff3d6;
+      color: #fff3d6;
+      background: rgba(201, 164, 100, 0.15);
+    }
+    .rx-chip.active {
+      background: var(--rx-foil);
+      color: #140f06;
+      border-color: #fff3d6;
+      font-weight: 900;
+      box-shadow: 0 3px 12px rgba(201, 164, 100, 0.48);
+    }
+
+    /* ═══════════ 3. VEHICLE IDENTITY, ROYAL READINESS RING & 3D SAUDI PLATE ═══════════ */
+    .rx-id-section {
+      padding: 15px 16px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid rgba(214, 182, 120, 0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    }
+    .rx-id-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    /* Royal Circular Readiness Gauge Ring */
+    .rx-gauge-wrap {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rx-gauge-val {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff3d6;
+    }
+    .rx-car-title {
+      font-size: 20.5px;
+      font-weight: 900;
+      color: var(--fg);
+      line-height: 1.18;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .rx-year-tag {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 1px 8px;
+      border-radius: 5px;
+      background: rgba(201, 164, 100, 0.18);
+      border: 1px solid rgba(243, 223, 174, 0.42);
+      color: #fff3d6;
+    }
+    .rx-car-meta {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Embossed 3D Royal Saudi Plate (.ksa-plate-pro) — Enlarged & Bold */
+    .ksa-plate-pro {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr 30px;
+      border-radius: 10px;
+      border: 2.5px solid #1e293b;
+      background: linear-gradient(180deg, #ffffff 0%, #f6f0e2 60%, #e5dcc8 100%);
+      color: #090d16;
+      box-shadow:
+        0 14px 28px -6px rgba(0, 0, 0, 0.92),
+        0 0 0 1.5px rgba(243, 223, 174, 0.68),
+        inset 0 1.5px 0 #ffffff;
+      overflow: hidden;
+      direction: ltr;
+      min-width: 194px;
+      flex-shrink: 0;
+    }
+    .ksa-plate-pro .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 11px;
+      line-height: 1.18;
+    }
+    .ksa-plate-pro .cell.num { border-right: 2px solid #334155; }
+    .ksa-plate-pro .ar {
+      font-weight: 900;
+      font-size: 17px;
+      border-bottom: 1.5px solid rgba(51, 65, 85, 0.32);
+      width: 100%;
+      text-align: center;
+      padding-bottom: 2px;
+      letter-spacing: 0.03em;
+    }
+    .ksa-plate-pro .en {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 13.5px;
+      letter-spacing: 0.1em;
+      width: 100%;
+      text-align: center;
+      padding-top: 2px;
+    }
+    .ksa-plate-pro .band {
+      background: linear-gradient(180deg, #15803d 0%, #0d4722 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5px;
+      font-weight: 900;
+      line-height: 1.15;
+      gap: 1px;
+    }
+
+    /* ═══════════ 4. THREE IMPERIAL EXPIRY TIMELINES WITH LIVE DIGITAL TICKER & MINI CARS ═══════════ */
+    .rx-timelines-wrap {
+      padding: 15px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      flex: 1;
+    }
+    .rx-doc-card {
+      position: relative;
+      border-radius: 11px;
+      padding: 11px 13px;
+      background:
+        linear-gradient(90deg, rgba(201, 164, 100, 0.05), transparent 65%),
+        rgba(255, 255, 255, 0.024);
+      border: 1px solid rgba(214, 182, 120, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.25s;
+    }
+    .rx-doc-card:hover {
+      background:
+        linear-gradient(90deg, rgba(201, 164, 100, 0.11), rgba(255, 255, 255, 0.035)),
+        rgba(255, 255, 255, 0.03);
+      border-color: rgba(243, 223, 174, 0.5);
+    }
+    .rx-doc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+    .rx-doc-title-grp {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .rx-doc-icon {
+      width: 33px;
+      height: 33px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      background: radial-gradient(circle at 30% 25%, rgba(255, 243, 214, 0.25), rgba(201, 164, 100, 0.07));
+      border: 1px solid rgba(243, 223, 174, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+    .rx-doc-name {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--fg);
+      line-height: 1.2;
+    }
+    .rx-doc-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+    .rx-doc-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Luxury Illuminated Highway Track */
+    .timeline-track {
+      position: relative;
+      height: 29px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #040508 0%, #101420 50%, #040508 100%);
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.96);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+    .timeline-dashes {
+      position: absolute;
+      inset-inline: 0;
+      height: 1.8px;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(243, 223, 174, 0.48) 0px,
+        rgba(243, 223, 174, 0.48) 14px,
+        transparent 14px,
+        transparent 28px
+      );
+      background-size: 28px 1.8px;
+      animation: dashScroll 0.28s linear infinite;
+    }
+    @keyframes dashScroll {
+      from { background-position: 0 0; }
+      to   { background-position: 28px 0; }
+    }
+    .timeline-ribbon {
+      height: 100%;
+      border-radius: 999px;
+      position: relative;
+      animation: ribbonCruise 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes ribbonCruise {
+      0%   { width: 6%; opacity: 0.38; }
+      72%  { width: var(--doc-pct, 75%); opacity: 0.96; }
+      88%  { width: var(--doc-pct, 75%); opacity: 1; }
+      100% { width: 6%; opacity: 0.38; }
+    }
+    .timeline-car-runner {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      animation: carForwardCruise 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes carForwardCruise {
+      0%   { right: 2%; opacity: 0; transform: translateY(-50%) scale(0.85); }
+      10%  { opacity: 1; transform: translateY(-50%) scale(1); }
+      72%  { right: calc(var(--doc-pct, 75%) - 46px); opacity: 1; transform: translateY(-50%) scale(1.06); }
+      88%  { right: calc(var(--doc-pct, 75%) - 46px); opacity: 1; transform: translateY(-50%) scale(1); }
+      98%  { right: calc(var(--doc-pct, 75%) - 40px); opacity: 0; }
+      100% { right: 2%; opacity: 0; }
+    }
+
+    /* ═══════════ 5. CARD FOOTER ACTIONS ═══════════ */
+    .rx-vcard-foot {
+      padding: 13px 16px;
+      border-top: 1px solid rgba(214, 182, 120, 0.20);
+      background: linear-gradient(180deg, rgba(14, 16, 22, 0.65), rgba(6, 7, 10, 0.95));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .px-ibtn {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(214, 182, 120, 0.32);
+      color: var(--fg-2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .px-ibtn:hover {
+      color: #fff3d6;
+      border-color: #fff3d6;
+      background: rgba(201, 164, 100, 0.18);
+      transform: translateY(-1.5px);
+    }
+    .px-ibtn.del:hover {
+      color: var(--l-rose);
+      border-color: var(--l-rose);
+      background: rgba(238, 143, 134, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <!-- Ambient Floating 24K Gold Dust Motes -->
+  <canvas class="rx-motes" id="rxMotes"></canvas>
+
+  <div class="px-page">
+    <!-- IMPERIAL SHOWROOM HEADER -->
+    <header class="px-top">
+      <div class="px-TitleArea">
+        <div class="px-av" style="width:54px;height:54px;">
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>
+          </svg>
+        </div>
+        <div>
+          <div class="px-eyebrow"><i></i> سند رويال · الإصدار الإمبراطوري الفائق (IMPERIAL TELEMETRY EDITION)</div>
+          <h1 class="px-h1">السيارات والمركبات — صالة العرض الإمبراطورية</h1>
+          <p class="px-sub">مشهد بارالاكس ثلاثي الأبعاد لأفق الأبراج المضيء والجسور الذهبية، خطوط انسياب هوائي وشرارات ذهبية خلف الإطارات، وانعكاس مرآة حي لكل طراز ولون</p>
+        </div>
+      </div>
+
+      <div class="px-actions">
+        <button onclick="toggleGlobalTurbo()" id="turboBtn" class="px-btn">⚡ تفعيل التيربو الملكي الدائم</button>
+        <button onclick="resetDemoData()" class="px-btn">↺ استعادة الوضع الأصلي</button>
+        <button onclick="simulateAllRenewal()" class="px-btn pri">👑 تجديد ملكي شامل للأسطول</button>
+      </div>
+    </header>
+
+    <!-- KPI STATS ROW -->
+    <section class="px-stats">
+      <div class="px-stat">
+        <div>
+          <div class="l">إجمالي الأسطول الملكي</div>
+          <div class="v">6</div>
+        </div>
+        <span class="px-bd g">جاهزية قصوى</span>
+      </div>
+      <div class="px-stat">
+        <div>
+          <div class="l">وثائق سارية المفعول</div>
+          <div class="v">10</div>
+        </div>
+        <span class="px-bd g">مؤمّن بالكامل</span>
+      </div>
+      <div class="px-stat">
+        <div>
+          <div class="l">تنتهي قريباً (خلال 30 يوم)</div>
+          <div class="v">3</div>
+        </div>
+        <span class="px-bd a">متابعة استباقية</span>
+      </div>
+      <div class="px-stat">
+        <div>
+          <div class="l">وثائق منتهية تتطلب تجديد</div>
+          <div class="v">5</div>
+        </div>
+        <span class="px-bd r">أولوية قصوى</span>
+      </div>
+    </section>
+
+    <!-- TOOLBAR & FILTER TABS -->
+    <div class="px-toolbar">
+      <div class="px-seg" id="filterTabs">
+        <button class="on" data-filter="all">الكل <span class="cnt">6</span></button>
+        <button data-filter="expired">منتهي <span class="cnt">4</span></button>
+        <button data-filter="soon">ينتهي قريباً <span class="cnt">1</span></button>
+        <button data-filter="valid">ساري <span class="cnt">1</span></button>
+      </div>
+      <input id="searchBox" class="px-in" style="width:300px;" placeholder="بحث باللوحة، نوع السيارة، السائق، الفرع..." />
+    </div>
+
+    <!-- IMPERIAL VEHICLE CARDS GRID -->
+    <section id="fleet-grid" class="rx-fleet-grid"></section>
+  </div>
+
+  <script>
+    let globalTurbo = false;
+
+    function toggleGlobalTurbo() {
+      globalTurbo = !globalTurbo;
+      const btn = document.getElementById("turboBtn");
+      if (globalTurbo) {
+        btn.classList.add("pri");
+        btn.innerHTML = "🔥 التيربو الملكي مفعّل (220 KM/H)";
+      } else {
+        btn.classList.remove("pri");
+        btn.innerHTML = "⚡ تفعيل التيربو الملكي الدائم";
+      }
+    }
+
+    /**
+     * 1. SMART VEHICLE MODEL & BODY-SHAPE DETECTOR (`detectCarModel(makeStr)`):
+     */
+    function detectCarModel(makeStr) {
+      const m = (makeStr || "").trim().toLowerCase();
+
+      if (m.includes("بكب") || m.includes("بيك") || m.includes("غمار") || m.includes("ايسوزو") || m.includes("إيسوزو") || m.includes("هايلوكس") || m.includes("هايلكس") || m.includes("شاص") || m.includes("ددسن") || m.includes("pickup") || m.includes("hilux") || m.includes("d-max") || m.includes("isuzu")) {
+        return {
+          code: "PICKUP_DOUBLE_CAB",
+          labelAr: "بيك أب غمارتين 4x4",
+          wheelFrontX: 52,
+          wheelRearX: 194,
+          wheelY: 64,
+          wheelR: 16
+        };
+      }
+
+      if (m.includes("انوفا") || m.includes("إنوفا") || m.includes("فاغن") || m.includes("واجن") || m.includes("كرنفال") || m.includes("innova") || m.includes("mpv") || m.includes("wagon")) {
+        return {
+          code: "INNOVA_MPV",
+          labelAr: "واجن عائلية MPV",
+          wheelFrontX: 52,
+          wheelRearX: 186,
+          wheelY: 65,
+          wheelR: 15
+        };
+      }
+
+      if (m.includes("لاند") || m.includes("كروزر") || m.includes("برادو") || m.includes("فورتشنر") || m.includes("تاهو") || m.includes("يوكن") || m.includes("باترول") || m.includes("جيب") || m.includes("suv") || m.includes("land") || m.includes("tahoe")) {
+        return {
+          code: "SUV_4X4",
+          labelAr: "دفع رباعي ملكي SUV",
+          wheelFrontX: 54,
+          wheelRearX: 188,
+          wheelY: 64,
+          wheelR: 17
+        };
+      }
+
+      if (m.includes("هايس") || m.includes("فان") || m.includes("باص") || m.includes("ستاريا") || m.includes("ميكروباص") || m.includes("hiace") || m.includes("van") || m.includes("bus")) {
+        return {
+          code: "HIACE_VAN",
+          labelAr: "فان نقل وإمداد",
+          wheelFrontX: 54,
+          wheelRearX: 186,
+          wheelY: 65,
+          wheelR: 15
+        };
+      }
+
+      return {
+        code: "YARIS_SEDAN",
+        labelAr: "سيدان انسيابية",
+        wheelFrontX: 52,
+        wheelRearX: 182,
+        wheelY: 65,
+        wheelR: 14.5
+      };
+    }
+
+    /**
+     * 2. SMART AUTOMOTIVE PAINT RESOLVER (`resolveCarPaint(colorStr)`):
+     */
+    function resolveCarPaint(colorStr) {
+      const s = (colorStr || "").trim().toLowerCase();
+
+      if (s.includes("ابيض") || s.includes("أبيض") || s.includes("لؤلؤ") || s.includes("white") || s.includes("pearl")) {
+        return {
+          name: colorStr || "أبيض لؤلؤي",
+          top: "#ffffff",
+          mid: "#f1f5f9",
+          deep: "#94a3b8",
+          shadow: "#334155",
+          stroke: "rgba(255,255,255,0.92)",
+          ambient: "rgba(243, 223, 174, 0.20)",
+          swatch: "linear-gradient(135deg, #ffffff, #94a3b8)"
+        };
+      }
+      if (s.includes("اسود") || s.includes("أسود") || s.includes("ملك") || s.includes("black")) {
+        return {
+          name: colorStr || "أسود ملكي",
+          top: "#64748b",
+          mid: "#1e293b",
+          deep: "#090d16",
+          shadow: "#020617",
+          stroke: "rgba(243, 223, 174, 0.8)",
+          ambient: "rgba(201, 164, 100, 0.26)",
+          swatch: "linear-gradient(135deg, #475569, #020617)"
+        };
+      }
+      if (s.includes("احمر") || s.includes("أحمر") || s.includes("عناب") || s.includes("دم") || s.includes("red") || s.includes("maroon")) {
+        return {
+          name: colorStr || "أحمر ياقوتي",
+          top: "#fda4af",
+          mid: "#e11d48",
+          deep: "#881337",
+          shadow: "#4c0519",
+          stroke: "rgba(254,205,211,0.8)",
+          ambient: "rgba(225, 29, 72, 0.26)",
+          swatch: "linear-gradient(135deg, #fb7185, #881337)"
+        };
+      }
+      if (s.includes("ازرق") || s.includes("أزرق") || s.includes("كحل") || s.includes("سماو") || s.includes("blue")) {
+        return {
+          name: colorStr || "أزرق ملكي",
+          top: "#93c5fd",
+          mid: "#2563eb",
+          deep: "#1e3a8a",
+          shadow: "#0f172a",
+          stroke: "rgba(191,219,254,0.8)",
+          ambient: "rgba(37, 99, 235, 0.26)",
+          swatch: "linear-gradient(135deg, #60a5fa, #1e3a8a)"
+        };
+      }
+      if (s.includes("ذهب") || s.includes("بيج") || s.includes("شامب") || s.includes("صحراو") || s.includes("اصفر") || s.includes("أصفر") || s.includes("gold") || s.includes("beige")) {
+        return {
+          name: colorStr || "ذهبي شامبين",
+          top: "#fff3d6",
+          mid: "#c9a464",
+          deep: "#7d5d27",
+          shadow: "#3d2808",
+          stroke: "rgba(255, 243, 214, 0.88)",
+          ambient: "rgba(201, 164, 100, 0.30)",
+          swatch: "linear-gradient(135deg, #fff3d6, #7d5d27)"
+        };
+      }
+      if (s.includes("اخضر") || s.includes("أخضر") || s.includes("زيت") || s.includes("زمرد") || s.includes("green")) {
+        return {
+          name: colorStr || "أخضر زمردي",
+          top: "#6ee7b7",
+          mid: "#059669",
+          deep: "#064e3b",
+          shadow: "#022c22",
+          stroke: "rgba(167,243,208,0.8)",
+          ambient: "rgba(16, 185, 129, 0.25)",
+          swatch: "linear-gradient(135deg, #34d399, #064e3b)"
+        };
+      }
+      return {
+        name: colorStr || "فضي ميتاليك",
+        top: "#ffffff",
+        mid: "#94a3b8",
+        deep: "#475569",
+        shadow: "#1e293b",
+        stroke: "rgba(241,245,249,0.85)",
+        ambient: "rgba(148, 163, 184, 0.24)",
+        swatch: "linear-gradient(135deg, #f8fafc, #475569)"
+      };
+    }
+
+    /**
+     * 3. IMPERIAL STUDIO-GRADE SVG VEHICLE RENDERER
+     * With animated clearcoat shimmer, trailing ruby tail-light laser streak,
+     * dual-cone Matrix LED headlights, and glowing ventilated brake rotors!
+     */
+    function renderAuthenticVehicleSVG(car, paint, statusColor, isExpired, sfx = "main") {
+      const uid = `${car.id}-${sfx}`;
+      const model = detectCarModel(car.make);
+
+      let modelSpecificBody = "";
+
+      if (model.code === "INNOVA_MPV") {
+        modelSpecificBody = `
+          <path d="M84,12 L195,12 L199,15 L80,15 Z" fill="#f3dfae" opacity="0.92" />
+          <path d="M204,15 L217,14 L214,21 L202,20 Z" fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="0.8" />
+          <path d="M12,56 C11,46 15,39 24,36 L44,31 L75,16 C82,13 92,13 108,13 L196,14 C205,14 211,17 214,25 L219,42 C221,47 221,54 219,58 C217,61 213,62 206,62 L20,62 C14,62 12,59 12,56 Z"
+                fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="1.3" />
+          <path d="M24,36 L44,31 L75,16 C82,13 92,13 108,13 L196,14 C205,14 211,17 214,25 L216,38 L16,41 Z"
+                fill="url(#shimmer-${uid})" />
+          <path d="M72,56 L166,56" stroke="#c9a464" stroke-width="2.4" stroke-linecap="round" />
+          <path d="M28,43 L212,39" stroke="#fff3d6" stroke-width="1.4" stroke-linecap="round" opacity="0.88" />
+          <path d="M77,18 L50,32 L102,32 L102,16 L85,16 C81,16 79,17 77,18 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M106,16 L106,32 L158,32 L158,16 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M162,16 L162,32 L208,31 L202,19 C199,17 195,16 189,16 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M49,32.5 L209,31.5" stroke="#fff3d6" stroke-width="1.6" stroke-linecap="round" />
+          <path d="M104,16 L104,56 M160,16 L160,55" stroke="rgba(15,23,42,0.55)" stroke-width="1.1" />
+          <rect x="88" y="36" width="10" height="2.5" rx="1.2" fill="#fff3d6" />
+          <rect x="142" y="36" width="10" height="2.5" rx="1.2" fill="#fff3d6" />
+          <path d="M13,42 L32,37 L29,45 L13,46 Z" fill="#ffffff" stroke="#fff3d6" stroke-width="1" filter="drop-shadow(0 0 10px #fff3d6)" />
+          <circle cx="19" cy="54" r="2.8" fill="#fff3d6" stroke="#c9a464" stroke-width="1" />
+          <path d="M213,32 L219,32 L220,46 L212,46 Z" fill="#f43f5e" filter="drop-shadow(0 0 10px #f43f5e)" />
+        `;
+      } else if (model.code === "PICKUP_DOUBLE_CAB") {
+        modelSpecificBody = `
+          <path d="M148,14 L154,14 L182,31 L176,31 Z" fill="#334155" stroke="#fff3d6" stroke-width="1.1" />
+          <path d="M148,14 L148,32" stroke="#f3dfae" stroke-width="3.2" />
+          <rect x="149" y="29" width="68" height="4" rx="1" fill="#0f172a" stroke="#c9a464" stroke-width="0.9" />
+          <path d="M12,52 C12,41 16,35 26,33 L54,30 L74,15 C80,11 88,10 102,10 L142,10 C146,10 148,12 148,17 L148,31 L216,31 C220,31 222,33 222,38 L222,52 C222,56 219,58 214,58 L20,58 C14,58 12,55 12,52 Z"
+                fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="1.3" />
+          <path d="M26,33 L54,30 L74,15 C80,11 88,10 102,10 L142,10 L148,31 L218,31 L218,40 L15,41 Z"
+                fill="url(#shimmer-${uid})" />
+          <line x1="148" y1="30" x2="148" y2="58" stroke="#020617" stroke-width="2.5" />
+          <rect x="72" y="57" width="76" height="3.8" rx="1.8" fill="#1e293b" stroke="#f3dfae" stroke-width="1" />
+          <path d="M77,16 L58,30 L105,30 L105,14 L84,14 C80,14 78,15 77,16 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M109,14 L109,30 L142,30 L142,14 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M107,14 L107,56" stroke="rgba(15,23,42,0.55)" stroke-width="1.2" />
+          <rect x="91" y="34" width="9" height="2.4" rx="1" fill="#fff3d6" />
+          <rect x="128" y="34" width="9" height="2.4" rx="1" fill="#fff3d6" />
+          <text x="191" y="42" fill="#fff3d6" font-size="7" font-weight="900" font-family="monospace">4x4 VIP</text>
+          <path d="M31,58 A21,21 0 0,1 73,58" fill="#050811" stroke="#c9a464" stroke-width="2.4" />
+          <path d="M173,58 A21,21 0 0,1 215,58" fill="#050811" stroke="#c9a464" stroke-width="2.4" />
+          <path d="M12,36 L16,35 L16,49 L12,49 Z" fill="#fff3d6" />
+          <path d="M15,38 L30,35 L28,43 L15,43 Z" fill="#ffffff" filter="drop-shadow(0 0 10px #fff3d6)" />
+          <rect x="216" y="34" width="5.5" height="13" rx="1.5" fill="#f43f5e" filter="drop-shadow(0 0 10px #f43f5e)" />
+          <rect x="214" y="52" width="10" height="5" rx="2" fill="#1e293b" stroke="#f3dfae" stroke-width="1" />
+        `;
+      } else if (model.code === "SUV_4X4") {
+        modelSpecificBody = `
+          <path d="M78,10 L198,10 L202,13 L74,13 Z" fill="#f3dfae" opacity="0.92" />
+          <path d="M12,54 C12,41 16,35 26,33 L56,29 L74,14 C79,11 88,10 102,10 L202,10 C209,10 213,13 215,21 L219,38 C220,45 220,53 218,58 L18,58 C14,58 12,56 12,54 Z"
+                fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="1.3" />
+          <path d="M26,33 L56,29 L74,14 L202,10 L215,21 L217,36 L15,39 Z" fill="url(#shimmer-${uid})" />
+          <path d="M77,15 L59,29 L106,29 L106,13 L83,13 Z M110,13 L110,29 L158,29 L158,13 Z M162,13 L162,29 L210,29 L206,14 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <rect x="74" y="57" width="90" height="3.5" rx="1.5" fill="#1e293b" stroke="#f3dfae" stroke-width="1" />
+          <path d="M13,38 L30,35 L28,44 L13,44 Z" fill="#ffffff" filter="drop-shadow(0 0 10px #fff3d6)" />
+          <rect x="213" y="32" width="6" height="13" rx="1.5" fill="#f43f5e" filter="drop-shadow(0 0 10px #f43f5e)" />
+        `;
+      } else if (model.code === "HIACE_VAN") {
+        modelSpecificBody = `
+          <path d="M14,56 C14,44 18,36 25,28 L38,14 C43,10 52,9 68,9 L206,9 C213,9 217,13 218,22 L219,55 C219,59 216,61 209,61 L20,61 C15,61 14,59 14,56 Z"
+                fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="1.3" />
+          <path d="M25,28 L38,14 L206,9 L218,22 L218,35 L16,36 Z" fill="url(#shimmer-${uid})" />
+          <path d="M42,14 L28,29 L74,29 L74,13 Z M79,13 L79,29 L142,29 L142,13 Z M147,13 L147,29 L211,29 L210,13 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M14,42 L26,39 L25,47 L14,47 Z" fill="#ffffff" filter="drop-shadow(0 0 10px #fff3d6)" />
+          <rect x="214" y="32" width="5" height="16" rx="1.5" fill="#f43f5e" filter="drop-shadow(0 0 10px #f43f5e)" />
+        `;
+      } else {
+        modelSpecificBody = `
+          <path d="M14,56 C13,47 18,40 30,37 L52,33 L82,17 C91,13 103,12 122,12 L158,13 C171,14 182,18 192,29 L208,33 C213,35 215,40 215,49 L214,57 C213,60 209,62 202,62 L22,62 C16,62 14,59 14,56 Z"
+                fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="1.3" />
+          <path d="M30,37 L52,33 L82,17 C91,13 103,12 122,12 L158,13 C171,14 182,18 192,29 L208,33 L212,41 L18,43 Z"
+                fill="url(#shimmer-${uid})" />
+          <path d="M34,46 Q115,42 209,36" stroke="#fff3d6" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.92" />
+          <path d="M74,56 L162,56" stroke="#c9a464" stroke-width="2.4" stroke-linecap="round" />
+          <path d="M85,19 L58,33 L114,33 L114,16 L96,16 C91,16 88,17 85,19 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M118,16 L118,33 L182,32 L168,18 C163,16 157,16 148,16 Z"
+                fill="url(#winGlass-${uid})" stroke="rgba(255,243,214,0.6)" stroke-width="1" />
+          <path d="M57,33.5 L183,32.5" stroke="#fff3d6" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M116,16 L116,56" stroke="rgba(15,23,42,0.55)" stroke-width="1.1" />
+          <rect x="98" y="37" width="9" height="2.4" rx="1" fill="#fff3d6" />
+          <rect x="148" y="36" width="9" height="2.4" rx="1" fill="#fff3d6" />
+          <path d="M158,13 L165,9 L167,13 Z" fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="0.8" />
+          <path d="M15,43 L34,38 L31,46 L15,47 Z" fill="#ffffff" stroke="#fff3d6" stroke-width="1" filter="drop-shadow(0 0 10px #fff3d6)" />
+          <path d="M14,50 L24,50 L22,56 L14,56 Z" fill="#090d16" stroke="#c9a464" stroke-width="0.8" />
+          <path d="M204,35 L214,35 L215,45 L202,44 Z" fill="#f43f5e" filter="drop-shadow(0 0 10px #f43f5e)" />
+        `;
+      }
+
+      const wf = model.wheelFrontX;
+      const wr = model.wheelRearX;
+      const wy = model.wheelY;
+      const r = model.wheelR;
+
+      return `
+        <svg viewBox="0 0 232 84" style="width:100%;height:100%;overflow:visible;">
+          <defs>
+            <linearGradient id="bodyPaint-${uid}" x1="15%" y1="0%" x2="85%" y2="100%">
+              <stop offset="0%" stop-color="${paint.top}" />
+              <stop offset="40%" stop-color="${paint.mid}" />
+              <stop offset="80%" stop-color="${paint.deep}" />
+              <stop offset="100%" stop-color="${paint.shadow}" />
+            </linearGradient>
+
+            <linearGradient id="shimmer-${uid}" x1="-40%" y1="0%" x2="60%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+              <stop offset="45%" stop-color="#ffffff" stop-opacity="0.62" />
+              <stop offset="55%" stop-color="#fff3d6" stop-opacity="0.72" />
+              <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+              <animate attributeName="x1" values="-60%;120%" dur="2.4s" repeatCount="indefinite" />
+              <animate attributeName="x2" values="20%;200%" dur="2.4s" repeatCount="indefinite" />
+            </linearGradient>
+
+            <linearGradient id="winGlass-${uid}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#334155" />
+              <stop offset="45%" stop-color="#0f172a" />
+              <stop offset="100%" stop-color="#020617" />
+            </linearGradient>
+
+            <linearGradient id="beamCone-${uid}" x1="100%" y1="50%" x2="0%" y2="50%">
+              <stop offset="0%" stop-color="#fff3d6" stop-opacity="0.96" />
+              <stop offset="45%" stop-color="${statusColor}" stop-opacity="0.38" />
+              <stop offset="100%" stop-color="${statusColor}" stop-opacity="0" />
+            </linearGradient>
+
+            <linearGradient id="tailStreak-${uid}" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.88" />
+              <stop offset="100%" stop-color="#f43f5e" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+
+          <!-- Dual-Layer Volumetric Matrix Headlight Laser Beam -->
+          <polygon points="16,46 -105,14 -105,76" fill="url(#beamCone-${uid})" />
+          <polygon points="16,45 -78,33 -78,57" fill="url(#beamCone-${uid})" opacity="0.78" />
+
+          <!-- Trailing Ruby Tail-Light Laser Streak -->
+          <rect x="218" y="36" width="46" height="4" rx="2" fill="url(#tailStreak-${uid})" />
+
+          <!-- Asphalt Shadow & Royal Neon Underglow -->
+          <ellipse cx="118" cy="73" rx="98" ry="6.8" fill="${paint.mid}" opacity="0.48" filter="blur(7px)" />
+          <ellipse cx="118" cy="73" rx="72" ry="3.5" fill="${statusColor}" opacity="0.82" filter="blur(4px)" />
+
+          <!-- Authentic Model Bodywork -->
+          ${modelSpecificBody}
+
+          <!-- Side Mirror with LED Turn Signal -->
+          <path d="M62,28 C56,28 53,31 55,34 L65,34 Z" fill="url(#bodyPaint-${uid})" stroke="${paint.stroke}" stroke-width="0.9" />
+          <circle cx="56" cy="31.5" r="1.6" fill="#fbbf24" />
+
+          <!-- Hazard Warning Flashers when Expired -->
+          ${isExpired ? `
+            <circle cx="17" cy="51" r="4.6" fill="#f59e0b">
+              <animate attributeName="opacity" values="1;0.1;1" dur="0.48s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="215" cy="49" r="4.6" fill="#f59e0b">
+              <animate attributeName="opacity" values="1;0.1;1" dur="0.48s" repeatCount="indefinite" />
+            </circle>
+          ` : ''}
+
+          <!-- Front Wheel -->
+          <g transform="translate(${wf}, ${wy})">
+            <circle r="${r}" fill="#07090e" stroke="#1e293b" stroke-width="2.8" />
+            <circle r="${r - 3.8}" fill="#141824" stroke="#f3dfae" stroke-width="1" />
+            <path d="M-8,-5 A9,9 0 0,1 -2,-9" stroke="#ef4444" stroke-width="3.5" fill="none" />
+            <g class="wheel-spin-fast">
+              <circle r="${r - 5.2}" fill="none" stroke="#fff3d6" stroke-width="2" stroke-dasharray="4.5 3" />
+              <line x1="-${r - 5}" y1="0" x2="${r - 5}" y2="0" stroke="#e8cc8e" stroke-width="1.6" />
+              <line x1="0" y1="-${r - 5}" x2="0" y2="${r - 5}" stroke="#e8cc8e" stroke-width="1.6" />
+              <line x1="-6" y1="-6" x2="6" y2="6" stroke="#c9a464" stroke-width="1.2" />
+              <line x1="6" y1="-6" x2="-6" y2="6" stroke="#c9a464" stroke-width="1.2" />
+              <circle r="3.2" fill="#fff3d6" stroke="#090d16" stroke-width="1" />
+            </g>
+          </g>
+
+          <!-- Rear Wheel -->
+          <g transform="translate(${wr}, ${wy})">
+            <circle r="${r}" fill="#07090e" stroke="#1e293b" stroke-width="2.8" />
+            <circle r="${r - 3.8}" fill="#141824" stroke="#f3dfae" stroke-width="1" />
+            <path d="M-8,-5 A9,9 0 0,1 -2,-9" stroke="#ef4444" stroke-width="3.5" fill="none" />
+            <g class="wheel-spin-fast">
+              <circle r="${r - 5.2}" fill="none" stroke="#fff3d6" stroke-width="2" stroke-dasharray="4.5 3" />
+              <line x1="-${r - 5}" y1="0" x2="${r - 5}" y2="0" stroke="#e8cc8e" stroke-width="1.6" />
+              <line x1="0" y1="-${r - 5}" x2="0" y2="${r - 5}" stroke="#e8cc8e" stroke-width="1.6" />
+              <line x1="-6" y1="-6" x2="6" y2="6" stroke="#c9a464" stroke-width="1.2" />
+              <line x1="6" y1="-6" x2="-6" y2="6" stroke="#c9a464" stroke-width="1.2" />
+              <circle r="3.2" fill="#fff3d6" stroke="#090d16" stroke-width="1" />
+            </g>
+          </g>
+        </svg>
+      `;
+    }
+
+    function renderMiniAuthenticCar(car, paint, statusColor) {
+      const model = detectCarModel(car.make);
+      let d = "";
+      if (model.code === "PICKUP_DOUBLE_CAB") {
+        d = "M3,14 C3,10 6,8 11,8 L16,3 C18,2 25,2 27,3 L28,8 L41,8 C43,8 44,9 44,13 L44,16 L4,16 Z";
+      } else if (model.code === "INNOVA_MPV" || model.code === "SUV_4X4" || model.code === "HIACE_VAN") {
+        d = "M3,14 C3,10 6,8 11,7 L18,2 C21,1.5 36,1.5 40,3 L43,9 C44,11 44,14 43,16 L4,16 Z";
+      } else {
+        d = "M3,14 C3,10 6,8 12,8 L18,3 C21,2 29,2 33,5 L41,8 C43,9 44,11 44,14 L44,16 L4,16 Z";
+      }
+
+      return `
+        <svg viewBox="0 0 48 20" style="width:48px;height:21px;overflow:visible;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.95));">
+          <polygon points="4,12 -18,4 -18,20" fill="#fff3d6" opacity="0.88" />
+          <path d="${d}" fill="${paint.mid}" stroke="${paint.top}" stroke-width="1.35" />
+          <circle cx="12" cy="16.5" r="3.7" fill="#090d16" stroke="${statusColor}" stroke-width="1.5" />
+          <circle cx="35" cy="16.5" r="3.7" fill="#090d16" stroke="${statusColor}" stroke-width="1.5" />
+        </svg>
+      `;
+    }
+
+    function renderFiligreeCorner(cls) {
+      return `
+        <svg class="rx-filigree ${cls}" viewBox="0 0 32 32" fill="none">
+          <path d="M2 2 H24 C27.3 2 30 4.7 30 8 V30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8 6 H21 C23.8 6 26 8.2 26 11 V24" stroke="currentColor" stroke-width="1" opacity="0.65"/>
+          <circle cx="25" cy="7" r="2" fill="currentColor"/>
+        </svg>
+      `;
+    }
+
+    const PRESET_MODELS = [
+      "تويوتا انوفا فاغن",
+      "تويوتا ياريس",
+      "ايسوزو بكب غمارتين",
+      "جيب لاندكروزر",
+      "تويوتا هايس فان"
+    ];
+
+    const PRESET_COLORS = [
+      "أبيض لؤلؤي",
+      "أسود ملكي",
+      "فضي ميتاليك",
+      "ذهبي شامبين",
+      "أحمر ياقوتي",
+      "أزرق ملكي",
+      "أخضر زمردي"
+    ];
+
+    const INITIAL_FLEET = [
+      {
+        id: "car-1",
+        make: "تويوتا انوفا فاغن",
+        year: 2014,
+        color: "أبيض لؤلؤي",
+        branch: "المركز الرئيسي",
+        serialNumber: "784920114",
+        plateLettersAr: "ج ح ط",
+        plateLettersEn: "J H T",
+        plateNumAr: "٤١٠٥",
+        plateNumEn: "4105",
+        driver: "محمد عزت عبدالرزاق عكاشة",
+        insurer: "التعاونية للتأمين",
+        insuranceType: "شامل",
+        inspection: { date: "2025-02-11", days: -612, span: 365 },
+        insurance: { date: "2026-10-31", days: 14, span: 365 },
+        registration: { date: "2027-01-31", days: 106, span: 1095 }
+      },
+      {
+        id: "car-2",
+        make: "تويوتا ياريس",
+        year: 2011,
+        color: "أحمر ياقوتي",
+        branch: "فرع جدة",
+        serialNumber: "552019482",
+        plateLettersAr: "د ك و",
+        plateLettersEn: "D K W",
+        plateNumAr: "٧٩٣٥",
+        plateNumEn: "7935",
+        driver: "محمد عبدالعزيز حامد حامد",
+        insurer: "بوبا العربية",
+        insuranceType: "ضد الغير",
+        inspection: { date: "2025-02-23", days: -600, span: 365 },
+        insurance: { date: "2026-10-31", days: 14, span: 365 },
+        registration: { date: "2027-01-31", days: 106, span: 1095 }
+      },
+      {
+        id: "car-3",
+        make: "ايسوزو بكب غمارتين",
+        year: 2023,
+        color: "ذهبي شامبين",
+        branch: "فرع الرياض",
+        serialNumber: "994012883",
+        plateLettersAr: "ب ط ل",
+        plateLettersEn: "B T L",
+        plateNumAr: "٦١٧٨",
+        plateNumEn: "6178",
+        driver: "عمر مصطفى محمود بركه",
+        insurer: "تكافل الراجحي",
+        insuranceType: "شامل",
+        inspection: { date: "2026-01-23", days: -266, span: 365 },
+        insurance: { date: "2026-03-19", days: -211, span: 365 },
+        registration: { date: "2027-01-31", days: 106, span: 1095 }
+      },
+      {
+        id: "car-4",
+        make: "جيب لاندكروزر",
+        year: 2024,
+        color: "أسود ملكي",
+        branch: "الإدارة العليا",
+        serialNumber: "881204910",
+        plateLettersAr: "ح ن ص",
+        plateLettersEn: "H N S",
+        plateNumAr: "٨٨٢٠",
+        plateNumEn: "8820",
+        driver: "فهد سلطان الدوسري",
+        insurer: "التعاونية للتأمين",
+        insuranceType: "شامل VIP",
+        inspection: { date: "2027-06-15", days: 241, span: 365 },
+        insurance: { date: "2027-04-10", days: 175, span: 365 },
+        registration: { date: "2027-08-22", days: 309, span: 1095 }
+      },
+      {
+        id: "car-5",
+        make: "تويوتا هايس فان",
+        year: 2022,
+        color: "أزرق ملكي",
+        branch: "المستودعات والإمداد",
+        serialNumber: "663910421",
+        plateLettersAr: "ص ق ر",
+        plateLettersEn: "S Q R",
+        plateNumAr: "٣٣١٩",
+        plateNumEn: "3319",
+        driver: "محمود السيد ابراهيم",
+        insurer: "ملاذ للتأمين",
+        insuranceType: "ضد الغير",
+        inspection: { date: "2026-11-05", days: 19, span: 365 },
+        insurance: { date: "2027-02-18", days: 124, span: 365 },
+        registration: { date: "2027-05-12", days: 207, span: 1095 }
+      },
+      {
+        id: "car-6",
+        make: "تويوتا ياريس",
+        year: 2023,
+        color: "فضي ميتاليك",
+        branch: "فرع الدمام",
+        serialNumber: "441092831",
+        plateLettersAr: "ع م ر",
+        plateLettersEn: "A M R",
+        plateNumAr: "٥٠٤٢",
+        plateNumEn: "5042",
+        driver: "عمر فاروق الزهراني",
+        insurer: "ولاء للتأمين",
+        insuranceType: "شامل",
+        inspection: { date: "2026-08-01", days: -77, span: 365 },
+        insurance: { date: "2027-01-19", days: 94, span: 365 },
+        registration: { date: "2027-03-30", days: 164, span: 1095 }
+      }
+    ];
+
+    let fleet = JSON.parse(JSON.stringify(INITIAL_FLEET));
+    let animationFrameIds = [];
+    let activeFilter = "all";
+    let searchQuery = "";
+
+    function getDocMeta(days, span = 365) {
+      if (days <= 0) {
+        return {
+          state: "expired",
+          bdCls: "r",
+          badgeText: days === 0 ? "ينتهي اليوم" : `منذ ${Math.abs(days)} يوم`,
+          color: "#ee8f86",
+          glow: "rgba(238, 143, 134, 0.56)",
+          pct: 34
+        };
+      }
+      if (days <= 30) {
+        const pct = Math.max(48, Math.min(68, Math.round((days / 30) * 62)));
+        return {
+          state: "soon",
+          bdCls: "a",
+          badgeText: `بعد ${days} يوم`,
+          color: "#e6b964",
+          glow: "rgba(230, 185, 100, 0.52)",
+          pct
+        };
+      }
+      const pct = Math.min(94, Math.max(76, Math.round((days / span) * 100)));
+      return {
+        state: "valid",
+        bdCls: "g",
+        badgeText: `بعد ${days} يوم`,
+        color: "#7ccfa2",
+        glow: "rgba(124, 207, 162, 0.48)",
+        pct
+      };
+    }
+
+    /**
+     * IMPERIAL 60FPS PARALLAX SKYLINE, AERO SLIPSTREAM & TIRE SPARKS ENGINE
+     */
+    function initStageAnimations(visibleFleet) {
+      animationFrameIds.forEach(id => cancelAnimationFrame(id));
+      animationFrameIds = [];
+
+      visibleFleet.forEach((v, idx) => {
+        const canvas = document.getElementById(`canvas-${v.id}`);
+        const carEl = document.getElementById(`mover-${v.id}`);
+        const stageEl = document.getElementById(`stage-${v.id}`);
+        const speedEl = document.getElementById(`speed-${v.id}`);
+        const cardEl = document.getElementById(`card-${v.id}`);
+        if (!canvas || !carEl || !stageEl) return;
+
+        const ctx = canvas.getContext("2d");
+        const minDays = Math.min(v.inspection.days, v.insurance.days, v.registration.days);
+        const overall = getDocMeta(minDays, 365);
+
+        let offset = idx * 45;
+        let archOffset = idx * 110;
+        let cityOffset = idx * 60;
+        let time = idx * 1.9;
+
+        const particles = Array.from({ length: 24 }, () => ({
+          x: Math.random() * 440,
+          y: 28 + Math.random() * 155,
+          len: 26 + Math.random() * 60,
+          spd: 3.0 + Math.random() * 4.8,
+          alpha: 0.14 + Math.random() * 0.42
+        }));
+
+        // Golden Tire Micro-Sparks
+        const sparks = Array.from({ length: 14 }, () => ({
+          rx: Math.random() * 55,
+          ry: Math.random() * 14,
+          size: 1 + Math.random() * 1.8,
+          spd: 1.5 + Math.random() * 3.0
+        }));
+
+        function tick() {
+          const rect = canvas.getBoundingClientRect();
+          if (rect.width === 0) return;
+          const dpr = window.devicePixelRatio || 1;
+          if (canvas.width !== Math.floor(rect.width * dpr)) {
+            canvas.width = Math.floor(rect.width * dpr);
+            canvas.height = Math.floor(rect.height * dpr);
+          }
+
+          ctx.save();
+          ctx.scale(dpr, dpr);
+          const w = rect.width;
+          const h = rect.height;
+          ctx.clearRect(0, 0, w, h);
+
+          const turboActive = globalTurbo;
+          const speedMult = turboActive ? 2.75 : 1.05;
+          offset = (offset + 5.4 * speedMult) % 64;
+          archOffset = (archOffset + 2.5 * speedMult) % 210;
+          cityOffset = (cityOffset + 0.55 * speedMult) % 320;
+          time += 0.027 * speedMult;
+
+          if (speedEl) {
+            const kmh = Math.round((turboActive ? 214 : 116) + Math.sin(time * 2.2) * 7);
+            speedEl.textContent = `${kmh} KM/H`;
+          }
+
+          const roadTop = h - 68;
+
+          // 1. Distant Parallax Royal City Skyline Silhouette
+          ctx.fillStyle = "rgba(201, 164, 100, 0.045)";
+          ctx.strokeStyle = "rgba(232, 204, 142, 0.14)";
+          ctx.lineWidth = 1;
+          const buildings = [
+            { dx: 0, bw: 28, bh: 65 },
+            { dx: 34, bw: 22, bh: 48 },
+            { dx: 64, bw: 32, bh: 88 }, // Kingdom-style tall tower
+            { dx: 104, bw: 26, bh: 54 },
+            { dx: 138, bw: 36, bh: 74 },
+            { dx: 182, bw: 24, bh: 44 },
+            { dx: 214, bw: 30, bh: 82 },
+            { dx: 252, bw: 28, bh: 58 },
+            { dx: 286, bw: 26, bh: 46 }
+          ];
+          for (let tile = -320 + cityOffset; tile < w + 320; tile += 320) {
+            buildings.forEach(b => {
+              const bx = tile + b.dx;
+              const by = roadTop - b.bh;
+              ctx.fillRect(bx, by, b.bw, b.bh);
+              ctx.strokeRect(bx, by, b.bw, b.bh);
+            });
+          }
+
+          // 2. Passing Golden Highway Light Arches
+          for (let ax = -120 + archOffset; ax < w + 120; ax += 210) {
+            const poleGrad = ctx.createLinearGradient(ax, 36, ax, roadTop);
+            poleGrad.addColorStop(0, "rgba(255, 243, 214, 0.45)");
+            poleGrad.addColorStop(1, "rgba(201, 164, 100, 0.04)");
+            ctx.strokeStyle = poleGrad;
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(ax, roadTop);
+            ctx.lineTo(ax, 50);
+            ctx.lineTo(ax - 26, 40);
+            ctx.stroke();
+
+            const lampGlow = ctx.createRadialGradient(ax - 26, 40, 1, ax - 26, 40, 28);
+            lampGlow.addColorStop(0, "rgba(255, 243, 214, 0.72)");
+            lampGlow.addColorStop(1, "transparent");
+            ctx.fillStyle = lampGlow;
+            ctx.beginPath();
+            ctx.arc(ax - 26, 40, 28, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // 3. Streaming Golden Wind & Aero Speed Lines
+          particles.forEach(p => {
+            p.x += p.spd * speedMult;
+            if (p.x - p.len > w) p.x = -25;
+            const grad = ctx.createLinearGradient(p.x - p.len, p.y, p.x, p.y);
+            grad.addColorStop(0, "transparent");
+            grad.addColorStop(1, `rgba(255, 243, 214, ${p.alpha})`);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x - p.len, p.y);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+          });
+
+          // 4. Wet Obsidian Showroom Asphalt Road
+          const roadGrad = ctx.createLinearGradient(0, roadTop, 0, h);
+          roadGrad.addColorStop(0, "#0b0e17");
+          roadGrad.addColorStop(0.45, "#141928");
+          roadGrad.addColorStop(1, "#040508");
+          ctx.fillStyle = roadGrad;
+          ctx.fillRect(0, roadTop, w, 68);
+
+          ctx.strokeStyle = "rgba(243, 223, 174, 0.52)";
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(0, roadTop);
+          ctx.lineTo(w, roadTop);
+          ctx.stroke();
+
+          // 5. Scrolling Gold Road Dashes & Glowing Status Cat's-Eyes
+          const laneY = h - 31;
+          for (let x = -64 + offset; x < w + 64; x += 64) {
+            ctx.fillStyle = "rgba(255, 243, 214, 0.85)";
+            ctx.fillRect(x, laneY, 30, 3);
+
+            ctx.fillStyle = overall.color;
+            ctx.beginPath();
+            ctx.arc(x + 46, laneY + 1.5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // 6. Dynamic Horizontal Cruise across the 3 Checkpoints
+          const maxRight = Math.max(16, w - 260);
+          const normWave = (Math.sin(time * 0.82) + 1) / 2;
+          const carRightPx = 10 + normWave * (maxRight - 10);
+          const carBobY = Math.sin(time * 3.6) * 1.8;
+          const carPitch = Math.cos(time * 0.82) * -0.58;
+
+          carEl.style.right = `${carRightPx}px`;
+          carEl.style.transform = `translateY(${carBobY.toFixed(2)}px) rotate(${carPitch.toFixed(2)}deg)`;
+
+          const carLeftX = w - carRightPx - 252;
+          const carCenterX = carLeftX + 126;
+
+          // 7. Aerodynamic Golden Slipstream Ribbon curving over the car
+          const slipGrad = ctx.createLinearGradient(carLeftX - 20, 0, carLeftX + 260, 0);
+          slipGrad.addColorStop(0, "transparent");
+          slipGrad.addColorStop(0.35, "rgba(255, 243, 214, 0.55)");
+          slipGrad.addColorStop(0.75, overall.color);
+          slipGrad.addColorStop(1, "transparent");
+          ctx.strokeStyle = slipGrad;
+          ctx.lineWidth = turboActive ? 2.2 : 1.3;
+          ctx.beginPath();
+          ctx.moveTo(carLeftX - 15, h - 46);
+          ctx.quadraticCurveTo(carLeftX + 95, h - 108, carLeftX + 255, h - 58);
+          ctx.stroke();
+
+          // 8. Golden Tire Micro-Sparks trailing behind Rear Wheel
+          const rearWheelX = carLeftX + 215;
+          const rearWheelY = h - 28;
+          sparks.forEach(sp => {
+            sp.rx = (sp.rx + sp.spd * speedMult) % 58;
+            const sx = rearWheelX + sp.rx;
+            const sy = rearWheelY - (sp.rx * 0.18) + Math.sin(time * 8 + sp.rx) * 2;
+            const alpha = Math.max(0, 1 - sp.rx / 58);
+            ctx.fillStyle = `rgba(255, 215, 130, ${alpha * 0.85})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, sp.size, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // 9. Activate Checkpoint Gate & Draw Vertical Laser Scan Curtain
+          const carCenterRatio = (carRightPx + 126) / w;
+          const g0 = document.getElementById(`gate-${v.id}-0`);
+          const g1 = document.getElementById(`gate-${v.id}-1`);
+          const g2 = document.getElementById(`gate-${v.id}-2`);
+          if (g0 && g1 && g2) {
+            g0.classList.toggle("gate-active", carCenterRatio < 0.38);
+            g1.classList.toggle("gate-active", carCenterRatio >= 0.34 && carCenterRatio <= 0.68);
+            g2.classList.toggle("gate-active", carCenterRatio > 0.64);
+          }
+
+          const scanGrad = ctx.createLinearGradient(carCenterX, 86, carCenterX, h - 42);
+          scanGrad.addColorStop(0, "transparent");
+          scanGrad.addColorStop(0.5, overall.glow);
+          scanGrad.addColorStop(1, "transparent");
+          ctx.fillStyle = scanGrad;
+          ctx.fillRect(carCenterX - 22, 86, 44, h - 128);
+
+          ctx.restore();
+          const af = requestAnimationFrame(tick);
+          animationFrameIds.push(af);
+        }
+
+        const af = requestAnimationFrame(tick);
+        animationFrameIds.push(af);
+      });
+    }
+
+    function renderFleet() {
+      const grid = document.getElementById("fleet-grid");
+
+      const visibleFleet = fleet.filter(v => {
+        const minDays = Math.min(v.inspection.days, v.insurance.days, v.registration.days);
+        const overall = getDocMeta(minDays, 365);
+        if (activeFilter !== "all" && overall.state !== activeFilter) return false;
+        if (searchQuery) {
+          const hay = `${v.make} ${v.color} ${v.branch} ${v.driver} ${v.plateLettersAr} ${v.plateNumEn} ${v.year}`.toLowerCase();
+          if (!hay.includes(searchQuery.toLowerCase())) return false;
+        }
+        return true;
+      });
+
+      grid.innerHTML = visibleFleet.map((v, i) => {
+        const paint = resolveCarPaint(v.color);
+        const modelInfo = detectCarModel(v.make);
+
+        const insp = getDocMeta(v.inspection.days, v.inspection.span);
+        const ins = getDocMeta(v.insurance.days, v.insurance.span);
+        const reg = getDocMeta(v.registration.days, v.registration.span);
+
+        const minDays = Math.min(v.inspection.days, v.insurance.days, v.registration.days);
+        const overall = getDocMeta(minDays, 365);
+
+        // Compute Royal Readiness Percentage for the circular gauge
+        const readinessScore = Math.round((insp.pct + ins.pct + reg.pct) / 3);
+        const dashOffset = Math.round(113 - (113 * readinessScore) / 100);
+
+        const documents = [
+          {
+            idx: 0,
+            title: "الفحص الدوري",
+            sub: "سلامة المركبة المرورية",
+            icon: "🔧",
+            date: v.inspection.date,
+            meta: insp
+          },
+          {
+            idx: 1,
+            title: "وثيقة التأمين",
+            sub: `${v.insurer} · ${v.insuranceType}`,
+            icon: "🛡️",
+            date: v.insurance.date,
+            meta: ins
+          },
+          {
+            idx: 2,
+            title: "رخصة السير (الاستمارة)",
+            sub: `الرقم التسلسلي: ${v.serialNumber}`,
+            icon: "📋",
+            date: v.registration.date,
+            meta: reg
+          }
+        ];
+
+        const carSvgMain = renderAuthenticVehicleSVG(v, paint, overall.color, overall.state === 'expired', 'main');
+        const carSvgRefl = renderAuthenticVehicleSVG(v, paint, overall.color, false, 'refl');
+
+        return `
+          <article class="rx-vcard" id="card-${v.id}"
+                   style="--card-accent: ${overall.glow}; --paint-ambient: ${paint.ambient}; animation-delay: ${i * 75}ms;">
+            <!-- Dual Rotating 24K Gold Conic Beam -->
+            <div class="rx-beam"></div>
+
+            <!-- 4 Intricate SVG Royal Filigree Corner Ornaments -->
+            ${renderFiligreeCorner("tr")}
+            ${renderFiligreeCorner("tl")}
+            ${renderFiligreeCorner("br")}
+            ${renderFiligreeCorner("bl")}
+
+            <!-- 1. 60FPS IMPERIAL PARALLAX STAGE WITH SKYLINE, AERO SLIPSTREAM & WET REFLECTION -->
+            <div class="stage-wrap" id="stage-${v.id}" title="مرر الماوس لتفعيل التيربو الملكي والمسح الليزري 🚀">
+              <canvas class="stage-canvas" id="canvas-${v.id}"></canvas>
+
+              <!-- Top Telemetry Bar: Detected Model + Live Speedometer + Detected Paint -->
+              <div class="stage-top-bar">
+                <span class="rx-stage-pill">
+                  <span>🚘</span>
+                  <span>${modelInfo.labelAr}</span>
+                </span>
+
+                <span class="rx-speed-hud">
+                  <i></i>
+                  <span id="speed-${v.id}">116 KM/H</span>
+                </span>
+
+                <span class="rx-stage-pill">
+                  <span class="paint-sphere" style="background:${paint.swatch}; --sphere-glow:${paint.mid}"></span>
+                  <span>اللون: <b style="color:#fff3d6;">${paint.name}</b></span>
+                </span>
+              </div>
+
+              <!-- 3 Interactive Laser-Scanning Checkpoint Gates -->
+              <div class="stage-gates-grid">
+                ${documents.map(doc => `
+                  <div id="gate-${v.id}-${doc.idx}" class="checkpoint-gate" style="--gate-color:${doc.meta.color}">
+                    <div class="gate-top">
+                      <span>${doc.icon} ${doc.title.split(' ')[0]}</span>
+                      <span class="gate-dot" style="background:${doc.meta.color}; box-shadow:0 0 8px ${doc.meta.color}"></span>
+                    </div>
+                    <div class="gate-bot">
+                      <span class="font-mono-num" style="color:var(--muted);">${doc.date}</span>
+                      <span style="color:${doc.meta.color}; font-weight:800;">${doc.meta.badgeText}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Authentic Vehicle Model SVG + Wet Road Mirror Reflection -->
+              <div id="mover-${v.id}" class="stage-car-mover">
+                ${carSvgMain}
+                <div class="car-reflection">${carSvgRefl}</div>
+              </div>
+            </div>
+
+            <!-- 2. LIVE TESTER FOR MODEL SHAPE & COLOR FROM DETAILS -->
+            <div class="rx-tester-bar">
+              <div class="rx-tester-row">
+                <span class="rx-tester-lbl">🚘 جرب تغيير الطراز:</span>
+                <div class="rx-chip-group">
+                  ${PRESET_MODELS.map(m => `
+                    <button onclick="updateCarMake('${v.id}', '${m}')"
+                            class="rx-chip ${v.make === m ? 'active' : ''}">
+                      ${m.replace('تويوتا ', '').replace('ايسوزو ', '')}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="rx-tester-row">
+                <span class="rx-tester-lbl">🎨 جرب تغيير اللون:</span>
+                <div class="rx-chip-group">
+                  ${PRESET_COLORS.map(c => `
+                    <button onclick="updateCarColor('${v.id}', '${c}')"
+                            class="rx-chip ${v.color === c ? 'active' : ''}">
+                      ${c.split(' ')[0]}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. VEHICLE IDENTITY, ROYAL READINESS RING & EMBOSSED 3D SAUDI PLATE -->
+            <div class="rx-id-section">
+              <div class="rx-id-left">
+                <!-- Circular Royal Readiness Gauge -->
+                <div class="rx-gauge-wrap" title="نسبة جاهزية وثائق المركبة">
+                  <svg width="48" height="48" viewBox="0 0 44 44" style="transform: rotate(-90deg);">
+                    <circle cx="22" cy="22" r="18" fill="rgba(15,16,20,0.9)" stroke="rgba(214,182,120,0.2)" stroke-width="3.5"/>
+                    <circle cx="22" cy="22" r="18" fill="none" stroke="${overall.color}" stroke-width="3.5"
+                            stroke-dasharray="113" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/>
+                  </svg>
+                  <span class="rx-gauge-val">${readinessScore}%</span>
+                </div>
+
+                <div>
+                  <div class="rx-car-title">
+                    <span>${v.make}</span>
+                    <span class="rx-year-tag">${v.year}</span>
+                  </div>
+                  <div class="rx-car-meta">
+                    <span>👤 ${v.driver}</span>
+                    <span>·</span>
+                    <span style="color:#e8cc8e;font-weight:700;">🏛️ ${v.branch}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ksa-plate-pro">
+                <div class="cell num">
+                  <span class="ar">${v.plateNumAr}</span>
+                  <span class="en">${v.plateNumEn}</span>
+                </div>
+                <div class="cell">
+                  <span class="ar">${v.plateLettersAr}</span>
+                  <span class="en">${v.plateLettersEn}</span>
+                </div>
+                <div class="band">
+                  <span>🌴</span>
+                  <span>KSA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. THREE LUXURY EXPIRY TIMELINES WITH CONTINUOUS FORWARD-CRUISING MINI CARS -->
+            <div class="rx-timelines-wrap">
+              ${documents.map(doc => `
+                <div class="rx-doc-card">
+                  <div class="rx-doc-header">
+                    <div class="rx-doc-title-grp">
+                      <span class="rx-doc-icon">${doc.icon}</span>
+                      <div>
+                        <div class="rx-doc-name">${doc.title}</div>
+                        <div class="rx-doc-sub">${doc.sub}</div>
+                      </div>
+                    </div>
+
+                    <div class="rx-doc-right">
+                      <span class="font-mono-num" style="font-size:12px;color:var(--muted);">${doc.date}</span>
+                      <span class="px-bd ${doc.meta.bdCls}">${doc.meta.badgeText}</span>
+                    </div>
+                  </div>
+
+                  <!-- Animated Highway Track with Forward-Cruising Mini Car -->
+                  <div class="timeline-track" style="--doc-pct:${doc.meta.pct}%">
+                    <div class="timeline-dashes"></div>
+                    <div class="timeline-ribbon"
+                         style="--doc-pct:${doc.meta.pct}%; background:linear-gradient(90deg, ${doc.meta.color}, ${paint.mid}); box-shadow:0 0 14px ${doc.meta.color}"></div>
+                    <div class="timeline-car-runner" style="--doc-pct:${doc.meta.pct}%">
+                      ${renderMiniAuthenticCar(v, paint, doc.meta.color)}
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- 5. FOOTER ACTIONS (Exact Royale Buttons) -->
+            <div class="rx-vcard-foot">
+              <button onclick="renewVehicle('${v.id}')" class="px-btn pri" style="flex:1;justify-content:center;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                تجديد وثائق المركبة
+              </button>
+              <button onclick="renewVehicle('${v.id}')" class="px-ibtn" title="تعديل بيانات المركبة">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </button>
+              <button class="px-ibtn del" title="حذف المركبة">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      initStageAnimations(visibleFleet);
+    }
+
+    function updateCarMake(carId, newMake) {
+      const car = fleet.find(c => c.id === carId);
+      if (!car) return;
+      car.make = newMake;
+      renderFleet();
+    }
+
+    function updateCarColor(carId, newColor) {
+      const car = fleet.find(c => c.id === carId);
+      if (!car) return;
+      car.color = newColor;
+      renderFleet();
+    }
+
+    function renewVehicle(id) {
+      const car = fleet.find(c => c.id === id);
+      if (!car) return;
+      car.inspection = { date: "2027-10-17", days: 365, span: 365 };
+      car.insurance = { date: "2027-10-17", days: 365, span: 365 };
+      car.registration = { date: "2029-10-17", days: 1095, span: 1095 };
+      renderFleet();
+    }
+
+    function simulateAllRenewal() {
+      fleet.forEach(car => {
+        car.inspection = { date: "2027-10-17", days: 365, span: 365 };
+        car.insurance = { date: "2027-10-17", days: 365, span: 365 };
+        car.registration = { date: "2029-10-17", days: 1095, span: 1095 };
+      });
+      renderFleet();
+    }
+
+    function resetDemoData() {
+      fleet = JSON.parse(JSON.stringify(INITIAL_FLEET));
+      renderFleet();
+    }
+
+    document.querySelectorAll("#filterTabs button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#filterTabs button").forEach(b => b.classList.remove("on"));
+        btn.classList.add("on");
+        activeFilter = btn.dataset.filter;
+        renderFleet();
+      });
+    });
+
+    document.getElementById("searchBox").addEventListener("input", e => {
+      searchQuery = e.target.value;
+      renderFleet();
+    });
+
+    // Ambient Floating 24K Gold Dust Motes
+    const motesCanvas = document.getElementById("rxMotes");
+    const mCtx = motesCanvas.getContext("2d");
+    let W = (motesCanvas.width = window.innerWidth);
+    let H = (motesCanvas.height = window.innerHeight);
+    window.addEventListener("resize", () => {
+      W = motesCanvas.width = window.innerWidth;
+      H = motesCanvas.height = window.innerHeight;
+    });
+    const motes = Array.from({ length: 48 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.8 + 0.5,
+      vy: -(Math.random() * 0.3 + 0.08),
+      vx: (Math.random() - 0.5) * 0.22,
+      a: Math.random() * 0.58 + 0.18
+    }));
+    function drawMotes() {
+      mCtx.clearRect(0, 0, W, H);
+      for (const m of motes) {
+        m.x += m.vx;
+        m.y += m.vy;
+        if (m.y < -10) m.y = H + 10;
+        if (m.x < -10) m.x = W + 10;
+        if (m.x > W + 10) m.x = -10;
+        mCtx.beginPath();
+        mCtx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        mCtx.fillStyle = `rgba(243, 223, 174, ${m.a})`;
+        mCtx.fill();
+      }
+      requestAnimationFrame(drawMotes);
+    }
+    drawMotes();
+    renderFleet();
+  </script>
+</body>
+</html>

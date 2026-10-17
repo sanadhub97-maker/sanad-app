@@ -1,28 +1,23 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, Edit, MoreHorizontal, PackageCheck, Plus, Printer, Search, ShieldCheck, Trash2, Wallet } from "lucide-react";
+import { Clock, Edit, PackageCheck, Plus, Printer, Search, ShieldCheck, Trash2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { tr } from "@/i18n";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { PxBadge, PxPager, PxStat, PxTabs } from "@/components/royal/px";
 import { getErrorMessage } from "@/lib/api";
-import { useAuthStore } from "@/stores/authStore";
 import { DEPARTMENTS, REASONS, custodyApi, type Clearance, type CustodyQuery } from "@/api/custody";
 import { EmployeeCell, dmy, money } from "@/pages/custody/custody-shared";
 import { ClearanceDialog, printClearance } from "@/pages/custody/clearance-dialog";
 
-/* End-of-service clearances, as in the approved preview: the royal band, the
-   figures, a row per clearance with what still stands before its certificate,
-   and the dialog that checks the custody back and gathers the sign-offs. */
+/* End-of-service clearances: saved in the page with full Add, Edit, Print, and Delete capabilities. */
 
 type State = "all" | "open" | "issued";
 
 export default function ClearancesPage() {
   const qc = useQueryClient();
-  const has = useAuthStore((s) => s.hasPermission);
   const [state, setState] = useState<State>("all");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
@@ -41,7 +36,7 @@ export default function ClearancesPage() {
     setState(s);
     setPage(1);
   };
-  const open = (c: Clearance) => (c.status === "OPEN" && has("custody.edit") ? setDialog({ open: true, clearance: c }) : has("custody.export") ? printClearance(c) : undefined);
+  const open = (c: Clearance) => setDialog({ open: true, clearance: c });
 
   async function remove() {
     if (!deleting) return;
@@ -59,13 +54,11 @@ export default function ClearancesPage() {
     <div className="px cu">
       <PageHeader
         title={tr("إخلاء الطرف", "Clearance")}
-        description={tr("استرجع عهد الموظف، وخد تأكيد كل قسم، واطبع شهادة إخلاء الطرف بترويسة منشأته.", "Take the employee's custody back, gather each department's sign-off and print the certificate on their establishment's letterhead.")}
+        description={tr("استرجع عهد الموظف، وخد تأكيد كل قسم، واحفظ وعدّل واطبع شهادة إخلاء الطرف بترويسة منشأته في أي وقت.", "Take the employee's custody back, gather each department's sign-off, and save, edit or print the clearance certificate at any time.")}
         actions={
-          has("custody.create") && (
-            <Button onClick={() => setDialog({ open: true })}>
-              <Plus className="h-4 w-4" /> {tr("إخلاء طرف جديد", "New clearance")}
-            </Button>
-          )
+          <Button onClick={() => setDialog({ open: true })}>
+            <Plus className="h-4 w-4" /> {tr("إخلاء طرف جديد", "New clearance")}
+          </Button>
         }
       />
 
@@ -112,7 +105,7 @@ export default function ClearancesPage() {
                 <th>{tr("آخر يوم", "Last day")}</th>
                 <th className="hm">{tr("المستحقات", "Dues")}</th>
                 <th>{tr("الحالة", "Status")}</th>
-                <th />
+                <th>{tr("الإجراءات", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -129,7 +122,7 @@ export default function ClearancesPage() {
                   <td colSpan={7}>
                     <div className="px-empty">
                       <b>{q || state !== "all" ? tr("مفيش إخلاءات بالفلتر ده", "No clearances match") : tr("لسه مفيش إخلاءات طرف", "No clearances yet")}</b>
-                      {!q && state === "all" && tr("لما موظف يسيب الشغل، اعمله إخلاء طرف من هنا.", "When an employee leaves, start their clearance here.")}
+                      {!q && state === "all" && tr("لما موظف يسيب الشغل، اعمله إخلاء طرف من هنا وهيتحفظ للرجوع إليه في أي وقت.", "When an employee leaves, start their clearance here.")}
                     </div>
                   </td>
                 </tr>
@@ -161,33 +154,22 @@ export default function ClearancesPage() {
                         )}
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
-                          {has("custody.export") && (
-                            <button type="button" className="px-btn" onClick={() => printClearance(c)}>
-                              <Printer /> {c.status === "ISSUED" ? tr("الشهادة", "Certificate") : tr("مسودة", "Draft")}
-                            </button>
-                          )}
-                          {((has("custody.edit") && c.status === "OPEN") || has("custody.delete")) && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button type="button" className="px-iconbtn" aria-label={tr("إجراءات", "Actions")}>
-                                  <MoreHorizontal />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-                                {has("custody.edit") && c.status === "OPEN" && (
-                                  <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, clearance: c })}>
-                                    <Edit className="me-2 h-4 w-4" /> {tr("متابعة", "Continue")}
-                                  </DropdownMenuItem>
-                                )}
-                                {has("custody.delete") && (
-                                  <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(c)}>
-                                    <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
+                        <div className="flex items-center gap-1.5">
+                          <button type="button" className="px-btn" onClick={() => setDialog({ open: true, clearance: c })} title={tr("تعديل إخلاء الطرف", "Edit clearance")}>
+                            <Edit /> {tr("تعديل", "Edit")}
+                          </button>
+                          <button type="button" className="px-btn" onClick={() => printClearance(c)} title={tr("طباعة PDF", "Print PDF")}>
+                            <Printer /> {c.status === "ISSUED" ? tr("الشهادة", "Certificate") : tr("طباعة", "Print")}
+                          </button>
+                          <button
+                            type="button"
+                            className="px-iconbtn text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeleting(c)}
+                            aria-label={tr("حذف", "Delete")}
+                            title={tr("حذف إخلاء الطرف", "Delete clearance")}
+                          >
+                            <Trash2 />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -204,7 +186,7 @@ export default function ClearancesPage() {
         open={Boolean(deleting)}
         onOpenChange={(o) => !o && setDeleting(null)}
         title={tr(`حذف ${deleting?.number ?? ""}؟`, `Delete ${deleting?.number ?? ""}?`)}
-        description={deleting?.status === "OPEN" ? tr("الأصناف اللي اتعلّم عليها في الإخلاء ده هترجع تتحسب مع الموظف.", "Items ticked back on this clearance count as with the employee again.") : undefined}
+        description={tr("سيتم حذف إخلاء الطرف من السجل، والأصناف المسجلة عليه سترجع لحالتها مع الموظف.", "This clearance will be removed, and items ticked back on it will count as with the employee again.")}
         onConfirm={remove}
       />
     </div>

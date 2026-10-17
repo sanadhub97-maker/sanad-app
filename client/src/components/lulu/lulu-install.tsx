@@ -330,12 +330,12 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
   const isDesktop = platform.startsWith("desktop");
   const isAndroid = platform.startsWith("android");
 
-  // What the app gives, as small chips
+  // What the app gives, as small royal chips
   const perks = [
-    { icon: Zap, tone: "text-amber-300 bg-amber-400/10 border-amber-400/25", title: isAr ? "يفتح فوراً" : "Instant" },
-    { icon: WifiOff, tone: "text-emerald-300 bg-emerald-400/10 border-emerald-400/25", title: isAr ? "بدون إنترنت" : "Offline" },
-    { icon: Maximize2, tone: "text-sky-300 bg-sky-400/10 border-sky-400/25", title: isAr ? "شاشة كاملة" : "Full screen" },
-    { icon: Bell, tone: "text-indigo-300 bg-indigo-400/10 border-indigo-400/25", title: isAr ? "تنبيهات" : "Alerts" },
+    { icon: Zap, tone: "border-[#c9a464]/40 bg-[#c9a464]/12 text-[#f3dfae]", title: isAr ? "يفتح فوراً" : "Instant" },
+    { icon: WifiOff, tone: "border-emerald-500/35 bg-emerald-500/10 text-emerald-300", title: isAr ? "بدون إنترنت" : "Offline" },
+    { icon: Maximize2, tone: "border-[#c9a464]/30 bg-white/[0.03] text-[#e9d3a1]", title: isAr ? "شاشة كاملة" : "Full screen" },
+    { icon: Bell, tone: "border-[#c9a464]/30 bg-white/[0.03] text-[#e9d3a1]", title: isAr ? "تنبيهات" : "Alerts" },
   ];
 
   let deviceTitle = isAr ? "ثبّت SanaD كتطبيق" : "Install SanaD as an app";
@@ -359,7 +359,7 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
   }
 
   const badge = (content: ReactNode) => (
-    <span className="mx-1 inline-flex items-center gap-1 rounded-md bg-sky-400/15 px-1.5 py-0.5 font-semibold text-sky-300">{content}</span>
+    <span className="mx-1 inline-flex items-center gap-1 rounded-md border border-[#c9a464]/35 bg-[#c9a464]/15 px-1.5 py-0.5 font-semibold text-[#f3dfae]">{content}</span>
   );
   const steps =
     isIos || isIpad
@@ -393,39 +393,63 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
       inert={!open}
       className={cn(
         "fixed z-[9990] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-        "inset-x-3 top-[max(12px,env(safe-area-inset-top))] sm:inset-x-auto sm:start-5 sm:w-[372px] lg:top-auto lg:bottom-5",
+        "inset-x-3 top-[max(12px,env(safe-area-inset-top))] sm:inset-x-auto sm:start-5 sm:w-[382px] lg:top-auto lg:bottom-5",
         open ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-3 opacity-0 lg:translate-y-4"
       )}
     >
       <div
-        className="relative overflow-hidden rounded-[22px] border border-white/15 bg-[#0e1628]/[0.97] p-4 text-white shadow-[0_18px_44px_-14px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.18)]"
-        style={{ backgroundImage: "radial-gradient(220px 140px at 0% 0%, rgba(59,130,246,0.22), transparent 70%), radial-gradient(200px 120px at 100% 100%, rgba(99,102,241,0.16), transparent 70%)" }}
+        className="relative overflow-hidden rounded-[20px] border border-[#d6b678]/40 bg-[#110f0d]/[0.98] p-4 text-[#f7f2e7] shadow-[0_28px_60px_-18px_rgba(0,0,0,0.88),inset_0_0_0_3px_#0c0b09,inset_0_0_0_4px_rgba(214,182,120,0.16)]"
+        style={{
+          backgroundImage:
+            "radial-gradient(280px 150px at 85% 0%, rgba(243,223,174,0.13), transparent 70%), radial-gradient(220px 140px at 0% 100%, rgba(201,164,100,0.09), transparent 70%), linear-gradient(160deg, #151310, #0b0a08)",
+        }}
       >
+        {/* Top subtle gold ornament rule */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 top-0 h-[1.5px]"
+          style={{ background: "linear-gradient(90deg, transparent, rgba(243,223,174,0.75), transparent)" }}
+        />
+
         <button
           type="button"
           onClick={handleLater}
           aria-label={isAr ? "إغلاق" : "Close"}
-          className="absolute end-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+          className="absolute end-3.5 top-3.5 grid h-7 w-7 place-items-center rounded-full border border-[#c9a464]/30 bg-[#c9a464]/10 text-[#e9d3a1]/80 transition-colors hover:border-[#c9a464]/60 hover:bg-[#c9a464]/20 hover:text-[#fff3d6]"
         >
           <X className="h-3.5 w-3.5" />
         </button>
 
-        <div className="flex items-center gap-3 pe-8">
+        <div className="flex items-center gap-3.5 pe-8">
           <div className="relative shrink-0">
-            <img src="/pwa/icon-192.png" alt="" className="h-12 w-12 rounded-[14px] shadow-[0_6px_18px_-6px_rgba(37,99,235,0.6)]" />
-            <span className="absolute -bottom-1 -end-1 grid h-5 w-5 place-items-center rounded-full border border-white/25 bg-[#0a1020] text-sky-300">
+            <img
+              src="/pwa/icon-192.png"
+              alt=""
+              className="h-12 w-12 rounded-[14px] border border-[#c9a464]/50 shadow-[0_8px_22px_-6px_rgba(201,164,100,0.55)]"
+            />
+            <span className="absolute -bottom-1 -end-1 grid h-5 w-5 place-items-center rounded-full border border-[#c9a464]/55 bg-[#12100d] text-[#f3dfae] shadow-[0_0_10px_rgba(201,164,100,0.4)]">
               <DeviceIcon className="h-3 w-3" />
             </span>
           </div>
           <div className="min-w-0">
-            <h3 className="font-head text-[15px] font-bold leading-snug">{deviceTitle}</h3>
-            <p className="mt-0.5 text-[12px] leading-relaxed text-slate-300">{deviceSub}</p>
+            <h3
+              className="font-head text-[15.5px] font-extrabold leading-snug text-[#f3dfae]"
+              style={{
+                background: "linear-gradient(118deg, #e8cf8b 0%, #fff3d6 45%, #c9a464 90%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              {deviceTitle}
+            </h3>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-[#b9ae99]">{deviceSub}</p>
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3.5 flex flex-wrap gap-1.5">
           {perks.map(({ icon: Icon, tone, title }) => (
-            <span key={title} className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold", tone)}>
+            <span key={title} className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold", tone)}>
               <Icon className="h-3 w-3" />
               {title}
             </span>
@@ -433,22 +457,28 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
         </div>
 
         {(isIos || isIpad || showSteps) && (
-          <ol className="mt-3 space-y-1.5 rounded-2xl border border-white/10 bg-white/[0.05] p-3 text-[11.5px] text-slate-200">
+          <ol className="mt-3 space-y-1.5 rounded-xl border border-[#c9a464]/25 bg-black/35 p-3 text-[11.5px] text-[#e9d3a1]">
             {steps.map((s, i) => (
               <li key={i} className="flex items-center gap-2">
-                <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full bg-sky-400/20 text-[10px] font-bold text-sky-300">{i + 1}</span>
+                <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full border border-[#c9a464]/45 bg-[#c9a464]/20 text-[10px] font-bold text-[#fff3d6]">
+                  {i + 1}
+                </span>
                 <span>{s}</span>
               </li>
             ))}
           </ol>
         )}
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3.5 flex items-center gap-2">
           <button
             type="button"
             onClick={isIos || isIpad ? handleLater : handleInstallClick}
             disabled={busy}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-blue-400/40 bg-gradient-to-r from-blue-600 to-indigo-600 px-3 font-head text-[13px] font-bold shadow-[0_4px_16px_rgba(37,99,235,0.4)] transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
+            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-[#f3dfae]/40 px-3 font-head text-[13.5px] font-extrabold text-[#191206] shadow-[0_10px_24px_-8px_rgba(201,164,100,0.75)] transition hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
+            style={{
+              backgroundImage: "var(--rx-foil, linear-gradient(118deg, #8b6524 0%, #d4af68 24%, #fff3d6 50%, #c9a464 76%, #7a581e 100%))",
+              backgroundSize: "200% 100%",
+            }}
           >
             {hasPrompt ? (
               <>
@@ -471,7 +501,7 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
           <button
             type="button"
             onClick={handleLater}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-white/10 px-3 text-[12.5px] font-medium text-slate-200 transition-colors hover:bg-white/15 hover:text-white"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-[#c9a464]/30 bg-[#c9a464]/10 px-3.5 text-[12.5px] font-bold text-[#e9d3a1] transition-colors hover:border-[#c9a464]/55 hover:bg-[#c9a464]/18 hover:text-[#fff3d6]"
           >
             {isAr ? "لاحقاً" : "Later"}
           </button>
@@ -480,14 +510,18 @@ export function AppleInstallPrompt({ auto = true }: { auto?: boolean }) {
         {isAndroid && (
           <a
             href="/android"
-            className="mt-2 flex h-10 items-center justify-center gap-2 rounded-xl border border-[#d4a843]/40 bg-[#d4a843]/15 text-[12.5px] font-bold text-[#f3d27a] transition hover:bg-[#d4a843]/25"
+            className="mt-2 flex h-10 items-center justify-center gap-2 rounded-xl border border-[#c9a464]/40 bg-[#c9a464]/15 text-[12.5px] font-bold text-[#f3dfae] transition hover:bg-[#c9a464]/25"
           >
             <Smartphone className="h-4 w-4" />
             {isAr ? "أو حمّل تطبيق SanaD لأندرويد" : "Or get the SanaD Android app"}
           </a>
         )}
 
-        <button type="button" onClick={handleNever} className="mt-2 block w-full text-center text-[11px] text-slate-400 transition-colors hover:text-slate-200">
+        <button
+          type="button"
+          onClick={handleNever}
+          className="mt-2.5 block w-full text-center text-[11px] font-medium text-[#9e927d] transition-colors hover:text-[#f3dfae]"
+        >
           {isAr ? "عدم الإظهار مجدداً — التثبيت متاح دائماً من قائمة الحساب" : "Don't show again — install anytime from your account menu"}
         </button>
       </div>

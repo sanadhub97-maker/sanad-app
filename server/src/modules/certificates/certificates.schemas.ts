@@ -34,10 +34,11 @@ const base = {
       })
   ),
   issueDate: emptyToUndefined(day.optional()),
+  number: optText(60),
 };
 const needsName = { message: "Type the establishment's name", path: ["estName"] };
 
-/** An experience certificate. Nothing is stored. */
+/** An experience certificate query for PDF rendering. */
 export const experienceQuerySchema = z
   .object({
     ...base,
@@ -67,7 +68,7 @@ const otherParts = emptyToUndefined(
     })
 );
 
-/** A salary certificate (تعريف بالراتب). Nothing is stored. */
+/** A salary certificate (تعريف بالراتب) query for PDF rendering. */
 export const salaryQuerySchema = z
   .object({
     ...base,
@@ -82,5 +83,55 @@ export const salaryQuerySchema = z
   .refine((q) => q.establishment !== "manual" || !!q.estName, needsName)
   .refine((q) => (q.basic ?? 0) + (q.housing ?? 0) + (q.transport ?? 0) + (q.others ?? []).reduce((a, p) => a + p.amount, 0) > 0, { message: "Enter the salary", path: ["basic"] });
 
+export const idParamSchema = z.object({ id: z.string().min(1) });
+
+export const listSavedCertificatesSchema = z.object({
+  kind: z.enum(["SALARY", "EXPERIENCE"]).optional(),
+  q: z.string().optional(),
+  employeeId: z.string().optional(),
+});
+
+const savedBase = {
+  employeeId: z.string().min(1),
+  establishment: z.enum(["employee", "manual"]).default("employee"),
+  estName: optText(160),
+  estNameEn: optText(160),
+  estCr: optText(40),
+  estCity: optText(80),
+  jobTitle: optText(120),
+  startDate: emptyToUndefined(day.optional()),
+  note: optText(600),
+  names: z.array(z.string().trim().max(120)).max(3).default([]),
+  issueDate: emptyToUndefined(day.optional()),
+};
+
+export const saveExperienceSchema = z
+  .object({
+    ...savedBase,
+    endDate: emptyToUndefined(day.optional()),
+    stillWorking: z.boolean().default(true),
+    conduct: z.boolean().default(true),
+  })
+  .refine((q) => q.establishment !== "manual" || !!q.estName, needsName)
+  .refine((q) => !q.startDate || !q.endDate || q.stillWorking || q.endDate >= q.startDate, { message: "The end date is before the start date", path: ["endDate"] });
+
+export const saveSalarySchema = z
+  .object({
+    ...savedBase,
+    recipient: optText(160),
+    basic: z.coerce.number().min(0).max(10_000_000).default(0),
+    housing: z.coerce.number().min(0).max(10_000_000).default(0),
+    transport: z.coerce.number().min(0).max(10_000_000).default(0),
+    others: z.array(z.object({ label: z.string().trim().min(1).max(80), amount: z.coerce.number().min(0).max(10_000_000) })).max(8).default([]),
+    toBank: z.boolean().default(false),
+    bankName: optText(120),
+    iban: emptyToUndefined(z.string().trim().toUpperCase().regex(/^[A-Z]{2}\d{2}[A-Z0-9 ]{10,32}$/, "Invalid IBAN").optional()),
+  })
+  .refine((q) => q.establishment !== "manual" || !!q.estName, needsName)
+  .refine((q) => (q.basic ?? 0) + (q.housing ?? 0) + (q.transport ?? 0) + (q.others ?? []).reduce((a, p) => a + p.amount, 0) > 0, { message: "Enter the salary", path: ["basic"] });
+
 export type ExperienceQuery = z.infer<typeof experienceQuerySchema>;
 export type SalaryQuery = z.infer<typeof salaryQuerySchema>;
+export type ListSavedCertificatesQuery = z.infer<typeof listSavedCertificatesSchema>;
+export type SaveExperienceInput = z.infer<typeof saveExperienceSchema>;
+export type SaveSalaryInput = z.infer<typeof saveSalarySchema>;

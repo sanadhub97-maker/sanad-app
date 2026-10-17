@@ -194,10 +194,9 @@ export function issueBlockers(itemsOut: number, departments: Record<string, Depa
 
 async function presentClearance(c: ClearanceRow) {
   const departments = readDepartments(c.departments);
-  const items = await employeeItems(c.employeeId, c.status === "OPEN" ? c.id : undefined);
-  const shown = c.status === "OPEN" ? items : c.items.map((i) => ({ ...i, value: money(i.value) }));
-  const itemsOut = c.status === "OPEN" ? items.filter((i) => !i.returnedAt).length : 0;
-  return { ...c, dues: money(c.dues), departments, items: shown, blockers: issueBlockers(itemsOut, departments) };
+  const items = await employeeItems(c.employeeId, c.id);
+  const itemsOut = items.filter((i) => !i.returnedAt).length;
+  return { ...c, dues: money(c.dues), departments, items, blockers: issueBlockers(itemsOut, departments) };
 }
 
 export async function listClearances(query: ListQuery) {
@@ -259,8 +258,6 @@ async function applyReturns(tx: TransactionClient, clearanceId: string, employee
 
 export async function createClearance(input: CreateClearanceInput, userId?: string) {
   await assertEmployee(input.employeeId);
-  const open = await prisma.clearance.findFirst({ where: { employeeId: input.employeeId, deletedAt: null, status: "OPEN" }, select: { id: true } });
-  if (open) throw ApiError.badRequest("This employee already has an open clearance.");
   const last = toDate(input.lastWorkingDay);
   const year = last.getUTCFullYear();
   const created = await withFreshNumber(() =>
@@ -287,11 +284,16 @@ export async function createClearance(input: CreateClearanceInput, userId?: stri
 
 export async function updateClearance(id: string, input: UpdateClearanceInput) {
   const current = await findClearance(id);
-  if (current.status !== "OPEN") throw ApiError.badRequest("An issued clearance cannot be changed.");
+  const targetEmployeeId = input.employeeId && input.employeeId !== current.employeeId ? input.employeeId : current.employeeId;
+  if (targetEmployeeId !== current.employeeId) await assertEmployee(targetEmployeeId);
   await prisma.$transaction(async (tx) => {
+    if (targetEmployeeId !== current.employeeId) {
+      await tx.custodyItem.updateMany({ where: { clearanceId: id }, data: { returnedAt: null, returnCondition: null, clearanceId: null } });
+    }
     await tx.clearance.update({
       where: { id },
       data: {
+        employeeId: targetEmployeeId,
         lastWorkingDay: toDate(input.lastWorkingDay),
         reason: input.reason,
         dues: input.dues,
@@ -299,7 +301,7 @@ export async function updateClearance(id: string, input: UpdateClearanceInput) {
         departments: mergeDepartments(readDepartments(current.departments), input.departments) as Prisma.InputJsonValue,
       },
     });
-    await applyReturns(tx, id, current.employeeId, input.returns);
+    await applyReturns(tx, id, targetEmployeeId, input.returns);
   });
   return getClearance(id);
 }
@@ -307,18 +309,16 @@ export async function updateClearance(id: string, input: UpdateClearanceInput) {
 /** Issues the certificate: only once every item is back and every department signed. */
 export async function issueClearance(id: string) {
   const current = await getClearance(id);
-  if (current.status !== "OPEN") throw ApiError.badRequest("This clearance was already issued.");
   if (current.blockers.itemsOut > 0) throw ApiError.badRequest("Every custody item must be returned before the clearance is issued.");
   if (current.blockers.departmentsPending.length) throw ApiError.badRequest("Every department must sign the clearance off before it is issued.");
-  await prisma.clearance.update({ where: { id }, data: { status: "ISSUED", issuedAt: new Date() } });
+  await prisma.clearance.update({ where: { id }, data: { status: "ISSUED", issuedAt: current.issuedAt ? new Date(current.issuedAt) : new Date() } });
   return getClearance(id);
 }
 
 export async function removeClearance(id: string) {
-  const current = await findClearance(id);
+  await findClearance(id);
   await prisma.$transaction(async (tx) => {
-    // An open clearance's returns were only provisional; an issued one's are history.
-    if (current.status === "OPEN") await tx.custodyItem.updateMany({ where: { clearanceId: id }, data: { returnedAt: null, returnCondition: null, clearanceId: null } });
+    await tx.custodyItem.updateMany({ where: { clearanceId: id }, data: { returnedAt: null, returnCondition: null, clearanceId: null } });
     await tx.clearance.update({ where: { id }, data: { deletedAt: new Date() } });
   });
 }

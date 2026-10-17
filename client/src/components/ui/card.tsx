@@ -18,13 +18,16 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 ));
 CardHeader.displayName = "CardHeader";
 
+/** Pages used to size their card titles and descriptions one by one; the site now has one size for each (the type scale in royale.css). */
+const noSize = (className?: string) => className?.replace(/(^|\s)(?:[a-z]+:)?text-(?:xs|sm|base|lg|xl|2xl|3xl|\[[\d.]+px\])(?=\s|$)/g, " ");
+
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(({ className, ...props }, ref) => (
-  <h3 ref={ref} className={cn("font-head text-[17px] font-semibold text-foreground", className)} {...props} />
+  <h3 ref={ref} className={cn("ts-card font-head font-semibold text-foreground", noSize(className))} {...props} />
 ));
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  ({ className, ...props }, ref) => <p ref={ref} className={cn("ts-desc text-muted-foreground", noSize(className))} {...props} />
 );
 CardDescription.displayName = "CardDescription";
 

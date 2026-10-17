@@ -74,13 +74,14 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
     }
   }, [open, clearance]);
 
-  // A new clearance pulls in what the chosen employee still holds.
+  // Pull in what the chosen employee holds when creating or when switching employees.
+  const sameEmployee = Boolean(clearance && employeeId === clearance.employeeId);
   const { data: fetched, isFetching } = useQuery({
     queryKey: ["custody", "employee-items", employeeId],
     queryFn: () => custodyApi.employeeItems(employeeId!),
-    enabled: open && !clearance && Boolean(employeeId),
+    enabled: open && !sameEmployee && Boolean(employeeId),
   });
-  const items: CustodyItem[] = clearance ? clearance.items : fetched ?? [];
+  const items: CustodyItem[] = sameEmployee ? clearance!.items : fetched ?? [];
 
   const employee = employees.find((e) => e.id === employeeId);
   const branch = useMemo(() => {
@@ -99,6 +100,7 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
     if (!lastDay) return toast.error(tr("حدد آخر يوم عمل", "Set the last working day"));
     setBusy(then);
     const body = {
+      employeeId,
       lastWorkingDay: lastDay,
       reason,
       dues: Number(dues) || 0,
@@ -107,15 +109,20 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
       returns: items.map((i) => ({ id: i.id, condition: returns[i.id] || null })),
     };
     try {
-      let saved = clearance ? await custodyApi.updateClearance(clearance.id, body) : await custodyApi.createClearance({ ...body, employeeId });
+      let saved = clearance ? await custodyApi.updateClearance(clearance.id, body) : await custodyApi.createClearance(body);
       if (then === "issue") saved = await custodyApi.issueClearance(saved.id);
-      toast.success(then === "issue" ? tr(`صدرت شهادة إخلاء الطرف ${saved.number}`, `Certificate ${saved.number} issued`) : tr(`تم حفظ ${saved.number}`, `Saved ${saved.number}`));
+      toast.success(
+        then === "issue"
+          ? tr(`تم اعتماد وإصدار شهادة إخلاء الطرف ${saved.number}`, `Certificate ${saved.number} issued`)
+          : clearance
+            ? tr(`تم حفظ تعديلات إخلاء الطرف ${saved.number}`, `Updated ${saved.number}`)
+            : tr(`تم حفظ إخلاء الطرف ${saved.number}`, `Saved ${saved.number}`)
+      );
       qc.invalidateQueries({ queryKey: ["custody"] });
       onOpenChange(false);
       if (then !== "save" && has("custody.export")) printClearance(saved);
     } catch (err) {
       toast.error(getErrorMessage(err));
-      // The draft may have been saved before the issue failed.
       qc.invalidateQueries({ queryKey: ["custody"] });
     } finally {
       setBusy("");
@@ -129,17 +136,25 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
       <DialogContent className="cu cu-dlg w-full sm:max-w-3xl lg:max-w-4xl max-h-[92vh] rounded-3xl">
         <div className="cu-dhead">
           <DialogTitle asChild>
-            <h2 className="cu-foil">{clearance ? tr(`إخلاء الطرف ${clearance.number}`, `Clearance ${clearance.number}`) : tr("إخلاء طرف", "Clearance")}</h2>
+            <h2 className="cu-foil">{clearance ? tr(`تعديل إخلاء الطرف ${clearance.number}`, `Edit Clearance ${clearance.number}`) : tr("إضافة إخلاء طرف جديد", "New Clearance")}</h2>
           </DialogTitle>
           <DialogDescription asChild>
-            <div className="sub">{tr("الشهادة بتتصدر لما العهد كلها ترجع وكل الأقسام تأكّد.", "The certificate is issued once every item is back and every department has signed.")}</div>
+            <div className="sub">{tr("الشهادة بتتصدر لما العهد كلها ترجع وكل الأقسام تأكّد، وتقدر تحفظها وتعدّل عليها في أي وقت.", "The certificate is issued once every item is back and every department has signed, and you can save or edit it anytime.")}</div>
           </DialogDescription>
         </div>
         <div className="cu-dbody">
           <div className="cu-grid2">
             <div className="cu-f">
               <label>{tr("الموظف", "Employee")} <i>*</i></label>
-              <EmployeePicker employees={employees} value={employeeId} onChange={setEmployeeId} invalid={tried && !employeeId} disabled={Boolean(clearance)} />
+              <EmployeePicker
+                employees={employees}
+                value={employeeId}
+                onChange={(nextId) => {
+                  setEmployeeId(nextId);
+                  if (nextId !== clearance?.employeeId) setReturns({});
+                }}
+                invalid={tried && !employeeId}
+              />
             </div>
             <div className="cu-f">
               <label htmlFor="cl-reason">{tr("سبب الإخلاء", "Reason")} <i>*</i></label>
@@ -221,15 +236,13 @@ export function ClearanceDialog({ open, onOpenChange, clearance }: { open: boole
         <div className="cu-dfoot">
           <button type="button" className="cu-btn" onClick={() => onOpenChange(false)}>{tr("إلغاء", "Cancel")}</button>
           <button type="button" className="cu-btn" disabled={Boolean(busy)} onClick={() => save("save")}>
-            {busy === "save" ? <Loader2 className="animate-spin" /> : <Save />} {tr("حفظ كمسودة", "Save draft")}
+            {busy === "save" ? <Loader2 className="animate-spin" /> : <Save />} {clearance ? tr("حفظ التعديلات", "Save changes") : tr("حفظ في السجل", "Save")}
           </button>
-          {has("custody.export") && (
-            <button type="button" className="cu-btn" disabled={Boolean(busy)} onClick={() => save("print")}>
-              {busy === "print" ? <Loader2 className="animate-spin" /> : <Printer />} {tr("حفظ وطباعة المسودة", "Save & print draft")}
-            </button>
-          )}
+          <button type="button" className="cu-btn" disabled={Boolean(busy)} onClick={() => save("print")}>
+            {busy === "print" ? <Loader2 className="animate-spin" /> : <Printer />} {clearance?.status === "ISSUED" ? tr("حفظ وطباعة الشهادة", "Save & print") : tr("حفظ وطباعة", "Save & print")}
+          </button>
           <button type="button" className="cu-btn gold" disabled={!ready || Boolean(busy)} title={ready ? undefined : tr("لازم العهد كلها ترجع وكل الأقسام تأكّد", "Everything must be back and every department signed")} onClick={() => save("issue")}>
-            {busy === "issue" ? <Loader2 className="animate-spin" /> : <BadgeCheck />} {tr("إصدار الشهادة", "Issue certificate")}
+            {busy === "issue" ? <Loader2 className="animate-spin" /> : <BadgeCheck />} {clearance?.status === "ISSUED" ? tr("تحديث وإصدار الشهادة", "Update & issue") : tr("إصدار الشهادة", "Issue certificate")}
           </button>
         </div>
       </DialogContent>

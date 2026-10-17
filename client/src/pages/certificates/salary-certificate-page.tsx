@@ -1,7 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { Banknote, Landmark, PenLine, Plus, Printer, Send, Trash2, UserRound } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Banknote,
+  Edit,
+  FileCheck2,
+  Landmark,
+  Loader2,
+  PenLine,
+  Plus,
+  Printer,
+  RotateCcw,
+  Save,
+  Search,
+  Send,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { tr } from "@/i18n";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { PageHeader } from "@/components/common/page-header";
 import { EmployeePicker } from "@/components/common/employee-picker";
 import { DateInput } from "@/components/common/date-input";
@@ -10,18 +27,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { PxBadge } from "@/components/royal/px";
+import { getErrorMessage } from "@/lib/api";
 import { openPdfInNewTab } from "@/lib/download";
 import { amountInWords } from "@/lib/money-words";
-import { useAuthStore } from "@/stores/authStore";
-import { dmy, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
+import { certificatesApi, type SavedCertificate } from "@/api/certificates";
+import { EmployeeCell, dmy, todayRiyadh, usePickerData } from "@/pages/custody/custody-shared";
 import { LetterheadSection, Sec, SheetHead, SheetSigs, SignerFields, useLetterhead, useSigners } from "@/pages/certificates/certificate-shared";
-
-/* The salary certificate (تعريف بالراتب), as approved in the preview: the
-   employee, the letterhead, the salary in its parts with the total written in
-   words, who it is addressed to and, if asked, the bank the salary goes to,
-   with the sheet beside the form writing the letter as you fill it in. The
-   amounts are typed for each print (the system keeps no salaries); nothing is
-   stored. */
 
 const num = (v: string) => {
   const n = Number(String(v).replace(/,/g, ""));
@@ -35,12 +47,19 @@ const QUICK_TO: [string, string][] = [
 ];
 
 export default function SalaryCertificatePage() {
-  const canPrint = useAuthStore((s) => s.hasPermission("employees.export"));
+  const qc = useQueryClient();
+  const topRef = useRef<HTMLDivElement>(null);
+  const skipEmpDefaultsRef = useRef(false);
+
   const { employees, branches } = usePickerData(true);
   const [employeeId, setEmployeeId] = useState<string>();
   const emp = employees.find((e) => e.id === employeeId);
   const branch = branches.find((b) => b.id === emp?.branchId) ?? null;
   const lh = useLetterhead(branch);
+
+  const [editing, setEditing] = useState<SavedCertificate | null>(null);
+  const [deleting, setDeleting] = useState<SavedCertificate | null>(null);
+  const [q, setQ] = useState("");
 
   const [job, setJob] = useState("");
   const [start, setStart] = useState("");
@@ -55,14 +74,70 @@ export default function SalaryCertificatePage() {
   const [note, setNote] = useState("");
   const sg = useSigners();
   const [issue, setIssue] = useState(todayRiyadh());
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"" | "save" | "print">("");
 
-  // A new employee fills in their own job and joining date.
+  const { data: savedRows = [], isLoading } = useQuery({
+    queryKey: ["certificates", "saved", "SALARY", q],
+    queryFn: () => certificatesApi.list({ kind: "SALARY", q: q || undefined }),
+  });
+
+  // A newly selected employee fills in their own job and joining date unless loading a saved certificate.
   useEffect(() => {
     if (!emp) return;
+    if (skipEmpDefaultsRef.current) {
+      skipEmpDefaultsRef.current = false;
+      return;
+    }
     setJob(tr(emp.jobTitle || "", emp.jobTitleEn || emp.jobTitle || ""));
     setStart(emp.joiningDate ? emp.joiningDate.slice(0, 10) : "");
   }, [emp?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function resetForm() {
+    setEditing(null);
+    setEmployeeId(undefined);
+    lh.setMode("employee");
+    lh.setEst({ name: "", nameEn: "", cr: "", city: "" });
+    setJob("");
+    setStart("");
+    setBasic("");
+    setHousing("");
+    setTransport("");
+    setOthers([]);
+    setRecipient("");
+    setToBank(false);
+    setBankName("");
+    setIban("");
+    setNote("");
+    sg.setNames([]);
+    setIssue(todayRiyadh());
+  }
+
+  function loadCertificate(c: SavedCertificate) {
+    skipEmpDefaultsRef.current = c.employeeId !== employeeId;
+    setEditing(c);
+    setEmployeeId(c.employeeId);
+    lh.setMode(c.establishment);
+    lh.setEst({
+      name: c.estName ?? "",
+      nameEn: c.estNameEn ?? "",
+      cr: c.estCr ?? "",
+      city: c.estCity ?? "",
+    });
+    setJob(c.jobTitle ?? "");
+    setStart(c.startDate ?? "");
+    setBasic(c.basic ? String(c.basic) : "");
+    setHousing(c.housing ? String(c.housing) : "");
+    setTransport(c.transport ? String(c.transport) : "");
+    setOthers((c.others ?? []).map((o) => ({ label: o.label, amount: String(o.amount) })));
+    setRecipient(c.recipient ?? "");
+    setToBank(Boolean(c.toBank));
+    setBankName(c.bankName ?? "");
+    setIban(c.iban ?? "");
+    setNote(c.note ?? "");
+    sg.setNames(c.names ?? []);
+    setIssue(c.issueDate || todayRiyadh());
+    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   const parts = useMemo(
     () =>
@@ -117,30 +192,141 @@ export default function SalaryCertificatePage() {
             ? tr("رقم الآيبان مش مظبوط، المفروض يبدأ بـ SA وبعده أرقام.", "The IBAN doesn't look right; it starts with SA followed by digits.")
             : null;
 
-  const print = async () => {
+  async function persistRecord(): Promise<SavedCertificate | null> {
+    if (problem || !employeeId) {
+      toast.error(problem || tr("اختار الموظف الأول.", "Choose the employee first."));
+      return null;
+    }
+    const payload = {
+      employeeId,
+      establishment: lh.mode,
+      estName: lh.mode === "manual" ? lh.est.name.trim() : undefined,
+      estNameEn: lh.mode === "manual" ? lh.est.nameEn.trim() : undefined,
+      estCr: lh.mode === "manual" ? lh.est.cr.trim() : undefined,
+      estCity: lh.mode === "manual" ? lh.est.city.trim() : undefined,
+      jobTitle: job.trim() || undefined,
+      startDate: start || undefined,
+      recipient: recipient.trim() || undefined,
+      basic: num(basic),
+      housing: num(housing),
+      transport: num(transport),
+      others: others.filter((o) => o.label.trim() && num(o.amount) > 0).map((o) => ({ label: o.label.trim(), amount: num(o.amount) })),
+      toBank,
+      bankName: toBank ? bankName.trim() || undefined : undefined,
+      iban: toBank ? cleanIban || undefined : undefined,
+      note: note.trim() || undefined,
+      names: sg.boxes.map((_, i) => (sg.names[i] ?? "").trim()),
+      issueDate: issue || todayRiyadh(),
+    };
+    const saved = editing
+      ? await certificatesApi.updateSalary(editing.id, payload)
+      : await certificatesApi.createSalary(payload);
+    setEditing(saved);
+    qc.invalidateQueries({ queryKey: ["certificates", "saved", "SALARY"] });
+    return saved;
+  }
+
+  const handleSave = async () => {
     if (problem) return toast.error(problem);
-    setBusy(true);
+    setBusy("save");
     try {
-      await openPdfInNewTab(
-        "/certificates/salary/pdf",
-        {
-          employeeId, ...lh.params,
-          jobTitle: job, startDate: start, recipient,
-          basic: String(num(basic) || ""), housing: String(num(housing) || ""), transport: String(num(transport) || ""),
-          others: JSON.stringify(others.filter((o) => o.label.trim() && num(o.amount) > 0).map((o) => ({ label: o.label.trim(), amount: num(o.amount) }))),
-          bankName: toBank ? bankName : "", iban: toBank ? cleanIban : "",
-          note, names: sg.param, issueDate: issue,
-        },
-        `${tr("تعريف بالراتب", "Salary certificate")} - ${name}.pdf`
-      );
-    } catch {
-      /* the preview shows the error */
+      const saved = await persistRecord();
+      if (saved) {
+        toast.success(
+          editing
+            ? tr(`تم حفظ التعديلات على التعريف ${saved.number}`, `Updated certificate ${saved.number}`)
+            : tr(`تم حفظ التعريف بالراتب ${saved.number} في السجل`, `Saved salary certificate ${saved.number}`)
+        );
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
-      setBusy(false);
+      setBusy("");
     }
   };
 
-  const money = (value: string, set: (v: string) => void, label: string) => (
+  const handleSaveAndPrint = async () => {
+    if (problem) return toast.error(problem);
+    setBusy("print");
+    try {
+      const saved = await persistRecord();
+      if (!saved) return;
+      toast.success(
+        editing
+          ? tr(`تم تحديث التعريف ${saved.number} وجاري الطباعة`, `Updated ${saved.number}`)
+          : tr(`تم حفظ التعريف ${saved.number} وجاري الطباعة`, `Saved ${saved.number}`)
+      );
+      await openPdfInNewTab(
+        "/certificates/salary/pdf",
+        {
+          number: saved.number,
+          employeeId,
+          ...lh.params,
+          jobTitle: job,
+          startDate: start,
+          recipient,
+          basic: String(num(basic) || ""),
+          housing: String(num(housing) || ""),
+          transport: String(num(transport) || ""),
+          others: JSON.stringify(others.filter((o) => o.label.trim() && num(o.amount) > 0).map((o) => ({ label: o.label.trim(), amount: num(o.amount) }))),
+          bankName: toBank ? bankName : "",
+          iban: toBank ? cleanIban : "",
+          note,
+          names: sg.param,
+          issueDate: issue,
+        },
+        `${saved.number} - ${name}.pdf`
+      );
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const printSaved = async (c: SavedCertificate) => {
+    const empName = tr(c.employee.fullNameAr, c.employee.fullNameEn || c.employee.fullNameAr).trim();
+    const estParams =
+      c.establishment === "manual"
+        ? { establishment: "manual", estName: c.estName ?? "", estNameEn: c.estNameEn ?? "", estCr: c.estCr ?? "", estCity: c.estCity ?? "" }
+        : { establishment: "employee" };
+    await openPdfInNewTab(
+      "/certificates/salary/pdf",
+      {
+        number: c.number,
+        employeeId: c.employeeId,
+        ...estParams,
+        jobTitle: c.jobTitle ?? "",
+        startDate: c.startDate ?? "",
+        recipient: c.recipient ?? "",
+        basic: String(c.basic || ""),
+        housing: String(c.housing || ""),
+        transport: String(c.transport || ""),
+        others: JSON.stringify(c.others ?? []),
+        bankName: c.toBank ? c.bankName ?? "" : "",
+        iban: c.toBank ? c.iban ?? "" : "",
+        note: c.note ?? "",
+        names: JSON.stringify(c.names ?? []),
+        issueDate: c.issueDate,
+      },
+      `${c.number} - ${empName}.pdf`
+    ).catch(() => undefined);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    try {
+      await certificatesApi.remove(deleting.id);
+      toast.success(tr(`تم حذف التعريف ${deleting.number}`, `Deleted ${deleting.number}`));
+      if (editing?.id === deleting.id) resetForm();
+      qc.invalidateQueries({ queryKey: ["certificates", "saved", "SALARY"] });
+      setDeleting(null);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const moneyField = (value: string, set: (v: string) => void, label: string) => (
     <div>
       <Label>{label}</Label>
       <div className="xp-money">
@@ -151,21 +337,43 @@ export default function SalaryCertificatePage() {
   );
 
   return (
-    <div className="xp">
+    <div className="xp px" ref={topRef}>
       <PageHeader
         title={tr("تعريف بالراتب", "Salary certificate")}
-        description={tr("اطبع تعريف راتب فخم للموظف، بالمبالغ مكتوبة بالحروف، لأي جهة: بنك أو سفارة أو غيرها.", "Print a salary certificate for the employee, with the total in words, for a bank, an embassy or anyone else.")}
+        description={tr("أنشئ واحفظ وعدّل واطبع تعريف راتب فخم للموظف، بالمبالغ مكتوبة بالحروف، مع حفظه في السجل للرجوع إليه في أي وقت.", "Create, save, edit and print a salary certificate for the employee, stored on the page so you can return to it anytime.")}
         actions={
-          canPrint && (
-            <Button onClick={print} disabled={busy}>
-              <Printer className="h-4 w-4" /> {tr("معاينة وطباعة", "Preview & print")}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={resetForm} disabled={Boolean(busy)}>
+              <Plus className="h-4 w-4" /> {tr("إضافة تعريف جديد", "New certificate")}
             </Button>
-          )
+            <Button variant="outline" onClick={handleSave} disabled={Boolean(busy)}>
+              {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {editing ? tr("حفظ التعديلات", "Save changes") : tr("حفظ في السجل", "Save certificate")}
+            </Button>
+            <Button onClick={handleSaveAndPrint} disabled={Boolean(busy)}>
+              {busy === "print" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+              {editing ? tr("حفظ التعديلات وطباعة", "Update & print") : tr("حفظ وطباعة PDF", "Save & print PDF")}
+            </Button>
+          </div>
         }
       />
 
       <div className="xp-grid">
         <div className="xp-form">
+          {editing && (
+            <div className="xp-edit-banner">
+              <div className="info">
+                <FileCheck2 className="h-5 w-5" />
+                <span>
+                  {tr("وضع التعديل على التعريف المحفوظ رقم", "Editing saved certificate")} <code>{editing.number}</code>
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={resetForm}>
+                <RotateCcw className="h-4 w-4" /> {tr("إلغاء التعديل / إضافة جديد", "Cancel edit / Add new")}
+              </Button>
+            </div>
+          )}
+
           <Sec i={0} icon={UserRound} title={tr("الموظف", "Employee")}>
             <EmployeePicker employees={employees} value={employeeId} onChange={setEmployeeId} />
           </Sec>
@@ -174,9 +382,9 @@ export default function SalaryCertificatePage() {
 
           <Sec i={2} icon={Banknote} title={tr("الراتب الشهري", "Monthly salary")}>
             <div className="xp-fields">
-              {money(basic, setBasic, tr("الراتب الأساسي", "Basic salary"))}
-              {money(housing, setHousing, tr("بدل السكن", "Housing allowance"))}
-              {money(transport, setTransport, tr("بدل المواصلات", "Transport allowance"))}
+              {moneyField(basic, setBasic, tr("الراتب الأساسي", "Basic salary"))}
+              {moneyField(housing, setHousing, tr("بدل السكن", "Housing allowance"))}
+              {moneyField(transport, setTransport, tr("بدل المواصلات", "Transport allowance"))}
               <div />
               {others.map((o, i) => (
                 <div key={i} className="wide xp-other">
@@ -263,6 +471,22 @@ export default function SalaryCertificatePage() {
               </div>
             </div>
           </Sec>
+
+          <div className="xp-foot">
+            <Button onClick={handleSave} disabled={Boolean(busy)}>
+              {busy === "save" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {editing ? tr("حفظ التعديلات", "Save changes") : tr("حفظ التعريف في السجل", "Save certificate")}
+            </Button>
+            <Button variant="outline" onClick={handleSaveAndPrint} disabled={Boolean(busy)}>
+              {busy === "print" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+              {editing ? tr("حفظ التعديلات وطباعة PDF", "Update & print PDF") : tr("حفظ وطباعة PDF", "Save & print PDF")}
+            </Button>
+            {editing && (
+              <Button variant="ghost" onClick={resetForm} disabled={Boolean(busy)}>
+                <Plus className="h-4 w-4" /> {tr("إضافة تعريف جديد", "New certificate")}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* The letter as it will read */}
@@ -303,6 +527,122 @@ export default function SalaryCertificatePage() {
           {problem && emp && <p className="xp-warn">{problem}</p>}
         </aside>
       </div>
+
+      {/* Saved Salary Certificates Table */}
+      <section className="px-card xp-saved">
+        <div className="xp-saved-head">
+          <h3 className="xp-saved-title">
+            <FileCheck2 className="h-5 w-5" />
+            {tr("سجل التعاريف بالراتب المحفوظة", "Saved Salary Certificates")}
+            <span className="xp-saved-count">{savedRows.length}</span>
+          </h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="px-search">
+              <Search />
+              <input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder={tr("بحث بالاسم أو الرقم أو الجهة…", "Search employee, number or recipient…")}
+                aria-label={tr("بحث", "Search")}
+              />
+            </label>
+            <Button size="sm" variant="outline" onClick={resetForm}>
+              <Plus className="h-4 w-4" /> {tr("إضافة تعريف جديد", "Add new")}
+            </Button>
+          </div>
+        </div>
+
+        <div className="px-tw">
+          <table className="px-t">
+            <thead>
+              <tr>
+                <th>{tr("رقم التعريف", "Number")}</th>
+                <th>{tr("الموظف", "Employee")}</th>
+                <th className="hm">{tr("موجّه إلى", "Recipient")}</th>
+                <th className="hm">{tr("المسمى الوظيفي", "Job title")}</th>
+                <th>{tr("إجمالي الراتب", "Total salary")}</th>
+                <th>{tr("تاريخ الإصدار", "Issue date")}</th>
+                <th>{tr("الإجراءات", "Actions")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={7}>
+                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                    </td>
+                  </tr>
+                ))}
+              {!isLoading && savedRows.length === 0 && (
+                <tr>
+                  <td colSpan={7}>
+                    <div className="px-empty">
+                      <b>{q ? tr("مفيش تعاريف مطابقة للبحث", "No matching salary certificates") : tr("لسه مفيش تعاريف بالراتب محفوظة", "No saved salary certificates yet")}</b>
+                      {!q && tr("املا بيانات التعريف فوق واضغط «حفظ في السجل» أو «حفظ وطباعة PDF» عشان يتحفظ هنا للرجوع إليه وتعديله في أي وقت.", "Fill out the form above and click Save to keep the certificate here for future access and editing.")}
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!isLoading &&
+                savedRows.map((c, j) => {
+                  const isCurrent = editing?.id === c.id;
+                  return (
+                    <tr
+                      key={c.id}
+                      className={`click ${isCurrent ? "xp-row-active" : ""}`}
+                      style={{ ["--j" as string]: j }}
+                      onClick={() => loadCertificate(c)}
+                    >
+                      <td className="mono">
+                        <b>{c.number}</b>
+                      </td>
+                      <td>
+                        <EmployeeCell e={c.employee} />
+                      </td>
+                      <td className="hm">
+                        {c.recipient ? <PxBadge tone="ok">{c.recipient}</PxBadge> : <PxBadge tone="mut">{tr("إلى من يهمه الأمر", "To whom it may concern")}</PxBadge>}
+                      </td>
+                      <td className="hm">{c.jobTitle || tr(c.employee.jobTitle || "—", c.employee.jobTitleEn || c.employee.jobTitle || "—")}</td>
+                      <td className="mono">
+                        <b>{sar(c.totalSalary ?? 0)}</b> {tr("ر.س", "SAR")}
+                      </td>
+                      <td className="mono">{dmy(c.issueDate)}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5">
+                          <button type="button" className="px-btn" onClick={() => loadCertificate(c)} title={tr("تعديل التعريف", "Edit certificate")}>
+                            <Edit /> {tr("تعديل", "Edit")}
+                          </button>
+                          <button type="button" className="px-btn" onClick={() => printSaved(c)} title={tr("طباعة PDF", "Print PDF")}>
+                            <Printer /> {tr("طباعة", "Print")}
+                          </button>
+                          <button
+                            type="button"
+                            className="px-iconbtn text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeleting(c)}
+                            aria-label={tr("حذف", "Delete")}
+                            title={tr("حذف التعريف", "Delete certificate")}
+                          >
+                            <Trash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title={tr(`حذف التعريف ${deleting?.number ?? ""}؟`, `Delete certificate ${deleting?.number ?? ""}?`)}
+        description={tr("سيتم حذف هذا التعريف بالراتب نهائيًا من السجل المحفوظ.", "This salary certificate will be permanently removed from the saved list.")}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

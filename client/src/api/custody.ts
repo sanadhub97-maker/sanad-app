@@ -125,7 +125,7 @@ export const custodyApi = {
   clearances: async (query: CustodyQuery) => (await api.get<Paginated<Clearance>>("/custody/clearances", { params: query })).data,
   clearance: async (id: string) => (await api.get<{ data: Clearance }>(`/custody/clearances/${id}`)).data.data,
   createClearance: async (input: ClearanceInput) => (await api.post<{ data: Clearance }>("/custody/clearances", input)).data.data,
-  updateClearance: async (id: string, input: Omit<ClearanceInput, "employeeId">) => (await api.put<{ data: Clearance }>(`/custody/clearances/${id}`, input)).data.data,
+  updateClearance: async (id: string, input: Omit<ClearanceInput, "employeeId"> & { employeeId?: string }) => (await api.put<{ data: Clearance }>(`/custody/clearances/${id}`, input)).data.data,
   issueClearance: async (id: string) => (await api.post<{ data: Clearance }>(`/custody/clearances/${id}/issue`)).data.data,
   removeClearance: async (id: string) => api.delete(`/custody/clearances/${id}`),
 };

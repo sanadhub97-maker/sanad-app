@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>معاينة التعديلات — تعريف بالراتب · شهادة الخبرة · إخلاء الطرف</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080706;
+      --card: #121110;
+      --card-2: #0c0b0a;
+      --gold: #c9a464;
+      --gold-l: #f3dfae;
+      --gold-d: #8f6b2e;
+      --ink: #f7f2e7;
+      --muted: #a69b86;
+      --emerald: #16a34a;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --foil: linear-gradient(118deg, #7a5920 0%, #c9a464 22%, #fff3d6 48%, #c9a464 74%, #6a4c18 100%);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Cairo", sans-serif;
+      background:
+        radial-gradient(900px 420px at 85% -10%, rgba(201, 164, 100, 0.14), transparent 70%),
+        radial-gradient(700px 380px at 10% 10%, rgba(201, 164, 100, 0.08), transparent 70%),
+        var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 24px 28px 60px;
+    }
+
+    /* Top Navigation Switcher between the 3 Pages */
+    .top-switcher {
+      max-width: 1380px;
+      margin: 0 auto 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      background: linear-gradient(160deg, #151310, #0d0c0a);
+      border: 1px solid rgba(214, 182, 120, 0.35);
+      box-shadow: 0 20px 50px -25px #000;
+    }
+    .top-switcher .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .top-switcher .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--foil);
+      color: #191205;
+      font-weight: 900;
+      font-size: 20px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 20px -6px rgba(201, 164, 100, 0.8);
+    }
+    .top-switcher .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--gold-l);
+    }
+    .top-switcher .brand small {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .page-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(201, 164, 100, 0.25);
+    }
+    .page-tabs button {
+      font-family: inherit;
+      height: 40px;
+      padding: 0 18px;
+      border-radius: 9px;
+      border: 0;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--muted);
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.25s;
+    }
+    .page-tabs button:hover { color: var(--gold-l); }
+    .page-tabs button.active {
+      background: var(--foil);
+      color: #1b1407;
+      box-shadow: 0 8px 22px -8px rgba(201, 164, 100, 0.85);
+    }
+    .page-tabs button .cnt {
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      background: rgba(0, 0, 0, 0.22);
+      color: inherit;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-hdr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      border-radius: 14px;
+      background: radial-gradient(500px 180px at 90% 0%, rgba(243, 223, 174, 0.09), transparent 70%), linear-gradient(160deg, #13110e, #0c0b09);
+      border: 1px solid rgba(214, 182, 120, 0.3);
+      margin-bottom: 18px;
+    }
+    .page-hdr h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      background: var(--foil);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .page-hdr p {
+      margin: 4px 0 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .hdr-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: inherit;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(201, 164, 100, 0.38);
+      background: rgba(201, 164, 100, 0.08);
+      color: var(--gold-l);
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background: rgba(201, 164, 100, 0.16);
+      border-color: var(--gold);
+    }
+    .btn.gold {
+      background: var(--foil);
+      color: #191206;
+      border-color: transparent;
+      box-shadow: 0 10px 24px -10px rgba(201, 164, 100, 0.85);
+    }
+    .btn.gold:hover { filter: brightness(1.06); }
+    .btn.sm { height: 34px; padding: 0 12px; font-size: 12.5px; border-radius: 8px; }
+    .btn.danger {
+      border-color: rgba(225, 29, 72, 0.35);
+      background: rgba(225, 29, 72, 0.08);
+      color: #fda4af;
+    }
+    .btn.danger:hover { background: rgba(225, 29, 72, 0.18); }
+
+    /* Edit Banner */
+    .xp-edit-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(201, 164, 100, 0.65);
+      background: linear-gradient(120deg, rgba(201, 164, 100, 0.22), rgba(201, 164, 100, 0.06));
+      margin-bottom: 14px;
+    }
+    .xp-edit-banner .info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--gold-l);
+    }
+    .xp-edit-banner code {
+      padding: 2px 10px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(201, 164, 100, 0.45);
+      color: #fff;
+      font-family: monospace;
+      font-size: 13.5px;
+    }
+
+    /* Two-column editor + live paper */
+    .xp-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1080px) {
+      .xp-grid { grid-template-columns: 1fr; }
+    }
+
+    .xp-form { display: grid; gap: 14px; }
+    .xp-sec {
+      padding: 18px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      background: radial-gradient(420px 200px at 100% 0%, rgba(243, 223, 174, 0.07), transparent 70%), linear-gradient(160deg, #121110, #0c0b0a);
+      box-shadow: 0 24px 50px -34px #000, inset 0 0 0 4px #0d0c0b, inset 0 0 0 5px rgba(214, 182, 120, 0.1);
+    }
+    .xp-sec h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 14px;
+      font-size: 16.5px;
+      font-weight: 800;
+      color: var(--gold-l);
+    }
+    .xp-sec h3::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(270deg, rgba(201, 164, 100, 0.45), transparent);
+    }
+    .xp-sec h3 .ic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 30%, #3a3020, #0f0e0b);
+      box-shadow: 0 0 0 1px rgba(243, 223, 174, 0.45);
+      font-size: 15px;
+    }
+
+    .xp-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 14px;
+    }
+    .xp-fields .wide { grid-column: 1 / -1; }
+    .xp-fields label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--gold-l);
+      margin-bottom: 5px;
+    }
+    .in, select.in, textarea.in {
+      width: 100%;
+      font-family: inherit;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(201, 164, 100, 0.28);
+      background: #090807;
+      color: var(--ink);
+      font-size: 13.5px;
+      outline: none;
+    }
+    textarea.in { height: auto; padding: 8px 12px; }
+    .in:focus, select.in:focus, textarea.in:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(201, 164, 100, 0.2);
+    }
+
+    .xp-total {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: linear-gradient(120deg, rgba(201, 164, 100, 0.16), rgba(201, 164, 100, 0.04));
+      border: 1px solid rgba(201, 164, 100, 0.4);
+    }
+    .xp-total b { font-size: 20px; font-weight: 900; color: var(--gold-l); }
+    .xp-total small.w { width: 100%; font-size: 12.5px; color: #e9d3a1; font-weight: 700; }
+
+    .xp-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      background: linear-gradient(160deg, #121110, #0c0b0a);
+    }
+
+    /* Live Royal Sheet Preview */
+    .xp-paper { position: sticky; top: 20px; }
+    .xp-sheet {
+      position: relative;
+      padding: 0 0 18px;
+      border-radius: 4px;
+      background: #fffdf7;
+      color: #1a2130;
+      overflow: hidden;
+      box-shadow: 0 40px 70px -36px #000, 0 0 0 1px rgba(201, 164, 100, 0.55), 0 0 0 7px #0f2d4a, 0 0 0 8px rgba(201, 164, 100, 0.8);
+      margin: 6px;
+    }
+    .xp-sheet .band {
+      padding: 16px 16px 32px;
+      text-align: center;
+      background: radial-gradient(120% 140% at 50% -20%, #1e5a86, transparent 70%), #0f2d4a;
+      border-bottom: 2px solid #c9a253;
+    }
+    .xp-sheet .band b {
+      display: block;
+      font-size: 18px;
+      font-weight: 800;
+      color: #f3dfae;
+    }
+    .xp-sheet .band small {
+      display: block;
+      font-size: 10px;
+      color: #e9d6a6;
+      letter-spacing: 0.15em;
+    }
+    .xp-sheet .medal {
+      width: 60px;
+      height: 60px;
+      margin: -30px auto 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      color: #0f2d4a;
+      box-shadow: 0 0 0 3px #c9a253, 0 10px 20px -10px rgba(0,0,0,0.5);
+    }
+    .xp-sheet .ttl { text-align: center; margin-top: 8px; }
+    .xp-sheet .ttl h2 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 900;
+      color: #9c7631;
+    }
+    .xp-sheet .ttl small {
+      display: block;
+      font-size: 8.5px;
+      letter-spacing: 0.35em;
+      color: #b08a40;
+    }
+    .xp-sheet .to {
+      margin: 10px 22px 0;
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f2d4a;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .xp-sheet .to::before, .xp-sheet .to::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #c9a253);
+    }
+    .xp-sheet .to::after { background: linear-gradient(270deg, transparent, #c9a253); }
+    .xp-sheet .card {
+      margin: 10px 18px 0;
+      padding: 14px 16px;
+      border: 1px solid #b08a40;
+      outline: 0.6px solid #e3cd97;
+      outline-offset: 3px;
+      background: radial-gradient(120% 120% at 50% 0%, #fff, #fdf8ec 70%, #f9f0dc);
+    }
+    .xp-sheet .card p {
+      margin: 0 0 8px;
+      font-size: 13px;
+      line-height: 1.95;
+      text-align: justify;
+    }
+    .xp-sheet .card p.lead { font-weight: 800; color: #b08a40; }
+    .xp-sheet .card p.close {
+      margin: 8px 0 0;
+      padding-top: 8px;
+      border-top: 0.6px solid #e3cd97;
+      font-size: 11.5px;
+      color: #3c4659;
+      text-align: center;
+    }
+    .xp-st {
+      width: 100%;
+      margin: 8px 0;
+      border-collapse: collapse;
+      font-size: 11.5px;
+      border: 1px solid #0f2d4a;
+    }
+    .xp-st th {
+      padding: 5px 8px;
+      background: #0f2d4a;
+      color: #f1dc9f;
+      font-weight: 800;
+      border-bottom: 1.5px solid #c9a253;
+    }
+    .xp-st td {
+      padding: 4px 8px;
+      text-align: center;
+      border-bottom: 1px solid #efe3c6;
+      font-weight: 700;
+    }
+    .xp-st tr.tot td {
+      background: #0f2d4a;
+      color: #f7e7b0;
+      font-weight: 800;
+    }
+
+    /* Saved Records Section / Table */
+    .saved-card {
+      margin-top: 26px;
+      border-radius: 14px;
+      border: 1px solid rgba(214, 182, 120, 0.32);
+      background: linear-gradient(160deg, #13110f, #0b0a09);
+      box-shadow: 0 26px 55px -32px #000;
+      overflow: hidden;
+    }
+    .saved-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 22px;
+      border-bottom: 1px solid rgba(201, 164, 100, 0.2);
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .saved-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 17.5px;
+      font-weight: 900;
+      color: var(--gold-l);
+    }
+    .saved-count {
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      background: rgba(201, 164, 100, 0.2);
+      border: 1px solid rgba(201, 164, 100, 0.45);
+      color: var(--gold-l);
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(201, 164, 100, 0.3);
+      background: #080706;
+      min-width: 260px;
+    }
+    .search-box input {
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 13px;
+      width: 100%;
+    }
+
+    table.px-t {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+    table.px-t th {
+      padding: 12px 16px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(201, 164, 100, 0.2);
+      background: rgba(201, 164, 100, 0.04);
+    }
+    table.px-t td {
+      padding: 13px 16px;
+      font-size: 13.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+    table.px-t tr:hover td {
+      background: rgba(201, 164, 100, 0.06);
+    }
+    table.px-t tr.editing-row td {
+      background: rgba(201, 164, 100, 0.15) !important;
+    }
+    .mono { font-family: ui-monospace, monospace; font-weight: 800; color: var(--gold-l); }
+    .emp-cell { display: flex; align-items: center; gap: 10px; }
+    .emp-av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3a3020, #14110c);
+      border: 1px solid rgba(201, 164, 100, 0.5);
+      color: var(--gold-l);
+      font-weight: 800;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+    }
+    .emp-cell b { display: block; font-size: 14px; color: var(--ink); }
+    .emp-cell small { font-size: 12px; color: var(--muted); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .badge.ok { background: rgba(22, 163, 74, 0.16); color: #86efac; border: 1px solid rgba(22, 163, 74, 0.4); }
+    .badge.warn { background: rgba(217, 119, 6, 0.16); color: #fcd34d; border: 1px solid rgba(217, 119, 6, 0.4); }
+    .badge.mut { background: rgba(201, 164, 100, 0.12); color: var(--gold-l); border: 1px solid rgba(201, 164, 100, 0.3); }
+
+    .row-actions { display: flex; align-items: center; gap: 6px; }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1b1710, #0f0d0a);
+      border: 1px solid var(--gold);
+      color: var(--gold-l);
+      font-weight: 800;
+      font-size: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      transform: translateY(120%);
+      opacity: 0;
+      transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Page Switcher -->
+  <div class="top-switcher">
+    <div class="brand">
+      <div class="brand-badge">س</div>
+      <div>
+        <h1>معاينة نظام الشهادات وإخلاء الطرف (سند رويال)</h1>
+        <small>يدعم الحفظ في الصفحة · الإضافة · التعديل · الحذف · والطباعة الفورية</small>
+      </div>
+    </div>
+    <div class="page-tabs">
+      <button id="tab-salary" class="active" onclick="switchTab('salary')">
+        💰 تعريف بالراتب <span class="cnt" id="cnt-salary">2</span>
+      </button>
+      <button id="tab-exp" onclick="switchTab('exp')">
+        📜 شهادة الخبرة <span class="cnt" id="cnt-exp">2</span>
+      </button>
+      <button id="tab-clr" onclick="switchTab('clr')">
+        🛡️ إخلاء الطرف <span class="cnt" id="cnt-clr">2</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 1. SALARY CERTIFICATE VIEW ==================== -->
+  <div id="view-salary" class="container">
+    <div class="page-hdr">
+      <div>
+        <h2>تعريف بالراتب</h2>
+        <p>أنشئ واحفظ وعدّل واطبع تعريف راتب فخم للموظف، بالمبالغ مكتوبة بالحروف، مع حفظه في السجل للرجوع إليه في أي وقت.</p>
+      </div>
+      <div class="hdr-actions">
+        <button class="btn" onclick="resetSalaryForm()">➕ إضافة تعريف جديد</button>
+        <button class="btn" onclick="saveSalary(false)" id="btn-sal-save">💾 حفظ في السجل</button>
+        <button class="btn gold" onclick="saveSalary(true)" id="btn-sal-print">🖨️ حفظ وطباعة PDF</button>
+      </div>
+    </div>
+
+    <div id="sal-edit-banner" class="xp-edit-banner" style="display:none">
+      <div class="info">
+        ✨ <span>وضع التعديل على التعريف المحفوظ رقم <code id="sal-edit-num">SAL-2026-0001</code></span>
+      </div>
+      <button class="btn sm" onclick="resetSalaryForm()">↩️ إلغاء التعديل / إضافة جديد</button>
+    </div>
+
+    <div class="xp-grid">
+      <div class="xp-form">
+        <section class="xp-sec">
+          <h3><span class="ic">👤</span> الموظف والمنشأة</h3>
+          <div class="xp-fields">
+            <div>
+              <label>الموظف</label>
+              <select id="sal-emp" class="in" onchange="renderSalarySheet()">
+                <option value="محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات|2458796321">محمد أحمد العتيبي (EMP-101)</option>
+                <option value="فهد عبد الله الدوسري|EMP-104|محاسب مالي أول|مؤسسة الأفق الذهبي للتجارة|1098452310">فهد عبد الله الدوسري (EMP-104)</option>
+                <option value="خالد سعيد القحطاني|EMP-109|مشرف تشغيل وصيانة|شركة سند العربية للمقاولات|1056321478">خالد سعيد القحطاني (EMP-109)</option>
+              </select>
+            </div>
+            <div>
+              <label>المسمى الوظيفي</label>
+              <input id="sal-job" class="in" value="مهندس مشاريع" oninput="renderSalarySheet()" />
+            </div>
+            <div>
+              <label>موجّه إلى (الجهة)</label>
+              <input id="sal-to" class="in" value="مصرف الراجحي" placeholder="اتركه فارغًا لـ «إلى من يهمه الأمر»" oninput="renderSalarySheet()" />
+            </div>
+            <div>
+              <label>تاريخ الإصدار</label>
+              <input id="sal-date" type="date" class="in" value="2026-10-17" oninput="renderSalarySheet()" />
+            </div>
+          </div>
+        </section>
+
+        <section class="xp-sec">
+          <h3><span class="ic">💵</span> تفاصيل الراتب الشهري</h3>
+          <div class="xp-fields">
+            <div>
+              <label>الراتب الأساسي (ر.س)</label>
+              <input id="sal-basic" type="number" class="in" value="8500" oninput="renderSalarySheet()" />
+            </div>
+            <div>
+              <label>بدل السكن (ر.س)</label>
+              <input id="sal-housing" type="number" class="in" value="2125" oninput="renderSalarySheet()" />
+            </div>
+            <div>
+              <label>بدل المواصلات (ر.س)</label>
+              <input id="sal-transport" type="number" class="in" value="850" oninput="renderSalarySheet()" />
+            </div>
+            <div>
+              <label>اسم البنك المحوّل عليه</label>
+              <input id="sal-bank" class="in" value="مصرف الراجحي" oninput="renderSalarySheet()" />
+            </div>
+            <div class="xp-total wide">
+              <span>إجمالي الراتب الشهري</span>
+              <b id="sal-total-lbl">11,475.00 ر.س</b>
+              <small class="w">يُحفظ هذا التعريف في جدول السجلات بالأسفل ويمكنك تعديله أو طباعته في أي وقت.</small>
+            </div>
+          </div>
+        </section>
+
+        <div class="xp-foot">
+          <button class="btn gold" onclick="saveSalary(false)" id="btn-sal-save2">💾 حفظ التعريف في السجل</button>
+          <button class="btn" onclick="saveSalary(true)">🖨️ حفظ وطباعة PDF</button>
+          <button class="btn" onclick="resetSalaryForm()">➕ إضافة تعريف جديد</button>
+        </div>
+      </div>
+
+      <!-- Live Paper Preview -->
+      <aside class="xp-paper">
+        <div class="xp-sheet">
+          <div class="band">
+            <b id="sal-sheet-est">شركة سند العربية للمقاولات</b>
+            <small id="sal-sheet-num">رقم التعريف: SAL-2026-0001</small>
+          </div>
+          <div class="medal">س</div>
+          <div class="ttl">
+            <h2>تعريف بالراتب</h2>
+            <small>SALARY CERTIFICATE</small>
+          </div>
+          <div class="to" id="sal-sheet-to">إلى: مصرف الراجحي</div>
+          <div class="card">
+            <p class="lead">تحية طيبة وبعد،</p>
+            <p id="sal-sheet-main"></p>
+            <table class="xp-st">
+              <thead>
+                <tr><th>م</th><th>البند</th><th>المبلغ (ريال سعودي)</th></tr>
+              </thead>
+              <tbody id="sal-sheet-rows"></tbody>
+              <tfoot>
+                <tr class="tot"><td></td><td>إجمالي الراتب الشهري</td><td id="sal-sheet-tot">11,475.00</td></tr>
+              </tfoot>
+            </table>
+            <p id="sal-sheet-bank"></p>
+            <p class="close">وقد أُعطي له هذا التعريف بناءً على طلبه، دون أدنى مسؤولية على المنشأة تجاه الغير.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Saved Salary Certificates Table -->
+    <section class="saved-card">
+      <div class="saved-head">
+        <h3 class="saved-title">
+          🗂️ سجل التعاريف بالراتب المحفوظة
+          <span class="saved-count" id="sal-table-count">2</span>
+        </h3>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <label class="search-box">
+            🔍 <input id="sal-search" placeholder="بحث بالاسم أو الرقم أو الجهة..." oninput="renderSalaryTable()" />
+          </label>
+          <button class="btn sm" onclick="resetSalaryForm()">➕ إضافة تعريف جديد</button>
+        </div>
+      </div>
+      <table class="px-t">
+        <thead>
+          <tr>
+            <th>رقم التعريف</th>
+            <th>الموظف</th>
+            <th>موجّه إلى</th>
+            <th>المسمى الوظيفي</th>
+            <th>إجمالي الراتب</th>
+            <th>تاريخ الإصدار</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="sal-tbody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- ==================== 2. EXPERIENCE CERTIFICATE VIEW ==================== -->
+  <div id="view-exp" class="container" style="display:none">
+    <div class="page-hdr">
+      <div>
+        <h2>شهادة خبرة</h2>
+        <p>أنشئ واحفظ وعدّل واطبع شهادة خبرة فخمة للموظف، بترويسة منشأته أو باسم منشأة تكتبه بنفسك، مع حفظها في السجل للرجوع إليها في أي وقت.</p>
+      </div>
+      <div class="hdr-actions">
+        <button class="btn" onclick="resetExpForm()">➕ إضافة شهادة جديدة</button>
+        <button class="btn" onclick="saveExp(false)" id="btn-exp-save">💾 حفظ في السجل</button>
+        <button class="btn gold" onclick="saveExp(true)">🖨️ حفظ وطباعة PDF</button>
+      </div>
+    </div>
+
+    <div id="exp-edit-banner" class="xp-edit-banner" style="display:none">
+      <div class="info">
+        ✨ <span>وضع التعديل على الشهادة المحفوظة رقم <code id="exp-edit-num">EXP-2026-0001</code></span>
+      </div>
+      <button class="btn sm" onclick="resetExpForm()">↩️ إلغاء التعديل / إضافة جديد</button>
+    </div>
+
+    <div class="xp-grid">
+      <div class="xp-form">
+        <section class="xp-sec">
+          <h3><span class="ic">👤</span> بيانات الموظف والخدمة</h3>
+          <div class="xp-fields">
+            <div>
+              <label>الموظف</label>
+              <select id="exp-emp" class="in" onchange="renderExpSheet()">
+                <option value="محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات|2458796321">محمد أحمد العتيبي (EMP-101)</option>
+                <option value="فهد عبد الله الدوسري|EMP-104|محاسب مالي أول|مؤسسة الأفق الذهبي للتجارة|1098452310">فهد عبد الله الدوسري (EMP-104)</option>
+                <option value="خالد سعيد القحطاني|EMP-109|مشرف تشغيل وصيانة|شركة سند العربية للمقاولات|1056321478">خالد سعيد القحطاني (EMP-109)</option>
+              </select>
+            </div>
+            <div>
+              <label>المسمى الوظيفي</label>
+              <input id="exp-job" class="in" value="مهندس مشاريع" oninput="renderExpSheet()" />
+            </div>
+            <div>
+              <label>تاريخ الالتحاق</label>
+              <input id="exp-start" type="date" class="in" value="2022-03-01" oninput="renderExpSheet()" />
+            </div>
+            <div>
+              <label>تاريخ انتهاء الخدمة</label>
+              <input id="exp-end" type="date" class="in" value="2026-10-15" oninput="renderExpSheet()" />
+            </div>
+            <div class="wide">
+              <label>ملاحظة أو سطر إضافي</label>
+              <textarea id="exp-note" rows="2" class="in" placeholder="سطر إضافي اختياري يظهر في الشهادة..." oninput="renderExpSheet()">وقد أظهر كفاءة عالية في إدارة المشاريع الهندسية طوال فترة عمله.</textarea>
+            </div>
+          </div>
+        </section>
+
+        <div class="xp-foot">
+          <button class="btn gold" onclick="saveExp(false)" id="btn-exp-save2">💾 حفظ الشهادة في السجل</button>
+          <button class="btn" onclick="saveExp(true)">🖨️ حفظ وطباعة PDF</button>
+          <button class="btn" onclick="resetExpForm()">➕ إضافة شهادة جديدة</button>
+        </div>
+      </div>
+
+      <aside class="xp-paper">
+        <div class="xp-sheet">
+          <div class="band">
+            <b id="exp-sheet-est">شركة سند العربية للمقاولات</b>
+            <small id="exp-sheet-num">رقم الشهادة: EXP-2026-0001</small>
+          </div>
+          <div class="medal">س</div>
+          <div class="ttl">
+            <h2>شهادة خبرة</h2>
+            <small>EXPERIENCE CERTIFICATE</small>
+          </div>
+          <div class="to">إلى من يهمه الأمر</div>
+          <div class="card">
+            <p class="lead">تحية طيبة وبعد،</p>
+            <p id="exp-sheet-main"></p>
+            <p>وقد كان خلال فترة عمله مثالًا للجدية والالتزام والأمانة وحسن الخلق، ونتمنى له دوام التوفيق والنجاح.</p>
+            <p id="exp-sheet-note"></p>
+            <p class="close">وقد أُعطيت له هذه الشهادة بناءً على طلبه، دون أدنى مسؤولية على المنشأة تجاه الغير.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Saved Experience Certificates Table -->
+    <section class="saved-card">
+      <div class="saved-head">
+        <h3 class="saved-title">
+          🗂️ سجل شهادات الخبرة المحفوظة
+          <span class="saved-count" id="exp-table-count">2</span>
+        </h3>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <label class="search-box">
+            🔍 <input id="exp-search" placeholder="بحث بالاسم أو الرقم أو المسمى..." oninput="renderExpTable()" />
+          </label>
+          <button class="btn sm" onclick="resetExpForm()">➕ إضافة شهادة جديدة</button>
+        </div>
+      </div>
+      <table class="px-t">
+        <thead>
+          <tr>
+            <th>رقم الشهادة</th>
+            <th>الموظف</th>
+            <th>الترويسة / المنشأة</th>
+            <th>المسمى الوظيفي</th>
+            <th>فترة الخدمة</th>
+            <th>تاريخ الإصدار</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="exp-tbody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- ==================== 3. CLEARANCE VIEW ==================== -->
+  <div id="view-clr" class="container" style="display:none">
+    <div class="page-hdr">
+      <div>
+        <h2>إخلاء الطرف</h2>
+        <p>استرجع عهد الموظف، وخد تأكيد كل قسم، واحفظ وعدّل واطبع شهادة إخلاء الطرف في أي وقت (حتى بعد إصدار الشهادة).</p>
+      </div>
+      <div class="hdr-actions">
+        <button class="btn gold" onclick="resetClrForm()">➕ إخلاء طرف جديد</button>
+      </div>
+    </div>
+
+    <div id="clr-edit-banner" class="xp-edit-banner" style="display:none">
+      <div class="info">
+        ✨ <span>وضع التعديل على إخلاء الطرف المحفوظ رقم <code id="clr-edit-num">CL-2026-0001</code></span>
+      </div>
+      <button class="btn sm" onclick="resetClrForm()">↩️ إلغاء التعديل / إضافة إخلاء جديد</button>
+    </div>
+
+    <section class="xp-sec" style="margin-bottom: 20px;">
+      <h3><span class="ic">🛡️</span> بيانات إخلاء الطرف (إضافة / تعديل)</h3>
+      <div class="xp-fields" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+        <div>
+          <label>الموظف</label>
+          <select id="clr-emp" class="in">
+            <option value="محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات">محمد أحمد العتيبي (EMP-101)</option>
+            <option value="فهد عبد الله الدوسري|EMP-104|محاسب مالي أول|مؤسسة الأفق الذهبي للتجارة">فهد عبد الله الدوسري (EMP-104)</option>
+            <option value="خالد سعيد القحطاني|EMP-109|مشرف تشغيل وصيانة|شركة سند العربية للمقاولات">خالد سعيد القحطاني (EMP-109)</option>
+          </select>
+        </div>
+        <div>
+          <label>سبب الإخلاء</label>
+          <select id="clr-reason" class="in">
+            <option value="انتهاء العقد">انتهاء العقد</option>
+            <option value="استقالة">استقالة</option>
+            <option value="نقل خدمات">نقل خدمات</option>
+            <option value="تقاعد">تقاعد</option>
+          </select>
+        </div>
+        <div>
+          <label>آخر يوم عمل</label>
+          <input id="clr-date" type="date" class="in" value="2026-10-17" />
+        </div>
+        <div>
+          <label>المستحقات النهائية (ر.س)</label>
+          <input id="clr-dues" type="number" class="in" value="14500" />
+        </div>
+      </div>
+      <div style="margin-top: 14px; display:flex; gap:10px;">
+        <button class="btn gold" onclick="saveClr('ISSUED')" id="btn-clr-save">💾 حفظ واعتماد إخلاء الطرف</button>
+        <button class="btn" onclick="saveClr('OPEN')">📝 حفظ كمسودة</button>
+        <button class="btn" onclick="resetClrForm()">➕ إخلاء طرف جديد</button>
+      </div>
+    </section>
+
+    <section class="saved-card" style="margin-top: 0;">
+      <div class="saved-head">
+        <h3 class="saved-title">
+          🗂️ سجل إخلاءات الطرف المحفوظة
+          <span class="saved-count" id="clr-table-count">2</span>
+        </h3>
+        <label class="search-box">
+          🔍 <input id="clr-search" placeholder="بحث بالاسم أو رقم الإخلاء..." oninput="renderClrTable()" />
+        </label>
+      </div>
+      <table class="px-t">
+        <thead>
+          <tr>
+            <th>رقم الإخلاء</th>
+            <th>الموظف</th>
+            <th>السبب</th>
+            <th>آخر يوم عمل</th>
+            <th>المستحقات</th>
+            <th>الحالة</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="clr-tbody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let editingSalId = null;
+    let editingExpId = null;
+    let editingClrId = null;
+
+    let salaryRecords = [
+      { id: 1, number: "SAL-2026-0001", empVal: "محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات|2458796321", name: "محمد أحمد العتيبي", empNo: "EMP-101", est: "شركة سند العربية للمقاولات", job: "مهندس مشاريع", to: "مصرف الراجحي", basic: 8500, housing: 2125, transport: 850, bank: "مصرف الراجحي", date: "2026-10-17" },
+      { id: 2, number: "SAL-2026-0002", empVal: "فهد عبد الله الدوسري|EMP-104|محاسب مالي أول|مؤسسة الأفق الذهبي للتجارة|1098452310", name: "فهد عبد الله الدوسري", empNo: "EMP-104", est: "مؤسسة الأفق الذهبي للتجارة", job: "محاسب مالي أول", to: "السفارة", basic: 7200, housing: 1800, transport: 600, bank: "البنك الأهلي السعودي", date: "2026-10-15" }
+    ];
+
+    let expRecords = [
+      { id: 1, number: "EXP-2026-0001", empVal: "محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات|2458796321", name: "محمد أحمد العتيبي", empNo: "EMP-101", est: "شركة سند العربية للمقاولات", job: "مهندس مشاريع", start: "2022-03-01", end: "2026-10-15", note: "وقد أظهر كفاءة عالية في إدارة المشاريع الهندسية طوال فترة عمله.", date: "2026-10-17" },
+      { id: 2, number: "EXP-2026-0002", empVal: "خالد سعيد القحطاني|EMP-109|مشرف تشغيل وصيانة|شركة سند العربية للمقاولات|1056321478", name: "خالد سعيد القحطاني", empNo: "EMP-109", est: "شركة سند العربية للمقاولات", job: "مشرف تشغيل وصيانة", start: "2021-06-10", end: "2026-09-30", note: "", date: "2026-10-12" }
+    ];
+
+    let clrRecords = [
+      { id: 1, number: "CL-2026-0001", empVal: "محمد أحمد العتيبي|EMP-101|مهندس مشاريع|شركة سند العربية للمقاولات", name: "محمد أحمد العتيبي", empNo: "EMP-101", est: "شركة سند العربية للمقاولات", reason: "انتهاء العقد", date: "2026-10-17", dues: 14500, status: "ISSUED" },
+      { id: 2, number: "CL-2026-0002", empVal: "فهد عبد الله الدوسري|EMP-104|محاسب مالي أول|مؤسسة الأفق الذهبي للتجارة", name: "فهد عبد الله الدوسري", empNo: "EMP-104", est: "مؤسسة الأفق الذهبي للتجارة", reason: "استقالة", date: "2026-10-16", dues: 8200, status: "OPEN" }
+    ];
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    function switchTab(tab) {
+      ["salary", "exp", "clr"].forEach(k => {
+        document.getElementById("view-" + k).style.display = k === tab ? "block" : "none";
+        document.getElementById("tab-" + k).classList.toggle("active", k === tab);
+      });
+    }
+
+    const fmt = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // SALARY LOGIC
+    function renderSalarySheet() {
+      const [name, empNo, defaultJob, est, iqama] = document.getElementById("sal-emp").value.split("|");
+      const job = document.getElementById("sal-job").value || defaultJob;
+      const to = document.getElementById("sal-to").value.trim();
+      const basic = Number(document.getElementById("sal-basic").value) || 0;
+      const housing = Number(document.getElementById("sal-housing").value) || 0;
+      const transport = Number(document.getElementById("sal-transport").value) || 0;
+      const bank = document.getElementById("sal-bank").value.trim();
+      const total = basic + housing + transport;
+
+      document.getElementById("sal-total-lbl").textContent = fmt(total) + " ر.س";
+      document.getElementById("sal-sheet-est").textContent = est;
+      document.getElementById("sal-sheet-to").textContent = to ? "إلى: " + to : "إلى من يهمه الأمر";
+      document.getElementById("sal-sheet-main").textContent =
+        `تشهد ${est} بأن السيد/ ${name}، ويحمل هوية/إقامة رقم (${iqama})، يعمل لدينا بوظيفة (${job})، ويتقاضى راتبًا شهريًا إجماليًا قدره ${fmt(total)} ريال سعودي، موزّعًا على النحو التالي:`;
+      document.getElementById("sal-sheet-rows").innerHTML = `
+        <tr><td>1</td><td>الراتب الأساسي</td><td>${fmt(basic)}</td></tr>
+        <tr><td>2</td><td>بدل السكن</td><td>${fmt(housing)}</td></tr>
+        <tr><td>3</td><td>بدل المواصلات</td><td>${fmt(transport)}</td></tr>
+      `;
+      document.getElementById("sal-sheet-tot").textContent = fmt(total);
+      document.getElementById("sal-sheet-bank").textContent = bank ? `ويُحوَّل راتبه شهريًا على حسابه لدى ${bank}.` : "";
+    }
+
+    function renderSalaryTable() {
+      const q = document.getElementById("sal-search").value.trim().toLowerCase();
+      const filtered = salaryRecords.filter(r => !q || r.name.toLowerCase().includes(q) || r.number.toLowerCase().includes(q) || r.to.toLowerCase().includes(q) || r.job.toLowerCase().includes(q));
+      document.getElementById("sal-table-count").textContent = filtered.length;
+      document.getElementById("cnt-salary").textContent = salaryRecords.length;
+      document.getElementById("sal-tbody").innerHTML = filtered.map(r => {
+        const tot = r.basic + r.housing + r.transport;
+        return `
+          <tr class="${editingSalId === r.id ? 'editing-row' : ''}">
+            <td class="mono">${r.number}</td>
+            <td>
+              <div class="emp-cell">
+                <div class="emp-av">${r.name.charAt(0)}</div>
+                <div><b>${r.name}</b><small>${r.empNo} · ${r.est}</small></div>
+              </div>
+            </td>
+            <td><span class="badge ${r.to ? 'ok' : 'mut'}">${r.to || 'إلى من يهمه الأمر'}</span></td>
+            <td>${r.job}</td>
+            <td class="mono">${fmt(tot)} ر.س</td>
+            <td class="mono">${r.date}</td>
+            <td>
+              <div class="row-actions">
+                <button class="btn sm" onclick="editSalary(${r.id})">✏️ تعديل</button>
+                <button class="btn sm" onclick="showToast('🖨️ جاري فتح ملف PDF للتعريف ${r.number}')">🖨️ طباعة</button>
+                <button class="btn sm danger" onclick="deleteSalary(${r.id})">🗑️ حذف</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function editSalary(id) {
+      const r = salaryRecords.find(x => x.id === id);
+      if (!r) return;
+      editingSalId = r.id;
+      document.getElementById("sal-emp").value = r.empVal;
+      document.getElementById("sal-job").value = r.job;
+      document.getElementById("sal-to").value = r.to;
+      document.getElementById("sal-basic").value = r.basic;
+      document.getElementById("sal-housing").value = r.housing;
+      document.getElementById("sal-transport").value = r.transport;
+      document.getElementById("sal-bank").value = r.bank;
+      document.getElementById("sal-date").value = r.date;
+      document.getElementById("sal-edit-banner").style.display = "flex";
+      document.getElementById("sal-edit-num").textContent = r.number;
+      document.getElementById("sal-sheet-num").textContent = "رقم التعريف: " + r.number;
+      document.getElementById("btn-sal-save").textContent = "💾 حفظ التعديلات";
+      document.getElementById("btn-sal-save2").textContent = "💾 حفظ التعديلات";
+      renderSalarySheet();
+      renderSalaryTable();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("✏️ تم تحميل التعريف " + r.number + " للتعديل");
+    }
+
+    function resetSalaryForm() {
+      editingSalId = null;
+      document.getElementById("sal-edit-banner").style.display = "none";
+      document.getElementById("btn-sal-save").textContent = "💾 حفظ في السجل";
+      document.getElementById("btn-sal-save2").textContent = "💾 حفظ التعريف في السجل";
+      document.getElementById("sal-to").value = "";
+      document.getElementById("sal-basic").value = "9000";
+      document.getElementById("sal-housing").value = "2250";
+      document.getElementById("sal-transport").value = "750";
+      renderSalarySheet();
+      renderSalaryTable();
+    }
+
+    function saveSalary(andPrint) {
+      const empVal = document.getElementById("sal-emp").value;
+      const [name, empNo, , est] = empVal.split("|");
+      const data = {
+        empVal, name, empNo, est,
+        job: document.getElementById("sal-job").value,
+        to: document.getElementById("sal-to").value.trim(),
+        basic: Number(document.getElementById("sal-basic").value) || 0,
+        housing: Number(document.getElementById("sal-housing").value) || 0,
+        transport: Number(document.getElementById("sal-transport").value) || 0,
+        bank: document.getElementById("sal-bank").value.trim(),
+        date: document.getElementById("sal-date").value || "2026-10-17"
+      };
+      if (editingSalId) {
+        const idx = salaryRecords.findIndex(x => x.id === editingSalId);
+        salaryRecords[idx] = { ...salaryRecords[idx], ...data };
+        showToast(andPrint ? `🖨️ تم حفظ التعديلات وطباعة ${salaryRecords[idx].number}` : `✅ تم حفظ التعديلات على ${salaryRecords[idx].number}`);
+      } else {
+        const nextNum = `SAL-2026-000${salaryRecords.length + 1}`;
+        const rec = { id: Date.now(), number: nextNum, ...data };
+        salaryRecords.unshift(rec);
+        editingSalId = rec.id;
+        document.getElementById("sal-edit-banner").style.display = "flex";
+        document.getElementById("sal-edit-num").textContent = rec.number;
+        showToast(andPrint ? `🖨️ تم حفظ التعريف ${nextNum} وفتح الـ PDF` : `✅ تم حفظ التعريف ${nextNum} في السجل`);
+      }
+      renderSalaryTable();
+    }
+
+    function deleteSalary(id) {
+      const r = salaryRecords.find(x => x.id === id);
+      salaryRecords = salaryRecords.filter(x => x.id !== id);
+      if (editingSalId === id) resetSalaryForm();
+      renderSalaryTable();
+      showToast(`🗑️ تم حذف التعريف ${r ? r.number : ""}`);
+    }
+
+    // EXPERIENCE LOGIC
+    function renderExpSheet() {
+      const [name, , defaultJob, est, iqama] = document.getElementById("exp-emp").value.split("|");
+      const job = document.getElementById("exp-job").value || defaultJob;
+      const start = document.getElementById("exp-start").value;
+      const end = document.getElementById("exp-end").value;
+      const note = document.getElementById("exp-note").value;
+
+      document.getElementById("exp-sheet-est").textContent = est;
+      document.getElementById("exp-sheet-main").textContent =
+        `تشهد ${est} بأن السيد/ ${name}، ويحمل هوية/إقامة رقم (${iqama})، قد عمل لدينا بوظيفة (${job}) خلال الفترة من ${start} إلى ${end}.`;
+      document.getElementById("exp-sheet-note").textContent = note;
+    }
+
+    function renderExpTable() {
+      const q = document.getElementById("exp-search").value.trim().toLowerCase();
+      const filtered = expRecords.filter(r => !q || r.name.toLowerCase().includes(q) || r.number.toLowerCase().includes(q) || r.job.toLowerCase().includes(q));
+      document.getElementById("exp-table-count").textContent = filtered.length;
+      document.getElementById("cnt-exp").textContent = expRecords.length;
+      document.getElementById("exp-tbody").innerHTML = filtered.map(r => `
+        <tr class="${editingExpId === r.id ? 'editing-row' : ''}">
+          <td class="mono">${r.number}</td>
+          <td>
+            <div class="emp-cell">
+              <div class="emp-av">${r.name.charAt(0)}</div>
+              <div><b>${r.name}</b><small>${r.empNo}</small></div>
+            </div>
+          </td>
+          <td>${r.est}</td>
+          <td>${r.job}</td>
+          <td class="mono">${r.start} ← ${r.end}</td>
+          <td class="mono">${r.date}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn sm" onclick="editExp(${r.id})">✏️ تعديل</button>
+              <button class="btn sm" onclick="showToast('🖨️ جاري فتح ملف PDF للشهادة ${r.number}')">🖨️ طباعة</button>
+              <button class="btn sm danger" onclick="deleteExp(${r.id})">🗑️ حذف</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function editExp(id) {
+      const r = expRecords.find(x => x.id === id);
+      if (!r) return;
+      editingExpId = r.id;
+      document.getElementById("exp-emp").value = r.empVal;
+      document.getElementById("exp-job").value = r.job;
+      document.getElementById("exp-start").value = r.start;
+      document.getElementById("exp-end").value = r.end;
+      document.getElementById("exp-note").value = r.note;
+      document.getElementById("exp-edit-banner").style.display = "flex";
+      document.getElementById("exp-edit-num").textContent = r.number;
+      document.getElementById("btn-exp-save").textContent = "💾 حفظ التعديلات";
+      document.getElementById("btn-exp-save2").textContent = "💾 حفظ التعديلات";
+      renderExpSheet();
+      renderExpTable();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("✏️ تم تحميل شهادة الخبرة " + r.number + " للتعديل");
+    }
+
+    function resetExpForm() {
+      editingExpId = null;
+      document.getElementById("exp-edit-banner").style.display = "none";
+      document.getElementById("btn-exp-save").textContent = "💾 حفظ في السجل";
+      document.getElementById("btn-exp-save2").textContent = "💾 حفظ الشهادة في السجل";
+      document.getElementById("exp-note").value = "";
+      renderExpSheet();
+      renderExpTable();
+    }
+
+    function saveExp(andPrint) {
+      const empVal = document.getElementById("exp-emp").value;
+      const [name, empNo, , est] = empVal.split("|");
+      const data = {
+        empVal, name, empNo, est,
+        job: document.getElementById("exp-job").value,
+        start: document.getElementById("exp-start").value,
+        end: document.getElementById("exp-end").value,
+        note: document.getElementById("exp-note").value,
+        date: "2026-10-17"
+      };
+      if (editingExpId) {
+        const idx = expRecords.findIndex(x => x.id === editingExpId);
+        expRecords[idx] = { ...expRecords[idx], ...data };
+        showToast(andPrint ? `🖨️ تم تحديث وطباعة ${expRecords[idx].number}` : `✅ تم حفظ التعديلات على ${expRecords[idx].number}`);
+      } else {
+        const nextNum = `EXP-2026-000${expRecords.length + 1}`;
+        const rec = { id: Date.now(), number: nextNum, ...data };
+        expRecords.unshift(rec);
+        editingExpId = rec.id;
+        document.getElementById("exp-edit-banner").style.display = "flex";
+        document.getElementById("exp-edit-num").textContent = rec.number;
+        showToast(andPrint ? `🖨️ تم حفظ الشهادة ${nextNum} وفتح الـ PDF` : `✅ تم حفظ الشهادة ${nextNum} في السجل`);
+      }
+      renderExpTable();
+    }
+
+    function deleteExp(id) {
+      const r = expRecords.find(x => x.id === id);
+      expRecords = expRecords.filter(x => x.id !== id);
+      if (editingExpId === id) resetExpForm();
+      renderExpTable();
+      showToast(`🗑️ تم حذف الشهادة ${r ? r.number : ""}`);
+    }
+
+    // CLEARANCE LOGIC
+    function renderClrTable() {
+      const q = document.getElementById("clr-search").value.trim().toLowerCase();
+      const filtered = clrRecords.filter(r => !q || r.name.toLowerCase().includes(q) || r.number.toLowerCase().includes(q));
+      document.getElementById("clr-table-count").textContent = filtered.length;
+      document.getElementById("cnt-clr").textContent = clrRecords.length;
+      document.getElementById("clr-tbody").innerHTML = filtered.map(r => `
+        <tr class="${editingClrId === r.id ? 'editing-row' : ''}">
+          <td class="mono">${r.number}</td>
+          <td>
+            <div class="emp-cell">
+              <div class="emp-av">${r.name.charAt(0)}</div>
+              <div><b>${r.name}</b><small>${r.empNo} · ${r.est}</small></div>
+            </div>
+          </td>
+          <td>${r.reason}</td>
+          <td class="mono">${r.date}</td>
+          <td class="mono">${fmt(r.dues)} ر.س</td>
+          <td>
+            <span class="badge ${r.status === 'ISSUED' ? 'ok' : 'warn'}">
+              ${r.status === 'ISSUED' ? 'صدرت الشهادة' : 'مسودة مفتوحة'}
+            </span>
+          </td>
+          <td>
+            <div class="row-actions">
+              <button class="btn sm" onclick="editClr(${r.id})">✏️ تعديل</button>
+              <button class="btn sm" onclick="showToast('🖨️ جاري طباعة إخلاء الطرف ${r.number}')">🖨️ طباعة</button>
+              <button class="btn sm danger" onclick="deleteClr(${r.id})">🗑️ حذف</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function editClr(id) {
+      const r = clrRecords.find(x => x.id === id);
+      if (!r) return;
+      editingClrId = r.id;
+      document.getElementById("clr-emp").value = r.empVal;
+      document.getElementById("clr-reason").value = r.reason;
+      document.getElementById("clr-date").value = r.date;
+      document.getElementById("clr-dues").value = r.dues;
+      document.getElementById("clr-edit-banner").style.display = "flex";
+      document.getElementById("clr-edit-num").textContent = r.number;
+      document.getElementById("btn-clr-save").textContent = "💾 حفظ التعديلات على " + r.number;
+      renderClrTable();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("✏️ تم تحميل إخلاء الطرف " + r.number + " للتعديل");
+    }
+
+    function resetClrForm() {
+      editingClrId = null;
+      document.getElementById("clr-edit-banner").style.display = "none";
+      document.getElementById("btn-clr-save").textContent = "💾 حفظ واعتماد إخلاء الطرف";
+      document.getElementById("clr-dues").value = "0";
+      renderClrTable();
+    }
+
+    function saveClr(status) {
+      const empVal = document.getElementById("clr-emp").value;
+      const [name, empNo, , est] = empVal.split("|");
+      const data = {
+        empVal, name, empNo, est,
+        reason: document.getElementById("clr-reason").value,
+        date: document.getElementById("clr-date").value,
+        dues: Number(document.getElementById("clr-dues").value) || 0,
+        status
+      };
+      if (editingClrId) {
+        const idx = clrRecords.findIndex(x => x.id === editingClrId);
+        clrRecords[idx] = { ...clrRecords[idx], ...data };
+        showToast(`✅ تم حفظ التعديلات على إخلاء الطرف ${clrRecords[idx].number}`);
+      } else {
+        const nextNum = `CL-2026-000${clrRecords.length + 1}`;
+        const rec = { id: Date.now(), number: nextNum, ...data };
+        clrRecords.unshift(rec);
+        editingClrId = rec.id;
+        document.getElementById("clr-edit-banner").style.display = "flex";
+        document.getElementById("clr-edit-num").textContent = rec.number;
+        showToast(`✅ تم حفظ إخلاء الطرف ${nextNum} في السجل`);
+      }
+      renderClrTable();
+    }
+
+    function deleteClr(id) {
+      const r = clrRecords.find(x => x.id === id);
+      clrRecords = clrRecords.filter(x => x.id !== id);
+      if (editingClrId === id) resetClrForm();
+      renderClrTable();
+      showToast(`🗑️ تم حذف إخلاء الطرف ${r ? r.number : ""}`);
+    }
+
+    // Init
+    renderSalarySheet();
+    renderSalaryTable();
+    renderExpSheet();
+    renderExpTable();
+    renderClrTable();
+  </script>
+</body>
+</html>

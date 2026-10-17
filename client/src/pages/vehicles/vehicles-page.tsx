@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Car, Download, FileSpreadsheet, MoreHorizontal, Pencil, Plus, RefreshCw, Search, ShieldCheck, Trash2, Wrench } from "lucide-react";
+import { AlertTriangle, Car, Download, FileSpreadsheet, LayoutGrid, List, MoreHorizontal, Pencil, Plus, RefreshCw, Search, ShieldCheck, Trash2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { tr } from "@/i18n";
 import { PageHeader } from "@/components/common/page-header";
@@ -16,12 +16,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { listActiveBranches } from "@/api/branches";
 import { vehiclesApi, type Vehicle, type VehicleState } from "@/api/vehicles";
 import { RenewDialog, VehicleDialog } from "@/pages/vehicles/vehicle-dialogs";
+import { ImperialVehicleCard } from "@/pages/vehicles/imperial-vehicle-card";
 import "@/styles/vehicles.css";
-
-/* The vehicles page as in the approved luxury preview: four figure cards, then
-   one card with the follow-up tabs, search and establishment filter over a
-   table of cars — the plate, the driver, and how long is left on the periodic
-   inspection, the insurance and the registration. */
 
 const dmy = (v: string | null) => (v ? v.slice(0, 10).split("-").reverse().join("/") : "—");
 const toneOf = (d: number | null): BadgeTone => (d === null ? "mut" : d <= 0 ? "bad" : d <= 30 ? "warn" : "ok");
@@ -61,6 +57,7 @@ export default function VehiclesPage() {
   const [state, setState] = useState<VehicleState>("all");
   const [branchId, setBranchId] = useState("");
   const [q, setQ] = useState("");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [dialog, setDialog] = useState<{ open: boolean; vehicle?: Vehicle }>({ open: false });
   const [renewing, setRenewing] = useState<Vehicle | null>(null);
   const [deleting, setDeleting] = useState<Vehicle | null>(null);
@@ -150,104 +147,146 @@ export default function VehiclesPage() {
               </SelectContent>
             </Select>
           )}
+          <div className="px-seg">
+            <button type="button" className={viewMode === "cards" ? "on" : ""} onClick={() => setViewMode("cards")}>
+              <LayoutGrid className="inline h-3.5 w-3.5 me-1" /> {tr("البطاقات", "Cards")}
+            </button>
+            <button type="button" className={viewMode === "table" ? "on" : ""} onClick={() => setViewMode("table")}>
+              <List className="inline h-3.5 w-3.5 me-1" /> {tr("الجدول", "Table")}
+            </button>
+          </div>
         </div>
 
-        <div className="px-tw">
-          <table className="px-t">
-            <thead>
-              <tr>
-                <th>{tr("السيارة", "Vehicle")}</th>
-                <th>{tr("اللوحة", "Plate")}</th>
-                <th className="hm">{tr("السائق", "Driver")}</th>
-                <th>{tr("الفحص الدوري", "Inspection")}</th>
-                <th>{tr("التأمين", "Insurance")}</th>
-                <th className="hm">{tr("الاستمارة", "Registration")}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading &&
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={7}>
-                      <div className="h-10 animate-pulse rounded-xl bg-[var(--l-ground)]" />
-                    </td>
-                  </tr>
+        {viewMode === "cards" ? (
+          <div className="p-4">
+            {isLoading && (
+              <div className="rx-fleet-grid">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-[520px] animate-pulse rounded-2xl bg-[var(--l-ground)]" />
                 ))}
-              {!isLoading && cars.length === 0 && (
+              </div>
+            )}
+            {!isLoading && cars.length === 0 && (
+              <div className="px-empty">
+                <b>{q || state !== "all" || branchId ? tr("مفيش سيارات بالفلتر ده", "No vehicles match") : tr("لسه مفيش سيارات", "No vehicles yet")}</b>
+                {!q && state === "all" && !branchId && tr("ضيف أول سيارة، وتابع فحصها الدوري وتأمينها واستمارتها من هنا.", "Add the first car and follow its inspection, insurance and registration here.")}
+              </div>
+            )}
+            {!isLoading && cars.length > 0 && (
+              <div className="rx-fleet-grid">
+                {cars.map((v, j) => (
+                  <ImperialVehicleCard
+                    key={v.id}
+                    v={v}
+                    index={j}
+                    canEdit={has("vehicles.edit")}
+                    canDelete={has("vehicles.delete")}
+                    onRenew={(car) => setRenewing(car)}
+                    onEdit={(car) => setDialog({ open: true, vehicle: car })}
+                    onDelete={(car) => setDeleting(car)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-tw">
+            <table className="px-t">
+              <thead>
                 <tr>
-                  <td colSpan={7}>
-                    <div className="px-empty">
-                      <b>{q || state !== "all" || branchId ? tr("مفيش سيارات بالفلتر ده", "No vehicles match") : tr("لسه مفيش سيارات", "No vehicles yet")}</b>
-                      {!q && state === "all" && !branchId && tr("ضيف أول سيارة، وتابع فحصها الدوري وتأمينها واستمارتها من هنا.", "Add the first car and follow its inspection, insurance and registration here.")}
-                    </div>
-                  </td>
+                  <th>{tr("السيارة", "Vehicle")}</th>
+                  <th>{tr("اللوحة", "Plate")}</th>
+                  <th className="hm">{tr("السائق", "Driver")}</th>
+                  <th>{tr("الفحص الدوري", "Inspection")}</th>
+                  <th>{tr("التأمين", "Insurance")}</th>
+                  <th className="hm">{tr("الاستمارة", "Registration")}</th>
+                  <th />
                 </tr>
-              )}
-              {!isLoading &&
-                cars.map((v, j) => (
-                  <tr key={v.id} style={{ ["--j" as string]: j, ...(v.id === focusId ? { background: "color-mix(in srgb, var(--lx) 8%, transparent)" } : {}) }}>
-                    <td>
-                      <div className="px-who">
-                        <span className="px-av" style={{ color: `var(--l-${toneOf(v.nearestDays) === "bad" ? "rose" : toneOf(v.nearestDays) === "warn" ? "amber" : "green"})` }}>
-                          <Car style={{ width: 16, height: 16 }} />
-                        </span>
-                        <div>
-                          <b>
-                            {v.make} {v.year && <span className="mono">{v.year}</span>}
-                          </b>
-                          <small>{tr(v.branch?.name ?? "بدون مؤسسة", v.branch?.nameEn || v.branch?.name || "No establishment")}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <Plate v={v} />
-                    </td>
-                    <td className="hm">{v.driver ? tr(v.driver.fullNameAr, v.driver.fullNameEn || v.driver.fullNameAr) : "—"}</td>
-                    <td>
-                      <DateCell date={v.inspectionExpiry} days={v.inspectionDays} />
-                    </td>
-                    <td>
-                      <DateCell date={v.insuranceExpiry} days={v.insuranceDays} />
-                    </td>
-                    <td className="hm">
-                      <DateCell date={v.registrationExpiry} days={v.registrationDays} />
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-1">
-                        {has("vehicles.edit") && (
-                          <button type="button" className="px-btn" onClick={() => setRenewing(v)}>
-                            <RefreshCw /> {tr("تجديد", "Renew")}
-                          </button>
-                        )}
-                        {(has("vehicles.edit") || has("vehicles.delete")) && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button type="button" className="px-iconbtn" aria-label={tr("إجراءات", "Actions")}>
-                                <MoreHorizontal />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
-                              {has("vehicles.edit") && (
-                                <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, vehicle: v })}>
-                                  <Pencil className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
-                                </DropdownMenuItem>
-                              )}
-                              {has("vehicles.delete") && (
-                                <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(v)}>
-                                  <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
+              </thead>
+              <tbody>
+                {isLoading &&
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={7}>
+                        <div className="h-10 animate-pulse rounded-xl bg-[var(--l-ground)]" />
+                      </td>
+                    </tr>
+                  ))}
+                {!isLoading && cars.length === 0 && (
+                  <tr>
+                    <td colSpan={7}>
+                      <div className="px-empty">
+                        <b>{q || state !== "all" || branchId ? tr("مفيش سيارات بالفلتر ده", "No vehicles match") : tr("لسه مفيش سيارات", "No vehicles yet")}</b>
+                        {!q && state === "all" && !branchId && tr("ضيف أول سيارة، وتابع فحصها الدوري وتأمينها واستمارتها من هنا.", "Add the first car and follow its inspection, insurance and registration here.")}
                       </div>
                     </td>
                   </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+                )}
+                {!isLoading &&
+                  cars.map((v, j) => (
+                    <tr key={v.id} style={{ ["--j" as string]: j, ...(v.id === focusId ? { background: "color-mix(in srgb, var(--lx) 8%, transparent)" } : {}) }}>
+                      <td>
+                        <div className="px-who">
+                          <span className="px-av" style={{ color: `var(--l-${toneOf(v.nearestDays) === "bad" ? "rose" : toneOf(v.nearestDays) === "warn" ? "amber" : "green"})` }}>
+                            <Car style={{ width: 16, height: 16 }} />
+                          </span>
+                          <div>
+                            <b>
+                              {v.make} {v.year && <span className="mono">{v.year}</span>}
+                            </b>
+                            <small>{tr(v.branch?.name ?? "بدون مؤسسة", v.branch?.nameEn || v.branch?.name || "No establishment")}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <Plate v={v} />
+                      </td>
+                      <td className="hm">{v.driver ? tr(v.driver.fullNameAr, v.driver.fullNameEn || v.driver.fullNameAr) : "—"}</td>
+                      <td>
+                        <DateCell date={v.inspectionExpiry} days={v.inspectionDays} />
+                      </td>
+                      <td>
+                        <DateCell date={v.insuranceExpiry} days={v.insuranceDays} />
+                      </td>
+                      <td className="hm">
+                        <DateCell date={v.registrationExpiry} days={v.registrationDays} />
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1">
+                          {has("vehicles.edit") && (
+                            <button type="button" className="px-btn" onClick={() => setRenewing(v)}>
+                              <RefreshCw /> {tr("تجديد", "Renew")}
+                            </button>
+                          )}
+                          {(has("vehicles.edit") || has("vehicles.delete")) && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button type="button" className="px-iconbtn" aria-label={tr("إجراءات", "Actions")}>
+                                  <MoreHorizontal />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44 rounded-3xl p-2">
+                                {has("vehicles.edit") && (
+                                  <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, vehicle: v })}>
+                                    <Pencil className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
+                                  </DropdownMenuItem>
+                                )}
+                                {has("vehicles.delete") && (
+                                  <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(v)}>
+                                    <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <VehicleDialog open={dialog.open} vehicle={dialog.vehicle} onOpenChange={(open) => setDialog({ open })} />
