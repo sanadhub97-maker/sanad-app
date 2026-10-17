@@ -205,5 +205,585 @@ html.rx-light .xp-saved-count { color: rgb(var(--g-6b4e1d, 107 78 29)); }
   background: rgb(var(--g-c9a464, 201 164 100) / 0.12) !important;
 }
 
-.lu-still .xp-sec, .lu-still .xp-sheet { animation: none; }
-@media (prefers-reduced-motion: reduce) { .xp-sec, .xp-sheet { animation: none; } }
+/* ═══════════ IMPERIAL ROYAL SAVED CERTIFICATE CARDS GRID ═══════════ */
+.xp-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 410px), 1fr));
+  gap: 24px;
+  padding: 20px 22px 26px;
+}
+@media (max-width: 560px) {
+  .xp-cards-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+}
+
+.rx-cert-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1.5px solid rgb(var(--g-d6b678, 214 182 120) / 0.48);
+  background:
+    radial-gradient(460px 240px at 85% -10%, rgb(var(--g-c9a464, 201 164 100) / 0.16), transparent 65%),
+    linear-gradient(170deg, #15151b 0%, #0e0f14 55%, #090a0e 100%);
+  box-shadow: 0 28px 56px -26px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  animation: xp-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--j, 0) * 60ms);
+}
+
+.rx-cert-card::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 11px;
+  border: 1px solid rgb(var(--g-f3dfae, 243 223 174) / 0.22);
+  pointer-events: none;
+  z-index: 7;
+  transition: border-color 0.25s;
+}
+
+.rx-cert-card:hover {
+  border-color: rgb(var(--g-f3dfae, 243 223 174) / 0.85);
+  box-shadow:
+    0 32px 64px -24px #000,
+    0 0 36px -12px rgb(var(--g-c9a464, 201 164 100) / 0.42);
+}
+
+.rx-cert-card:hover::after {
+  border-color: rgb(var(--g-f3dfae, 243 223 174) / 0.38);
+}
+
+.rx-cert-fc {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  z-index: 8;
+  color: rgb(var(--g-f3dfae, 243 223 174));
+  opacity: 0.92;
+}
+.rx-cert-fc.tr { top: 3px; right: 3px; }
+.rx-cert-fc.tl { top: 3px; left: 3px; transform: scaleX(-1); }
+.rx-cert-fc.br { bottom: 3px; right: 3px; transform: scaleY(-1); }
+.rx-cert-fc.bl { bottom: 3px; left: 3px; transform: scale(-1, -1); }
+
+/* 1. Royal Navy / Emerald & 24K Gold Guilloche Crown */
+.rx-cert-crown {
+  position: relative;
+  padding: 18px 20px 28px;
+  background:
+    radial-gradient(130% 140% at 50% -25%, #1e5a86 0%, transparent 68%),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(232, 204, 142, 0.035) 0px,
+      rgba(232, 204, 142, 0.035) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    linear-gradient(135deg, #0f2d4a 0%, #091d33 60%, #071526 100%);
+  border-bottom: 1.5px solid #c9a253;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.8);
+}
+
+.rx-cert-card.is-exp .rx-cert-crown {
+  background:
+    radial-gradient(130% 140% at 50% -25%, #165b4c 0%, transparent 68%),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(232, 204, 142, 0.035) 0px,
+      rgba(232, 204, 142, 0.035) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    linear-gradient(135deg, #0d352c 0%, #09231e 60%, #071916 100%);
+}
+
+.rx-crown-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rx-crown-est {
+  min-width: 0;
+}
+
+.rx-crown-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e9d6a6;
+  opacity: 0.92;
+}
+
+.rx-crown-title {
+  display: block;
+  margin-top: 2px;
+  font-size: 17.5px;
+  font-weight: 900;
+  line-height: 1.25;
+  background: linear-gradient(135deg, #fff3d6 0%, #e8cf8b 35%, #c49a48 68%, #fff3d6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+.rx-crown-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(245, 239, 227, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rx-crown-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex: none;
+}
+
+.rx-cert-num {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 7px;
+  background: rgba(5, 10, 18, 0.65);
+  border: 1px solid rgb(var(--g-f3dfae, 243 223 174) / 0.5);
+  color: rgb(var(--g-fff3d6, 255 243 214));
+  direction: ltr;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.rx-cert-st {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: #7ccfa2;
+  background: rgba(12, 32, 24, 0.78);
+  border: 1px solid rgba(124, 207, 162, 0.45);
+  white-space: nowrap;
+}
+.rx-cert-st.warn {
+  color: rgb(var(--g-f3dfae, 243 223 174));
+  background: rgba(45, 32, 10, 0.78);
+  border-color: rgb(var(--g-e6b964, 230 185 100) / 0.5);
+}
+.rx-cert-st i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Overlapping 24K Gold Royal Medallion Seal */
+.rx-cert-medal-wrap {
+  position: relative;
+  height: 22px;
+  margin-top: -22px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.rx-cert-medal {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  padding: 3px;
+  background: conic-gradient(from 0deg, #7d5d27, #fff3d6, #c9a464, #7d5d27, #fff3d6, #8a6a35);
+  box-shadow:
+    0 8px 20px -6px rgba(0, 0, 0, 0.85),
+    0 0 0 2px #0a0b0f,
+    0 0 18px -2px rgba(243, 223, 174, 0.55);
+  display: grid;
+  place-items: center;
+}
+
+.rx-cert-medal-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #173e62, #091a2c);
+  border: 1px solid rgba(255, 243, 214, 0.55);
+  display: grid;
+  place-items: center;
+  color: #fff3d6;
+  font-weight: 900;
+  font-size: 15px;
+}
+.rx-cert-card.is-exp .rx-cert-medal-inner {
+  background: radial-gradient(circle at 35% 30%, #175243, #08201a);
+}
+
+.rx-cert-date-pill {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: #121318;
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.4);
+  color: rgb(var(--g-e8cc8e, 232 204 142));
+  box-shadow: 0 6px 14px -6px #000;
+}
+
+/* 2. Card Body */
+.rx-cert-body {
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  flex: 1;
+}
+
+.rx-emp-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.22);
+}
+
+.rx-emp-main {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
+}
+.rx-emp-main .who {
+  min-width: 0;
+  flex: 1;
+}
+.rx-emp-main .who b {
+  display: block;
+  font-size: 16px;
+  font-weight: 900;
+  color: rgb(var(--g-fff3d6, 255 243 214));
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rx-emp-main .who small {
+  display: block;
+  font-size: 12px;
+  color: var(--l-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.rx-id-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.28);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgb(var(--g-f3dfae, 243 223 174));
+  direction: ltr;
+  flex: none;
+}
+.rx-id-tag small {
+  color: var(--l-muted);
+  font-weight: 600;
+}
+
+/* 3. Bespoke Voucher Stage + Proportional Bar + Pillars + Tafqeet Ribbon */
+.rx-voucher-stage {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.34);
+  background:
+    radial-gradient(280px 140px at 15% 0%, rgb(var(--g-c9a464, 201 164 100) / 0.16), transparent 70%),
+    linear-gradient(155deg, rgba(28, 23, 14, 0.92), rgba(12, 13, 18, 0.96));
+}
+
+.rx-cert-card.is-exp .rx-voucher-stage {
+  background:
+    radial-gradient(280px 140px at 15% 0%, rgba(124, 207, 162, 0.13), transparent 70%),
+    linear-gradient(155deg, rgba(13, 29, 24, 0.92), rgba(11, 14, 18, 0.96));
+}
+
+.rx-v-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 15px 10px;
+}
+
+.rx-v-lbl {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.rx-v-lbl span {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--l-ink2);
+}
+.rx-v-lbl small {
+  font-size: 10.5px;
+  color: var(--l-muted);
+}
+
+.rx-v-amount {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 21px;
+  font-weight: 700;
+  background: var(--rx-foil, linear-gradient(115deg, #7d5d27 0%, #f3dfae 22%, #c9a464 40%, #fff3d6 55%, #a5803f 72%, #e8cc8e 88%, #8a6a35 100%));
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: rx-shimmer 9s linear infinite;
+  direction: ltr;
+  white-space: nowrap;
+}
+.rx-v-amount.ar {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 900;
+  direction: rtl;
+}
+
+.rx-prop-bar-wrap {
+  padding: 0 15px 10px;
+}
+.rx-prop-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  padding: 1px;
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.2);
+}
+.rx-prop-seg {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.rx-prop-seg.g1 { background: linear-gradient(90deg, #c9a464, #f3dfae); }
+.rx-prop-seg.g2 { background: linear-gradient(90deg, #2d9d6a, #7ccfa2); }
+.rx-prop-seg.g3 { background: linear-gradient(90deg, #3b76b8, #84b6e8); }
+
+.rx-v-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.18);
+  background: rgba(0, 0, 0, 0.28);
+}
+.rx-v-pillars > div {
+  padding: 8px 10px;
+  text-align: center;
+  min-width: 0;
+}
+.rx-v-pillars > div + div {
+  border-inline-start: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.16);
+}
+.rx-v-pillars small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--l-muted);
+  margin-bottom: 2px;
+}
+.rx-v-pillars small i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+.rx-v-pillars b {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgb(var(--g-fff3d6, 255 243 214));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rx-v-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 14px;
+  border-top: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.2);
+  background: linear-gradient(90deg, rgb(var(--g-c9a464, 201 164 100) / 0.14), rgb(var(--g-c9a464, 201 164 100) / 0.04));
+  font-size: 11.5px;
+  font-weight: 700;
+  color: rgb(var(--g-f3dfae, 243 223 174));
+}
+.rx-v-ribbon .tag {
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  background: rgb(var(--g-c9a464, 201 164 100) / 0.25);
+  border: 1px solid rgb(var(--g-f3dfae, 243 223 174) / 0.35);
+  color: rgb(var(--g-fff3d6, 255 243 214));
+  flex: none;
+}
+.rx-v-ribbon .txt {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. Miniature Official Parchment Excerpt & Wax Stamp */
+.rx-parchment-excerpt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: radial-gradient(120% 140% at 50% 0%, #fffdf8 0%, #fbf3e1 75%, #f5e8cb 100%);
+  color: #1a2232;
+  border: 1px solid #c9a253;
+  outline: 1px solid rgba(176, 138, 64, 0.32);
+  outline-offset: -4px;
+  box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.7);
+}
+.rx-parchment-txt {
+  min-width: 0;
+  flex: 1;
+}
+.rx-parchment-txt small {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  color: #9c7631;
+}
+.rx-parchment-txt p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f2d4a;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rx-wax-stamp {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px dashed #9c2b2b;
+  background: radial-gradient(circle, rgba(156, 43, 43, 0.12) 0%, rgba(156, 43, 43, 0.04) 65%, transparent 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9c2b2b;
+  font-size: 8.5px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  transform: rotate(-10deg);
+  box-shadow: inset 0 0 0 2px rgba(156, 43, 43, 0.25);
+}
+
+/* 5. 2x2 Metadata Ledger */
+.rx-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rx-info-cell {
+  padding: 8px 11px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.022);
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.16);
+  min-width: 0;
+}
+.rx-info-cell small {
+  display: block;
+  font-size: 11px;
+  color: var(--l-muted);
+  margin-bottom: 1px;
+}
+.rx-info-cell b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--l-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rx-info-cell b.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  direction: ltr;
+  text-align: right;
+  color: rgb(var(--g-f3dfae, 243 223 174));
+}
+
+/* 6. Action Footer */
+.rx-cert-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px 15px;
+  border-top: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.2);
+  background: rgba(0, 0, 0, 0.38);
+}
+.rx-cert-foot .pri-act {
+  flex: 1;
+  justify-content: center;
+}
+
+.lu-still .xp-sec, .lu-still .xp-sheet, .lu-still .rx-cert-card { animation: none; }
+@media (prefers-reduced-motion: reduce) { .xp-sec, .xp-sheet, .rx-cert-card { animation: none; } }
+
+
