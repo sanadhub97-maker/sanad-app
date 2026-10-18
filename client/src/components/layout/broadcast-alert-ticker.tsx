@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, ChevronLeft, Gauge } from "lucide-react";
+import { Bell } from "lucide-react";
 import { alertsApi } from "@/api/alerts";
 import { dashboardApi } from "@/api/dashboard";
+import { useUiStore } from "@/stores/uiStore";
 
 interface DisplayAlertItem {
   id: string;
@@ -15,24 +16,7 @@ interface DisplayAlertItem {
 }
 
 export function BroadcastAlertTicker() {
-  const [speedSec, setSpeedSec] = useState<number>(() => {
-    try {
-      const saved = Number(localStorage.getItem("sanad.ticker.speed"));
-      if (saved && saved >= 50) return saved;
-      return 90;
-    } catch {
-      return 90;
-    }
-  });
-
-  const changeSpeed = (next: number) => {
-    setSpeedSec(next);
-    try {
-      localStorage.setItem("sanad.ticker.speed", String(next));
-    } catch {
-      /* private mode */
-    }
-  };
+  const speedSec = useUiStore((s) => s.tickerSpeed ?? 90);
 
   const { data: alerts = [] } = useQuery({
     queryKey: ["alerts"],
@@ -117,7 +101,7 @@ export function BroadcastAlertTicker() {
         <span className="rx-ticker-count">{displayItems.length}</span>
       </div>
 
-      {/* Marquee Track */}
+      {/* Marquee Track: spans the rest of the ribbon with full space */}
       <div className="rx-ticker-marquee">
         <div className="rx-ticker-content">
           {duplicated.map((item: DisplayAlertItem, idx: number) => (
@@ -137,30 +121,6 @@ export function BroadcastAlertTicker() {
           ))}
         </div>
       </div>
-
-      {/* Left Tools & Quick Action */}
-      <div className="rx-ticker-tools">
-        <button
-          type="button"
-          className="rx-ticker-speed-btn"
-          onClick={() => {
-            // Cycle through: 90s (معتدل هادئ) -> 140s (هادئ جداً) -> 60s (سريع)
-            const next = speedSec === 90 ? 140 : speedSec === 140 ? 60 : 90;
-            changeSpeed(next);
-          }}
-          title={`السرعة الحالية: ${speedSec === 60 ? "سريعة (60s)" : speedSec === 140 ? "هادئة جداً (140s)" : "معتدلة هادئة (90s)"} — انقر لتغيير السرعة`}
-        >
-          <Gauge className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{speedSec === 60 ? "سريع" : speedSec === 140 ? "هادئ جداً" : "معتدل"}</span>
-        </button>
-
-        <Link to="/notifications" className="rx-ticker-action" title="عرض كافة التنبيهات والإشعارات">
-          <span>عرض الكل</span>
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </Link>
-      </div>
     </div>
   );
 }
-
-

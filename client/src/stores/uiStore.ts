@@ -7,6 +7,9 @@ interface UiState {
   themeMode: ThemeMode;
   sidebarCollapsed: boolean;
   animationsEnabled: boolean;
+  /** Speed in seconds for the royal alerts ribbon continuous scroll (60s, 90s, 140s). */
+  tickerSpeed: number;
+  setTickerSpeed: (sec: number) => void;
   /** The site's accent colour (hex), chosen from the account menu. */
   accent: string;
   setAccent: (hex: string) => void;
@@ -29,6 +32,7 @@ export function migrateUiPrefs(persisted: unknown, from: number): Partial<UiStat
   const p = { ...(persisted as Partial<UiState>) };
   if (from < 1) p.sidebarCollapsed = false;
   if (from < 2) delete p.themeMode;
+  if (!p.tickerSpeed || p.tickerSpeed < 40) p.tickerSpeed = 90;
   return p;
 }
 
@@ -38,6 +42,8 @@ export const useUiStore = create<UiState>()(
       themeMode: "dark",
       sidebarCollapsed: false,
       animationsEnabled: true,
+      tickerSpeed: 90,
+      setTickerSpeed: (sec) => set({ tickerSpeed: sec }),
       accent: "#a8792f",
       setAccent: (hex) => set({ accent: hex }),
       setThemeMode: (mode) => set({ themeMode: mode }),

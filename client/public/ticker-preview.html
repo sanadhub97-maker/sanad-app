@@ -193,7 +193,7 @@
       box-shadow: 0 0 10px #c9a464;
     }
 
-    /* ---------------- The Royal Alerts Ribbon Base CSS ---------------- */
+    /* ---------------- The Clean Royal Alerts Ribbon Base CSS ---------------- */
     .rx-ticker-shell {
       position: relative;
       height: 46px;
@@ -297,7 +297,7 @@
       color: #120e04;
     }
 
-    /* Marquee Track */
+    /* Marquee Track: FULL WIDTH with elegant left fade mask */
     .rx-ticker-marquee {
       position: relative;
       flex: 1;
@@ -306,8 +306,8 @@
       overflow: hidden;
       display: flex;
       align-items: center;
-      -webkit-mask-image: linear-gradient(to left, #000 90%, transparent 100%);
-      mask-image: linear-gradient(to left, #000 90%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to left, #000 88%, transparent 100%);
+      mask-image: linear-gradient(to left, #000 88%, transparent 100%);
     }
 
     .rx-ticker-content {
@@ -415,65 +415,7 @@
       opacity: 0.6;
     }
 
-    /* Left tools & quick action */
-    .rx-ticker-tools {
-      position: relative;
-      z-index: 10;
-      height: 100%;
-      display: inline-flex;
-      align-items: center;
-      flex: none;
-    }
-    .rx-ticker-speed-btn {
-      height: 100%;
-      padding: 0 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(255, 255, 255, 0.03);
-      border: none;
-      border-inline-start: 1px solid rgba(214, 182, 120, 0.2);
-      color: rgba(214, 182, 120, 0.85);
-      font-family: inherit;
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      user-select: none;
-    }
-    .rx-ticker-speed-btn:hover {
-      background: rgba(201, 164, 100, 0.12);
-      color: #fff3d6;
-    }
-    .rx-ticker-speed-btn svg {
-      color: var(--rx-gold, #c9a464);
-      width: 14px;
-      height: 14px;
-    }
-    .rx-ticker-action {
-      position: relative;
-      z-index: 10;
-      height: 100%;
-      padding: 0 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: linear-gradient(90deg, #100f14 50%, rgba(16, 15, 20, 0) 100%);
-      border-inline-start: 1px solid rgba(214, 182, 120, 0.2);
-      color: rgba(243, 223, 174, 0.85);
-      font-size: 12px;
-      font-weight: 800;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .rx-ticker-action:hover {
-      color: #fff3d6;
-      background: linear-gradient(90deg, rgba(201, 164, 100, 0.18) 50%, rgba(201, 164, 100, 0) 100%);
-    }
-
-    /* ---------------- MOBILE RESPONSIVE ADAPTATIONS (MEDIA + CLASS + CONTAINER) ---------------- */
+    /* ---------------- MOBILE RESPONSIVE ADAPTATIONS ---------------- */
     @media (max-width: 768px) {
       .rx-ticker-shell {
         height: 40px;
@@ -499,25 +441,6 @@
       .rx-ticker-count {
         padding: 1px 5px;
         font-size: 10px;
-      }
-      .rx-ticker-tools {
-        display: inline-flex;
-      }
-      .rx-ticker-speed-btn {
-        padding: 0 8px;
-        min-width: 32px;
-        justify-content: center;
-      }
-      .rx-ticker-speed-btn span {
-        display: none;
-      }
-      .rx-ticker-action {
-        padding: 0 8px;
-        min-width: 32px;
-        justify-content: center;
-      }
-      .rx-ticker-action span {
-        display: none;
       }
       .rx-ticker-item {
         padding: 2.5px 8px;
@@ -584,30 +507,6 @@
       padding: 1px 5px !important;
       font-size: 10px !important;
     }
-    .rx-ticker-shell.rx-mobile .rx-ticker-speed-btn,
-    .mobile-phone-frame .rx-ticker-speed-btn,
-    [data-device="mobile"] .rx-ticker-speed-btn {
-      padding: 0 8px !important;
-      min-width: 32px !important;
-      justify-content: center !important;
-    }
-    .rx-ticker-shell.rx-mobile .rx-ticker-speed-btn span,
-    .mobile-phone-frame .rx-ticker-speed-btn span,
-    [data-device="mobile"] .rx-ticker-speed-btn span {
-      display: none !important;
-    }
-    .rx-ticker-shell.rx-mobile .rx-ticker-action,
-    .mobile-phone-frame .rx-ticker-action,
-    [data-device="mobile"] .rx-ticker-action {
-      padding: 0 8px !important;
-      min-width: 32px !important;
-      justify-content: center !important;
-    }
-    .rx-ticker-shell.rx-mobile .rx-ticker-action span,
-    .mobile-phone-frame .rx-ticker-action span,
-    [data-device="mobile"] .rx-ticker-action span {
-      display: none !important;
-    }
     .rx-ticker-shell.rx-mobile .rx-ticker-item,
     .mobile-phone-frame .rx-ticker-item,
     [data-device="mobile"] .rx-ticker-item {
@@ -639,14 +538,6 @@
       }
       .rx-ticker-label {
         font-size: 11px;
-      }
-      .rx-ticker-speed-btn {
-        padding: 0 6px;
-        min-width: 28px;
-      }
-      .rx-ticker-action {
-        padding: 0 6px;
-        min-width: 28px;
       }
       .rx-ticker-item {
         padding: 2px 7px;
@@ -761,6 +652,60 @@
       border: 1px dashed rgba(214, 182, 120, 0.3);
     }
 
+    /* Settings Control Simulation Card */
+    .settings-control-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(201, 164, 100, 0.1), rgba(201, 164, 100, 0.02));
+      border: 1px solid rgba(214, 182, 120, 0.3);
+    }
+    .settings-control-box h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff3d6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .speed-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .speed-opt-btn {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(214, 182, 120, 0.25);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--l-ink);
+      font-family: inherit;
+      text-align: right;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .speed-opt-btn b {
+      font-size: 13.5px;
+      color: #f3dfae;
+    }
+    .speed-opt-btn small {
+      font-size: 11px;
+      color: var(--l-muted);
+    }
+    .speed-opt-btn.active, .speed-opt-btn:hover {
+      background: rgba(201, 164, 100, 0.2);
+      border-color: rgba(243, 223, 174, 0.6);
+      box-shadow: 0 4px 14px -4px rgba(201, 164, 100, 0.35);
+    }
+    .speed-opt-btn.active b {
+      color: #fff3d6;
+    }
+
     /* Explanations grid */
     .expl-grid {
       display: grid;
@@ -799,34 +744,6 @@
       color: var(--l-muted);
       line-height: 1.6;
     }
-
-    /* Speed Control Bar */
-    .controls-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(214, 182, 120, 0.15);
-    }
-    .controls-bar span { font-size: 13px; color: var(--l-muted); font-weight: 600; }
-    .btn-speed {
-      padding: 6px 14px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(214, 182, 120, 0.2);
-      color: var(--l-ink);
-      font-family: inherit;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-speed:hover, .btn-speed.active {
-      background: rgba(201, 164, 100, 0.18);
-      border-color: rgba(243, 223, 174, 0.5);
-      color: #fff3d6;
-    }
   </style>
 </head>
 <body>
@@ -836,7 +753,7 @@
     <header class="demo-header">
       <div>
         <h1>معاينة شريط التنبيهات الملكي الفاخر (نسخة الهاتف والكمبيوتر)</h1>
-        <p>شريط التنبيهات مع التوافق التام للهواتف الذكية مع الحفاظ على الفخامة الملكية وسلاسة الحركة</p>
+        <p>تصميم نقي وفسيح بالكامل — تم نقل التحكم بالسرعة إلى صفحة الإعدادات وتفريغ الشريط بالكامل للتنبيهات</p>
       </div>
       <div style="display:flex; gap:10px; align-items:center;">
         <span style="display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px; background:rgba(16,185,129,0.12); border:1px solid rgba(52,211,153,0.3); font-size:12.5px; font-weight:800; color:#6ee7b7;">
@@ -870,7 +787,7 @@
     <!-- 1. Interactive Ribbon in Responsive Container -->
     <section class="demo-card" id="responsiveSection">
       <div class="card-title-row">
-        <h2>المعاينة التفاعلية المباشرة</h2>
+        <h2>المعاينة التفاعلية المباشرة (الشريط مفرغ بالكامل للتنبيهات بدون أزرار تشويش)</h2>
         <span style="font-size:12px; color:rgba(214,182,120,0.85); font-weight:700;" id="currentDeviceLabel">
           🖥️ وضع شاشة الكمبيوتر (عرض 100%)
         </span>
@@ -878,7 +795,7 @@
 
       <div class="responsive-frame-wrapper">
         <div class="responsive-preview-box" id="previewBox">
-          <!-- The Ribbon Component -->
+          <!-- The Ribbon Component: 100% CLEAN WITHOUT LEFT BUTTONS -->
           <div class="rx-ticker-shell" id="tickerShell">
             <!-- 24K Ingot Badge -->
             <div class="rx-ticker-badge" title="تنبيهات الوثائق والتراخيص">
@@ -888,7 +805,7 @@
               <span class="rx-ticker-count" id="alertCount">6</span>
             </div>
 
-            <!-- Marquee Track -->
+            <!-- Marquee Track: FULL WIDTH -->
             <div class="rx-ticker-marquee">
               <div class="rx-ticker-content" id="tickerContent">
                 <!-- Alert 1 -->
@@ -995,39 +912,32 @@
                 <span class="rx-ticker-sep"></span>
               </div>
             </div>
-
-            <!-- Left Tools & Quick Action -->
-            <div class="rx-ticker-tools">
-              <button
-                type="button"
-                class="rx-ticker-speed-btn"
-                id="tickerSpeedBtn"
-                onclick="cycleSpeed()"
-                title="تغيير سرعة الشريط"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
-                <span id="speedBtnText">معتدل</span>
-              </button>
-
-              <a href="#" class="rx-ticker-action" title="عرض كافة التنبيهات">
-                <span>عرض الكل</span>
-                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              </a>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Controls -->
-      <div class="controls-bar">
-        <span>التحكم بسرعة الحركة:</span>
-        <button class="btn-speed" onclick="setSpeed(140, this)">هادئة جداً ومريحة (140s)</button>
-        <button class="btn-speed active" onclick="setSpeed(90, this)">معتدلة ملكية (90s)</button>
-        <button class="btn-speed" onclick="setSpeed(60, this)">سريعة (60s)</button>
-        <button class="btn-speed" onclick="togglePause(this)" id="btnPause">إيقاف مؤقت ⏸</button>
-        <span style="margin-inline-start:auto; font-size:12px; color:rgba(214,182,120,0.85);">
-          💡 على الهاتف: يمكنك الضغط المطول بالإصبع على الشريط لتجميده وقراءة التفاصيل
-        </span>
+      <!-- Settings Speed Simulation -->
+      <div class="settings-control-box">
+        <h3>
+          ⚙️ محاكاة التحكم بسرعة الشريط من «صفحة الإعدادات → المظهر»:
+        </h3>
+        <p style="font-size:12px; color:var(--l-muted);">
+          تمت إضافة هذا الخيار رسمياً في صفحة الإعدادات، ويمكنك تجربة تغيير السرعة مباشرة من هنا لمعاينة انسياب الحركة:
+        </p>
+        <div class="speed-options-grid">
+          <button type="button" class="speed-opt-btn" onclick="applySettingsSpeed(140, this)">
+            <b>هادئة جداً ومريحة (140s)</b>
+            <small>حركة بطيئة جداً ومريحة للقراءة الهادئة</small>
+          </button>
+          <button type="button" class="speed-opt-btn active" onclick="applySettingsSpeed(90, this)">
+            <b>معتدلة ملكية (90s - افتراضي)</b>
+            <small>التوازن المثالي بين الحركة وسهولة القراءة</small>
+          </button>
+          <button type="button" class="speed-opt-btn" onclick="applySettingsSpeed(60, this)">
+            <b>سريعة ونشطة (60s)</b>
+            <small>تدفق متسارع ومستمر للتنبيهات</small>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -1052,7 +962,7 @@
 
         <!-- Phone Content -->
         <div class="phone-content">
-          <!-- The exact ticker inside phone screen with rx-mobile class -->
+          <!-- The exact ticker inside phone screen: 100% CLEAN NO BUTTONS -->
           <div class="rx-ticker-shell rx-mobile" id="phoneTickerShell">
             <div class="rx-ticker-badge">
               <svg class="rx-ticker-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
@@ -1129,17 +1039,6 @@
                 <span class="rx-ticker-sep"></span>
               </div>
             </div>
-
-            <div class="rx-ticker-tools">
-              <button type="button" class="rx-ticker-speed-btn" onclick="cycleSpeed()" title="تغيير السرعة">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
-                <span>معتدل</span>
-              </button>
-              <a href="#" class="rx-ticker-action" title="عرض الكل">
-                <span>عرض الكل</span>
-                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              </a>
-            </div>
           </div>
 
           <!-- Dummy Dashboard cards inside phone for realistic context -->
@@ -1158,7 +1057,7 @@
               <b style="color:#fca5a5;">الوثائق المنتهية والمستعجلة</b>
               <span style="color:#ef4444; font-weight:800;">6 وثائق</span>
             </div>
-            <p style="font-size:11px; color:var(--l-muted);">اضغط على شريط التنبيهات أعلاه أو زر السهم للانتقال السريع لصفحة التجديد</p>
+            <p style="font-size:11px; color:var(--l-muted);">اضغط مباشرة على أي بطاقة تنبيه للانتقال إلى وثائق الموظف أو المركبة</p>
           </div>
         </div>
       </div>
@@ -1166,37 +1065,37 @@
 
     <!-- 3. What Was Improved for Mobile -->
     <section class="demo-card">
-      <h2>التحسينات المطبقة على شريط التنبيهات في نسخة الجوال</h2>
+      <h2>مزايا إزالة الأزرار ونقل التحكم للإعدادات</h2>
       <div class="expl-grid">
-        <div class="expl-card">
-          <div class="expl-icon">📱</div>
-          <div>
-            <h4>توفير مساحة واسعة للشريط المتحرك</h4>
-            <p>تم تقليص حجم شارة «التنبيهات» وأزرار الأدوات على الجوال لتشغل ~135px فقط بدلاً من 310px، مما أتاح مساحة تزيد عن 230px لعرض نصوص الوثائق بوضوح تام.</p>
-          </div>
-        </div>
-
-        <div class="expl-card">
-          <div class="expl-icon">⚡</div>
-          <div>
-            <h4>أيقونات لمس ذكية بدون نصوص مزدحمة</h4>
-            <p>يتحول زر التحكم بالسرعة وزر «عرض الكل» تلقائياً إلى أيقونات لمسية مريحة بحجم 32px لإفساح المجال أمام التنبيهات المتحركة دون أي تزاحم.</p>
-          </div>
-        </div>
-
         <div class="expl-card">
           <div class="expl-icon">✨</div>
           <div>
-            <h4>حركة انسيابية لا نهائية في الاتجاه الصحيح</h4>
-            <p>تم ضبط إحداثيات الحركة لتدفق التنبيهات من اليمين إلى اليسار بسلاسة مستمرة مع دورة متكررة متطابقة بدون أي فراغات أو قفزات بصرية.</p>
+            <h4>شريط نقي ومريح للعين بنسبة 100%</h4>
+            <p>أصبح شريط التنبيهات مخصصاً بالكامل لقراءة بيانات الوثائق وتنبيهاتها دون وجود أي أزرار جانبية تشوش على الرؤية أو تقتطع من مساحة العرض.</p>
+          </div>
+        </div>
+
+        <div class="expl-card">
+          <div class="expl-icon">📱</div>
+          <div>
+            <h4>مساحة قصوى على شاشات الجوال</h4>
+            <p>على شاشات الهواتف أصبح شريط التنبيهات يحتل العرض الكامل للموبايل بدون أي تزاحم، مما يسمح بقراءة اسم الوثيقة ورقمها وحالتها بسهولة فائقة.</p>
+          </div>
+        </div>
+
+        <div class="expl-card">
+          <div class="expl-icon">⚙️</div>
+          <div>
+            <h4>التحكم المركزي من صفحة الإعدادات</h4>
+            <p>تمت إضافة خيار التحكم بسرعة الشريط في «الإعدادات → المظهر» مع 3 سرعات مريحة، ويتم حفظ السرعة فوراً وتطبيقها في كل أرجاء النظام.</p>
           </div>
         </div>
 
         <div class="expl-card">
           <div class="expl-icon">👆</div>
           <div>
-            <h4>تجميد الحركة باللمس المطول</h4>
-            <p>عند لمس الشريط أو إبقاء الإصبع عليه على شاشة الجوال، تتوقف الحركة تلقائياً لتمكين المستخدم من قراءة تفاصيل الوثيقة بهدوء قبل النقر عليها.</p>
+            <h4>التجميد الذكي باللمس</h4>
+            <p>يمكنك في أي وقت لمس الشريط بإصبعك على شاشة الجوال لإيقاف الحركة وقراءة التفاصيل بهدوء، ثم رفع إصبعك لاستئناف الحركة.</p>
           </div>
         </div>
       </div>
@@ -1220,10 +1119,6 @@
 
     const content = document.getElementById('tickerContent');
     const phoneContent = document.getElementById('phoneTickerContent');
-    const btnPause = document.getElementById('btnPause');
-    const speedBtnText = document.getElementById('speedBtnText');
-    let currentSpeed = 90;
-    let isPaused = false;
 
     function switchView(mode) {
       pillDesktop.classList.remove('active');
@@ -1263,36 +1158,11 @@
       currentDeviceLabel.textContent = `↔️ اختبار العرض المخصص: ${val}px (${val <= 420 ? 'هاتف صغير' : val <= 640 ? 'هاتف متوسط' : val <= 768 ? 'تابلت' : 'شاشة واسعة'})`;
     }
 
-    function setSpeed(sec, btn) {
-      document.querySelectorAll('.btn-speed').forEach(b => {
-        if (b !== btnPause) b.classList.remove('active');
-      });
+    function applySettingsSpeed(sec, btn) {
+      document.querySelectorAll('.speed-opt-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      currentSpeed = sec;
       if (content) content.style.animationDuration = sec + 's';
       if (phoneContent) phoneContent.style.animationDuration = sec + 's';
-      if (speedBtnText) {
-        speedBtnText.textContent = sec === 60 ? 'سريع' : sec === 140 ? 'هادئ جداً' : 'معتدل';
-      }
-    }
-
-    function cycleSpeed() {
-      const next = currentSpeed === 90 ? 140 : currentSpeed === 140 ? 60 : 90;
-      setSpeed(next, null);
-    }
-
-    function togglePause(btn) {
-      isPaused = !isPaused;
-      const state = isPaused ? 'paused' : 'running';
-      if (content) content.style.animationPlayState = state;
-      if (phoneContent) phoneContent.style.animationPlayState = state;
-      if (isPaused) {
-        btn.textContent = 'تشغيل ▶';
-        btn.classList.add('active');
-      } else {
-        btn.textContent = 'إيقاف مؤقت ⏸';
-        btn.classList.remove('active');
-      }
     }
   </script>
 </body>

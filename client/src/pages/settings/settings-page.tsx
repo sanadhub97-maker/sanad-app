@@ -8,6 +8,7 @@ import {
   Building2,
   Palette,
   Clock,
+  Gauge,
   Mail,
   Send,
   Loader2,
@@ -429,6 +430,8 @@ function CompanyTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
 function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const currentTickerSpeed = useUiPrefs((s) => s.tickerSpeed ?? 90);
+  const setTickerSpeed = useUiPrefs((s) => s.setTickerSpeed);
   const { data, isLoading } = useQuery({
     queryKey: ["settings", "appearance"],
     queryFn: settingsApi.getAppearance,
@@ -723,6 +726,63 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
                 <Switch checked={field.value} onCheckedChange={field.onChange} />
               )}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Royal Alerts Ribbon Speed Control */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Gauge} tone="amber" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {isRtl ? "سرعة شريط التنبيهات الملكي" : "Royal Alerts Ribbon Speed"}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl
+                  ? "التحكم في سرعة انسياب شريط التنبيهات العلوي للوثائق المنتهية والقريبة"
+                  : "Control continuous scrolling speed of expiry alerts ribbon in top bar"}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { sec: 140, arTitle: "هادئة جداً ومريحة", enTitle: "Very Calm & Relaxed", arDesc: "140 ثانية — قراءة متأنية ومريحة للعين", enDesc: "140s — slow pace" },
+              { sec: 90, arTitle: "معتدلة ملكية (افتراضي)", enTitle: "Royal Moderate (Default)", arDesc: "90 ثانية — التوازن المثالي والانسيابي", enDesc: "90s — balanced pace" },
+              { sec: 60, arTitle: "سريعة ونشطة", enTitle: "Fast Pace", arDesc: "60 ثانية — تدفق متسارع للتنبيهات", enDesc: "60s — brisk pace" },
+            ].map((opt) => {
+              const active = currentTickerSpeed === opt.sec;
+              return (
+                <button
+                  key={opt.sec}
+                  type="button"
+                  onClick={() => {
+                    setTickerSpeed(opt.sec);
+                    toast.success(isRtl ? `تم ضبط سرعة شريط التنبيهات إلى: ${opt.arTitle}` : `Alerts ribbon speed set to: ${opt.enTitle}`);
+                  }}
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer relative",
+                    active
+                      ? "border-primary bg-primary/10 shadow-md shadow-primary/15"
+                      : "border-border/70 hover:border-border bg-card/60"
+                  )}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-bold text-sm text-foreground flex items-center gap-2">
+                      <Gauge className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                      {isRtl ? opt.arTitle : opt.enTitle}
+                    </span>
+                    {active && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isRtl ? opt.arDesc : opt.enDesc}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
