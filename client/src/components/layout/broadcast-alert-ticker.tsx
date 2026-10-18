@@ -1,7 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, ChevronLeft } from "lucide-react";
+import { Bell, ChevronLeft, Gauge } from "lucide-react";
 import { alertsApi } from "@/api/alerts";
 import { dashboardApi } from "@/api/dashboard";
 
@@ -15,6 +15,23 @@ interface DisplayAlertItem {
 }
 
 export function BroadcastAlertTicker() {
+  const [speedSec, setSpeedSec] = useState<number>(() => {
+    try {
+      return Number(localStorage.getItem("sanad.ticker.speed")) || 38;
+    } catch {
+      return 38;
+    }
+  });
+
+  const changeSpeed = (next: number) => {
+    setSpeedSec(next);
+    try {
+      localStorage.setItem("sanad.ticker.speed", String(next));
+    } catch {
+      /* private mode */
+    }
+  };
+
   const { data: alerts = [] } = useQuery({
     queryKey: ["alerts"],
     queryFn: alertsApi.list,
@@ -85,7 +102,11 @@ export function BroadcastAlertTicker() {
   const duplicated = [...displayItems, ...displayItems];
 
   return (
-    <div className="rx-ticker-shell no-print" aria-label="شريط التنبيهات الملكي المباشر">
+    <div
+      className="rx-ticker-shell no-print"
+      aria-label="شريط التنبيهات الملكي المباشر"
+      style={{ ["--rx-ticker-speed" as string]: `${speedSec}s` }}
+    >
       {/* 24K Polished Gold Badge: التنبيهات */}
       <div className="rx-ticker-badge" title="تنبيهات الوثائق والتراخيص المنتهية والقريبة">
         <span className="rx-ticker-gem" aria-hidden="true" />
@@ -115,11 +136,27 @@ export function BroadcastAlertTicker() {
         </div>
       </div>
 
-      {/* Left Quick Action to Notifications */}
-      <Link to="/notifications" className="rx-ticker-action" title="عرض كافة التنبيهات والإشعارات">
-        <span>عرض الكل</span>
-        <ChevronLeft className="w-3.5 h-3.5" />
-      </Link>
+      {/* Left Tools & Quick Action */}
+      <div className="rx-ticker-tools">
+        <button
+          type="button"
+          className="rx-ticker-speed-btn"
+          onClick={() => {
+            // Cycle through: 38s (معتدل) -> 22s (سريع) -> 55s (هادئ)
+            const next = speedSec === 38 ? 22 : speedSec === 22 ? 55 : 38;
+            changeSpeed(next);
+          }}
+          title={`السرعة الحالية: ${speedSec === 22 ? "سريعة (22s)" : speedSec === 55 ? "هادئة (55s)" : "معتدلة (38s)"} — انقر لتغيير السرعة`}
+        >
+          <Gauge className="w-3.5 h-3.5" aria-hidden="true" />
+          <span>{speedSec === 22 ? "سريع" : speedSec === 55 ? "هادئ" : "معتدل"}</span>
+        </button>
+
+        <Link to="/notifications" className="rx-ticker-action" title="عرض كافة التنبيهات والإشعارات">
+          <span>عرض الكل</span>
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </Link>
+      </div>
     </div>
   );
 }

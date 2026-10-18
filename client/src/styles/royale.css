@@ -222,7 +222,7 @@ html:root body { background: #07070a; }
   align-items: center;
   white-space: nowrap;
   will-change: transform;
-  animation: rx-ticker-rtl 38s linear infinite;
+  animation: rx-ticker-rtl var(--rx-ticker-speed, 38s) linear infinite;
 }
 .rx-ticker-shell:hover .rx-ticker-content {
   animation-play-state: paused;
@@ -315,6 +315,40 @@ html:root body { background: #07070a; }
   margin: 0 8px;
   flex: none;
   opacity: 0.6;
+}
+.rx-ticker-tools {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+.rx-ticker-speed-btn {
+  height: 100%;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  border-inline-start: 1px solid rgba(214, 182, 120, 0.2);
+  color: rgba(214, 182, 120, 0.85);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.rx-ticker-speed-btn:hover {
+  background: rgba(201, 164, 100, 0.12);
+  color: #fff3d6;
+}
+.rx-ticker-speed-btn svg {
+  color: var(--rx-gold, #c9a464);
+  width: 14px;
+  height: 14px;
 }
 .rx-ticker-action {
   position: relative;

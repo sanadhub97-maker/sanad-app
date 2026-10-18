@@ -3,7 +3,7 @@
    - Pages always ask the network first, so a new deploy shows at once;
      the last page seen is kept for when the connection drops.
    - The API is never cached. */
-const CACHE = "sanad-v8";
+const CACHE = "sanad-v9";
 const SHELL = "/";
 
 self.addEventListener("install", (event) => {
