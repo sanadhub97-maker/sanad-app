@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>معاينة شريط التنبيهات الملكي الفاخر — وثائق سند</title>
+  <title>معاينة شريط التنبيهات الملكي الفاخر (نسخة الهاتف والكمبيوتر) — وثائق سند</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -54,20 +54,21 @@
         radial-gradient(1100px 620px at 85% -8%, rgba(201, 164, 100, 0.16), transparent 62%),
         radial-gradient(900px 540px at 10% 108%, rgba(15, 45, 74, 0.35), transparent 62%),
         linear-gradient(180deg, #090a0d 0%, #060709 100%);
-      padding: 24px;
+      padding: 24px 16px;
     }
 
     .demo-container {
-      max-width: 1400px;
+      max-width: 1360px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 28px;
     }
 
+    /* Header */
     .demo-header {
-      padding: 20px 24px;
-      border-radius: 16px;
+      padding: 22px 26px;
+      border-radius: 18px;
       border: 1px solid rgba(214, 182, 120, 0.28);
       background: linear-gradient(160deg, #131418, #0a0b0e);
       display: flex;
@@ -92,6 +93,71 @@
       margin-top: 4px;
     }
 
+    /* Switcher Controls */
+    .view-mode-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      background: rgba(16, 17, 22, 0.7);
+      border: 1px solid rgba(214, 182, 120, 0.22);
+    }
+    .mode-pills {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(214, 182, 120, 0.18);
+      gap: 4px;
+    }
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--l-ink2);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .mode-pill.active {
+      background: linear-gradient(135deg, rgba(201, 164, 100, 0.3), rgba(201, 164, 100, 0.12));
+      border: 1px solid rgba(243, 223, 174, 0.4);
+      color: #fff3d6;
+      box-shadow: 0 4px 12px -2px rgba(201, 164, 100, 0.3);
+    }
+    .slider-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--l-muted);
+    }
+    .slider-box input[type="range"] {
+      width: 160px;
+      accent-color: #c9a464;
+      cursor: pointer;
+    }
+    .width-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #f3dfae;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(214, 182, 120, 0.2);
+    }
+
+    /* Cards */
     .demo-card {
       border-radius: 18px;
       border: 1px solid rgba(214, 182, 120, 0.25);
@@ -101,7 +167,13 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 18px;
+    }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
     .demo-card h2 {
       font-size: 18px;
@@ -121,10 +193,10 @@
       box-shadow: 0 0 10px #c9a464;
     }
 
-    /* ---------------- The Royal Alerts Ribbon (شريط التنبيهات الملكي الفاخر) ---------------- */
+    /* ---------------- The Royal Alerts Ribbon Base CSS ---------------- */
     .rx-ticker-shell {
       position: relative;
-      height: 48px;
+      height: 46px;
       margin: 8px 0;
       border-radius: 12px;
       background:
@@ -143,9 +215,15 @@
       direction: rtl;
       user-select: none;
       backdrop-filter: blur(16px);
+      width: 100%;
+      transition: width 0.25s ease;
+    }
+    .rx-ticker-shell:hover .rx-ticker-content,
+    .rx-ticker-shell:active .rx-ticker-content {
+      animation-play-state: paused;
     }
 
-    /* 24K Royal Solid Ingot Badge */
+    /* 24K Polished Gold Badge */
     .rx-ticker-badge {
       position: relative;
       z-index: 10;
@@ -154,7 +232,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
+      gap: 8px;
       background: linear-gradient(
         135deg,
         #946e29 0%,
@@ -166,7 +244,7 @@
       );
       color: #120e04;
       font-weight: 900;
-      font-size: 14px;
+      font-size: 13.5px;
       letter-spacing: 0.02em;
       white-space: nowrap;
       box-shadow:
@@ -186,8 +264,8 @@
       box-shadow: 0 0 6px rgba(18, 14, 4, 0.8);
     }
     .rx-ticker-bell {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       stroke-width: 2.5;
       color: #120e04;
       filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.5));
@@ -201,7 +279,7 @@
       94% { transform: rotate(-6deg); }
     }
     .rx-ticker-label {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #120e04;
       text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -234,11 +312,7 @@
       align-items: center;
       white-space: nowrap;
       will-change: transform;
-      animation: rx-ticker-rtl 90s linear infinite;
-    }
-
-    .rx-ticker-shell:hover .rx-ticker-content {
-      animation-play-state: paused;
+      animation: rx-ticker-rtl var(--rx-ticker-speed, 90s) linear infinite;
     }
 
     @keyframes rx-ticker-rtl {
@@ -246,18 +320,18 @@
       100% { transform: translateX(50%); }
     }
 
-    /* Ultra-Luxury Alert Jewel Capsule */
+    /* Alert Capsules */
     .rx-ticker-item {
       display: inline-flex;
       align-items: center;
       gap: 9px;
-      padding: 5px 14px;
+      padding: 4px 14px;
       margin: 0 4px;
       background: rgba(255, 255, 255, 0.035);
       border: 1px solid rgba(214, 182, 120, 0.18);
       border-radius: 999px;
       color: #f7f1e6;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 700;
       text-decoration: none;
       transition: all 0.25s cubic-bezier(0.2, 0.9, 0.2, 1);
@@ -313,7 +387,7 @@
       box-shadow: 0 0 10px -2px rgba(245, 158, 11, 0.4);
     }
 
-    .rx-item-text { color: #e9dfc8; font-size: 13.5px; font-weight: 700; }
+    .rx-item-text { color: #e9dfc8; font-size: 13px; font-weight: 700; }
     .rx-item-text b { color: #fff3d6; font-weight: 900; }
     .rx-item-time {
       font-size: 11.5px;
@@ -337,7 +411,41 @@
       opacity: 0.6;
     }
 
-    /* Left quick action */
+    /* Left tools & quick action */
+    .rx-ticker-tools {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      flex: none;
+    }
+    .rx-ticker-speed-btn {
+      height: 100%;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.03);
+      border: none;
+      border-inline-start: 1px solid rgba(214, 182, 120, 0.2);
+      color: rgba(214, 182, 120, 0.85);
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .rx-ticker-speed-btn:hover {
+      background: rgba(201, 164, 100, 0.12);
+      color: #fff3d6;
+    }
+    .rx-ticker-speed-btn svg {
+      color: var(--rx-gold, #c9a464);
+      width: 14px;
+      height: 14px;
+    }
     .rx-ticker-action {
       position: relative;
       z-index: 10;
@@ -361,13 +469,258 @@
       background: linear-gradient(90deg, rgba(201, 164, 100, 0.18) 50%, rgba(201, 164, 100, 0) 100%);
     }
 
-    /* Controls bar */
+    /* ---------------- MOBILE RESPONSIVE ADAPTATIONS (<= 640px) ---------------- */
+    @media (max-width: 640px) {
+      .rx-ticker-shell {
+        height: 40px;
+        margin: 6px 0;
+        border-radius: 10px;
+      }
+      .rx-ticker-badge {
+        padding: 0 10px;
+        gap: 6px;
+        font-size: 12px;
+      }
+      .rx-ticker-gem {
+        display: none;
+      }
+      .rx-ticker-bell {
+        width: 14px;
+        height: 14px;
+      }
+      .rx-ticker-label {
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .rx-ticker-count {
+        padding: 1px 5px;
+        font-size: 10px;
+      }
+      .rx-ticker-tools {
+        display: inline-flex;
+      }
+      .rx-ticker-speed-btn {
+        padding: 0 8px;
+        min-width: 32px;
+        justify-content: center;
+      }
+      .rx-ticker-speed-btn span {
+        display: none;
+      }
+      .rx-ticker-action {
+        padding: 0 8px;
+        min-width: 32px;
+        justify-content: center;
+      }
+      .rx-ticker-action span {
+        display: none;
+      }
+      .rx-ticker-item {
+        padding: 2.5px 9px;
+        margin: 0 3px;
+        gap: 6px;
+        font-size: 12px;
+      }
+      .rx-item-dot {
+        width: 7px;
+        height: 7px;
+      }
+      .rx-item-badge {
+        font-size: 10px;
+        padding: 1px 5px;
+        border-radius: 5px;
+      }
+      .rx-item-text {
+        font-size: 12px;
+      }
+      .rx-item-time {
+        font-size: 10.5px;
+        padding: 1px 6px;
+      }
+      .rx-ticker-sep {
+        margin: 0 5px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .rx-ticker-shell {
+        height: 38px;
+        margin: 4px 0;
+      }
+      .rx-ticker-badge {
+        padding: 0 7px;
+        gap: 4px;
+      }
+      .rx-ticker-label {
+        font-size: 11px;
+      }
+      .rx-ticker-speed-btn {
+        padding: 0 6px;
+        min-width: 28px;
+      }
+      .rx-ticker-action {
+        padding: 0 6px;
+        min-width: 28px;
+      }
+      .rx-ticker-item {
+        padding: 2px 7px;
+        gap: 5px;
+        font-size: 11.5px;
+      }
+      .rx-item-text {
+        font-size: 11.5px;
+      }
+      .rx-item-time {
+        display: none;
+      }
+      .rx-ticker-sep {
+        margin: 0 4px;
+        width: 4px;
+        height: 4px;
+      }
+    }
+
+    /* Container for simulated phone */
+    .mobile-phone-frame {
+      display: none;
+      width: 390px;
+      max-width: 100%;
+      margin: 0 auto;
+      border-radius: 46px;
+      padding: 12px;
+      background: linear-gradient(145deg, #2b271d, #14120e 40%, #080706);
+      border: 3px solid rgba(214, 182, 120, 0.45);
+      box-shadow:
+        0 30px 80px -20px #000,
+        0 0 50px -10px rgba(201, 164, 100, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+    .phone-screen {
+      background: #090a0d;
+      border-radius: 36px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 640px;
+    }
+    .phone-status-bar {
+      height: 38px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: #f3dfae;
+      position: relative;
+      z-index: 20;
+    }
+    .dynamic-island {
+      width: 100px;
+      height: 24px;
+      background: #000;
+      border-radius: 20px;
+      position: absolute;
+      left: 50%;
+      top: 7px;
+      transform: translateX(-50%);
+    }
+    .phone-app-header {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(214, 182, 120, 0.15);
+      background: rgba(13, 14, 18, 0.95);
+    }
+    .phone-app-header b {
+      font-size: 15px;
+      font-weight: 900;
+      color: #fff3d6;
+    }
+    .phone-content {
+      padding: 10px 12px;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .mock-card {
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(214, 182, 120, 0.15);
+      font-size: 12px;
+      color: var(--l-ink2);
+    }
+
+    /* Container for Simulated Responsive Frame */
+    .responsive-frame-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+    .responsive-preview-box {
+      width: 100%;
+      transition: width 0.3s ease;
+      background: rgba(8, 9, 12, 0.6);
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px dashed rgba(214, 182, 120, 0.3);
+    }
+
+    /* Explanations grid */
+    .expl-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .expl-card {
+      padding: 18px 20px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(214, 182, 120, 0.18);
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .expl-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(201, 164, 100, 0.15);
+      border: 1px solid rgba(214, 182, 120, 0.35);
+      display: grid;
+      place-items: center;
+      color: #f3dfae;
+      flex: none;
+      font-size: 18px;
+    }
+    .expl-card h4 {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #fff3d6;
+      margin-bottom: 4px;
+    }
+    .expl-card p {
+      font-size: 12.5px;
+      color: var(--l-muted);
+      line-height: 1.6;
+    }
+
+    /* Speed Control Bar */
     .controls-bar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 12px;
-      padding-top: 10px;
+      gap: 10px;
+      padding-top: 14px;
       border-top: 1px solid rgba(214, 182, 120, 0.15);
     }
     .controls-bar span { font-size: 13px; color: var(--l-muted); font-weight: 600; }
@@ -396,10 +749,10 @@
     <!-- Header -->
     <header class="demo-header">
       <div>
-        <h1>معاينة شريط التنبيهات الملكي الفاخر (Royal Alerts Ribbon)</h1>
-        <p>التصميم الملكي الجديد عيار 24 قيراط بمسمى «التنبيهات» وبطاقات كبسولية مضيئة للوثائق المنتهية</p>
+        <h1>معاينة شريط التنبيهات الملكي الفاخر (نسخة الهاتف والكمبيوتر)</h1>
+        <p>تحسين تجربة العرض على شاشات الجوال والهواتف الذكية مع الحفاظ على الفخامة الملكية وسلاسة الحركة</p>
       </div>
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; align-items:center;">
         <span style="display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px; background:rgba(16,185,129,0.12); border:1px solid rgba(52,211,153,0.3); font-size:12.5px; font-weight:800; color:#6ee7b7;">
           <span style="width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
           مباشر ومُطبّق على النظام
@@ -407,132 +760,176 @@
       </div>
     </header>
 
-    <!-- The Ultra-Luxury Royal Ribbon in Action -->
-    <section class="demo-card">
-      <h2>المعاينة الحية التفاعلية</h2>
+    <!-- Mode Switcher -->
+    <div class="view-mode-bar">
+      <div class="mode-pills">
+        <button class="mode-pill active" onclick="switchView('desktop')" id="pillDesktop">
+          💻 شاشة الكمبيوتر (عرض كامل)
+        </button>
+        <button class="mode-pill" onclick="switchView('mobile')" id="pillMobile">
+          📱 شاشة الهاتف (محاكاة هاتف 390px)
+        </button>
+        <button class="mode-pill" onclick="switchView('slider')" id="pillSlider">
+          ↔️ شريط التحكم بالبكسل
+        </button>
+      </div>
 
-      <div class="rx-ticker-shell" id="tickerShell">
-        <!-- 24K Ingot Badge -->
-        <div class="rx-ticker-badge" title="تنبيهات الوثائق والتراخيص">
-          <span class="rx-ticker-gem"></span>
-          <svg class="rx-ticker-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-          <span class="rx-ticker-label">التنبيهات</span>
-          <span class="rx-ticker-count" id="alertCount">6</span>
-        </div>
+      <div class="slider-box" id="sliderGroup" style="display:none;">
+        <span>تعديل العرض يدوياً:</span>
+        <input type="range" id="widthRange" min="320" max="1100" value="390" oninput="updateSliderWidth(this.value)">
+        <span class="width-badge" id="widthBadge">390px</span>
+      </div>
+    </div>
 
-        <!-- Marquee Track -->
-        <div class="rx-ticker-marquee">
-          <div class="rx-ticker-content" id="tickerContent">
-            <!-- Alert 1 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">إقامة: <b>محمد شريف عبد الله</b> (رقم: 2489102391)</span>
-              <span class="rx-item-time">منتهية منذ 4 أيام</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+    <!-- 1. Interactive Ribbon in Responsive Container -->
+    <section class="demo-card" id="responsiveSection">
+      <div class="card-title-row">
+        <h2>المعاينة التفاعلية المباشرة</h2>
+        <span style="font-size:12px; color:rgba(214,182,120,0.85); font-weight:700;" id="currentDeviceLabel">
+          🖥️ وضع شاشة الكمبيوتر (عرض 100%)
+        </span>
+      </div>
 
-            <!-- Alert 2 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">ترخيص البلدية: <b>فرع العليا الرئيسي</b> (رقم: 4402198)</span>
-              <span class="rx-item-time">متبقي 9 أيام</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+      <div class="responsive-frame-wrapper">
+        <div class="responsive-preview-box" id="previewBox">
+          <!-- The Ribbon Component -->
+          <div class="rx-ticker-shell" id="tickerShell">
+            <!-- 24K Ingot Badge -->
+            <div class="rx-ticker-badge" title="تنبيهات الوثائق والتراخيص">
+              <span class="rx-ticker-gem"></span>
+              <svg class="rx-ticker-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="rx-ticker-label">التنبيهات</span>
+              <span class="rx-ticker-count" id="alertCount">6</span>
+            </div>
 
-            <!-- Alert 3 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">استمارة مركبة: <b>تويوتا هايلوكس (أ ب ج 4512)</b></span>
-              <span class="rx-item-time">منتهية منذ 12 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+            <!-- Marquee Track -->
+            <div class="rx-ticker-marquee">
+              <div class="rx-ticker-content" id="tickerContent">
+                <!-- Alert 1 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة: <b>محمد شريف عبد الله</b> (رقم: 2489102391)</span>
+                  <span class="rx-item-time">منتهية منذ 4 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <!-- Alert 4 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">تأمين طبي: <b>بوبا العربية - 14 موظف</b></span>
-              <span class="rx-item-time">متبقي 15 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Alert 2 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">ترخيص البلدية: <b>فرع العليا الرئيسي</b> (رقم: 4402198)</span>
+                  <span class="rx-item-time">متبقي 9 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <!-- Alert 5 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">شهادة الدفاع المدني: <b>مستودع السلي</b></span>
-              <span class="rx-item-time">منتهية منذ 2 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Alert 3 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">استمارة مركبة: <b>تويوتا هايلوكس (أ ب ج 4512)</b></span>
+                  <span class="rx-item-time">منتهية منذ 12 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <!-- Alert 6 -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">رخصة القيادة: <b>سائق الشاحنة - أحمد نور الدين</b></span>
-              <span class="rx-item-time">متبقي 20 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Alert 4 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">تأمين طبي: <b>بوبا العربية - 14 موظف</b></span>
+                  <span class="rx-item-time">متبقي 15 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <!-- Duplicate for infinite seamless marquee -->
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">إقامة: <b>محمد شريف عبد الله</b> (رقم: 2489102391)</span>
-              <span class="rx-item-time">منتهية منذ 4 أيام</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Alert 5 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">شهادة الدفاع المدني: <b>مستودع السلي</b></span>
+                  <span class="rx-item-time">منتهية منذ 2 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">ترخيص البلدية: <b>فرع العليا الرئيسي</b> (رقم: 4402198)</span>
-              <span class="rx-item-time">متبقي 9 أيام</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Alert 6 -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">رخصة القيادة: <b>سائق الشاحنة - أحمد نور الدين</b></span>
+                  <span class="rx-item-time">متبقي 20 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">استمارة مركبة: <b>تويوتا هايلوكس (أ ب ج 4512)</b></span>
-              <span class="rx-item-time">منتهية منذ 12 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <!-- Duplicate Loop for infinite marquee -->
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة: <b>محمد شريف عبد الله</b> (رقم: 2489102391)</span>
+                  <span class="rx-item-time">منتهية منذ 4 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">تأمين طبي: <b>بوبا العربية - 14 موظف</b></span>
-              <span class="rx-item-time">متبقي 15 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">ترخيص البلدية: <b>فرع العليا الرئيسي</b> (رقم: 4402198)</span>
+                  <span class="rx-item-time">متبقي 9 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot danger"></span>
-              <span class="rx-item-badge danger">منتهية</span>
-              <span class="rx-item-text">شهادة الدفاع المدني: <b>مستودع السلي</b></span>
-              <span class="rx-item-time">منتهية منذ 2 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">استمارة مركبة: <b>تويوتا هايلوكس (أ ب ج 4512)</b></span>
+                  <span class="rx-item-time">منتهية منذ 12 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
 
-            <a href="#" class="rx-ticker-item">
-              <span class="rx-item-dot warning"></span>
-              <span class="rx-item-badge warning">قريبة الانتهاء</span>
-              <span class="rx-item-text">رخصة القيادة: <b>سائق الشاحنة - أحمد نور الدين</b></span>
-              <span class="rx-item-time">متبقي 20 يوم</span>
-            </a>
-            <span class="rx-ticker-sep"></span>
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">تأمين طبي: <b>بوبا العربية - 14 موظف</b></span>
+                  <span class="rx-item-time">متبقي 15 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">شهادة الدفاع المدني: <b>مستودع السلي</b></span>
+                  <span class="rx-item-time">منتهية منذ 2 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <a href="#" class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">رخصة القيادة: <b>سائق الشاحنة - أحمد نور الدين</b></span>
+                  <span class="rx-item-time">متبقي 20 يوم</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+              </div>
+            </div>
+
+            <!-- Left Tools & Quick Action -->
+            <div class="rx-ticker-tools">
+              <button
+                type="button"
+                class="rx-ticker-speed-btn"
+                id="tickerSpeedBtn"
+                onclick="cycleSpeed()"
+                title="تغيير سرعة الشريط"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                <span id="speedBtnText">معتدل</span>
+              </button>
+
+              <a href="#" class="rx-ticker-action" title="عرض كافة التنبيهات">
+                <span>عرض الكل</span>
+                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </a>
+            </div>
           </div>
         </div>
-
-        <!-- Left action -->
-        <a href="#" class="rx-ticker-action">
-          <span>عرض الكل</span>
-          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </a>
       </div>
 
       <!-- Controls -->
@@ -542,23 +939,225 @@
         <button class="btn-speed active" onclick="setSpeed(90, this)">معتدلة ملكية (90s)</button>
         <button class="btn-speed" onclick="setSpeed(60, this)">سريعة (60s)</button>
         <button class="btn-speed" onclick="togglePause(this)" id="btnPause">إيقاف مؤقت ⏸</button>
-        <span style="margin-inline-start:auto; font-size:12px; color:rgba(214,182,120,0.8);">💡 يتوقف الشريط تلقائياً عند تمرير مؤشر الفأرة فوق أي تنبيه</span>
+        <span style="margin-inline-start:auto; font-size:12px; color:rgba(214,182,120,0.85);">
+          💡 على الهاتف: يمكنك الضغط المطول بالإصبع على الشريط لتجميده وقراءة التفاصيل
+        </span>
+      </div>
+    </section>
+
+    <!-- 2. Phone Simulator Mockup Frame -->
+    <div class="mobile-phone-frame" id="phoneMockupFrame">
+      <div class="phone-screen">
+        <!-- Status Bar -->
+        <div class="phone-status-bar">
+          <span>9:41</span>
+          <div class="dynamic-island"></div>
+          <span>5G • 100%</span>
+        </div>
+
+        <!-- App Header inside Phone -->
+        <div class="phone-app-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:28px; height:28px; border-radius:7px; background:var(--rx-foil); display:grid; place-items:center; color:#120e04; font-weight:900; font-size:14px;">س</div>
+            <b>سند لإدارة الموارد</b>
+          </div>
+          <span style="font-size:12px; color:#f3dfae;">المؤسسة</span>
+        </div>
+
+        <!-- Phone Content -->
+        <div class="phone-content">
+          <!-- The exact ticker inside phone screen -->
+          <div class="rx-ticker-shell">
+            <div class="rx-ticker-badge">
+              <svg class="rx-ticker-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="rx-ticker-label">التنبيهات</span>
+              <span class="rx-ticker-count">6</span>
+            </div>
+
+            <div class="rx-ticker-marquee">
+              <div class="rx-ticker-content" style="animation-duration: 90s;">
+                <div class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة: <b>محمد شريف</b></span>
+                  <span class="rx-item-time">4 أيام</span>
+                </div>
+                <span class="rx-ticker-sep"></span>
+
+                <div class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة</span>
+                  <span class="rx-item-text">ترخيص بلدية: <b>فرع العليا</b></span>
+                  <span class="rx-item-time">9 أيام</span>
+                </div>
+                <span class="rx-ticker-sep"></span>
+
+                <div class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">استمارة: <b>تويوتا هايلوكس</b></span>
+                  <span class="rx-item-time">12 يوم</span>
+                </div>
+                <span class="rx-ticker-sep"></span>
+
+                <div class="rx-ticker-item">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة: <b>محمد شريف</b></span>
+                  <span class="rx-item-time">4 أيام</span>
+                </div>
+                <span class="rx-ticker-sep"></span>
+
+                <div class="rx-ticker-item">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة</span>
+                  <span class="rx-item-text">ترخيص بلدية: <b>فرع العليا</b></span>
+                  <span class="rx-item-time">9 أيام</span>
+                </div>
+                <span class="rx-ticker-sep"></span>
+              </div>
+            </div>
+
+            <div class="rx-ticker-tools">
+              <button type="button" class="rx-ticker-speed-btn" onclick="cycleSpeed()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+                <span>معتدل</span>
+              </button>
+              <a href="#" class="rx-ticker-action">
+                <span>عرض الكل</span>
+                <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Dummy Dashboard cards inside phone for realistic context -->
+          <div class="mock-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+              <b style="color:#f3dfae;">إجمالي الموظفين النشطين</b>
+              <span style="color:#10b981; font-weight:800;">48 موظف</span>
+            </div>
+            <div style="height:4px; border-radius:2px; background:rgba(255,255,255,0.1);">
+              <div style="width:78%; height:100%; background:var(--rx-foil); border-radius:2px;"></div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+              <b style="color:#fca5a5;">الوثائق المنتهية والمستعجلة</b>
+              <span style="color:#ef4444; font-weight:800;">6 وثائق</span>
+            </div>
+            <p style="font-size:11px; color:var(--l-muted);">اضغط على شريط التنبيهات أعلاه أو زر السهم للانتقال السريع لصفحة التجديد</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. What Was Improved for Mobile -->
+    <section class="demo-card">
+      <h2>التحسينات المطبقة على شريط التنبيهات في نسخة الجوال</h2>
+      <div class="expl-grid">
+        <div class="expl-card">
+          <div class="expl-icon">📱</div>
+          <div>
+            <h4>توفير 150 بكسل إضافية للشريط المتحرك</h4>
+            <p>تم تقليص حجم شارة «التنبيهات» وأزرار الأدوات على الجوال لتشغل ~125px فقط بدلاً من 290px، مما وفّر مساحة واسعة ومريحة للنصوص المتحركة دون أي اقتصاص.</p>
+          </div>
+        </div>
+
+        <div class="expl-card">
+          <div class="expl-icon">⚡</div>
+          <div>
+            <h4>تحويل الأزرار إلى أيقونات لمس مريحة</h4>
+            <p>يتحول زر التحكم بالسرعة وزر «عرض الكل» تلقائياً إلى أيقونات لمسية مريحة بحجم 32px دون نصوص زائدة لتفادي التكدس على الشاشات الصغيرة.</p>
+          </div>
+        </div>
+
+        <div class="expl-card">
+          <div class="expl-icon">✨</div>
+          <div>
+            <h4>تناسق الخطوط والكبسولات المضيئة</h4>
+            <p>ضبط ارتفاع الشريط إلى 40px مع حشوة متناسقة وخط بحجم 12px وشارات منتهية/قريبة واضحة وبارزة تقرأ بسهولة من النظرة الأولى.</p>
+          </div>
+        </div>
+
+        <div class="expl-card">
+          <div class="expl-icon">👆</div>
+          <div>
+            <h4>تجميد الحركة باللمس المطول</h4>
+            <p>عند لمس الشريط أو إبقاء الإصبع عليه على شاشة الجوال، تتوقف الحركة تلقائياً لتمكين المستخدم من قراءة تفاصيل الوثيقة بهدوء قبل النقر عليها.</p>
+          </div>
+        </div>
       </div>
     </section>
 
   </div>
 
   <script>
+    const previewBox = document.getElementById('previewBox');
+    const responsiveSection = document.getElementById('responsiveSection');
+    const phoneMockupFrame = document.getElementById('phoneMockupFrame');
+    const sliderGroup = document.getElementById('sliderGroup');
+    const widthRange = document.getElementById('widthRange');
+    const widthBadge = document.getElementById('widthBadge');
+    const currentDeviceLabel = document.getElementById('currentDeviceLabel');
+
+    const pillDesktop = document.getElementById('pillDesktop');
+    const pillMobile = document.getElementById('pillMobile');
+    const pillSlider = document.getElementById('pillSlider');
+
     const content = document.getElementById('tickerContent');
     const btnPause = document.getElementById('btnPause');
+    const speedBtnText = document.getElementById('speedBtnText');
+    let currentSpeed = 90;
     let isPaused = false;
+
+    function switchView(mode) {
+      pillDesktop.classList.remove('active');
+      pillMobile.classList.remove('active');
+      pillSlider.classList.remove('active');
+
+      if (mode === 'desktop') {
+        pillDesktop.classList.add('active');
+        responsiveSection.style.display = 'flex';
+        phoneMockupFrame.style.display = 'none';
+        sliderGroup.style.display = 'none';
+        previewBox.style.width = '100%';
+        currentDeviceLabel.textContent = '🖥️ وضع شاشة الكمبيوتر (عرض 100%)';
+      } else if (mode === 'mobile') {
+        pillMobile.classList.add('active');
+        responsiveSection.style.display = 'none';
+        phoneMockupFrame.style.display = 'block';
+        sliderGroup.style.display = 'none';
+      } else if (mode === 'slider') {
+        pillSlider.classList.add('active');
+        responsiveSection.style.display = 'flex';
+        phoneMockupFrame.style.display = 'none';
+        sliderGroup.style.display = 'inline-flex';
+        updateSliderWidth(widthRange.value);
+      }
+    }
+
+    function updateSliderWidth(val) {
+      widthBadge.textContent = val + 'px';
+      previewBox.style.width = val + 'px';
+      currentDeviceLabel.textContent = `↔️ اختبار العرض المخصص: ${val}px (${val <= 420 ? 'هاتف صغير' : val <= 640 ? 'هاتف متوسط' : val <= 768 ? 'تابلت' : 'شاشة واسعة'})`;
+    }
 
     function setSpeed(sec, btn) {
       document.querySelectorAll('.btn-speed').forEach(b => {
         if (b !== btnPause) b.classList.remove('active');
       });
-      btn.classList.add('active');
+      if (btn) btn.classList.add('active');
+      currentSpeed = sec;
       content.style.animationDuration = sec + 's';
+      if (speedBtnText) {
+        speedBtnText.textContent = sec === 60 ? 'سريع' : sec === 140 ? 'هادئ جداً' : 'معتدل';
+      }
+    }
+
+    function cycleSpeed() {
+      const next = currentSpeed === 90 ? 140 : currentSpeed === 140 ? 60 : 90;
+      setSpeed(next, null);
     }
 
     function togglePause(btn) {
