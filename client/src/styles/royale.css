@@ -109,11 +109,169 @@ html:root body { background: #07070a; }
 .ry-promo b { color: rgb(var(--g-f3dfae, 243 223 174)); }
 .ry-promo button { background: var(--rx-foil) !important; background-size: 220% 100% !important; color: #1b1407 !important; animation: rx-shimmer 6s linear infinite; }
 
-/* ---------------- the top bar ---------------- */
 .lu-top { background: rgba(7, 7, 10, 0.78) !important; border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.14) !important; box-shadow: 0 20px 40px -30px #000 !important; }
 .lu-top .lu-btn, .ry-me { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.16) !important; color: rgb(var(--g-e9dfc8, 233 223 200)); }
 .lu-top .lu-btn:hover { box-shadow: 0 0 22px -8px rgb(var(--g-c9a464, 201 164 100) / 0.8); color: rgb(var(--g-f3dfae, 243 223 174)); }
 .lu-top .lu-btn.search .lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------- Royal Broadcast Alert Ticker ---------------- */
+.rx-ticker-shell {
+  position: relative;
+  height: 42px;
+  margin: 8px 0 2px;
+  border-radius: 9px;
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(201, 164, 100, 0.09), transparent 70%),
+    linear-gradient(180deg, #16130d 0%, #0d0c09 60%, #070705 100%);
+  border: 1px solid rgb(var(--g-d6b678, 214 182 120) / 0.38);
+  box-shadow:
+    0 12px 24px -10px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 243, 214, 0.15),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  direction: rtl;
+  user-select: none;
+}
+.rx-ticker-badge {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(
+    135deg,
+    #7d5d27 0%,
+    #e8cc8e 25%,
+    #c9a464 45%,
+    #fff3d6 60%,
+    #b89045 78%,
+    #8a6a35 100%
+  );
+  color: #171105;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow:
+    -6px 0 16px -2px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  flex: none;
+  cursor: default;
+}
+.rx-ticker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #171105;
+  box-shadow: 0 0 6px rgba(23, 17, 5, 0.8);
+  animation: rx-pulse-dark 1.8s ease-in-out infinite;
+}
+@keyframes rx-pulse-dark {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.65; }
+}
+.rx-ticker-count {
+  padding: 1.5px 6px;
+  border-radius: 999px;
+  background: rgba(23, 17, 5, 0.18);
+  border: 1px solid rgba(23, 17, 5, 0.25);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  color: #171105;
+  direction: ltr;
+}
+.rx-ticker-marquee {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  -webkit-mask-image: linear-gradient(to left, #000 90%, transparent 100%);
+  mask-image: linear-gradient(to left, #000 90%, transparent 100%);
+}
+.rx-ticker-content {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+  animation: rx-ticker-rtl 38s linear infinite;
+}
+.rx-ticker-shell:hover .rx-ticker-content {
+  animation-play-state: paused;
+}
+@keyframes rx-ticker-rtl {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+.rx-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  color: #f5efe3;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.rx-ticker-item:hover { color: #fff3d6; }
+.rx-item-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--l-emerald, #55d697);
+  box-shadow: 0 0 8px var(--l-emerald, #55d697);
+  flex: none;
+}
+.rx-item-dot.danger {
+  background: var(--l-rose, #f87171);
+  box-shadow: 0 0 9px var(--l-rose, #f87171);
+  animation: rx-dot-blink 1.4s ease-in-out infinite;
+}
+.rx-item-dot.warning {
+  background: var(--l-amber, #e6b964);
+  box-shadow: 0 0 8px var(--l-amber, #e6b964);
+}
+@keyframes rx-dot-blink { 50% { opacity: 0.35; } }
+.rx-item-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(214, 182, 120, 0.22);
+  color: #e8cc8e;
+}
+.rx-item-badge.danger {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+.rx-item-badge.warning {
+  background: rgba(230, 185, 100, 0.12);
+  border-color: rgba(230, 185, 100, 0.35);
+  color: #f3dfae;
+}
+.rx-item-text { color: #e9dfc8; font-size: 13px; font-weight: 700; }
+.rx-item-text b { color: #fff3d6; font-weight: 900; }
+.rx-item-time { font-size: 11px; color: var(--l-muted, #9f9279); font-weight: 600; }
+.rx-ticker-sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: linear-gradient(180deg, transparent, rgba(214, 182, 120, 0.35), transparent);
+  margin: 0 4px;
+  flex: none;
+}
 
 /* ---------------- page titles: gold foil with a jewelled rule ---------------- */
 .ry-head h1, .ry-head .lux-title { font-weight: 900 !important; font-size: 34px !important; line-height: 1.35 !important; background: var(--rx-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; animation: rx-shimmer 12s linear infinite; }
