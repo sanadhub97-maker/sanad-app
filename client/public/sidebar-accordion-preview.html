@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة القائمة الجانبية الملكية التفاعلية (Accordion Sidebar) | نظام سند</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rx-gold: #c9a464;
+      --rx-gold-bright: #f3dfae;
+      --rx-gold-dark: #8a6c32;
+      --rx-foil: linear-gradient(90deg, #bfa054 0%, #f7e5a9 25%, #d1ab55 50%, #fbf3cd 75%, #bfa054 100%);
+      --rx-bg: #07070a;
+      --rx-card: #0d0d12;
+      --rx-border: rgba(214, 182, 120, 0.16);
+      --rx-border-bright: rgba(243, 223, 174, 0.35);
+      --font-cairo: 'Cairo', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: radial-gradient(1200px 800px at 70% -10%, rgba(201, 164, 100, 0.08), transparent 70%),
+                  radial-gradient(900px 600px at 10% 100%, rgba(138, 108, 50, 0.06), transparent 70%),
+                  #07070a;
+      color: #f1e9d8;
+      font-family: var(--font-cairo);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top banner */
+    .preview-header {
+      background: rgba(13, 13, 18, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--rx-border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .preview-header .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .preview-header .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #181510, #08080b);
+      border: 1px solid var(--rx-border-bright);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 20px -4px rgba(201, 164, 100, 0.4);
+    }
+
+    .preview-header .logo-badge img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    .preview-header h1 {
+      font-size: 17px;
+      font-weight: 800;
+      background: var(--rx-foil);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.01em;
+    }
+
+    .preview-header p {
+      font-size: 12px;
+      color: rgba(241, 233, 216, 0.6);
+      margin-top: 2px;
+    }
+
+    .preview-header .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(201, 164, 100, 0.1);
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--rx-gold-bright);
+    }
+
+    .status-pill .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 10px #34d399;
+      animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    /* Main layout area */
+    .preview-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 28px;
+      padding: 24px 28px 40px;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Sidebar container */
+    .royal-sidebar {
+      background: radial-gradient(280px 240px at 80% 0%, rgba(201, 164, 100, 0.18), transparent 70%),
+                  linear-gradient(180deg, #0e0d13, #040406);
+      border: 1px solid rgba(214, 182, 120, 0.18);
+      border-radius: 24px;
+      box-shadow: 0 30px 60px -30px #000,
+                  inset 0 0 0 3px #08080b,
+                  inset 0 0 0 4px rgba(214, 182, 120, 0.08);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 86px;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+    }
+
+    .royal-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .royal-sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .royal-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(201, 164, 100, 0.2);
+      border-radius: 4px;
+    }
+
+    /* Brand in sidebar */
+    .sb-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 12px;
+      border-bottom: 1px solid rgba(214, 182, 120, 0.12);
+    }
+
+    .sb-brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(243, 223, 174, 0.45);
+      box-shadow: 0 0 18px -4px rgba(243, 223, 174, 0.5);
+      background: #0d0c10;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .sb-brand-mark img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+
+    .sb-brand-info b {
+      display: block;
+      font-size: 15px;
+      font-weight: 900;
+      background: var(--rx-foil);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sb-brand-info small {
+      font-size: 11px;
+      color: rgba(241, 233, 216, 0.5);
+    }
+
+    /* Accordion Category Group */
+    .sb-grp {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: all 0.25s ease;
+    }
+
+    .sb-grp + .sb-grp {
+      margin-top: 6px;
+    }
+
+    /* Category Header Button */
+    .sb-grp-h {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 9px;
+      background: transparent;
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: rgba(214, 182, 120, 0.58);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.22s cubic-bezier(0.2, 0.9, 0.2, 1);
+      text-align: right;
+    }
+
+    .sb-grp-h:hover {
+      color: #fff3d6;
+      background: rgba(201, 164, 100, 0.09);
+      border-color: rgba(214, 182, 120, 0.18);
+    }
+
+    .sb-grp:not(.shut) > .sb-grp-h {
+      color: #f1e9d8;
+    }
+
+    /* Diamond Indicator */
+    .sb-grp-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sb-grp-title::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--rx-gold);
+      transform: rotate(45deg);
+      box-shadow: 0 0 8px rgba(201, 164, 100, 0.8);
+      transition: all 0.25s ease;
+    }
+
+    .sb-grp:not(.shut) > .sb-grp-h .sb-grp-title::before,
+    .sb-grp-h:hover .sb-grp-title::before {
+      background: var(--rx-gold-bright);
+      box-shadow: 0 0 12px var(--rx-gold-bright), 0 0 4px #fff3d6;
+      transform: rotate(45deg) scale(1.2);
+    }
+
+    .sb-grp-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Rotating Chevron */
+    .sb-chevron {
+      width: 14px;
+      height: 14px;
+      color: rgba(214, 182, 120, 0.6);
+      transition: transform 0.32s cubic-bezier(0.25, 1, 0.35, 1), color 0.2s ease;
+    }
+
+    .sb-grp-h:hover .sb-chevron {
+      color: #fff3d6;
+    }
+
+    /* Shut = Chevron points inward/left (90deg in RTL) */
+    .sb-grp.shut .sb-chevron {
+      transform: rotate(90deg);
+    }
+
+    /* Open = Chevron points DOWN (0deg) */
+    .sb-grp:not(.shut) .sb-chevron {
+      transform: rotate(0deg);
+      color: var(--rx-gold-bright);
+    }
+
+    /* Badge Counter */
+    .sb-badge {
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 800;
+      background: #b91c1c;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(238, 143, 134, 0.6);
+    }
+
+    /* Accordion Body animation */
+    .sb-grp-b {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.25, 1, 0.35, 1), opacity 0.28s ease;
+      opacity: 1;
+    }
+
+    .sb-grp.shut .sb-grp-b {
+      grid-template-rows: 0fr;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sb-grp-b > div {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    /* Nav Item Link */
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: rgba(241, 233, 216, 0.72);
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-align: right;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .sb-item:hover {
+      background: rgba(201, 164, 100, 0.08);
+      color: #fff3d6;
+    }
+
+    .sb-item.active {
+      color: #fff3d6;
+      background: linear-gradient(270deg, rgba(201, 164, 100, 0.34), rgba(201, 164, 100, 0.06));
+      box-shadow: inset 0 0 0 1px rgba(243, 223, 174, 0.28), 0 0 24px -10px rgba(201, 164, 100, 0.7);
+    }
+
+    .sb-item.active::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: -6px;
+      top: 9px;
+      bottom: 9px;
+      width: 3px;
+      border-radius: 3px;
+      background: var(--rx-foil);
+      box-shadow: 0 0 14px var(--rx-gold-bright), 0 0 4px #fff3d6;
+    }
+
+    .sb-item .item-icon {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      color: rgb(216, 182, 117);
+      transition: transform 0.2s ease;
+    }
+
+    .sb-item:hover .item-icon {
+      transform: translateY(-2px) scale(1.1);
+      color: var(--rx-gold-bright);
+    }
+
+    .sb-item.active .item-icon {
+      color: #fff3d6;
+      filter: drop-shadow(0 0 6px rgba(243, 223, 174, 0.8));
+    }
+
+    .sb-item .item-txt {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sb-item.active .item-txt {
+      background: var(--rx-foil);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .sb-item .item-badge {
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #b91c1c;
+      color: #fff;
+    }
+
+    /* Explanation & Interactive Testing Panel */
+    .panel-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .interactive-card {
+      background: radial-gradient(600px 320px at 15% -20%, rgba(243, 223, 174, 0.15), transparent 65%),
+                  linear-gradient(135deg, #121016, #0a0a0d);
+      border: 1px solid rgba(214, 182, 120, 0.25);
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 20px 40px -20px #000,
+                  inset 0 0 0 3px #0b0b0f,
+                  inset 0 0 0 4px rgba(214, 182, 120, 0.1);
+    }
+
+    .interactive-card h2 {
+      font-size: 20px;
+      font-weight: 800;
+      background: var(--rx-foil);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .interactive-card p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(241, 233, 216, 0.8);
+      margin-bottom: 18px;
+    }
+
+    .test-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-test {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(214, 182, 120, 0.2);
+      color: #f1e9d8;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-test:hover {
+      background: rgba(201, 164, 100, 0.15);
+      border-color: rgba(243, 223, 174, 0.45);
+      color: #fff3d6;
+      box-shadow: 0 0 16px -4px rgba(201, 164, 100, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .live-event-log {
+      background: #050508;
+      border: 1px solid rgba(214, 182, 120, 0.15);
+      border-radius: 14px;
+      padding: 16px 20px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #34d399;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .log-time {
+      color: rgba(214, 182, 120, 0.7);
+      font-size: 11px;
+    }
+
+    /* Rules grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-box {
+      background: rgba(14, 13, 19, 0.6);
+      border: 1px solid rgba(214, 182, 120, 0.14);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .feature-box b {
+      display: block;
+      font-size: 15px;
+      color: var(--rx-gold-bright);
+      margin-bottom: 6px;
+    }
+
+    .feature-box span {
+      font-size: 13px;
+      color: rgba(241, 233, 216, 0.7);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .preview-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="preview-header">
+    <div class="title-wrap">
+      <div class="logo-badge">
+        <img src="/brand/sanad-mark.webp" alt="سند" onerror="this.src='/brand/sanad-mark.png'">
+      </div>
+      <div>
+        <h1>معاينة القائمة الجانبية الأكورديون (Royal Accordion Sidebar)</h1>
+        <p>نظام فتح تصنيف واحد تلقائياً وغلق التصنيفات الأخرى بنعومة واحترافية فائقة</p>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="pulse-dot"></span>
+      جاهز وتم التطبيق على النظام الحي
+    </div>
+  </header>
+
+  <!-- Content Layout -->
+  <main class="preview-body">
+
+    <!-- The Royal Sidebar Simulation -->
+    <aside class="royal-sidebar" aria-label="القائمة الجانبية">
+      
+      <!-- Brand header -->
+      <div class="sb-brand">
+        <div class="sb-brand-mark">
+          <img src="/brand/sanad-mark.webp" alt="سند" onerror="this.src='/brand/sanad-mark.png'">
+        </div>
+        <div class="sb-brand-info">
+          <b>نظام سند الملكي</b>
+          <small>الموارد البشرية والامتثال</small>
+        </div>
+      </div>
+
+      <!-- Category 1: نظرة عامة -->
+      <div class="sb-grp shut" id="grp-overview">
+        <button type="button" class="sb-grp-h" onclick="toggleCategory('grp-overview', 'نظرة عامة')">
+          <span class="sb-grp-title">نظرة عامة</span>
+          <span class="sb-grp-meta">
+            <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </button>
+        <div class="sb-grp-b">
+          <div>
+            <button class="sb-item" onclick="selectItem(this, 'لوحة التحكم')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              </span>
+              <span class="item-txt">لوحة التحكم</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'المهام اليومية')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>
+              </span>
+              <span class="item-txt">المهام اليومية</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 2: القوى العاملة (Active by default) -->
+      <div class="sb-grp" id="grp-workforce">
+        <button type="button" class="sb-grp-h" onclick="toggleCategory('grp-workforce', 'القوى العاملة')">
+          <span class="sb-grp-title">القوى العاملة</span>
+          <span class="sb-grp-meta">
+            <span class="sb-badge" style="display:none;" id="badge-workforce">12</span>
+            <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </button>
+        <div class="sb-grp-b">
+          <div>
+            <button class="sb-item active" onclick="selectItem(this, 'الموظفون')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              <span class="item-txt">الموظفون</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'مستندات الموظف')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3a2 2 0 0 1-2-2V2"/><path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h11"/></svg>
+              </span>
+              <span class="item-txt">مستندات الموظف</span>
+              <span class="item-badge">12</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'تسليم العهد')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 2 2 4-4"/><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
+              </span>
+              <span class="item-txt">تسليم العهد</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'إخلاء الطرف')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              <span class="item-txt">إخلاء الطرف</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'شهادة خبرة')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+              </span>
+              <span class="item-txt">شهادة خبرة</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'تعريف بالراتب')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+              </span>
+              <span class="item-txt">تعريف بالراتب</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 3: الوثائق والامتثال -->
+      <div class="sb-grp shut" id="grp-compliance">
+        <button type="button" class="sb-grp-h" onclick="toggleCategory('grp-compliance', 'الوثائق والامتثال')">
+          <span class="sb-grp-title">الوثائق والامتثال</span>
+          <span class="sb-grp-meta">
+            <span class="sb-badge" id="badge-compliance">10</span>
+            <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </button>
+        <div class="sb-grp-b">
+          <div>
+            <button class="sb-item" onclick="selectItem(this, 'مستندات الشركة')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+              </span>
+              <span class="item-txt">مستندات الشركة</span>
+              <span class="item-badge">10</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'السيارات')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+              </span>
+              <span class="item-txt">السيارات</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'المخالفات')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14 13-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></svg>
+              </span>
+              <span class="item-txt">المخالفات</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'المؤسسات والشركات')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+              </span>
+              <span class="item-txt">المؤسسات والشركات</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category 4: المالية والبيانات -->
+      <div class="sb-grp shut" id="grp-finance">
+        <button type="button" class="sb-grp-h" onclick="toggleCategory('grp-finance', 'المالية والبيانات')">
+          <span class="sb-grp-title">المالية والبيانات</span>
+          <span class="sb-grp-meta">
+            <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </span>
+        </button>
+        <div class="sb-grp-b">
+          <div>
+            <button class="sb-item" onclick="selectItem(this, 'المدفوعات')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+              </span>
+              <span class="item-txt">المدفوعات</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'الإقرارات الضريبية والزكاة')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+              </span>
+              <span class="item-txt">الإقرارات الضريبية والزكاة</span>
+            </button>
+            <button class="sb-item" onclick="selectItem(this, 'التقارير')">
+              <span class="item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </span>
+              <span class="item-txt">التقارير</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Test Controls and Details -->
+    <div class="panel-wrap">
+      
+      <!-- Interactive card -->
+      <section class="interactive-card">
+        <h2>جرب القائمة الأكورديون مباشرة (Interactive Live Demo)</h2>
+        <p>
+          اضغط على أي تصنيف في القائمة الجانبية على اليمين، أو اضغط على أحد الأزرار السريعة التالية لتجربة التبديل التلقائي. ستلاحظ فوراً أن <strong>التصنيف المختار يفتح بسلاسة وتغلق جميع التصنيفات الأخرى تلقائياً</strong> مع تدوير المؤشر الذهبي وإظهار التنبيهات.
+        </p>
+
+        <div class="test-buttons">
+          <button class="btn-test" onclick="openCategoryFromBtn('grp-overview', 'نظرة عامة')">
+            <span>◆</span> فتح: نظرة عامة
+          </button>
+          <button class="btn-test" onclick="openCategoryFromBtn('grp-workforce', 'القوى العاملة')">
+            <span>◆</span> فتح: القوى العاملة
+          </button>
+          <button class="btn-test" onclick="openCategoryFromBtn('grp-compliance', 'الوثائق والامتثال')">
+            <span>◆</span> فتح: الوثائق والامتثال
+          </button>
+          <button class="btn-test" onclick="openCategoryFromBtn('grp-finance', 'المالية والبيانات')">
+            <span>◆</span> فتح: المالية والبيانات
+          </button>
+        </div>
+
+        <div class="live-event-log" id="event-log">
+          <div class="log-entry">
+            <span class="log-time">[جاهز]</span>
+            <span>نظام الأكورديون نشط. التصنيف الحالي المفتوح: «القوى العاملة» (الصفحة النشطة: الموظفون).</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features summary -->
+      <div class="features-grid">
+        <div class="feature-box">
+          <b>غلق التصنيف السابق فورياً</b>
+          <span>بمجرد النقر على أي تصنيف آخر، يتم إغلاق التصنيف المفتوح تلقائياً مما يحافظ على هدوء وتنظيم القائمة ومنع التشتت والازدحام.</span>
+        </div>
+        <div class="feature-box">
+          <b>حركة انسيابية فائقة (60 FPS)</b>
+          <span>استخدام تقنية CSS Grid (grid-template-rows 1fr → 0fr) تضمن حركة فتح وإغلاق سلسة جداً بدون أي قفزات في الصفحة.</span>
+        </div>
+        <div class="feature-box">
+          <b>مؤشر السهم الذهبي الدوار</b>
+          <span>سهم ذهبي عيار 24 يدور بزاوية 90 درجة عند الإغلاق ويوجه للأسفل عند الفتح ليعطي استجابة بصرية ملكية فورية.</span>
+        </div>
+        <div class="feature-box">
+          <b>الاحتفاظ بالصفحة النشطة تلقائياً</b>
+          <span>عند الانتقال إلى أي صفحة عبر البحث أو الإشعارات، تفتح القائمة التصنيف التابع لتلك الصفحة تلقائياً دون تدخل يدوي.</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let activeGroupId = 'grp-workforce';
+
+    function logEvent(msg) {
+      const log = document.getElementById('event-log');
+      const time = new Date().toLocaleTimeString('ar-SA');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">[${time}]</span> <span>${msg}</span>`;
+      log.prepend(entry);
+      // Keep only last 5 entries
+      while (log.children.length > 5) {
+        log.removeChild(log.lastChild);
+      }
+    }
+
+    function toggleCategory(groupId, groupName) {
+      const allGroups = document.querySelectorAll('.sb-grp');
+      const target = document.getElementById(groupId);
+
+      if (activeGroupId === groupId) {
+        // Toggle closed
+        target.classList.add('shut');
+        activeGroupId = null;
+        logEvent(`تم طي التصنيف «${groupName}» بنجاح.`);
+      } else {
+        // Close all other groups
+        allGroups.forEach(g => {
+          if (g.id !== groupId) {
+            g.classList.add('shut');
+          }
+        });
+        // Open target group
+        target.classList.remove('shut');
+        activeGroupId = groupId;
+        logEvent(`تم فتح التصنيف «${groupName}» وإغلاق باقي التصنيفات تلقائياً.`);
+      }
+
+      // Update badge visibility
+      updateBadges();
+    }
+
+    function openCategoryFromBtn(groupId, groupName) {
+      if (activeGroupId !== groupId) {
+        toggleCategory(groupId, groupName);
+      }
+    }
+
+    function selectItem(btn, itemName) {
+      document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      logEvent(`تم اختيار الصفحة: «${itemName}». تم تثبيت الإضاءة الذهبية الملكية.`);
+    }
+
+    function updateBadges() {
+      const compShut = document.getElementById('grp-compliance').classList.contains('shut');
+      const compBadge = document.getElementById('badge-compliance');
+      if (compBadge) compBadge.style.display = compShut ? 'inline-block' : 'none';
+
+      const workShut = document.getElementById('grp-workforce').classList.contains('shut');
+      const workBadge = document.getElementById('badge-workforce');
+      if (workBadge) workBadge.style.display = workShut ? 'inline-block' : 'none';
+    }
+  </script>
+</body>
+</html>
+

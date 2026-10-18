@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>معاينة شريط البث والتنبيهات الملكي — وثائق سند</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --g-fff3d6: 255 243 214;
+      --g-f3dfae: 243 223 174;
+      --g-e9d3a1: 233 211 161;
+      --g-e8cc8e: 232 204 142;
+      --g-e6b964: 230 185 100;
+      --g-d6b678: 214 182 120;
+      --g-c9a464: 201 164 100;
+      --g-a5803f: 165 128 63;
+      --g-8a6a35: 138 106 53;
+      --g-7d5d27: 125 93 39;
+      --g-3a280c: 58 40 12;
+
+      --l-ink: #f5efe3;
+      --l-ink2: #d8ccb4;
+      --l-muted: #9f9279;
+      --l-emerald: #55d697;
+      --l-amber: #e6b964;
+      --l-rose: #f87171;
+      --l-sky: #67b5ff;
+
+      --rx-foil: linear-gradient(
+        115deg,
+        #7d5d27 0%,
+        #f3dfae 22%,
+        #c9a464 40%,
+        #fff3d6 55%,
+        #a5803f 72%,
+        #e8cc8e 88%,
+        #8a6a35 100%
+      );
+
+      --font-sans: "Tajawal", "Cairo", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      color: var(--l-ink);
+      background:
+        radial-gradient(1100px 620px at 85% -8%, rgba(201, 164, 100, 0.16), transparent 62%),
+        radial-gradient(900px 540px at 10% 108%, rgba(15, 45, 74, 0.35), transparent 62%),
+        linear-gradient(180deg, #090a0d 0%, #060709 100%);
+      padding: 24px;
+    }
+
+    .demo-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .demo-header {
+      padding: 20px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(214, 182, 120, 0.28);
+      background: linear-gradient(160deg, #131418, #0a0b0e);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 20px 40px -20px #000;
+    }
+    .demo-header h1 {
+      font-size: 24px;
+      font-weight: 900;
+      background: var(--rx-foil);
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .demo-header p {
+      color: var(--l-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .demo-card {
+      border-radius: 18px;
+      border: 1px solid rgba(214, 182, 120, 0.25);
+      background: rgba(12, 13, 17, 0.85);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 30px 60px -30px #000;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .demo-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #f3dfae;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       ROYAL BROADCAST ALERT TICKER (شريط البث والتنبيهات الملكي الفاخر)
+       ═══════════════════════════════════════════════════════════════════ */
+    .rx-ticker-shell {
+      position: relative;
+      height: 48px;
+      border-radius: 10px;
+      background:
+        radial-gradient(120% 100% at 50% 0%, rgba(201, 164, 100, 0.08), transparent 70%),
+        linear-gradient(180deg, #16130d 0%, #0d0c09 60%, #070705 100%);
+      border: 1px solid rgba(214, 182, 120, 0.38);
+      box-shadow:
+        0 14px 28px -12px rgba(0, 0, 0, 0.85),
+        inset 0 1px 0 rgba(255, 243, 214, 0.15),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      direction: rtl;
+    }
+
+    /* 1. الشارة الذهبية المثبتة لليمين: "شريط البث" */
+    .rx-ticker-badge {
+      position: relative;
+      z-index: 5;
+      height: 100%;
+      padding: 0 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(
+        135deg,
+        #7d5d27 0%,
+        #e8cc8e 25%,
+        #c9a464 45%,
+        #fff3d6 60%,
+        #b89045 78%,
+        #8a6a35 100%
+      );
+      color: #171105;
+      font-weight: 900;
+      font-size: 14.5px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      box-shadow:
+        -6px 0 16px -2px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+      flex: none;
+      user-select: none;
+      cursor: default;
+    }
+    .rx-ticker-badge::after {
+      content: "";
+      position: absolute;
+      left: -1px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+    .rx-ticker-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #171105;
+      box-shadow: 0 0 6px rgba(23, 17, 5, 0.8);
+      animation: rx-pulse-dark 1.8s ease-in-out infinite;
+    }
+    @keyframes rx-pulse-dark {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+
+    /* عداد التنبيهات داخل الشارة */
+    .rx-ticker-count {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(23, 17, 5, 0.18);
+      border: 1px solid rgba(23, 17, 5, 0.25);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      color: #171105;
+      direction: ltr;
+    }
+
+    /* 2. مسار التنبيهات المتحركة المستمرة (Continuous Marquee Track) */
+    .rx-ticker-marquee {
+      position: relative;
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      mask-image: linear-gradient(to left, #000 85%, transparent 100%), linear-gradient(to right, #000 85%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to left, #000 90%, transparent 100%);
+    }
+
+    .rx-ticker-content {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      will-change: transform;
+      animation: rx-ticker-rtl 38s linear infinite;
+    }
+    .rx-ticker-shell:hover .rx-ticker-content {
+      animation-play-state: paused;
+    }
+
+    @keyframes rx-ticker-rtl {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(50%); }
+    }
+
+    /* 3. عناصر التنبيه داخل الشريط */
+    .rx-ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      color: #f5efe3;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .rx-ticker-item:hover {
+      color: #fff3d6;
+    }
+
+    .rx-item-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--l-emerald);
+      box-shadow: 0 0 8px var(--l-emerald);
+      flex: none;
+    }
+    .rx-item-dot.danger {
+      background: var(--l-rose);
+      box-shadow: 0 0 9px var(--l-rose);
+      animation: rx-dot-blink 1.4s ease-in-out infinite;
+    }
+    .rx-item-dot.warning {
+      background: var(--l-amber);
+      box-shadow: 0 0 8px var(--l-amber);
+    }
+    @keyframes rx-dot-blink {
+      50% { opacity: 0.35; }
+    }
+
+    .rx-item-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(214, 182, 120, 0.22);
+      color: #e8cc8e;
+    }
+    .rx-item-badge.danger {
+      background: rgba(248, 113, 113, 0.12);
+      border-color: rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+    }
+    .rx-item-badge.warning {
+      background: rgba(230, 185, 100, 0.12);
+      border-color: rgba(230, 185, 100, 0.35);
+      color: #f3dfae;
+    }
+
+    .rx-item-text {
+      color: #e9dfc8;
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+    .rx-item-text b {
+      color: #fff3d6;
+      font-weight: 900;
+    }
+
+    .rx-item-phone {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #c9a464;
+      direction: ltr;
+      letter-spacing: 0.04em;
+    }
+
+    .rx-item-time {
+      font-size: 11.5px;
+      color: var(--l-muted);
+      font-weight: 600;
+    }
+
+    /* فاصل أنيق بين التنبيهات */
+    .rx-ticker-sep {
+      display: inline-block;
+      width: 1px;
+      height: 18px;
+      background: linear-gradient(180deg, transparent, rgba(214, 182, 120, 0.35), transparent);
+      margin: 0 4px;
+      flex: none;
+    }
+
+    /* أزرار التحكم بالسرعة وإيقاف الشريط */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--l-muted);
+    }
+    .control-btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(214, 182, 120, 0.3);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f3dfae;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .control-btn:hover {
+      background: rgba(201, 164, 100, 0.15);
+      border-color: #f3dfae;
+    }
+    .control-btn.active {
+      background: var(--rx-foil);
+      color: #171105;
+      border-color: transparent;
+    }
+
+    /* محاكاة القائمة العلوية الفعلية للموقع */
+    .mock-topbar {
+      border-radius: 18px;
+      border: 1px solid rgba(214, 182, 120, 0.22);
+      background: rgba(7, 7, 10, 0.85);
+      backdrop-filter: blur(20px);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 20px 40px -24px #000;
+    }
+    .mock-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mock-crest {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--rx-foil);
+      display: grid;
+      place-items: center;
+      color: #171105;
+      font-weight: 900;
+      font-size: 16px;
+    }
+    .mock-logo-txt b {
+      display: block;
+      font-size: 14.5px;
+      font-weight: 900;
+      color: #fff3d6;
+    }
+    .mock-logo-txt small {
+      display: block;
+      font-size: 11px;
+      color: var(--l-muted);
+    }
+    .mock-user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mock-user-av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1e1b15;
+      border: 1px solid #c9a464;
+      display: grid;
+      place-items: center;
+      color: #f3dfae;
+      font-size: 13px;
+      font-weight: 900;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+
+    <header class="demo-header">
+      <div>
+        <h1>معاينة شريط البث والتنبيهات الملكي الفاخر</h1>
+        <p>تصميم مستوحى 100% من النموذج المطلوب (شريط البث الذهبي + النقطة النابضة + التنبيهات التلقائية المباشرة لوثائق المنشأة والموظفين).</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:12px; color:var(--l-muted)">حالة البث:</span>
+        <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:#55d697; background:rgba(85,214,151,0.12); padding:3px 10px; border-radius:999px; border:1px solid rgba(85,214,151,0.3)">
+          <i style="width:6px; height:6px; border-radius:50%; background:#55d697; box-shadow:0 0 6px #55d697"></i>
+          بث حي مباشر
+        </span>
+      </div>
+    </header>
+
+    <!-- 1. شريط البث كما يظهر في القائمة العلوية للنظام -->
+    <section class="demo-card">
+      <h3>
+        <span>👑</span>
+        الشكل رقم 1: شريط البث في أعلى القائمة الرئيسية (شامل الوثائق المنتهية والقريبة من الانتهاء)
+      </h3>
+
+      <!-- محاكاة الهيدر الفعلي -->
+      <div class="mock-topbar">
+        <div class="mock-logo">
+          <div class="mock-crest">س</div>
+          <div class="mock-logo-txt">
+            <b>سند الملكي للموارد البشرية</b>
+            <small>نظام الوثائق والإقامات المعتمد</small>
+          </div>
+        </div>
+
+        <!-- شريط البث المدمج -->
+        <div style="flex:1; max-width:920px; margin:0 14px;">
+          <div class="rx-ticker-shell" id="ticker-1">
+            <div class="rx-ticker-badge">
+              <span class="rx-ticker-dot"></span>
+              <span>شريط البث</span>
+              <span class="rx-ticker-count">8 تنبيهات</span>
+            </div>
+
+            <div class="rx-ticker-marquee">
+              <div class="rx-ticker-content" id="track-1">
+                <!-- التنبيهات (تتكرر لضمان السلاسة التامة) -->
+                <!-- العنصر 1 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة الموظف: <b>أحمد محمد العلي</b></span>
+                  <span class="rx-item-phone">+966 55 500 6855</span>
+                  <span class="rx-item-time">قبل 3 ساعات</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- العنصر 2 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">رخصة سير المركبة: <b>تويوتا هايلوكس (أ ب ج 1234)</b></span>
+                  <span class="rx-item-time">متبقي 6 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- العنصر 3 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">شهادة سلامة الدفاع المدني: <b>فرع الرياض الرئيسي</b></span>
+                  <span class="rx-item-time">أمس</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- العنصر 4 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">تنبيه تلقائي</span>
+                  <span class="rx-item-text">تأمين المركبة: <b>فورد توروس (د هـ و 5678)</b></span>
+                  <span class="rx-item-phone">+966 50 598 7486</span>
+                  <span class="rx-item-time">متبقي 12 يومًا</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- العنصر 5 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">عقد إيجار المنشأة: <b>فرع جدة الإقليمي</b></span>
+                  <span class="rx-item-phone">+966 55 006 6302</span>
+                  <span class="rx-item-time">متبقي 18 يومًا</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- العنصر 6 -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">رخصة البلدية: <b>مستودع السلي</b></span>
+                  <span class="rx-item-time">منذ 3 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <!-- تكرار العناصر للشريط المتصل اللانهائي -->
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">إقامة الموظف: <b>أحمد محمد العلي</b></span>
+                  <span class="rx-item-phone">+966 55 500 6855</span>
+                  <span class="rx-item-time">قبل 3 ساعات</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">قريبة الانتهاء</span>
+                  <span class="rx-item-text">رخصة سير المركبة: <b>تويوتا هايلوكس (أ ب ج 1234)</b></span>
+                  <span class="rx-item-time">متبقي 6 أيام</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot danger"></span>
+                  <span class="rx-item-badge danger">منتهية</span>
+                  <span class="rx-item-text">شهادة سلامة الدفاع المدني: <b>فرع الرياض الرئيسي</b></span>
+                  <span class="rx-item-time">أمس</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+
+                <a class="rx-ticker-item" href="#docs">
+                  <span class="rx-item-dot warning"></span>
+                  <span class="rx-item-badge warning">تنبيه تلقائي</span>
+                  <span class="rx-item-text">تأمين المركبة: <b>فورد توروس (د هـ و 5678)</b></span>
+                  <span class="rx-item-phone">+966 50 598 7486</span>
+                  <span class="rx-item-time">متبقي 12 يومًا</span>
+                </a>
+                <span class="rx-ticker-sep"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mock-user">
+          <div class="mock-user-av">م</div>
+        </div>
+      </div>
+
+      <!-- خيارات التحكم التفاعلية للمعاينة -->
+      <div class="controls-row">
+        <span>تحكم بالمعاينة الحية:</span>
+        <button type="button" class="control-btn active" onclick="setSpeed('track-1', '38s', this)">سرعة عادية (38s)</button>
+        <button type="button" class="control-btn" onclick="setSpeed('track-1', '22s', this)">سرعة سريعة (22s)</button>
+        <button type="button" class="control-btn" onclick="setSpeed('track-1', '55s', this)">سرعة هادئة (55s)</button>
+        <button type="button" class="control-btn" onclick="togglePlay('track-1', this)">⏸️ إيقاف مؤقت</button>
+        <span style="margin-inline-start:auto; font-size:12px; color:#c9a464;">💡 ملاحظة: عند تمرير الماوس فوق الشريط يتوقف تلقائيًا للقراءة</span>
+      </div>
+    </section>
+
+    <!-- تفاصيل الخصائص الاحترافية للشريط -->
+    <section class="demo-card" style="background:rgba(18,20,26,0.6);">
+      <h3>
+        <span>✨</span>
+        المميزات الفخمة لشريط البث الملكي (Sanad Royale Ticker):
+      </h3>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;">
+        <div style="padding:16px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(214,182,120,0.18);">
+          <b style="color:#fff3d6; font-size:14px; display:block; margin-bottom:4px;">1. الشارة الملكية الثابتة عيار 24</b>
+          <p style="font-size:12.5px; color:var(--l-muted); line-height:1.6;">شارة "شريط البث" مستوحاة طبق الأصل من الصورة المرفقة، بخلفية ذهبية مصقولة ونقطة داكنة نابضة للدلالة على البث المباشر.</p>
+        </div>
+        <div style="padding:16px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(214,182,120,0.18);">
+          <b style="color:#fff3d6; font-size:14px; display:block; margin-bottom:4px;">2. تمييز لوني دقيق للمستوى والخطورة</b>
+          <p style="font-size:12.5px; color:var(--l-muted); line-height:1.6;">نقطة وشارة حمراء نابضة للوثائق المنتهية، وشارة ذهبية للوثائق القريبة من الانتهاء، مع إظهار رقم الهاتف/الجهة والوقت المتبقي.</p>
+        </div>
+        <div style="padding:16px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(214,182,120,0.18);">
+          <b style="color:#fff3d6; font-size:14px; display:block; margin-bottom:4px;">3. حركة سلسة لا نهائية 60FPS</b>
+          <p style="font-size:12.5px; color:var(--l-muted); line-height:1.6;">الشريط يدور بحركة انسيابية خفيفة للغاية، وعند الوقوف عليه بالماوس يتوقف مؤقتًا لتسهيل الضغط على أي وثيقة والانتقال إليها فورًا.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function setSpeed(id, dur, btn) {
+      document.getElementById(id).style.animationDuration = dur;
+      btn.parentElement.querySelectorAll('.control-btn').forEach(b => {
+        if (!b.textContent.includes('إيقاف') && !b.textContent.includes('تشغيل')) {
+          b.classList.remove('active');
+        }
+      });
+      btn.classList.add('active');
+    }
+
+    let isPaused = false;
+    function togglePlay(id, btn) {
+      const el = document.getElementById(id);
+      if (isPaused) {
+        el.style.animationPlayState = 'running';
+        btn.textContent = '⏸️ إيقاف مؤقت';
+        btn.classList.remove('active');
+        isPaused = false;
+      } else {
+        el.style.animationPlayState = 'paused';
+        btn.textContent = '▶️ استئناف الحركة';
+        btn.classList.add('active');
+        isPaused = true;
+      }
+    }
+  </script>
+</body>
+</html>
+

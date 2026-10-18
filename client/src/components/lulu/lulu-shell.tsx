@@ -125,26 +125,57 @@ function AccountMenu({ children }: { children: ReactNode }) {
   );
 }
 
-function useSectionState() {
-  const KEY = "sanad.sidebar.shut";
-  const [shut, setShut] = useState<string[]>(() => {
+function useAccordionSection(groups: { key: string; items: LuluNavItem[] }[], path: string) {
+  const KEY = "sanad.sidebar.activeSection";
+  
+  // Find which group contains the current active route
+  const getGroupForPath = (p: string) => {
+    return groups.find((g) => g.items.some((i) => isOnPath(p, i.href)))?.key;
+  };
+
+  const [activeSection, setActiveSection] = useState<string | null>(() => {
     try {
-      return JSON.parse(localStorage.getItem(KEY) || "[]");
+      const stored = localStorage.getItem(KEY);
+      if (stored && groups.some((g) => g.key === stored)) {
+        return stored;
+      }
     } catch {
-      return [];
+      /* private mode: remembered for this visit */
     }
+    return getGroupForPath(path) ?? groups[0]?.key ?? "main";
   });
-  const toggle = (s: string) =>
-    setShut((cur) => {
-      const next = cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s];
+
+  // Automatically sync accordion when the user navigates to a route belonging to another section
+  const prevPathRef = useRef(path);
+  useEffect(() => {
+    if (prevPathRef.current !== path) {
+      prevPathRef.current = path;
+      const matched = getGroupForPath(path);
+      if (matched) {
+        setActiveSection(matched);
+        try {
+          localStorage.setItem(KEY, matched);
+        } catch {
+          /* private mode */
+        }
+      }
+    }
+  }, [path, groups]);
+
+  const toggle = (key: string) => {
+    setActiveSection((cur) => {
+      const next = cur === key ? null : key;
       try {
-        localStorage.setItem(KEY, JSON.stringify(next));
+        if (next) localStorage.setItem(KEY, next);
+        else localStorage.removeItem(KEY);
       } catch {
-        /* private mode: remembered for this visit */
+        /* private mode */
       }
       return next;
     });
-  return { shut, toggle };
+  };
+
+  return { activeSection, toggle };
 }
 
 /** Counts shown beside sections: open tasks today, expired documents. */
@@ -177,7 +208,16 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const narrow = useMedia("(max-width: 1179px)");
   const rail = narrow || collapsed;
-  const { shut, toggle } = useSectionState();
+
+  // Sections in menu order, each with its items.
+  const groups: { key: string; items: LuluNavItem[] }[] = [];
+  for (const item of items) {
+    const last = groups[groups.length - 1];
+    if (!last || (item.section && item.section !== last.key)) groups.push({ key: item.section ?? "main", items: [item] });
+    else last.items.push(item);
+  }
+
+  const { activeSection, toggle } = useAccordionSection(groups, path);
   const badges = useNavBadges();
   const queryClient = useQueryClient();
   const can = useAuthStore((s) => s.hasPermission);
@@ -193,14 +233,6 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
   const wrap = useRef<HTMLDivElement>(null);
   const [glide, setGlide] = useState<{ top: number; left: number; width: number; height: number; tone: string } | null>(null);
 
-  // Sections in menu order, each with its items.
-  const groups: { key: string; items: LuluNavItem[] }[] = [];
-  for (const item of items) {
-    const last = groups[groups.length - 1];
-    if (!last || (item.section && item.section !== last.key)) groups.push({ key: item.section ?? "main", items: [item] });
-    else last.items.push(item);
-  }
-
   const measure = useCallback(() => {
     const el = wrap.current?.querySelector<HTMLElement>(".lu-nav.on");
     if (!el || !el.offsetWidth || !el.offsetHeight) return setGlide(null);
@@ -208,15 +240,18 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
     const r = el.getBoundingClientRect();
     setGlide({ top: r.top - nav.top + wrap.current!.scrollTop, left: r.left - nav.left, width: r.width, height: r.height, tone: el.dataset.tone ?? "sky" });
   }, []);
-  useLayoutEffect(measure, [path, items.length, rail, shut, measure]);
+  useLayoutEffect(measure, [path, items.length, rail, activeSection, measure]);
   useEffect(() => {
-    const id = window.setTimeout(measure, 460);
+    measure();
+    const t1 = window.setTimeout(measure, 160);
+    const t2 = window.setTimeout(measure, 360);
     window.addEventListener("resize", measure);
     return () => {
-      window.clearTimeout(id);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
       window.removeEventListener("resize", measure);
     };
-  }, [measure, rail, shut]);
+  }, [measure, rail, activeSection]);
 
   const role = user?.isSuperAdmin ? (isAr ? "المشرف العام" : "Super Admin") : user?.roles?.[0];
   const collapseLabel = rail ? (isAr ? "توسيع القائمة" : "Expand menu") : isAr ? "تصغير القائمة" : "Collapse menu";
@@ -260,16 +295,25 @@ function Sidebar({ items }: { items: LuluNavItem[] }) {
           </span>
         )}
         {groups.map((g) => {
-          const holdsCurrent = g.items.some((i) => isOnPath(path, i.href));
-          const isShut = !rail && shut.includes(g.key) && !holdsCurrent;
+          const isOpen = rail || activeSection === g.key;
+          const isShut = !isOpen;
           const count = g.items.reduce((a, i) => a + (badges[i.href]?.n ?? 0), 0);
           return (
             <div key={g.key} className={cn("lu-grp", isShut && "shut")}>
-              <button type="button" className="lu-grp-h" onClick={() => !holdsCurrent && toggle(g.key)} aria-expanded={!isShut}>
-                <span>{g.key === "main" ? "" : t(g.key)}</span>
-                {isShut && count > 0 && <span className="lu-badge lu-badge-sm">{count}</span>}
-                <i className="ln" />
-                {!holdsCurrent && <ChevronDown />}
+              <button
+                type="button"
+                className="lu-grp-h"
+                onClick={() => toggle(g.key)}
+                aria-expanded={isOpen}
+                title={g.key === "main" ? undefined : t(g.key)}
+              >
+                <span className="lu-grp-title">{g.key === "main" ? "" : t(g.key)}</span>
+                <span className="lu-grp-meta">
+                  {isShut && count > 0 && (
+                    <span className="lu-badge lu-badge-sm">{count > 99 ? "99+" : count}</span>
+                  )}
+                  <ChevronDown className="lu-grp-chevron" />
+                </span>
               </button>
               <div className="lu-grp-b">
                 <div>
