@@ -79,6 +79,7 @@ import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 const SECTIONS = [
   { key: "company", icon: Building2, Tab: CompanyTab },
   { key: "appearance", icon: Palette, Tab: AppearanceTab },
+  { key: "ticker", icon: Gauge, Tab: TickerTab },
   { key: "print", icon: Printer, Tab: PrintDesignsTab },
   { key: "expiration", icon: Hourglass, Tab: ExpirationTab },
   { key: "email", icon: Mail, Tab: EmailTab },
@@ -527,6 +528,63 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
         </CardContent>
       </Card>
 
+      {/* Royal Alerts Ribbon Speed Control (Prominent Top Placement) */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Gauge} tone="amber" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {isRtl ? "سرعة شريط التنبيهات الملكي" : "Royal Alerts Ribbon Speed"}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl
+                  ? "التحكم في سرعة انسياب شريط التنبيهات العلوي للوثائق المنتهية والقريبة (يُحفظ فوراً على جهازك)"
+                  : "Control continuous scrolling speed of expiry alerts ribbon in top bar (saved immediately)"}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { sec: 140, arTitle: "هادئة جداً ومريحة", enTitle: "Very Calm & Relaxed", arDesc: "140 ثانية — قراءة متأنية ومريحة للعين", enDesc: "140s — slow pace" },
+              { sec: 90, arTitle: "معتدلة ملكية (افتراضي)", enTitle: "Royal Moderate (Default)", arDesc: "90 ثانية — التوازن المثالي والانسيابي", enDesc: "90s — balanced pace" },
+              { sec: 60, arTitle: "سريعة ونشطة", enTitle: "Fast Pace", arDesc: "60 ثانية — تدفق متسارع للتنبيهات", enDesc: "60s — brisk pace" },
+            ].map((opt) => {
+              const active = currentTickerSpeed === opt.sec;
+              return (
+                <button
+                  key={opt.sec}
+                  type="button"
+                  onClick={() => {
+                    setTickerSpeed(opt.sec);
+                    toast.success(isRtl ? `تم ضبط سرعة شريط التنبيهات إلى: ${opt.arTitle}` : `Alerts ribbon speed set to: ${opt.enTitle}`);
+                  }}
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer relative",
+                    active
+                      ? "border-primary bg-primary/10 shadow-md shadow-primary/15"
+                      : "border-border/70 hover:border-border bg-card/60"
+                  )}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-bold text-sm text-foreground flex items-center gap-2">
+                      <Gauge className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                      {isRtl ? opt.arTitle : opt.enTitle}
+                    </span>
+                    {active && <Check className="h-4 w-4 text-primary shrink-0" />}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isRtl ? opt.arDesc : opt.enDesc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Sidebar Layout */}
       <Card className="specular-border overflow-hidden border-border/80">
         <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
@@ -730,63 +788,6 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
         </CardContent>
       </Card>
 
-      {/* Royal Alerts Ribbon Speed Control */}
-      <Card className="specular-border overflow-hidden border-border/80">
-        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
-          <div className="flex items-center gap-3.5">
-            <AppleIcon icon={Gauge} tone="amber" size="md" />
-            <div>
-              <CardTitle className="text-base sm:text-lg font-black text-foreground">
-                {isRtl ? "سرعة شريط التنبيهات الملكي" : "Royal Alerts Ribbon Speed"}
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                {isRtl
-                  ? "التحكم في سرعة انسياب شريط التنبيهات العلوي للوثائق المنتهية والقريبة"
-                  : "Control continuous scrolling speed of expiry alerts ribbon in top bar"}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              { sec: 140, arTitle: "هادئة جداً ومريحة", enTitle: "Very Calm & Relaxed", arDesc: "140 ثانية — قراءة متأنية ومريحة للعين", enDesc: "140s — slow pace" },
-              { sec: 90, arTitle: "معتدلة ملكية (افتراضي)", enTitle: "Royal Moderate (Default)", arDesc: "90 ثانية — التوازن المثالي والانسيابي", enDesc: "90s — balanced pace" },
-              { sec: 60, arTitle: "سريعة ونشطة", enTitle: "Fast Pace", arDesc: "60 ثانية — تدفق متسارع للتنبيهات", enDesc: "60s — brisk pace" },
-            ].map((opt) => {
-              const active = currentTickerSpeed === opt.sec;
-              return (
-                <button
-                  key={opt.sec}
-                  type="button"
-                  onClick={() => {
-                    setTickerSpeed(opt.sec);
-                    toast.success(isRtl ? `تم ضبط سرعة شريط التنبيهات إلى: ${opt.arTitle}` : `Alerts ribbon speed set to: ${opt.enTitle}`);
-                  }}
-                  className={cn(
-                    "flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer relative",
-                    active
-                      ? "border-primary bg-primary/10 shadow-md shadow-primary/15"
-                      : "border-border/70 hover:border-border bg-card/60"
-                  )}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-bold text-sm text-foreground flex items-center gap-2">
-                      <Gauge className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
-                      {isRtl ? opt.arTitle : opt.enTitle}
-                    </span>
-                    {active && <Check className="h-4 w-4 text-primary shrink-0" />}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isRtl ? opt.arDesc : opt.enDesc}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Save Button */}
       <div className="flex justify-end">
         <Button
@@ -803,6 +804,209 @@ function AppearanceTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: boolean })
         </Button>
       </div>
     </form>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// TAB 2.5: ROYAL ALERTS TICKER SETTINGS
+// -----------------------------------------------------------------------------
+function TickerTab({ isRtl }: { canEdit?: boolean; isRtl: boolean }) {
+  const currentTickerSpeed = useUiPrefs((s) => s.tickerSpeed ?? 90);
+  const setTickerSpeed = useUiPrefs((s) => s.setTickerSpeed);
+
+  const speedOptions = [
+    {
+      sec: 140,
+      arTitle: "هادئة ومريحة جداً",
+      enTitle: "Very Calm & Relaxed",
+      arDesc: "140 ثانية — قراءة متأنية ومريحة للعين، مناسبة للتصفح الهادئ",
+      enDesc: "140s — very slow, smooth reading pace",
+      badge: "🐢 هادئ",
+    },
+    {
+      sec: 90,
+      arTitle: "معتدلة ملكية (الافتراضي)",
+      enTitle: "Royal Moderate (Default)",
+      arDesc: "90 ثانية — التوازن المثالي الفخم بين الانسيابية والوضوح التام",
+      enDesc: "90s — balanced royal pace",
+      badge: "👑 موصى به",
+    },
+    {
+      sec: 60,
+      arTitle: "سريعة ونشطة",
+      enTitle: "Fast Pace",
+      arDesc: "60 ثانية — تدفق متسارع لمراجعة أسرع لجميع التنبيهات",
+      enDesc: "60s — quick brisk pace",
+      badge: "⚡ سريع",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Card 1: Speed Control */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Gauge} tone="amber" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {isRtl ? "سرعة شريط التنبيهات الملكي" : "Royal Alerts Ribbon Speed"}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl
+                  ? "اختر سرعة تدفق شريط التنبيهات العلوي، يتم تطبيق التغيير وحفظه في جهازك فوراً"
+                  : "Choose marquee scrolling speed for top alert ribbon, applied and saved immediately"}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {speedOptions.map((opt) => {
+              const active = currentTickerSpeed === opt.sec;
+              return (
+                <button
+                  key={opt.sec}
+                  type="button"
+                  onClick={() => {
+                    setTickerSpeed(opt.sec);
+                    toast.success(
+                      isRtl
+                        ? `تم ضبط سرعة شريط التنبيهات إلى: ${opt.arTitle}`
+                        : `Alerts ribbon speed set to: ${opt.enTitle}`
+                    );
+                  }}
+                  className={cn(
+                    "flex flex-col items-start gap-2.5 p-4 rounded-2xl border-2 text-start transition-all duration-200 cursor-pointer relative group",
+                    active
+                      ? "border-primary bg-primary/10 shadow-lg shadow-primary/15 ring-2 ring-primary/20"
+                      : "border-border/70 hover:border-border bg-card/60 hover:bg-card/90"
+                  )}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-bold text-sm text-foreground flex items-center gap-2">
+                      <Gauge className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                      {isRtl ? opt.arTitle : opt.enTitle}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] font-black px-2 py-0.5 rounded-full border",
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted text-muted-foreground border-border/60"
+                      )}
+                    >
+                      {opt.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {isRtl ? opt.arDesc : opt.enDesc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 2: Live Interactive Ribbon Preview */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Eye} tone="purple" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {isRtl ? "معاينة حية ومباشرة للسرعة المختارة" : "Live Real-Time Speed Preview"}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl
+                  ? `الشريط يتحرك أمامك الآن بسرعة (${currentTickerSpeed} ثانية) — مرر مؤشر الفأرة للإيقاف المؤقت`
+                  : `Previewing scroll speed at (${currentTickerSpeed}s) — hover to pause`}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="rounded-2xl border border-[var(--rx-border)] bg-[var(--rx-surface)] p-3 overflow-hidden shadow-inner">
+            <div className="rx-alert-ticker" style={{ ["--ticker-duration" as any]: `${currentTickerSpeed}s` }}>
+              <div className="rx-ticker-badge">
+                <span className="rx-badge-dot" />
+                <span className="rx-badge-title">{isRtl ? "التنبيهات" : "ALERTS"}</span>
+              </div>
+              <div className="rx-ticker-track-wrap">
+                <div className="rx-ticker-track">
+                  {[1, 2].map((run) => (
+                    <div key={run} className="rx-ticker-segment">
+                      <div className="rx-ticker-pill danger">
+                        <span className="rx-pill-dot" />
+                        <span className="rx-pill-kind">{isRtl ? "إقامة" : "Iqama"}</span>
+                        <span className="rx-pill-sub">{isRtl ? "سالم الشهري" : "Salem"}</span>
+                        <span className="rx-pill-badge">{isRtl ? "منتهية منذ 12 يوم" : "Expired 12d ago"}</span>
+                      </div>
+                      <div className="rx-ticker-pill warning">
+                        <span className="rx-pill-dot" />
+                        <span className="rx-pill-kind">{isRtl ? "رخصة البلدية" : "Baladiya"}</span>
+                        <span className="rx-pill-sub">{isRtl ? "المقر الرئيسي" : "HQ"}</span>
+                        <span className="rx-pill-badge">{isRtl ? "تنتهي خلال 5 أيام" : "In 5 days"}</span>
+                      </div>
+                      <div className="rx-ticker-pill danger">
+                        <span className="rx-pill-dot" />
+                        <span className="rx-pill-kind">{isRtl ? "الدفاع المدني" : "Civil Defense"}</span>
+                        <span className="rx-pill-sub">{isRtl ? "مستودع الرياض" : "Warehouse"}</span>
+                        <span className="rx-pill-badge">{isRtl ? "منتهي منذ يومين" : "Expired 2d ago"}</span>
+                      </div>
+                      <div className="rx-ticker-pill warning">
+                        <span className="rx-pill-dot" />
+                        <span className="rx-pill-kind">{isRtl ? "سجل تجاري" : "CR"}</span>
+                        <span className="rx-pill-sub">{isRtl ? "فرع جدة" : "Jeddah"}</span>
+                        <span className="rx-pill-badge">{isRtl ? "ينتهي خلال 18 يوم" : "In 18 days"}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Card 3: Features & Help */}
+      <Card className="specular-border overflow-hidden border-border/80">
+        <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+          <div className="flex items-center gap-3.5">
+            <AppleIcon icon={Sparkles} tone="emerald" size="md" />
+            <div>
+              <CardTitle className="text-base sm:text-lg font-black text-foreground">
+                {isRtl ? "مميزات شريط التنبيهات الملكي" : "Royal Alerts Ribbon Features"}
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                {isRtl ? "تصميم تم تحسينه خصيصاً لأداء فائق وتجربة مستخدم مريحة" : "Optimized for high performance and visual comfort"}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid gap-3 sm:grid-cols-2 text-xs text-muted-foreground leading-relaxed">
+            <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-start gap-3">
+              <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+              <span>{isRtl ? "عرض كامل للشريط بنسبة 100% بدون أي أزرار أو عناصر تشويش جانبية." : "100% full-width marquee without side button clutter."}</span>
+            </div>
+            <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-start gap-3">
+              <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+              <span>{isRtl ? "يتوقف الشريط تلقائياً بمجرد تمرير مؤشر الفأرة (Hover) لقراءة بيانات الوثيقة والنقر عليها." : "Auto-pauses on hover for comfortable reading and clicking."}</span>
+            </div>
+            <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-start gap-3">
+              <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+              <span>{isRtl ? "حفظ التفضيلات تلقائياً في ذاكرة المتصفح للوصول السريع دائماً." : "Preferences persist automatically in browser storage."}</span>
+            </div>
+            <div className="p-3.5 rounded-xl border border-border/60 bg-muted/20 flex items-start gap-3">
+              <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+              <span>{isRtl ? "دعم كامل للوضعين الفاتح والداكن وتوافق مثالي مع شاشات الهواتف." : "Full support for light/dark modes and mobile screens."}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

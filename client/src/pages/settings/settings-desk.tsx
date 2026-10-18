@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BellRing, Building2, Hourglass, Mail, Palette, Printer, ShieldCheck, type LucideIcon } from "lucide-react";
+import { BellRing, Building2, Gauge, Hourglass, Mail, Palette, Printer, ShieldCheck, type LucideIcon } from "lucide-react";
 import { CoverHero } from "@/components/royal/cards";
 import { AuthedFileImage } from "@/components/common/authed-file-image";
 import { WhatsappLogo } from "@/components/common/whatsapp-logo";
 import { settingsApi } from "@/api/settings";
+import { useUiStore } from "@/stores/uiStore";
 
 const THEMES: Record<string, [string, string]> = { malaki: ["الملكي", "Royal"], zumurrudi: ["الزمردي", "Emerald"], aqiq: ["العقيقي", "Agate"] };
 
@@ -19,7 +20,7 @@ function useSettingsGlance() {
   return { company, theme, rules, email, whatsapp, appearance };
 }
 
-export type SettingsKey = "company" | "appearance" | "print" | "expiration" | "email" | "whatsapp";
+export type SettingsKey = "company" | "appearance" | "ticker" | "print" | "expiration" | "email" | "whatsapp";
 
 /** The settings page as a desk: the company crown, a gold side menu, and the chosen section beside it. */
 export function SettingsDesk({ isRtl, current, onPick, children }: { isRtl: boolean; current: SettingsKey; onPick: (k: SettingsKey) => void; children: ReactNode }) {
@@ -30,10 +31,17 @@ export function SettingsDesk({ isRtl, current, onPick, children }: { isRtl: bool
   const themeName = g.theme ? L(THEMES[g.theme]?.[0] ?? g.theme, THEMES[g.theme]?.[1] ?? g.theme) : "—";
   const days = g.rules?.notifyDaysBefore?.length ? [...g.rules.notifyDaysBefore].sort((a, b) => b - a).join(" · ") : "—";
   const mode = g.appearance?.themeMode === "light" ? L("فاتح", "Light") : g.appearance?.themeMode === "dark" ? L("غامق", "Dark") : L("حسب الجهاز", "System");
+  const tickerSpeed = useUiStore((s) => s.tickerSpeed ?? 90);
+  const tickerSpeedLabel = tickerSpeed === 140
+    ? L("هادئ (140 ث)", "Calm (140s)")
+    : tickerSpeed === 60
+    ? L("سريع (60 ث)", "Fast (60s)")
+    : L("ملكي (90 ث)", "Royal (90s)");
 
   const items: { key: SettingsKey; icon: LucideIcon | typeof WhatsappLogo; title: string; note: string; tone?: "ok" | "bad" }[] = [
     { key: "company", icon: Building2, title: L("الشركة", "Company"), note: g.company?.crNumber ? L(`سجل ${g.company.crNumber}`, `CR ${g.company.crNumber}`) : L("الهوية والبيانات الرسمية", "Identity & legal details") },
     { key: "appearance", icon: Palette, title: L("المظهر", "Appearance"), note: L(`الوضع: ${mode}`, `Mode: ${mode}`) },
+    { key: "ticker", icon: Gauge, title: L("شريط التنبيهات", "Alerts Ticker"), note: L(`السرعة: ${tickerSpeedLabel}`, `Speed: ${tickerSpeedLabel}`), tone: "ok" },
     { key: "print", icon: Printer, title: L("الطباعة", "Printing"), note: L(`القالب ${themeName}`, `${themeName} design`) },
     { key: "expiration", icon: Hourglass, title: L("قواعد الانتهاء", "Expiry rules"), note: L(`تنبيه قبل ${days} يوم`, `Alerts ${days} days before`) },
     { key: "email", icon: Mail, title: L("البريد الإلكتروني", "Email"), note: g.email?.enabled ? L("مفعّل", "On") : L("غير مفعّل", "Off"), tone: g.email?.enabled ? "ok" : "bad" },
@@ -52,6 +60,7 @@ export function SettingsDesk({ isRtl, current, onPick, children }: { isRtl: bool
           sub={name}
           chips={
             <>
+              <span className="wa-chip on"><Gauge />{L(`شريط التنبيهات: ${tickerSpeedLabel}`, `Alerts: ${tickerSpeedLabel}`)}</span>
               <span className="wa-chip"><Printer />{L(`قالب الطباعة: ${themeName}`, `Print: ${themeName}`)}</span>
               <span className="wa-chip"><BellRing />{L(`التنبيه قبل ${days} يوم`, `Alerts ${days} days before`)}</span>
               <span className={g.email?.enabled ? "wa-chip on" : "wa-chip"}><Mail />{g.email?.enabled ? L("البريد مفعّل", "Email on") : L("البريد غير مفعّل", "Email off")}</span>
