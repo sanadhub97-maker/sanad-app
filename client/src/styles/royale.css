@@ -222,7 +222,7 @@ html:root body { background: #07070a; }
   align-items: center;
   white-space: nowrap;
   will-change: transform;
-  animation: rx-ticker-rtl var(--rx-ticker-speed, 38s) linear infinite;
+  animation: rx-ticker-rtl var(--rx-ticker-speed, 90s) linear infinite;
 }
 .rx-ticker-shell:hover .rx-ticker-content {
   animation-play-state: paused;

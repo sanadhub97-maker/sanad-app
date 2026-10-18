@@ -17,9 +17,11 @@ interface DisplayAlertItem {
 export function BroadcastAlertTicker() {
   const [speedSec, setSpeedSec] = useState<number>(() => {
     try {
-      return Number(localStorage.getItem("sanad.ticker.speed")) || 38;
+      const saved = Number(localStorage.getItem("sanad.ticker.speed"));
+      if (saved && saved >= 50) return saved;
+      return 90;
     } catch {
-      return 38;
+      return 90;
     }
   });
 
@@ -142,14 +144,14 @@ export function BroadcastAlertTicker() {
           type="button"
           className="rx-ticker-speed-btn"
           onClick={() => {
-            // Cycle through: 38s (معتدل) -> 22s (سريع) -> 55s (هادئ)
-            const next = speedSec === 38 ? 22 : speedSec === 22 ? 55 : 38;
+            // Cycle through: 90s (معتدل هادئ) -> 140s (هادئ جداً) -> 60s (سريع)
+            const next = speedSec === 90 ? 140 : speedSec === 140 ? 60 : 90;
             changeSpeed(next);
           }}
-          title={`السرعة الحالية: ${speedSec === 22 ? "سريعة (22s)" : speedSec === 55 ? "هادئة (55s)" : "معتدلة (38s)"} — انقر لتغيير السرعة`}
+          title={`السرعة الحالية: ${speedSec === 60 ? "سريعة (60s)" : speedSec === 140 ? "هادئة جداً (140s)" : "معتدلة هادئة (90s)"} — انقر لتغيير السرعة`}
         >
           <Gauge className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>{speedSec === 22 ? "سريع" : speedSec === 55 ? "هادئ" : "معتدل"}</span>
+          <span>{speedSec === 60 ? "سريع" : speedSec === 140 ? "هادئ جداً" : "معتدل"}</span>
         </button>
 
         <Link to="/notifications" className="rx-ticker-action" title="عرض كافة التنبيهات والإشعارات">
