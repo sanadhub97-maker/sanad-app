@@ -136,6 +136,8 @@ html:root body { background: #07070a; }
   direction: rtl;
   user-select: none;
   backdrop-filter: blur(16px);
+  container-type: inline-size;
+  container-name: rxticker;
 }
 .rx-ticker-badge {
   position: relative;
@@ -210,6 +212,7 @@ html:root body { background: #07070a; }
 .rx-ticker-marquee {
   position: relative;
   flex: 1;
+  min-width: 0;
   height: 100%;
   overflow: hidden;
   display: flex;
@@ -229,7 +232,7 @@ html:root body { background: #07070a; }
 }
 @keyframes rx-ticker-rtl {
   0% { transform: translateX(0); }
-  100% { transform: translateX(50%); }
+  100% { transform: translateX(-50%); }
 }
 .rx-ticker-item {
   display: inline-flex;
@@ -378,16 +381,21 @@ html:root body { background: #07070a; }
   animation-play-state: paused;
 }
 
-@media (max-width: 640px) {
+/* ---------------- Mobile Responsive Ticker (شريط التنبيهات على الهواتف والأجهزة الذكية) ---------------- */
+.rx-ticker-shell:active .rx-ticker-content {
+  animation-play-state: paused;
+}
+
+@media (max-width: 768px) {
   .rx-ticker-shell {
     height: 40px;
     margin: 6px 0;
     border-radius: 10px;
   }
   .rx-ticker-badge {
-    padding: 0 10px;
-    gap: 6px;
-    font-size: 12px;
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 11.5px;
   }
   .rx-ticker-gem {
     display: none;
@@ -397,7 +405,7 @@ html:root body { background: #07070a; }
     height: 14px;
   }
   .rx-ticker-label {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 800;
   }
   .rx-ticker-count {
@@ -424,10 +432,10 @@ html:root body { background: #07070a; }
     display: none;
   }
   .rx-ticker-item {
-    padding: 2.5px 9px;
+    padding: 2.5px 8px;
     margin: 0 3px;
-    gap: 6px;
-    font-size: 12px;
+    gap: 5px;
+    font-size: 11.5px;
   }
   .rx-item-dot {
     width: 7px;
@@ -439,15 +447,161 @@ html:root body { background: #07070a; }
     border-radius: 5px;
   }
   .rx-item-text {
-    font-size: 12px;
+    font-size: 11.5px;
   }
   .rx-item-time {
-    font-size: 10.5px;
-    padding: 1px 6px;
+    font-size: 10px;
+    padding: 1px 5px;
   }
   .rx-ticker-sep {
-    margin: 0 5px;
+    margin: 0 4px;
   }
+}
+
+@container rxticker (max-width: 700px) {
+  .rx-ticker-badge {
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 11.5px;
+  }
+  .rx-ticker-gem {
+    display: none;
+  }
+  .rx-ticker-bell {
+    width: 14px;
+    height: 14px;
+  }
+  .rx-ticker-label {
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  .rx-ticker-count {
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+  .rx-ticker-speed-btn {
+    padding: 0 8px;
+    min-width: 32px;
+    justify-content: center;
+  }
+  .rx-ticker-speed-btn span {
+    display: none;
+  }
+  .rx-ticker-action {
+    padding: 0 8px;
+    min-width: 32px;
+    justify-content: center;
+  }
+  .rx-ticker-action span {
+    display: none;
+  }
+  .rx-ticker-item {
+    padding: 2.5px 8px;
+    margin: 0 3px;
+    gap: 5px;
+    font-size: 11.5px;
+  }
+  .rx-item-dot {
+    width: 7px;
+    height: 7px;
+  }
+  .rx-item-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .rx-item-text {
+    font-size: 11.5px;
+  }
+  .rx-item-time {
+    font-size: 10px;
+    padding: 1px 5px;
+  }
+  .rx-ticker-sep {
+    margin: 0 4px;
+  }
+}
+
+/* Class-based styles for simulator / phone mockup */
+.rx-ticker-shell.rx-mobile,
+.mobile-phone-frame .rx-ticker-shell,
+[data-device="mobile"] .rx-ticker-shell {
+  height: 40px !important;
+  margin: 6px 0 !important;
+  border-radius: 10px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-badge,
+.mobile-phone-frame .rx-ticker-badge,
+[data-device="mobile"] .rx-ticker-badge {
+  padding: 0 9px !important;
+  gap: 5px !important;
+  font-size: 11.5px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-gem,
+.mobile-phone-frame .rx-ticker-gem,
+[data-device="mobile"] .rx-ticker-gem {
+  display: none !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-bell,
+.mobile-phone-frame .rx-ticker-bell,
+[data-device="mobile"] .rx-ticker-bell {
+  width: 14px !important;
+  height: 14px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-label,
+.mobile-phone-frame .rx-ticker-label,
+[data-device="mobile"] .rx-ticker-label {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-count,
+.mobile-phone-frame .rx-ticker-count,
+[data-device="mobile"] .rx-ticker-count {
+  padding: 1px 5px !important;
+  font-size: 10px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-speed-btn,
+.mobile-phone-frame .rx-ticker-speed-btn,
+[data-device="mobile"] .rx-ticker-speed-btn {
+  padding: 0 8px !important;
+  min-width: 32px !important;
+  justify-content: center !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-speed-btn span,
+.mobile-phone-frame .rx-ticker-speed-btn span,
+[data-device="mobile"] .rx-ticker-speed-btn span {
+  display: none !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-action,
+.mobile-phone-frame .rx-ticker-action,
+[data-device="mobile"] .rx-ticker-action {
+  padding: 0 8px !important;
+  min-width: 32px !important;
+  justify-content: center !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-action span,
+.mobile-phone-frame .rx-ticker-action span,
+[data-device="mobile"] .rx-ticker-action span {
+  display: none !important;
+}
+.rx-ticker-shell.rx-mobile .rx-ticker-item,
+.mobile-phone-frame .rx-ticker-item,
+[data-device="mobile"] .rx-ticker-item {
+  padding: 2.5px 8px !important;
+  margin: 0 3px !important;
+  gap: 5px !important;
+  font-size: 11.5px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-item-badge,
+.mobile-phone-frame .rx-item-badge,
+[data-device="mobile"] .rx-item-badge {
+  font-size: 10px !important;
+  padding: 1px 5px !important;
+}
+.rx-ticker-shell.rx-mobile .rx-item-text,
+.mobile-phone-frame .rx-item-text,
+[data-device="mobile"] .rx-item-text {
+  font-size: 11.5px !important;
 }
 
 @media (max-width: 420px) {
@@ -473,10 +627,10 @@ html:root body { background: #07070a; }
   .rx-ticker-item {
     padding: 2px 7px;
     gap: 5px;
-    font-size: 11.5px;
+    font-size: 11px;
   }
   .rx-item-text {
-    font-size: 11.5px;
+    font-size: 11px;
   }
   .rx-item-time {
     display: none;
