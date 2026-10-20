@@ -121,7 +121,7 @@ const bar = (share: number) => {
   return "▰".repeat(full) + "▱".repeat(10 - full);
 };
 
-/** The evening message as text, in one of the six designs. */
+/** The evening message as text, in one of the seven designs. */
 export function paymentsTextMessages(id: PaymentTextId, company: string | null | undefined, day: string, lines: PaymentLine[]): string[] {
   const total = lines.reduce((a, l) => a + l.amount, 0);
   const title = `💰 *${L("مدفوعات اليوم", "Today's payments")}* — ${day}`;
@@ -137,6 +137,22 @@ export function paymentsTextMessages(id: PaymentTextId, company: string | null |
   const groups = byCategory(lines);
 
   switch (id) {
+    case "royal": {
+      // the clean layout: each payment as a title line, then whom it was for, then how it was paid
+      const date = new Date(`${day}T00:00:00Z`).toLocaleDateString(L("ar-EG-u-nu-latn", "en-GB"), { timeZone: "UTC", weekday: "long", day: "numeric", month: "long" });
+      const rule = "━━━━━━━━━━━━";
+      const top = [`💰 *${L("مدفوعات اليوم", "Today's payments")}* · ${date}`, company || "", rule].filter(Boolean).join("\n");
+      const blocks = lines.map((l) => {
+        const whom = [l.who, l.est, l.supplier && `${L("إلى", "to")} ${l.supplier}`].filter(Boolean).join(" · ");
+        return [
+          `▫️ *${l.label}* — ${money(l.amount)} ${sar()}`,
+          whom ? `     ${whom}` : "",
+          l.people.length ? `     ${l.people.join("، ")}` : "",
+          `     ${[l.method, l.number].filter(Boolean).join(" · ")}`,
+        ].filter(Boolean).join("\n");
+      });
+      return messages(top, blocks, `${rule}\n🧾 *${L("الإجمالي", "Total")}: ${money(total)} ${sar()}* · ${count(lines.length)}`);
+    }
     case "ledger": {
       const blocks = lines.map((l, i) => `${i + 1}) *${money(l.amount)}* ${sar()} — ${l.label}\n    ${meta(l)}`);
       return messages(`📒 ${head}`, blocks, `━━━━━━━━━━━━\n${sum}`);

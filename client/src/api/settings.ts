@@ -136,7 +136,7 @@ export interface WhatsappDailyPreview {
   language: "ar" | "en";
   generatedAt: string;
 }
-export type PaymentTextId = "receipt" | "ledger" | "grouped" | "executive" | "dashboard" | "brief";
+export type PaymentTextId = "royal" | "receipt" | "ledger" | "grouped" | "executive" | "dashboard" | "brief";
 export interface WhatsappPaymentsPreview {
   /** The form in use: a picture design ("none" for the text) and the text design. */
   format: { card: DigestCardSetting; text: PaymentTextId };

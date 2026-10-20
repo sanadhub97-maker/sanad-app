@@ -17,6 +17,7 @@ import { Chat, DESIGNS, Pick, Shot, Time } from "./whatsapp-digest-card-picker";
    the latest few on a day without any yet). One of them is the one that goes out. */
 
 const TEXT_DESIGNS: { id: PaymentTextId; icon: string; nameAr: string; nameEn: string; descAr: string; descEn: string }[] = [
+  { id: "royal", icon: "💰", nameAr: "الملكي المنظّم", nameEn: "Royal", descAr: "كل دفعة بعنوانها ومبلغها، وتحتها الجهة وطريقة الدفع ورقم السند", descEn: "Each payment titled with its amount, then whom and how it was paid" },
   { id: "receipt", icon: "🧾", nameAr: "الإيصال", nameEn: "Receipt", descAr: "كل دفعة بمبلغها وتفاصيلها، والإجمالي في الآخر", descEn: "Each payment with its details, the total at the end" },
   { id: "ledger", icon: "📒", nameAr: "الدفتر", nameEn: "Ledger", descAr: "قائمة مرقمة بالمبالغ زي دفتر الحسابات", descEn: "A numbered list of amounts, like a ledger" },
   { id: "grouped", icon: "🗂️", nameAr: "حسب البند", nameEn: "By item", descAr: "الدفعات تحت بنودها، ولكل بند إجماليه", descEn: "Payments under their items, each with its total" },
