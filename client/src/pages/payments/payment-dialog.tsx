@@ -21,6 +21,7 @@ import {
   FileCheck,
   FileText,
   Paperclip,
+  CalendarClock,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import { FormField } from "@/components/common/form-field";
 import { MultiFileUpload } from "@/components/common/multi-file-upload";
 import { DateInput } from "@/components/common/date-input";
 import { listActiveBranches } from "@/api/branches";
+import { PermitLengthSelect } from "./permit-length-select";
 import { paymentsApi, PAYMENT_CATEGORIES, PAYMENT_METHODS, PAYMENT_SUBTYPES, MULTI_BRANCH_CATEGORIES, MULTI_EMPLOYEE_CATEGORIES } from "@/api/payments";
 import { MultiPicker } from "@/components/common/multi-picker";
 import { employeesApi } from "@/api/employees";
@@ -384,28 +386,12 @@ export function PaymentDialog({
               </FormField>
 
               {category === "WORK_PERMIT" && (
-                <FormField label={isAr ? "مدة الرخصة" : "Permit length"} icon={FileText} required error={errors.type?.message} className="sm:col-span-2">
+                <FormField label={isAr ? "مدة الرخصة" : "Permit length"} icon={CalendarClock} required error={errors.type?.message} className="sm:col-span-2">
                   <Controller
                     control={control}
                     name="type"
                     render={({ field }) => (
-                      <div className="pd-dur" role="group" aria-label={isAr ? "مدة الرخصة" : "Permit length"}>
-                        {[3, 6, 9, 12].map((m) => (
-                          <button key={m} type="button" aria-pressed={field.value === `MONTHS_${m}`} onClick={() => field.onChange(`MONTHS_${m}`)}>
-                            <b>{m}</b>
-                            <span>{isAr ? (m === 12 ? "شهر" : "أشهر") : "months"}</span>
-                          </button>
-                        ))}
-                        {field.value && (
-                          <small className="pd-dur-hint">
-                            {(() => {
-                              const d = new Date(`${watch("paymentDate") || todayInputValue()}T00:00:00`);
-                              d.setMonth(d.getMonth() + Number(String(field.value).replace("MONTHS_", "")));
-                              return isAr ? `الرخصة تنتهي تقريبًا في ${d.toLocaleDateString("ar-EG-u-nu-latn", { day: "numeric", month: "long", year: "numeric" })}` : `The permit ends about ${d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
-                            })()}
-                          </small>
-                        )}
-                      </div>
+                      <PermitLengthSelect value={field.value ?? undefined} onChange={field.onChange} from={watch("paymentDate") || todayInputValue()} isAr={isAr} invalid={!!errors.type} />
                     )}
                   />
                 </FormField>
