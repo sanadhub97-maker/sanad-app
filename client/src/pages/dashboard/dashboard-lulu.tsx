@@ -12,7 +12,7 @@ import { violationsApi } from "@/api/violations";
 import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
-import { PxArea, PxBadge, PxBars, PxCard, PxDonut, PxStat } from "@/components/royal/px";
+import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut, PxStat } from "@/components/royal/px";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
@@ -368,7 +368,7 @@ export default function DashboardLulu() {
 
       <div className={canTasks ? "px-g2" : "px"}>
         <PxCard i={9} title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? `آخر 6 أشهر · ${fmt(sixTotal)} ر.س` : `Last 6 months · ${fmt(sixTotal)} SAR`}>
-          {sixTotal === 0 ? <div className="px-empty">{isAr ? "لا توجد مدفوعات في آخر 6 أشهر" : "No payments in the last 6 months"}</div> : <PxBars labels={months.map((m) => m.label)} values={monthly} unit={isAr ? "ر.س" : "SAR"} />}
+          {sixTotal === 0 ? <div className="px-empty">{isAr ? "لا توجد مدفوعات في آخر 6 أشهر" : "No payments in the last 6 months"}</div> : <PxBars labels={months.map((m) => m.label)} values={monthly} colors={months.map((m) => monthColor(m.key))} unit={isAr ? "ر.س" : "SAR"} />}
         </PxCard>
         {canTasks && (
           <PxCard

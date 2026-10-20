@@ -220,7 +220,11 @@ export function PxArea({ labels, series, unit = "", height = 250 }: { labels: st
 }
 
 /** Columns, the last one in the accent, each showing its number on hover. */
-export function PxBars({ labels, values, unit = "", height = 220, extra }: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode }) {
+/** One steady colour per calendar month (key "YYYY-MM"), so a month keeps its colour in every chart. */
+const MONTH_COLORS = ["#4f8df5", "#8b6cf0", "#e0629b", "#ef6b5b", "#f2994a", "#e8c04a", "#9ccb4a", "#3fbf7f", "#2bb5a6", "#29a8d6", "#b07a52", "#8c97a8"];
+export const monthColor = (key: string) => MONTH_COLORS[((Number(key.slice(5, 7)) || 1) - 1 + 12) % 12];
+
+export function PxBars({ labels, values, unit = "", height = 220, extra, colors }: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode; colors?: string[] }) {
   const W = 640, H = height, n = labels.length, slot = W / Math.max(1, n), bw = Math.min(40, slot * 0.5);
   const max = Math.max(1, ...values) * 1.1;
   const cx = (i: number) => (rtl() ? W - (i + 0.5) * slot : (i + 0.5) * slot);
@@ -234,7 +238,7 @@ export function PxBars({ labels, values, unit = "", height = 220, extra }: { lab
         <div className="px-tip" style={{ left: `${tip.x}%`, top: `${tip.y}%` }}>
           <b>{labels[tip.i]}</b>
           <div>
-            <i style={{ background: "var(--lx)" }} />
+            <i style={{ background: colors?.[tip.i] ?? "var(--lx)" }} />
             <b>{fmt(values[tip.i])}{unit && ` ${unit}`}</b>
           </div>
           {extra?.(tip.i)}
@@ -248,7 +252,7 @@ export function PxBars({ labels, values, unit = "", height = 220, extra }: { lab
           const bh = (v / max) * H;
           return (
             <g key={i}>
-              <rect className="br" x={cx(i) - bw / 2} y={H - bh} width={bw} height={Math.max(0, bh)} rx="6" fill={i === n - 1 ? "var(--lx)" : "color-mix(in srgb, var(--lx) 30%, var(--l-surface))"} style={{ animationDelay: `${i * 70}ms` }} />
+              <rect className="br" x={cx(i) - bw / 2} y={H - bh} width={bw} height={Math.max(0, bh)} rx="6" fill={colors?.[i] ?? (i === n - 1 ? "var(--lx)" : "color-mix(in srgb, var(--lx) 30%, var(--l-surface))")} style={{ animationDelay: `${i * 70}ms` }} />
               {v > 0 && (
                 <text x={cx(i)} y={H - bh - 8} textAnchor="middle" className="vl">
                   {fmt(v)}

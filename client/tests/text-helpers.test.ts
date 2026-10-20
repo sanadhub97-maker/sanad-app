@@ -50,3 +50,12 @@ describe("socials", () => {
     expect(socialList(null)).toEqual([]);
   });
 });
+
+describe("month colours", () => {
+  it("gives each calendar month its own steady colour", async () => {
+    const { monthColor } = await import("../src/components/royal/px");
+    const all = Array.from({ length: 12 }, (_, i) => monthColor(`2026-${String(i + 1).padStart(2, "0")}`));
+    expect(new Set(all).size).toBe(12);
+    expect(monthColor("2025-10")).toBe(monthColor("2026-10"));
+  });
+});
