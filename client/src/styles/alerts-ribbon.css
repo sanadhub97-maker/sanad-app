@@ -1,6 +1,9 @@
 /* The alerts ribbon: the second row of the top bar. Skins change the tokens; the rest is shared. */
 .lu-top { flex-wrap: wrap; }
-.ar-row { grid-column: 1 / -1; flex: 0 0 100%; order: 10; margin-top: 2px; min-width: 0; }
+/* the royal top bar is a fixed 70px strip; with the ribbon it grows to hold a second row under the first */
+.lu-top:has(> .ar-row) { height: auto !important; padding-block: 4px 10px !important; row-gap: 6px; }
+@media (max-width: 767px) { .lu-top:has(> .ar-row) { height: auto !important; padding-block: 8px 9px !important; } }
+.ar-row { grid-column: 1 / -1; flex: 0 0 100%; order: 10; min-width: 0; contain: inline-size; }
 
 .ar-ribbon {
   --ar-h: 52px; --ar-fs: 13px; --ar-spd: 70s;
