@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { LucideIcon } from "lucide-react";
 import { X } from "lucide-react";
@@ -224,10 +224,18 @@ export function PxArea({ labels, series, unit = "", height = 250 }: { labels: st
 const MONTH_COLORS = ["#4f8df5", "#8b6cf0", "#e0629b", "#ef6b5b", "#f2994a", "#e8c04a", "#9ccb4a", "#3fbf7f", "#2bb5a6", "#29a8d6", "#b07a52", "#8c97a8"];
 export const monthColor = (key: string) => MONTH_COLORS[((Number(key.slice(5, 7)) || 1) - 1 + 12) % 12];
 
+/** A hex colour lightened (t > 0) or darkened (t < 0) by that share. */
+const shade = (hex: string, t: number) => {
+  const n = parseInt(hex.slice(1), 16), to = t < 0 ? 0 : 255, a = Math.abs(t);
+  const c = (s: number) => Math.round(((n >> s) & 255) * (1 - a) + to * a);
+  return `rgb(${c(16)},${c(8)},${c(0)})`;
+};
+
 export function PxBars({ labels, values, unit = "", height = 220, extra, colors }: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode; colors?: string[] }) {
   const W = 640, H = height, n = labels.length, slot = W / Math.max(1, n), bw = Math.min(40, slot * 0.5);
   const max = Math.max(1, ...values) * 1.1;
   const cx = (i: number) => (rtl() ? W - (i + 0.5) * slot : (i + 0.5) * slot);
+  const uid = useId().replace(/[^A-Za-z0-9]/g, "");
   const { ref, tip, move, leave } = useTip(n);
   const xs = labels.map((_, i) => ((cx(i) + 10) / (W + 20)) * 100);
   const ys = values.map((v) => ((H - (v / max) * H + 24) / (H + 50)) * 100);
@@ -250,9 +258,54 @@ export function PxBars({ labels, values, unit = "", height = 220, extra, colors 
         ))}
         {values.map((v, i) => {
           const bh = (v / max) * H;
+          const col = colors?.[i];
+          if (col) {
+            // a solid bar: a lit front, a shaded side, a bright top and a soft shadow on the floor
+            const d = Math.min(12, bw * 0.3), x0 = cx(i) - bw / 2, y0 = H - bh, g = (k: string) => `${uid}${k}${i}`;
+            return (
+              <g key={i}>
+                <defs>
+                  <linearGradient id={g("f")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={shade(col, 0.38)} />
+                    <stop offset="0.5" stopColor={col} />
+                    <stop offset="1" stopColor={shade(col, -0.4)} />
+                  </linearGradient>
+                  <linearGradient id={g("s")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={shade(col, -0.2)} />
+                    <stop offset="1" stopColor={shade(col, -0.65)} />
+                  </linearGradient>
+                  <linearGradient id={g("t")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stopColor={shade(col, 0.6)} />
+                    <stop offset="1" stopColor={shade(col, 0.25)} />
+                  </linearGradient>
+                  <linearGradient id={g("h")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#fff" stopOpacity="0.7" />
+                    <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <ellipse cx={cx(i) + d / 2} cy={H + 1} rx={bw * 0.75} ry={4.5} fill="#000" opacity="0.38" />
+                {bh > 0.5 && (
+                  <g className="br" style={{ animationDelay: `${i * 70}ms` }}>
+                    <polygon points={`${x0 + bw},${y0} ${x0 + bw + d},${y0 - d} ${x0 + bw + d},${H - d} ${x0 + bw},${H}`} fill={`url(#${g("s")})`} />
+                    <rect x={x0} y={y0} width={bw} height={bh} rx="1.5" fill={`url(#${g("f")})`} />
+                    <polygon points={`${x0},${y0} ${x0 + d},${y0 - d} ${x0 + bw + d},${y0 - d} ${x0 + bw},${y0}`} fill={`url(#${g("t")})`} />
+                    <rect x={x0 + bw * 0.14} y={y0 + 4} width={Math.max(2, bw * 0.15)} height={Math.max(0, bh - 10)} rx="2" fill={`url(#${g("h")})`} opacity="0.55" />
+                  </g>
+                )}
+                {v > 0 && (
+                  <text x={cx(i) + d / 2} y={y0 - d - 8} textAnchor="middle" className="vl">
+                    {fmt(v)}
+                  </text>
+                )}
+                <text x={cx(i) + d / 2} y={H + 22} textAnchor="middle">
+                  {labels[i]}
+                </text>
+              </g>
+            );
+          }
           return (
             <g key={i}>
-              <rect className="br" x={cx(i) - bw / 2} y={H - bh} width={bw} height={Math.max(0, bh)} rx="6" fill={colors?.[i] ?? (i === n - 1 ? "var(--lx)" : "color-mix(in srgb, var(--lx) 30%, var(--l-surface))")} style={{ animationDelay: `${i * 70}ms` }} />
+              <rect className="br" x={cx(i) - bw / 2} y={H - bh} width={bw} height={Math.max(0, bh)} rx="6" fill={i === n - 1 ? "var(--lx)" : "color-mix(in srgb, var(--lx) 30%, var(--l-surface))"} style={{ animationDelay: `${i * 70}ms` }} />
               {v > 0 && (
                 <text x={cx(i)} y={H - bh - 8} textAnchor="middle" className="vl">
                   {fmt(v)}
