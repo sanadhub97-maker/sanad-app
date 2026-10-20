@@ -11,7 +11,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { dmy } from "@/components/royal/rp";
 import { PxBadge, PxBars, monthColor, PxDonut, PxPager, PxStat, PxTabs } from "@/components/royal/px";
-import { LuxeCard } from "@/components/royal/px-luxe";
+import { RoyalCard } from "@/components/royal/royal-kit";
 import { paymentsApi, paymentReceiptUrl, PAYMENT_SUBTYPES } from "@/api/payments";
 import { dashboardApi } from "@/api/dashboard";
 import { reportsApi } from "@/api/reports";
@@ -140,10 +140,10 @@ export default function PaymentsPage() {
       </div>
 
       <div className="px-g2">
-        <LuxeCard i={5} variant="panel" title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? "آخر 6 أشهر · بالريال السعودي" : "Last 6 months · in Saudi riyals"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: months.reduce((a, m) => a + m.total, 0), unit: sar }}>
+        <RoyalCard i={5}  title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? "آخر 6 أشهر · بالريال السعودي" : "Last 6 months · in Saudi riyals"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: months.reduce((a, m) => a + m.total, 0), unit: sar }}>
           <PxBars labels={months.map((m) => m.label)} values={months.map((m) => m.total)} colors={months.map((m) => monthColor(m.key))} unit={sar} />
-        </LuxeCard>
-        <LuxeCard i={6} variant="card" title={isAr ? "حسب البند" : "By category"} sub={isAr ? "اضغط على بند من التبويبات تحت للتصفية" : "Filter with the tabs below"}>
+        </RoyalCard>
+        <RoyalCard i={6} rosette={false} title={isAr ? "حسب البند" : "By category"} sub={isAr ? "اضغط على بند من التبويبات تحت للتصفية" : "Filter with the tabs below"}>
           {cats.length === 0 ? (
             <div className="px-empty">{isAr ? "لا توجد مدفوعات بعد" : "No payments yet"}</div>
           ) : (
@@ -156,7 +156,7 @@ export default function PaymentsPage() {
               ]}
             />
           )}
-        </LuxeCard>
+        </RoyalCard>
       </div>
 
       <section className="px-card" style={{ ["--i" as string]: 7 }}>
