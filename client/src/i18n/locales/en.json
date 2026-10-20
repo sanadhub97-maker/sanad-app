@@ -786,6 +786,7 @@
     "FINAL_EXIT_VISA": "Final Exit Visa",
     "FLIGHT_TICKET": "Flight Ticket",
     "DRIVING_LICENSE": "Driving License",
+    "WORK_PERMIT": "Work Permit",
     "OTHER": "Other"
   },
   "paymentCategories": {

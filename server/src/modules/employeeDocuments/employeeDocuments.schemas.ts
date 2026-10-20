@@ -12,6 +12,7 @@ export const employeeDocumentTypeEnum = z.enum([
   "FINAL_EXIT_VISA",
   "FLIGHT_TICKET",
   "DRIVING_LICENSE",
+  "WORK_PERMIT",
   "OTHER",
 ]);
 

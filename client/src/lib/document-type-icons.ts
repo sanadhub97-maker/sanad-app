@@ -1,4 +1,5 @@
 import {
+  BriefcaseBusiness,
   Building2,
   Landmark,
   ShieldAlert,
@@ -48,5 +49,6 @@ export const EMPLOYEE_DOCUMENT_TYPE_ICONS: Record<string, LucideIcon> = {
   FINAL_EXIT_VISA: PlaneLanding,
   FLIGHT_TICKET: Ticket,
   DRIVING_LICENSE: Car,
+  WORK_PERMIT: BriefcaseBusiness,
   OTHER: FileQuestion,
 };

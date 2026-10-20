@@ -51,6 +51,7 @@ export const DOCUMENT_KINDS: Record<string, [string, string]> = {
   FINAL_EXIT_VISA: ["تأشيرة خروج نهائي", "Final exit visa"],
   FLIGHT_TICKET: ["تذكرة طيران", "Flight ticket"],
   DRIVING_LICENSE: ["رخصة قيادة", "Driving license"],
+  WORK_PERMIT: ["رخصة عمل", "Work permit"],
   COMMERCIAL_REGISTRATION: ["سجل تجاري", "Commercial registration"],
   MUNICIPAL_LICENSE: ["رخصة بلدية", "Municipal license"],
   CIVIL_DEFENSE_LICENSE: ["ترخيص الدفاع المدني", "Civil defense license"],
@@ -80,6 +81,7 @@ const EMPLOYEE_DOCUMENT_NAMES: Record<string, [string, string]> = {
   FINAL_EXIT_VISA: ["تأشيرة خروج نهائي", "Final exit visa"],
   FLIGHT_TICKET: ["تذكرة الطيران", "Flight ticket"],
   DRIVING_LICENSE: ["رخصة القيادة", "Driving license"],
+  WORK_PERMIT: ["رخصة العمل", "Work permit"],
   OTHER: ["مستند", "Document"],
 };
 

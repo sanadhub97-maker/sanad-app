@@ -67,6 +67,7 @@ export const KIND_COLOR: Record<string, string> = {
   FLIGHT_TICKET: "var(--bad)",
   EMPLOYMENT_CONTRACT: "var(--ok)",
   DRIVING_LICENSE: "var(--warn)",
+  WORK_PERMIT: "var(--teal)",
   OTHER: "var(--muted)",
 };
 export const kindColor = (k?: string | null) => KIND_COLOR[k ?? ""] ?? "var(--pri)";
