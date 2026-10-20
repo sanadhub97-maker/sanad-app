@@ -20,6 +20,7 @@ import "@/styles/royale.css";
 import "@/styles/whatsapp-registry.css";
 import "@/styles/royale-light.css";
 import "@/styles/alerts-ribbon.css";
+import "@/styles/stat-medallion.css";
 
 // Show the interface immediately with its system-font fallback while the
 // external font stylesheet downloads. Apply the original fonts when ready.

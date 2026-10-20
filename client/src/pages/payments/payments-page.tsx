@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { localized } from "@/lib/names";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, CalendarDays, Edit, FileDown, MoreHorizontal, Plus, Printer, Receipt, Search, Trash2, Wallet } from "lucide-react";
+import { CalendarClock, ChartNoAxesCombined, Edit, FileDown, MoreHorizontal, Plus, Printer, ReceiptText, Search, Trash2, WalletCards } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/common/page-header";
@@ -127,15 +127,15 @@ export default function PaymentsPage() {
           label={isAr ? "هذا الشهر" : "This month"}
           value={Math.round(thisMonth)}
           unit={sar}
-          icon={Wallet}
+          icon={WalletCards}
           color="#16a34a"
           chip={change === null ? undefined : { text: `${change >= 0 ? "▲" : "▼"} ${Math.abs(change)}%`, tone: change >= 0 ? "up" : "dn" }}
           sub={change === null ? (isAr ? "هذا الشهر" : "This month") : isAr ? "عن الشهر الماضي" : "vs last month"}
           spark={months.map((m) => m.total)}
         />
-        <PxStat i={2} label={isAr ? "الشهر الماضي" : "Last month"} value={Math.round(lastMonth)} unit={sar} icon={CalendarDays} color="#2563eb" sub={months[4]?.label} />
-        <PxStat i={3} label={isAr ? "آخر 6 أشهر" : "Last 6 months"} value={Math.round(months.reduce((a, m) => a + m.total, 0))} unit={sar} icon={BarChart3} color="#7c3aed" sub={isAr ? `${data?.meta.total ?? 0} سند مسجّل` : `${data?.meta.total ?? 0} vouchers`} />
-        <PxStat i={4} label={isAr ? "الضريبة" : "VAT"} value={Math.round(data?.summary?.totalVat ?? 0)} unit={sar} icon={Receipt} color="#d97706" sub={isAr ? "ضمن الإجمالي" : "Included in the total"} />
+        <PxStat i={2} label={isAr ? "الشهر الماضي" : "Last month"} value={Math.round(lastMonth)} unit={sar} icon={CalendarClock} color="#2563eb" sub={months[4]?.label} />
+        <PxStat i={3} label={isAr ? "آخر 6 أشهر" : "Last 6 months"} value={Math.round(months.reduce((a, m) => a + m.total, 0))} unit={sar} icon={ChartNoAxesCombined} color="#7c3aed" sub={isAr ? `${data?.meta.total ?? 0} سند مسجّل` : `${data?.meta.total ?? 0} vouchers`} />
+        <PxStat i={4} label={isAr ? "الضريبة" : "VAT"} value={Math.round(data?.summary?.totalVat ?? 0)} unit={sar} icon={ReceiptText} color="#d97706" sub={isAr ? "ضمن الإجمالي" : "Included in the total"} />
       </div>
 
       <div className="px-g2">
