@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, RotateCcw, Save } from "lucide-react";
+import { Eye, ListChecks, Loader2, Palette, RotateCcw, Save, SlidersHorizontal, type LucideIcon } from "lucide-react";
+import { AppleIcon } from "@/components/common/apple-icon";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ribbonApi, type AlertsRibbonSettings, type RibbonCat, type RibbonItem } from "@/api/alerts";
 import { AlertsRibbonView } from "@/components/layout/alerts-ribbon";
 import { Button } from "@/components/ui/button";
@@ -130,72 +132,108 @@ export function AlertsRibbonTab({ canEdit, isRtl }: { canEdit: boolean; isRtl: b
   const lock = !canEdit;
   const speedLabel = draft.speed >= 120 ? L("بطيء جدًا", "Very slow") : draft.speed >= 85 ? L("بطيء", "Slow") : draft.speed >= 55 ? L("عادي", "Normal") : draft.speed >= 30 ? L("سريع", "Fast") : L("سريع جدًا", "Very fast");
 
+  const section = (icon: LucideIcon, tone: "amber" | "purple" | "blue" | "emerald", title: string, desc: string, children: React.ReactNode) => (
+    <Card className="specular-border overflow-hidden border-border/80">
+      <CardHeader className="bg-gradient-to-b from-muted/30 to-transparent border-b border-border/40 pb-5">
+        <div className="flex items-center gap-3.5">
+          <AppleIcon icon={icon} tone={tone} size="md" />
+          <div>
+            <CardTitle className="text-base sm:text-lg font-black text-foreground">{title}</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground mt-0.5">{desc}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-6">{children}</CardContent>
+    </Card>
+  );
+
   return (
     <div className="space-y-6">
-      <section className="space-y-2" aria-label={L("معاينة حية", "Live preview")}>
-        <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-          <span>{L("معاينة حية بأمثلة تجريبية", "Live preview with example items")}</span>
-        </div>
-        <div className="rounded-2xl border border-border/70 bg-card/40 p-3">
-          {draft.enabled ? <AlertsRibbonView settings={draft} items={sampleItems(draft)} /> : <p className="py-3 text-center text-sm text-muted-foreground">{L("الشريط مخفي. فعّل «إظهار الشريط» عشان يظهر.", "The ribbon is hidden.")}</p>}
-        </div>
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-5">
-          <Toggle label={L("إظهار الشريط في القائمة العلوية", "Show the ribbon in the top bar")} checked={draft.enabled} onChange={(v) => set("enabled", v)} disabled={lock} />
-          <Field label={L("سرعة الحركة", "Speed")} value={speedLabel}>
-            <input type="range" min={15} max={180} step={5} dir="rtl" value={draft.speed} disabled={lock} onChange={(e) => set("speed", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("سرعة الحركة", "Speed")} />
-          </Field>
-          <Field label={L("اتجاه الحركة", "Direction")}>
-            <Seg value={draft.direction} disabled={lock} onChange={(v) => set("direction", v)} options={[{ v: "rtl", label: L("من اليمين لليسار", "Right to left") }, { v: "ltr", label: L("من اليسار لليمين", "Left to right") }]} />
-          </Field>
-          <Field label={L("شكل الشريط", "Style")}>
-            <Seg value={draft.skin} disabled={lock} onChange={(v) => set("skin", v)} options={[{ v: "black", label: L("أسود وذهب", "Black & gold") }, { v: "ivory", label: L("عاجي", "Ivory") }, { v: "emerald", label: L("زمردي", "Emerald") }]} />
-          </Field>
-          <Field label={L("الارتفاع", "Height")}>
-            <Seg value={draft.height} disabled={lock} onChange={(v) => set("height", v)} options={[{ v: "compact", label: L("مدمج", "Compact") }, { v: "regular", label: L("عادي", "Regular") }, { v: "large", label: L("كبير", "Large") }]} />
-          </Field>
-          <Field label={L("حجم الخط", "Font size")} value={`${draft.fontSize}px`}>
-            <input type="range" min={11} max={17} step={1} dir="rtl" value={draft.fontSize} disabled={lock} onChange={(e) => set("fontSize", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("حجم الخط", "Font size")} />
-          </Field>
-          <Field label={L("شكل التنبيه", "Item style")}>
-            <Seg value={draft.chips} disabled={lock} onChange={(v) => set("chips", v)} options={[{ v: "pill", label: L("بإطار", "Framed") }, { v: "plain", label: L("بدون إطار", "Plain") }]} />
-          </Field>
-        </div>
-
-        <div className="space-y-5">
-          <Field label={L("اللي يظهر في الشريط", "What the ribbon shows")}>
-            <div className="space-y-2">
-              {CATS.map((c) => (
-                <Toggle key={c.key} dot={c.color} label={L(c.ar, c.en)} checked={draft.categories[c.key]} disabled={lock} onChange={(v) => set("categories", { ...draft.categories, [c.key]: v })} />
-              ))}
-            </div>
-          </Field>
-          <Field label={L("أقصى عدد تنبيهات", "Most items")} value={String(draft.maxItems)}>
-            <input type="range" min={3} max={20} step={1} dir="rtl" value={draft.maxItems} disabled={lock} onChange={(e) => set("maxItems", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("أقصى عدد تنبيهات", "Most items")} />
-          </Field>
-          <div className="space-y-2">
-            <Toggle label={L("يقف لما أمرر الماوس عليه", "Pause on hover")} checked={draft.pauseOnHover} disabled={lock} onChange={(v) => set("pauseOnHover", v)} />
-            <Toggle label={L("إظهار عدد التنبيهات", "Show the count")} checked={draft.showCount} disabled={lock} onChange={(v) => set("showCount", v)} />
-            <Toggle label={L("إظهار موعد الانتهاء", "Show the due date")} checked={draft.showDue} disabled={lock} onChange={(v) => set("showDue", v)} />
-            <Toggle label={L("رسالة «كله سليم» لما مفيش تنبيهات", "“All clear” message when empty")} checked={draft.showAllClear} disabled={lock} onChange={(v) => set("showAllClear", v)} />
+      {section(
+        Eye,
+        "amber",
+        L("معاينة حية", "Live preview"),
+        L("الشريط الحقيقي بأمثلة تجريبية، بيتغير وإنت بتعدّل.", "The real ribbon with example items; it changes as you edit."),
+        draft.enabled ? (
+          <div className="rounded-2xl border border-border/70 bg-card/40 p-3">
+            <AlertsRibbonView settings={draft} items={sampleItems(draft)} />
           </div>
-          <p className="text-xs leading-6 text-muted-foreground">
-            {L("كل مستخدم بيشوف في الشريط اللي صلاحياته تسمح له بيه بس. لو مفيش تنبيهات ورسالة «كله سليم» مقفولة، الشريط بيختفي لحد ما يظهر تنبيه.", "Each person sees only what their permissions allow. With nothing to show and the all-clear message off, the ribbon hides.")}
-          </p>
+        ) : (
+          <p className="rounded-xl border border-dashed border-border/70 p-4 text-center text-sm text-muted-foreground">{L("الشريط مخفي. فعّل «إظهار الشريط» عشان يظهر.", "The ribbon is hidden.")}</p>
+        )
+      )}
+
+      {section(
+        Palette,
+        "purple",
+        L("الشكل والحركة", "Look and motion"),
+        L("السرعة والاتجاه والألوان والحجم.", "Speed, direction, colours and size."),
+        <div className="space-y-6">
+          <Toggle label={L("إظهار الشريط في القائمة العلوية", "Show the ribbon in the top bar")} checked={draft.enabled} onChange={(v) => set("enabled", v)} disabled={lock} />
+          <div className="grid gap-6 md:grid-cols-2">
+            <Field label={L("سرعة الحركة", "Speed")} value={speedLabel}>
+              <input type="range" min={15} max={180} step={5} dir="rtl" value={draft.speed} disabled={lock} onChange={(e) => set("speed", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("سرعة الحركة", "Speed")} />
+            </Field>
+            <Field label={L("حجم الخط", "Font size")} value={`${draft.fontSize}px`}>
+              <input type="range" min={11} max={17} step={1} dir="rtl" value={draft.fontSize} disabled={lock} onChange={(e) => set("fontSize", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("حجم الخط", "Font size")} />
+            </Field>
+            <Field label={L("اتجاه الحركة", "Direction")}>
+              <Seg value={draft.direction} disabled={lock} onChange={(v) => set("direction", v)} options={[{ v: "rtl", label: L("من اليمين لليسار", "Right to left") }, { v: "ltr", label: L("من اليسار لليمين", "Left to right") }]} />
+            </Field>
+            <Field label={L("شكل الشريط", "Style")}>
+              <Seg value={draft.skin} disabled={lock} onChange={(v) => set("skin", v)} options={[{ v: "black", label: L("أسود وذهب", "Black & gold") }, { v: "ivory", label: L("عاجي", "Ivory") }, { v: "emerald", label: L("زمردي", "Emerald") }]} />
+            </Field>
+            <Field label={L("الارتفاع", "Height")}>
+              <Seg value={draft.height} disabled={lock} onChange={(v) => set("height", v)} options={[{ v: "compact", label: L("مدمج", "Compact") }, { v: "regular", label: L("عادي", "Regular") }, { v: "large", label: L("كبير", "Large") }]} />
+            </Field>
+            <Field label={L("شكل التنبيه", "Item style")}>
+              <Seg value={draft.chips} disabled={lock} onChange={(v) => set("chips", v)} options={[{ v: "pill", label: L("بإطار", "Framed") }, { v: "plain", label: L("بدون إطار", "Plain") }]} />
+            </Field>
+          </div>
         </div>
-      </div>
+      )}
+
+      {section(
+        ListChecks,
+        "blue",
+        L("اللي يظهر في الشريط", "What the ribbon shows"),
+        L("كل مستخدم بيشوف اللي صلاحياته تسمح له بيه بس.", "Each person sees only what their permissions allow."),
+        <div className="space-y-5">
+          <div className="grid gap-3 md:grid-cols-2">
+            {CATS.map((c) => (
+              <Toggle key={c.key} dot={c.color} label={L(c.ar, c.en)} checked={draft.categories[c.key]} disabled={lock} onChange={(v) => set("categories", { ...draft.categories, [c.key]: v })} />
+            ))}
+          </div>
+          <div className="max-w-md">
+            <Field label={L("أقصى عدد تنبيهات", "Most items")} value={String(draft.maxItems)}>
+              <input type="range" min={3} max={20} step={1} dir="rtl" value={draft.maxItems} disabled={lock} onChange={(e) => set("maxItems", Number(e.target.value))} className="w-full accent-amber-600" aria-label={L("أقصى عدد تنبيهات", "Most items")} />
+            </Field>
+          </div>
+        </div>
+      )}
+
+      {section(
+        SlidersHorizontal,
+        "emerald",
+        L("السلوك والتفاصيل", "Behaviour and details"),
+        L("لو مفيش تنبيهات ورسالة «كله سليم» مقفولة، الشريط بيختفي لحد ما يظهر تنبيه.", "With nothing to show and the all-clear message off, the ribbon hides."),
+        <div className="grid gap-3 md:grid-cols-2">
+          <Toggle label={L("يقف لما أمرر الماوس عليه", "Pause on hover")} checked={draft.pauseOnHover} disabled={lock} onChange={(v) => set("pauseOnHover", v)} />
+          <Toggle label={L("إظهار عدد التنبيهات", "Show the count")} checked={draft.showCount} disabled={lock} onChange={(v) => set("showCount", v)} />
+          <Toggle label={L("إظهار موعد الانتهاء", "Show the due date")} checked={draft.showDue} disabled={lock} onChange={(v) => set("showDue", v)} />
+          <Toggle label={L("رسالة «كله سليم» لما مفيش تنبيهات", "“All clear” message when empty")} checked={draft.showAllClear} disabled={lock} onChange={(v) => set("showAllClear", v)} />
+        </div>
+      )}
 
       {canEdit ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="button" onClick={() => save.mutate(draft)} disabled={save.isPending || !dirty} className="gap-2">
-            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {L("حفظ الإعدادات", "Save settings")}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => setDraft(DEFAULT_RIBBON)} className="gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <Button type="button" variant="outline" onClick={() => setDraft(DEFAULT_RIBBON)} className="rounded-xl h-11 px-6 text-xs font-black gap-2">
             <RotateCcw className="h-4 w-4" />
             {L("إعادة الضبط للافتراضي", "Reset to default")}
+          </Button>
+          <Button type="button" onClick={() => save.mutate(draft)} disabled={save.isPending || !dirty} className="rounded-xl px-8 h-11 bg-primary text-primary-foreground font-black text-xs shadow-md shadow-primary/25 hover:brightness-110 gap-2">
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {L("حفظ الإعدادات", "Save settings")}
           </Button>
         </div>
       ) : (
