@@ -7,6 +7,7 @@ import { pushMorningBrief } from "@/services/pushAlerts";
 import { runScheduledBackup } from "@/modules/maintenance/backups.service";
 import { flushWhatsappWeb } from "@/services/whatsappWeb";
 import { runDailyPaymentsDigest } from "@/services/paymentsDigest";
+import { runDoneTasksDigest } from "@/services/doneTasksDigest";
 import { prisma } from "@/lib/prisma";
 import { watchSystemHealth } from "@/services/systemHealth";
 import { runMonthlyReport } from "@/services/monthlyReport";
@@ -25,7 +26,7 @@ async function heartbeat(job: string, value: Record<string, unknown>) {
 
 /** The daily rounds: in the morning the backup, the morning brief, the expiry scan with its
  * WhatsApp summary and (early in a month) the monthly report, then a check that all went out;
- * in the evening (?job=payments) the WhatsApp message with the day's payments. */
+ * in the evening (?job=payments) the WhatsApp message with the day's payments and the summary of the tasks finished. */
 export async function cron(req: Request, res: Response) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
@@ -47,6 +48,7 @@ export async function cron(req: Request, res: Response) {
   };
   if (job === "payments") {
     await step("payments", () => runDailyPaymentsDigest());
+    await step("doneTasks", () => runDoneTasksDigest());
   } else {
     await step("backup", () => runScheduledBackup());
     await step("brief", () => pushMorningBrief());
