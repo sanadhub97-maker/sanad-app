@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { isRtlLanguage } from "@/i18n";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
+import { RoyalDonut, RoyalVessels } from "@/components/royal/px-luxe";
 
 /* The pieces of the approved luxury preview (styles/px.css): figure cards with
    a trend line, titled cards, tabs with counts, charts that show their numbers
@@ -231,7 +232,12 @@ const shade = (hex: string, t: number) => {
   return `rgb(${c(16)},${c(8)},${c(0)})`;
 };
 
-export function PxBars({ labels, values, unit = "", height = 220, extra, colors }: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode; colors?: string[] }) {
+/** Bars; with `colors` (one per bar) they are drawn as the royal crystal vessels. */
+export function PxBars(props: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode; colors?: string[] }) {
+  return props.colors ? <RoyalVessels labels={props.labels} values={props.values} colors={props.colors} unit={props.unit} /> : <PxBarsPlain {...props} />;
+}
+
+function PxBarsPlain({ labels, values, unit = "", height = 220, extra, colors }: { labels: string[]; values: number[]; unit?: string; height?: number; extra?: (i: number) => ReactNode; colors?: string[] }) {
   const W = 640, H = height, n = labels.length, slot = W / Math.max(1, n), bw = Math.min(40, slot * 0.5);
   const max = Math.max(1, ...values) * 1.1;
   const cx = (i: number) => (rtl() ? W - (i + 0.5) * slot : (i + 0.5) * slot);
@@ -324,44 +330,7 @@ export function PxBars({ labels, values, unit = "", height = 220, extra, colors 
 
 /** A ring split by share, with its total in the middle and a key beside it. */
 export function PxDonut({ parts, center, centerLabel }: { parts: { label: string; value: number; color: string }[]; center: ReactNode; centerLabel: string }) {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => requestAnimationFrame(() => setOn(true)));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  const R = 52, L = 2 * Math.PI * R, tot = parts.reduce((s, p) => s + p.value, 0);
-  let off = 0;
-  return (
-    <div className="px-donut">
-      <svg viewBox="0 0 140 140" aria-hidden="true">
-        <circle cx="70" cy="70" r={R} fill="none" stroke="var(--l-ground)" strokeWidth="16" />
-        {tot > 0 &&
-          parts.map((p) => {
-            const len = Math.max(0, (p.value / tot) * L - (parts.filter((q) => q.value > 0).length > 1 ? 2 : 0));
-            const c = (
-              <circle key={p.label} className="seg" cx="70" cy="70" r={R} fill="none" stroke={p.color} strokeWidth="16" strokeDasharray={`${on ? len : 0} ${L}`} strokeDashoffset={-off} transform="rotate(-90 70 70)" />
-            );
-            off += (p.value / tot) * L;
-            return p.value > 0 ? c : null;
-          })}
-        <text x="70" y="68" textAnchor="middle" className="c">
-          {center}
-        </text>
-        <text x="70" y="88" textAnchor="middle" className="cl">
-          {centerLabel}
-        </text>
-      </svg>
-      <div className="k">
-        {parts.map((p) => (
-          <div key={p.label} style={{ ["--c" as string]: p.color }}>
-            <i />
-            {p.label}
-            <b>{fmt(p.value)}</b>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <RoyalDonut parts={parts} center={center} centerLabel={centerLabel} />;
 }
 
 /* ---------------- side panel ---------------- */

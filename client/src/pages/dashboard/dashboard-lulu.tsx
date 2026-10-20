@@ -274,8 +274,8 @@ export default function DashboardLulu() {
             centerLabel={isAr ? "وثيقة" : "documents"}
             parts={[
               { label: isAr ? "سارية" : "Valid", value: valid, color: "var(--l-green)" },
-              { label: isAr ? "قريبة الانتهاء" : "Ending soon", value: soon, color: "var(--l-amber)" },
-              { label: isAr ? "منتهية" : "Expired", value: expired, color: "var(--l-rose)" },
+              { label: isAr ? "قريبة الانتهاء" : "Ending soon", value: summary?.expiringDocuments ?? soon, color: "var(--l-amber)" },
+              { label: isAr ? "منتهية" : "Expired", value: summary?.expiredDocuments ?? expired, color: "var(--l-rose)" },
             ]}
           />
         </PxCard>
