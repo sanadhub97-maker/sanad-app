@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { AlertTriangle, Bell, Building2, Check, Clock, Download, FileText, Plus, Users, Wallet } from "lucide-react";
+import { Activity, AlertTriangle, Bell, BookUser, Building2, Car, Check, ClipboardList, Clock, Download, FileText, FileWarning, HeartPulse, IdCard, KeyRound, ListChecks, Plus, Settings, ShieldPlus, TriangleAlert, Users, WalletCards, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { dashboardApi, type DashboardAttentionItem } from "@/api/dashboard";
@@ -12,7 +12,8 @@ import { violationsApi } from "@/api/violations";
 import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
-import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut, PxStat } from "@/components/royal/px";
+import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut } from "@/components/royal/px";
+import { ActivityTimeline, FollowLedger, KindLedger, RoyalCard, RoyalDefs, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
 import { LuxeCard } from "@/components/royal/px-luxe";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
@@ -27,6 +28,14 @@ function localIso(d = new Date()) {
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
 const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "وثيقتان" : n <= 10 ? `${n} وثائق` : `${n} وثيقة`);
 const v = (o: Record<string, string | number>) => o as CSSProperties;
+
+/** The coin on each activity: what part of the system it touched. */
+const MODULE_ICON: Record<string, LucideIcon> = {
+  employees: Users, employeeDocuments: IdCard, companyDocuments: Building2, licenses: FileText, branches: Building2, payments: WalletCards,
+  tasks: ListChecks, violations: TriangleAlert, vehicles: Car, custody: ClipboardList, settings: Settings, users: Users, roles: KeyRound, auth: KeyRound,
+};
+const ACTION_COLOR: Record<string, string> = { CREATE: "#3fbf7f", UPDATE: "#29a8d6", DELETE: "#ef6b5b", LOGIN: "#d6b678", LOGOUT: "#a89c82", IMPORT: "#a86de0", EXPORT: "#a86de0", DOWNLOAD: "#a86de0" };
+const SOURCE_ICON: Record<DashboardAttentionItem["sourceType"], LucideIcon> = { EMPLOYEE_IQAMA: IdCard, EMPLOYEE_PASSPORT: BookUser, EMPLOYEE_DOCUMENT: FileText, COMPANY_DOCUMENT: Building2, VEHICLE: Car };
 
 export default function DashboardLulu() {
   const { t, i18n } = useTranslation();
@@ -120,8 +129,27 @@ export default function DashboardLulu() {
     return new Date(yy, mm - 1, 1).toLocaleDateString(locale, { month: "long" });
   });
 
+  // Documents by kind, for the ledger card; a kind with nothing tracked is left out.
+  const byType = overview?.byType ?? {};
+  const kinds: KindRow[] = (
+    [
+      ["IQAMA", isAr ? "الإقامات" : "Iqamas", "#29a8d6", IdCard, "/employee-documents?category=IQAMA"],
+      ["PASSPORT", isAr ? "الجوازات" : "Passports", "#6d6cf0", BookUser, "/employee-documents?category=PASSPORT"],
+      ["HEALTH_CERTIFICATE", isAr ? "الشهادات الصحية" : "Health certificates", "#2bb5a6", HeartPulse, "/employee-documents?category=HEALTH_CERTIFICATE"],
+      ["MEDICAL_INSURANCE", isAr ? "التأمين الطبي" : "Medical insurance", "#e39a14", ShieldPlus, "/employee-documents?category=MEDICAL_INSURANCE"],
+      ["COMPANY", isAr ? "وثائق الشركة" : "Company documents", "#a86de0", Building2, "/company-documents"],
+      ["VEHICLE", isAr ? "المركبات" : "Vehicles", "#ef8a5b", Car, "/vehicles"],
+      ["OTHER", isAr ? "وثائق أخرى" : "Other documents", "#8c97a8", FileText, "/employee-documents"],
+    ] as [string, string, string, LucideIcon, string][]
+  )
+    .filter(([key]) => (byType[key] ?? 0) > 0)
+    .map(([key, label, color, icon, to]) => ({ key, label, color, icon, count: byType[key] ?? 0, onOpen: () => navigate(to) }));
+  const maxMonth = Math.max(1, ...monthly);
+  const dmy = (d: number) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toLocaleDateString("en-GB"); };
+
   return (
     <div className="px">
+      <RoyalDefs />
       <PageHeader
         title={isAr ? "لوحة التحكم" : "Dashboard"}
         eyebrow={dateLine}
@@ -215,49 +243,20 @@ export default function DashboardLulu() {
         </div>
       </section>
 
-      <div className="px-stats">
-        <PxStat
-          i={1}
-          label={isAr ? "إجمالي الموظفين" : "Employees"}
-          value={summary?.totalEmployees ?? 0}
-          icon={Users}
-          color="#2563eb"
-          chip={{ text: `${summary?.activeEmployees ?? 0}`, tone: "up" }}
-          sub={isAr ? "على رأس العمل" : "on duty"}
-          onClick={() => navigate("/employees")}
-        />
-        <PxStat
-          i={2}
-          label={isAr ? "وثائق منتهية" : "Expired documents"}
-          value={expired}
-          icon={AlertTriangle}
-          color="#dc2626"
-          chip={expired ? { text: isAr ? "تحتاج تجديد" : "Renew", tone: "dn" } : { text: isAr ? "لا شيء" : "None", tone: "up" }}
-          sub={isAr ? `من ${tracked} وثيقة` : `of ${tracked}`}
-          onClick={() => navigate("/reports?tab=documents&status=EXPIRED&scope=all")}
-        />
-        <PxStat
-          i={3}
-          label={isAr ? "تنتهي خلال 30 يوم" : "Ending within 30 days"}
-          value={soon}
-          icon={Clock}
-          color="#d97706"
+      <div className="rk-stats">
+        <RoyalStat i={1} label={isAr ? "إجمالي الموظفين" : "Employees"} value={summary?.totalEmployees ?? 0} icon={Users} color="#29a8d6"
+          chip={{ text: isAr ? `${summary?.activeEmployees ?? 0} على رأس العمل` : `${summary?.activeEmployees ?? 0} on duty`, tone: "up" }}
+          bar={summary?.totalEmployees ? ((summary?.activeEmployees ?? 0) / summary.totalEmployees) * 100 : 0} onClick={() => navigate("/employees")} />
+        <RoyalStat i={2} label={isAr ? "وثائق منتهية" : "Expired documents"} value={expired} icon={FileWarning} color="#ef6b5b"
+          chip={expired ? { text: isAr ? "تحتاج تجديد" : "Renew", tone: "dn" } : { text: isAr ? "لا شيء" : "None", tone: "up" }} sub={isAr ? `من ${tracked} وثيقة` : `of ${tracked}`}
+          bar={tracked ? (expired / tracked) * 100 : 0} onClick={() => navigate("/reports?tab=documents&status=EXPIRED&scope=all")} />
+        <RoyalStat i={3} label={isAr ? "تنتهي خلال 30 يوم" : "Ending within 30 days"} value={soon} icon={Clock} color="#e39a14"
           chip={nearest ? { text: leftText(nearest.days), tone: "warn" } : { text: isAr ? "لا شيء قريب" : "Nothing soon", tone: "up" }}
-          spark={upcoming.map((m) => m.count)}
-          onClick={() => navigate("/reports?tab=documents&status=EXPIRING_SOON&scope=all")}
-        />
-        <PxStat
-          i={4}
-          label={isAr ? "مدفوعات الشهر" : "This month’s payments"}
-          value={Math.round(thisMonth)}
-          unit={isAr ? "ر.س" : "SAR"}
-          icon={Wallet}
-          color="#16a34a"
+          bar={tracked ? (soon / tracked) * 100 : 0} onClick={() => navigate("/reports?tab=documents&status=EXPIRING_SOON&scope=all")} />
+        <RoyalStat i={4} label={isAr ? "مدفوعات الشهر" : "This month’s payments"} value={Math.round(thisMonth)} unit={isAr ? "ر.س" : "SAR"} icon={WalletCards} color="#3fbf7f"
           chip={change === null ? undefined : { text: `${change >= 0 ? "▲" : "▼"} ${Math.abs(change).toFixed(1)}%`, tone: change >= 0 ? "up" : "dn" }}
           sub={change === null ? (isAr ? "هذا الشهر" : "This month") : isAr ? "عن الشهر الماضي" : "vs last month"}
-          spark={monthly}
-          onClick={() => navigate("/payments")}
-        />
+          bar={(thisMonth / maxMonth) * 100} onClick={() => navigate("/payments")} />
       </div>
 
       <div className="px-g2">
@@ -282,89 +281,48 @@ export default function DashboardLulu() {
       </div>
 
       <div className="px-g2">
-        <PxCard
-          i={7}
-          body={false}
-          title={isAr ? "تحتاج متابعة" : "Needs follow-up"}
-          sub={isAr ? "الأقرب للانتهاء" : "Soonest first"}
-          actions={
-            <button type="button" className="px-btn" onClick={() => navigate("/notifications")}>
-              {isAr ? "عرض الكل" : "View all"}
-            </button>
-          }
-        >
-          {overview && attention.length === 0 ? (
-            <div className="px-empty">{isAr ? "كل الوثائق سارية، لا شيء ينتهي قريبًا" : "Every document is valid; nothing ends soon"}</div>
-          ) : (
-            <div className="px-tw">
-              <table className="px-t">
-                <thead>
-                  <tr>
-                    <th>{isAr ? "الاسم" : "Name"}</th>
-                    <th>{isAr ? "الوثيقة" : "Document"}</th>
-                    <th>{isAr ? "الانتهاء" : "Expiry"}</th>
-                    <th>{isAr ? "الحالة" : "Status"}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attention.map((item, j) => {
-                    const name = (isAr ? item.nameAr : item.nameEn || item.nameAr).trim();
-                    const tone = item.days < 0 ? "bad" : item.days <= 30 ? "warn" : "ok";
-                    return (
-                      <tr key={item.key} className="click" style={v({ "--j": j })} onClick={() => openItem(item)}>
-                        <td>
-                          <div className="px-who">
-                            <span className="px-av">
-                              {item.sourceType === "COMPANY_DOCUMENT" ? (
-                                <Building2 style={{ width: 16, height: 16 }} />
-                              ) : (
-                                name
-                                  .split(/\s+/)
-                                  .slice(0, 2)
-                                  .map((w) => w[0])
-                                  .join("")
-                              )}
-                            </span>
-                            <div>
-                              <b>{name}</b>
-                              <small>{(isAr ? item.branchName : item.branchNameEn ?? item.branchName) ?? "—"}</small>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{isAr ? item.documentAr : item.documentEn}</td>
-                        <td>{leftText(item.days)}</td>
-                        <td>
-                          <PxBadge tone={tone}>{tone === "bad" ? (isAr ? "منتهي" : "Expired") : tone === "warn" ? (isAr ? "قريب الانتهاء" : "Ending soon") : isAr ? "ساري" : "Valid"}</PxBadge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </PxCard>
-        <PxCard i={8} body={false} title={isAr ? "آخر النشاطات" : "Latest activity"}>
+        <RoyalCard i={7} title={isAr ? "الوثائق حسب النوع" : "Documents by kind"} sub={isAr ? "كل الوثائق المتتبَّعة" : "Every tracked document"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: tracked }}>
+          {kinds.length === 0 ? <div className="px-empty">{isAr ? "لا توجد وثائق متتبَّعة بعد" : "No tracked documents yet"}</div> : <KindLedger rows={kinds} />}
+        </RoyalCard>
+        <RoyalCard i={8} title={isAr ? "آخر النشاطات" : "Latest activity"} sub={isAr ? "اللي حصل في النظام مؤخرًا" : "What happened lately"}
+          actions={hasPermission("auditLogs.view") ? <button type="button" className="rk-act" onClick={() => navigate("/audit-logs")}>{isAr ? "سجل النشاط" : "Activity log"}</button> : undefined}>
           {activity.length === 0 ? (
             <div className="px-empty">{isAr ? "لا يوجد نشاط بعد" : "No activity yet"}</div>
           ) : (
-            activity.map((a) => (
-              <div key={a.id} className="px-li">
-                <span className="px-av">{(a.user?.fullName ?? (isAr ? "النظام" : "System")).trim().charAt(0)}</span>
-                <div className="px-who">
-                  <div>
-                    <b>{a.user?.fullName ?? (isAr ? "النظام" : "System")}</b>
-                    <small>
-                      {t(`auditLogs.actions.${a.action}`, { defaultValue: a.action })} · {t(`moduleNames.${a.module}`, { defaultValue: a.module })}
-                    </small>
-                  </div>
-                </div>
-                <span className="t">{ago(a.createdAt)}</span>
-              </div>
-            ))
+            <ActivityTimeline
+              events={activity.map((a) => ({
+                id: a.id,
+                title: a.description?.trim() || `${t(`auditLogs.actions.${a.action}`, { defaultValue: a.action })} · ${t(`moduleNames.${a.module}`, { defaultValue: a.module })}`,
+                tag: t(`auditLogs.actions.${a.action}`, { defaultValue: a.action }),
+                who: a.user?.fullName ?? (isAr ? "النظام" : "System"),
+                when: ago(a.createdAt),
+                color: ACTION_COLOR[a.action] ?? "#d6b678",
+                icon: MODULE_ICON[a.module] ?? Activity,
+              }))}
+            />
           )}
-        </PxCard>
+        </RoyalCard>
       </div>
+
+      <RoyalCard i={9} rosette={false} title={isAr ? "تحتاج متابعة" : "Needs follow-up"} sub={isAr ? "الأقرب للانتهاء أولًا" : "Soonest first"}
+        actions={<button type="button" className="rk-act" onClick={() => navigate("/notifications")}>{isAr ? "عرض الكل" : "View all"}</button>}>
+        {overview && attention.length === 0 ? (
+          <div className="px-empty">{isAr ? "كل الوثائق سارية، لا شيء ينتهي قريبًا" : "Every document is valid; nothing ends soon"}</div>
+        ) : (
+          <FollowLedger
+            isAr={isAr}
+            rows={attention.map((item) => ({
+              key: item.key,
+              doc: isAr ? item.documentAr : item.documentEn,
+              who: [(isAr ? item.nameAr : item.nameEn || item.nameAr).trim(), (isAr ? item.branchName : item.branchNameEn ?? item.branchName) ?? ""].filter(Boolean).join(" · "),
+              date: dmy(item.days),
+              days: item.days,
+              icon: SOURCE_ICON[item.sourceType] ?? FileText,
+              onOpen: () => openItem(item),
+            }))}
+          />
+        )}
+      </RoyalCard>
 
       <div className={canTasks ? "px-g2" : "px"}>
         <LuxeCard i={9} variant="panel" title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? "آخر 6 أشهر" : "Last 6 months"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: sixTotal, unit: isAr ? "ر.س" : "SAR" }}>
@@ -403,11 +361,11 @@ export default function DashboardLulu() {
       </div>
 
       {canViolations && vio && vio.authorityTotal + vio.staffTotal > 0 && (
-        <div className="px-stats">
-          <PxStat i={11} label={isAr ? "مخالفات مفتوحة" : "Open violations"} value={vio.open} icon={AlertTriangle} color="#b91c1c" sub={formatCurrency(vio.unpaidAmount)} onClick={() => navigate("/violations")} />
-          <PxStat i={12} label={isAr ? "متأخرة السداد" : "Overdue"} value={vio.overdue} icon={Clock} color="#dc2626" onClick={() => navigate("/violations")} />
-          <PxStat i={13} label={isAr ? "ميعادها خلال أسبوعين" : "Due in 2 weeks"} value={vio.dueSoon} icon={Clock} color="#d97706" onClick={() => navigate("/violations")} />
-          <PxStat i={14} label={isAr ? "جزاءات قائمة" : "Open penalties"} value={vio.staffOpen} icon={FileText} color="#7c3aed" onClick={() => navigate("/violations")} />
+        <div className="rk-stats">
+          <RoyalStat i={11} label={isAr ? "مخالفات مفتوحة" : "Open violations"} value={vio.open} icon={TriangleAlert} color="#ef6b5b" sub={formatCurrency(vio.unpaidAmount)} bar={vio.authorityTotal + vio.staffTotal ? (vio.open / (vio.authorityTotal + vio.staffTotal)) * 100 : 0} onClick={() => navigate("/violations")} />
+          <RoyalStat i={12} label={isAr ? "متأخرة السداد" : "Overdue"} value={vio.overdue} icon={Clock} color="#e5484d" bar={vio.open ? (vio.overdue / vio.open) * 100 : 0} onClick={() => navigate("/violations")} />
+          <RoyalStat i={13} label={isAr ? "ميعادها خلال أسبوعين" : "Due in 2 weeks"} value={vio.dueSoon} icon={Clock} color="#e39a14" bar={vio.open ? (vio.dueSoon / vio.open) * 100 : 0} onClick={() => navigate("/violations")} />
+          <RoyalStat i={14} label={isAr ? "جزاءات قائمة" : "Open penalties"} value={vio.staffOpen} icon={FileText} color="#a86de0" bar={vio.staffTotal ? (vio.staffOpen / vio.staffTotal) * 100 : 0} onClick={() => navigate("/violations")} />
         </div>
       )}
     </div>

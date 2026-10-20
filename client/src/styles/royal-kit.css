@@ -1,0 +1,154 @@
+/* The unified royal cards (components/royal/royal-kit.tsx). */
+.rk-card {
+  --rk-a: #17140f; --rk-b: #070608; --rk-plate-a: #1c1914; --rk-plate-b: #0b0a08; --rk-track: rgba(255, 255, 255, 0.07);
+  --rk-engr: rgba(214, 182, 120, 0.06); --rk-spot: rgba(255, 236, 190, 0.2); --rk-rose: rgba(214, 182, 120, 0.18);
+  --rk-gold: #d6b678; --rk-edge: rgba(214, 182, 120, 0.34); --rk-ink: #f3ecdc; --rk-muted: #a89c82;
+  --rk-foil: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a);
+  position: relative; display: block; min-width: 0; text-align: start; font: inherit; color: var(--rk-ink);
+  border-radius: 20px; overflow: hidden; isolation: isolate; border: 1px solid var(--rk-edge);
+  background:
+    radial-gradient(900px 360px at 50% -12%, var(--rk-spot), transparent 62%),
+    repeating-radial-gradient(circle at 10% 120%, transparent 0 11px, var(--rk-engr) 11px 12px),
+    repeating-radial-gradient(circle at 90% -40%, transparent 0 11px, var(--rk-engr) 11px 12px),
+    linear-gradient(180deg, var(--rk-a), var(--rk-b));
+  box-shadow: 0 34px 70px -46px #000, inset 0 0 0 6px var(--rk-b);
+  animation: rk-in 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; animation-delay: calc(var(--k, 0) * 70ms);
+}
+html.rx-light .rk-card {
+  --rk-a: #fbf5e6; --rk-b: #efe3c3; --rk-plate-a: #fffaf0; --rk-plate-b: #f1e4c2; --rk-track: rgba(120, 92, 40, 0.14);
+  --rk-engr: rgba(120, 92, 40, 0.07); --rk-spot: rgba(255, 255, 255, 0.75); --rk-rose: rgba(120, 92, 40, 0.2);
+  --rk-gold: #a8792f; --rk-edge: rgba(120, 92, 40, 0.3); --rk-ink: #1d1a14; --rk-muted: #6d6452;
+  --rk-foil: linear-gradient(100deg, #6b4e1d, #b08a3e 38%, #d9b867 50%, #8f6a2a 74%, #6b4e1d);
+}
+.rk-card::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255, 243, 214, 0.08) 50%, transparent 60%); transform: translateX(-130%); animation: rk-sweep 11s ease-in-out infinite; animation-delay: calc(var(--k, 0) * 0.7s); }
+button.rk-card { cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; }
+button.rk-card:hover { transform: translateY(-4px); box-shadow: 0 34px 60px -40px color-mix(in srgb, var(--c, #c9a464) 70%, #000), inset 0 0 0 6px var(--rk-b); }
+button.rk-card:focus-visible { outline: 2px solid var(--rk-gold); outline-offset: 3px; }
+@keyframes rk-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes rk-sweep { 0%, 55% { transform: translateX(-130%); } 90%, 100% { transform: translateX(130%); } }
+@keyframes rk-foil { to { background-position: -220% 0; } }
+@keyframes rk-spin { to { transform: translateY(-48%) rotate(360deg); } }
+@keyframes rk-rise { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 12% { opacity: 0.8; } 100% { transform: translate(var(--x), -520px) scale(1.2); opacity: 0; } }
+
+.rk-frame { position: absolute; inset: 8px; z-index: 2; pointer-events: none; border: 1px solid rgba(201, 164, 100, 0.55); border-radius: 14px; }
+.rk-frame::before { content: ""; position: absolute; inset: 3.5px; border: 0.6px solid rgba(201, 164, 100, 0.26); border-radius: 11px; }
+.rk-cn { position: absolute; width: 40px; height: 40px; z-index: 3; pointer-events: none; color: var(--rk-gold); }
+.rk-cn.a { top: 7px; right: 7px; transform: scaleX(-1); } .rk-cn.b { top: 7px; left: 7px; }
+.rk-cn.c { bottom: 7px; right: 7px; transform: scale(-1); } .rk-cn.d { bottom: 7px; left: 7px; transform: scaleY(-1); }
+.rk-rosette { position: absolute; z-index: 0; inset-inline: 0; top: 50%; margin: auto; width: min(620px, 96%); aspect-ratio: 1; transform: translateY(-48%); pointer-events: none; color: var(--rk-rose); animation: rk-spin 180s linear infinite; }
+.rk-dust { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.rk-dust i { position: absolute; bottom: -8px; width: 3px; height: 3px; border-radius: 50%; background: radial-gradient(circle, #fff3d6, #c9a464 60%, transparent 70%); opacity: 0; animation: rk-rise var(--t) linear var(--d) infinite; }
+.rk-body { position: relative; z-index: 1; }
+
+.rk-hd { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 26px 30px 4px; }
+.rk-hd h3 { margin: 0; font: 900 19px var(--font-sans); background: var(--rk-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rk-foil 7s linear infinite; }
+.rk-hd small { display: block; color: var(--rk-muted); font-size: 12.5px; font-weight: 700; margin-top: 3px; }
+.rk-hd .px-btn, .rk-act { font: inherit; font-size: 12px; font-weight: 800; color: var(--rk-gold); background: linear-gradient(180deg, var(--rk-plate-a), var(--rk-plate-b)); border: 1px solid rgba(201, 164, 100, 0.5); border-radius: 999px; padding: 5px 13px; cursor: pointer; }
+.rk-total { text-align: end; display: grid; }
+.rk-total span { font-size: 11px; font-weight: 800; color: var(--rk-muted); letter-spacing: 0.08em; }
+.rk-total b { font: 900 26px/1.1 var(--font-sans); font-variant-numeric: tabular-nums; background: var(--rk-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rk-foil 5s linear infinite; }
+.rk-total b small { font-size: 13px; margin-inline-start: 5px; }
+.rk-ln { position: relative; height: 1px; margin: 12px 30px 0; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.8), transparent); }
+.rk-ln::after { content: ""; position: absolute; left: 50%; top: -3.5px; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); background: linear-gradient(135deg, #fff3d6, #c9a464 50%, #8f6a2a); box-shadow: 0 0 10px rgba(243, 223, 174, 0.6); }
+.rk-pad { padding: 18px 30px 34px; }
+.rk-pad .px-empty { padding: 26px 0; text-align: center; color: var(--rk-muted); }
+
+/* the coin */
+.rk-coin { position: relative; width: var(--s, 52px); height: var(--s, 52px); flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(circle at 40% 30%, #2a2215, #070605 70%);
+  box-shadow: 0 0 0 2px #b8913f, 0 0 0 3px #000, 0 0 0 4.5px rgba(214, 182, 120, 0.5), 0 8px 18px -8px #000, inset 0 0 12px rgba(0, 0, 0, 0.9); }
+.rk-coin::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 0.6px dashed color-mix(in srgb, var(--c) 55%, transparent); }
+.rk-coin::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 40%, rgba(255, 243, 214, 0.3) 50%, transparent 60%); transform: translateX(-140%); animation: rk-sweep 5s ease-in-out infinite; animation-delay: calc(var(--k, 0) * 0.6s); }
+.rk-coin svg { position: relative; z-index: 1; width: 52%; height: 52%; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.85)) drop-shadow(0 0 5px rgba(243, 223, 174, 0.25)); }
+
+/* the flowing bar */
+.rk-bar { position: relative; display: block; height: 8px; border-radius: 8px; background: var(--rk-track); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 0.6px rgba(201, 164, 100, 0.25); }
+.rk-bar i { position: relative; display: block; height: 100%; width: 0; border-radius: 8px; overflow: hidden;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 6px, transparent 6px 12px), linear-gradient(90deg, color-mix(in srgb, var(--c) 60%, #000), var(--c) 55%, color-mix(in srgb, var(--c) 55%, #fff));
+  background-size: 17px 17px, 100% 100%; animation: rk-flow 1s linear infinite; transition: width 1.4s cubic-bezier(0.3, 0.7, 0.2, 1); box-shadow: 0 0 10px -1px var(--c); }
+@keyframes rk-flow { to { background-position: -17px 0, 0 0; } }
+.rk-bar i::before { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent); animation: rk-run 2.4s ease-in-out infinite; }
+@keyframes rk-run { from { transform: translateX(260%); } to { transform: translateX(-160%); } }
+.rk-bar i::after { content: ""; position: absolute; inset-block: 0; inset-inline-end: 0; width: 8px; border-radius: 50%; background: #fff; filter: blur(2px); animation: rk-tip 1.6s ease-in-out infinite; }
+@keyframes rk-tip { 50% { opacity: 0.35; } }
+
+/* stat cards */
+.rk-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1150px) { .rk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .rk-stats { grid-template-columns: minmax(0, 1fr); } }
+.rk-stat-b { display: grid; gap: 10px; padding: 24px 26px 26px; }
+.rk-stat .r1 { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.rk-stat .lbl { font-size: 14px; font-weight: 800; color: var(--rk-muted); }
+.rk-stat .val { font: 900 34px/1 var(--font-sans); font-variant-numeric: tabular-nums; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 35%, #fff), var(--c) 75%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 8px color-mix(in srgb, var(--c) 40%, transparent)); }
+.rk-stat .val small { font-size: 14px; -webkit-text-fill-color: var(--rk-muted); margin-inline-start: 5px; }
+.rk-stat .sub { font-size: 12.5px; color: var(--rk-muted); font-weight: 700; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; min-height: 22px; }
+.rk-chip { font-size: 11.5px; font-weight: 800; padding: 1px 8px; border-radius: 999px; border: 1px solid; }
+.rk-chip.up { color: #3fbf7f; border-color: rgba(63, 191, 127, 0.5); background: rgba(63, 191, 127, 0.1); }
+.rk-chip.dn { color: #ef6b5b; border-color: rgba(239, 107, 91, 0.5); background: rgba(239, 107, 91, 0.1); }
+.rk-chip.warn { color: #e39a14; border-color: rgba(227, 154, 20, 0.5); background: rgba(227, 154, 20, 0.1); }
+
+/* documents by kind */
+.rk-share { display: flex; height: 14px; border-radius: 8px; overflow: hidden; gap: 3px; padding: 2px; background: linear-gradient(180deg, #2a2215, #0b0906); box-shadow: 0 0 0 1px rgba(201, 164, 100, 0.55), inset 0 1px 2px rgba(0, 0, 0, 0.8); margin-bottom: 18px; }
+.rk-share i { position: relative; display: block; flex: 0 0 0; border-radius: 5px; overflow: hidden; transition: flex-basis 1.4s cubic-bezier(0.3, 0.7, 0.2, 1);
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.16) 0 5px, transparent 5px 10px), linear-gradient(180deg, color-mix(in srgb, var(--c) 55%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 60%, #000)); background-size: 14px 14px, 100% 100%; animation: rk-flow 1s linear infinite; }
+.rk-share i::after { content: ""; position: absolute; inset: 0; width: 45%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent); animation: rk-run 2.8s ease-in-out infinite; animation-delay: calc(var(--k) * 0.3s); }
+.rk-ledger { display: grid; }
+.rk-lg { position: relative; display: grid; grid-template-columns: auto auto 1fr auto auto; align-items: center; gap: 14px; padding: 10px 8px; width: 100%; font: inherit; color: inherit; text-align: start; background: none; border: 0; cursor: pointer; border-radius: 12px; transition: background 0.25s, transform 0.25s; animation: rk-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; animation-delay: calc(var(--k) * 90ms + 0.2s); }
+.rk-lg + .rk-lg::before { content: ""; position: absolute; top: 0; inset-inline: 8px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.3), transparent); }
+.rk-lg:hover, .rk-lg:focus-visible { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c) 12%, transparent)); transform: translateX(-4px); outline: none; }
+.rk-lg .name { font-size: 15px; font-weight: 800; white-space: nowrap; }
+.rk-lg .dots { height: 2px; min-width: 24px; background: radial-gradient(circle, rgba(201, 164, 100, 0.6) 1px, transparent 1.4px) 0 50% / 8px 2px repeat-x; }
+.rk-lg .cnt { font: 900 25px/1 var(--font-sans); font-variant-numeric: tabular-nums; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 40%, #fff), var(--c) 70%); -webkit-background-clip: text; background-clip: text; color: transparent; min-width: 32px; text-align: end; }
+.rk-lg .pct { position: relative; width: 46px; height: 46px; display: grid; place-items: center; font-size: 11px; font-weight: 900; color: var(--c); font-variant-numeric: tabular-nums; }
+.rk-lg .pct svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.rk-lg .pct .tr { stroke: var(--rk-track); }
+.rk-lg .pct .vl { stroke: var(--c); stroke-linecap: round; transition: stroke-dashoffset 1.4s cubic-bezier(0.3, 0.7, 0.2, 1); filter: drop-shadow(0 0 4px var(--c)); }
+
+/* the activity timeline */
+.rk-tl { position: relative; display: grid; gap: 4px; padding-inline-start: 4px; }
+.rk-tl::before { content: ""; position: absolute; top: 26px; bottom: 26px; inset-inline-start: 41px; width: 2px; background: linear-gradient(180deg, transparent, #c9a464 12%, #8f6a2a 50%, #c9a464 88%, transparent); box-shadow: 0 0 8px rgba(201, 164, 100, 0.45); }
+.rk-tl::after { content: ""; position: absolute; top: 26px; inset-inline-start: 40px; width: 4px; height: 40px; border-radius: 4px; background: linear-gradient(180deg, transparent, #fff3d6, transparent); animation: rk-drip 3.2s ease-in-out infinite; }
+@keyframes rk-drip { from { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateY(330px); opacity: 0; } }
+.rk-ev { position: relative; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 10px 12px 10px 6px; border-radius: 14px; transition: background 0.25s, transform 0.25s; animation: rk-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; animation-delay: calc(var(--k) * 90ms + 0.2s); }
+.rk-ev:hover { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c) 12%, transparent)); transform: translateX(-4px); }
+.rk-ev .rk-coin { z-index: 1; }
+.rk-ev .who { min-width: 0; display: grid; gap: 4px; }
+.rk-ev .who b { font-size: 14.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rk-ev .who > span { font-size: 12.5px; color: var(--rk-muted); font-weight: 700; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.rk-ev .tag { font-size: 11px; font-weight: 800; color: var(--c); padding: 1px 9px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--c) 50%, transparent); background: color-mix(in srgb, var(--c) 12%, transparent); }
+.rk-ev time { font-size: 11.5px; font-weight: 800; color: var(--rk-gold); white-space: nowrap; padding: 3px 10px; border-radius: 999px; background: linear-gradient(180deg, var(--rk-plate-a), var(--rk-plate-b)); border: 1px solid rgba(201, 164, 100, 0.4); }
+.rk-ev + .rk-ev::before { content: ""; position: absolute; top: -2px; inset-inline: 70px 12px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.28), transparent); }
+
+/* the follow-up ledger */
+.rk-scroll { overflow-x: auto; }
+.rk-led { width: 100%; min-width: 520px; border-collapse: collapse; font-size: 13.5px; }
+.rk-led th { text-align: start; font-size: 11.5px; font-weight: 800; color: var(--rk-gold); letter-spacing: 0.05em; padding: 0 14px 12px; border-bottom: 1px solid rgba(201, 164, 100, 0.55); }
+.rk-led td { padding: 12px 14px; font-weight: 700; border-bottom: 1px solid rgba(201, 164, 100, 0.16); vertical-align: middle; }
+.rk-led tbody tr { transition: background 0.25s; animation: rk-in 0.5s ease both; animation-delay: calc(var(--k) * 80ms + 0.2s); }
+.rk-led tbody tr.click { cursor: pointer; }
+.rk-led tbody tr:hover { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--c) 12%, transparent)); }
+.rk-led tbody tr:hover td:first-child { box-shadow: inset -3px 0 0 var(--c); }
+.rk-led .doc { display: flex; align-items: center; gap: 12px; }
+.rk-led .doc b { display: block; font-size: 14px; font-weight: 800; }
+.rk-led .doc small { font-size: 11.5px; color: var(--rk-muted); font-weight: 700; }
+.rk-led .date { font-variant-numeric: tabular-nums; color: var(--rk-muted); white-space: nowrap; }
+.rk-due { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 12px; row-gap: 7px; min-width: 220px; max-width: 320px; }
+.rk-due b { font: 900 26px/1 var(--font-sans); font-variant-numeric: tabular-nums; color: var(--c); text-shadow: 0 0 14px color-mix(in srgb, var(--c) 55%, transparent); min-width: 34px; text-align: center; }
+.rk-due .lbl { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-size: 12.5px; font-weight: 800; }
+.rk-due .lbl em { font-style: normal; color: var(--c); }
+.rk-due .lbl span { color: var(--rk-muted); font-weight: 700; }
+.rk-due.late b { animation: rk-tip 1.6s ease-in-out infinite; }
+.rk-trk { grid-column: 1 / -1; position: relative; height: 6px; border-radius: 6px; background: linear-gradient(90deg, rgba(239, 107, 91, 0.35), rgba(227, 154, 20, 0.3) 40%, rgba(63, 191, 127, 0.3)); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 0 0.6px rgba(201, 164, 100, 0.3); }
+.rk-trk::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(243, 223, 174, 0.55) 0 1px, transparent 1px 10%); opacity: 0.5; border-radius: 6px; }
+.rk-trk i { position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; margin-inline-start: -6px; transform: rotate(45deg); background: linear-gradient(135deg, #fff3d6, var(--c)); box-shadow: 0 0 0 1.5px #0b0906, 0 0 10px var(--c); transition: inset-inline-start 1.4s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.rk-trk i::after { content: ""; position: absolute; inset: -5px; border: 1px solid var(--c); opacity: 0; animation: rk-ping 2s ease-out infinite; }
+@keyframes rk-ping { 0% { opacity: 0.8; transform: scale(0.6); } 100% { opacity: 0; transform: scale(1.8); } }
+
+@media (max-width: 560px) {
+  .rk-hd { padding: 24px 22px 4px; } .rk-ln { margin-inline: 22px; } .rk-pad { padding: 16px 18px 28px; }
+  .rk-lg { grid-template-columns: auto 1fr auto auto; } .rk-lg .dots { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rk-card, .rk-card::after, .rk-rosette, .rk-dust i, .rk-hd h3, .rk-total b, .rk-coin::after, .rk-bar i, .rk-bar i::before, .rk-bar i::after, .rk-share i, .rk-share i::after, .rk-tl::after, .rk-lg, .rk-ev, .rk-led tbody tr, .rk-due.late b, .rk-trk i::after { animation: none !important; }
+  .rk-bar i, .rk-share i, .rk-trk i, .rk-lg .pct .vl { transition: none; }
+}
