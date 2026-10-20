@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { alertsRibbonSchema, getAlertsRibbon, saveAlertsRibbon } from "@/services/alertsRibbon";
 import { z } from "zod";
 import { PRINT_THEME_IDS } from "@/services/printThemes";
 import { DIGEST_CARD_IDS } from "@/services/whatsappDigestCard";
@@ -61,6 +62,16 @@ router.put(
   validate({ body: appearanceSettingsSchema }),
   auditLog(AuditAction.UPDATE, "settings"),
   controller.updateAppearance
+);
+
+// Every signed-in user sees the ribbon as set; changing it needs settings.edit.
+router.get("/alerts-ribbon", asyncHandler(async (_req, res) => { res.json({ data: await getAlertsRibbon() }); }));
+router.put(
+  "/alerts-ribbon",
+  requirePermission("settings.edit"),
+  validate({ body: alertsRibbonSchema }),
+  auditLog(AuditAction.UPDATE, "settings"),
+  asyncHandler(async (req, res) => { res.json({ data: await saveAlertsRibbon(req.body), message: "Alerts ribbon saved." }); })
 );
 
 router.get("/print-theme", requirePermission("settings.view"), controller.getPrintTheme);

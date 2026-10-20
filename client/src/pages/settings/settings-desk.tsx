@@ -5,6 +5,7 @@ import { CoverHero } from "@/components/royal/cards";
 import { AuthedFileImage } from "@/components/common/authed-file-image";
 import { WhatsappLogo } from "@/components/common/whatsapp-logo";
 import { settingsApi } from "@/api/settings";
+import { ribbonApi } from "@/api/alerts";
 
 const THEMES: Record<string, [string, string]> = { malaki: ["الملكي", "Royal"], zumurrudi: ["الزمردي", "Emerald"], aqiq: ["العقيقي", "Agate"] };
 
@@ -16,10 +17,11 @@ function useSettingsGlance() {
   const email = useQuery({ queryKey: ["settings", "email"], queryFn: settingsApi.getEmail }).data;
   const whatsapp = useQuery({ queryKey: ["settings", "whatsapp"], queryFn: settingsApi.getWhatsapp }).data;
   const appearance = useQuery({ queryKey: ["settings", "appearance"], queryFn: settingsApi.getAppearance }).data;
-  return { company, theme, rules, email, whatsapp, appearance };
+  const ribbon = useQuery({ queryKey: ["settings", "alerts-ribbon"], queryFn: ribbonApi.getSettings }).data;
+  return { company, theme, rules, email, whatsapp, appearance, ribbon };
 }
 
-export type SettingsKey = "company" | "appearance" | "print" | "expiration" | "email" | "whatsapp";
+export type SettingsKey = "company" | "appearance" | "alerts" | "print" | "expiration" | "email" | "whatsapp";
 
 /** The settings page as a desk: the company crown, a gold side menu, and the chosen section beside it. */
 export function SettingsDesk({ isRtl, current, onPick, children }: { isRtl: boolean; current: SettingsKey; onPick: (k: SettingsKey) => void; children: ReactNode }) {
@@ -34,6 +36,7 @@ export function SettingsDesk({ isRtl, current, onPick, children }: { isRtl: bool
   const items: { key: SettingsKey; icon: LucideIcon | typeof WhatsappLogo; title: string; note: string; tone?: "ok" | "bad" }[] = [
     { key: "company", icon: Building2, title: L("الشركة", "Company"), note: g.company?.crNumber ? L(`سجل ${g.company.crNumber}`, `CR ${g.company.crNumber}`) : L("الهوية والبيانات الرسمية", "Identity & legal details") },
     { key: "appearance", icon: Palette, title: L("المظهر", "Appearance"), note: L(`الوضع: ${mode}`, `Mode: ${mode}`) },
+    { key: "alerts", icon: BellRing, title: L("شريط التنبيهات", "Alerts ribbon"), note: g.ribbon ? (g.ribbon.enabled ? L("ظاهر في القائمة العلوية", "Shown in the top bar") : L("مخفي", "Hidden")) : L("الشكل والمحتوى", "Look and content"), tone: g.ribbon ? (g.ribbon.enabled ? "ok" : "bad") : undefined },
     { key: "print", icon: Printer, title: L("الطباعة", "Printing"), note: L(`القالب ${themeName}`, `${themeName} design`) },
     { key: "expiration", icon: Hourglass, title: L("قواعد الانتهاء", "Expiry rules"), note: L(`تنبيه قبل ${days} يوم`, `Alerts ${days} days before`) },
     { key: "email", icon: Mail, title: L("البريد الإلكتروني", "Email"), note: g.email?.enabled ? L("مفعّل", "On") : L("غير مفعّل", "Off"), tone: g.email?.enabled ? "ok" : "bad" },

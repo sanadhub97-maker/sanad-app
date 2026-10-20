@@ -43,6 +43,7 @@ import {
   Smartphone,
   Printer,
   Hourglass,
+  BellRing,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ import { GOLD_TONES, applyGoldTone, toneSwatch } from "@/lib/gold-tone";
 import { useUiStore as useUiPrefs } from "@/stores/uiStore";
 import { Moon, Sun as SunIcon } from "lucide-react";
 import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
+import { AlertsRibbonTab } from "./alerts-ribbon-tab";
 
 /* The settings in the Royal design, as in the approved preview: the sections
    as a list at the side (across the top on narrow screens) and the chosen one
@@ -78,6 +80,7 @@ import { WhatsappDispatchCard } from "./whatsapp-dispatch-card";
 const SECTIONS = [
   { key: "company", icon: Building2, Tab: CompanyTab },
   { key: "appearance", icon: Palette, Tab: AppearanceTab },
+  { key: "alerts", icon: BellRing, Tab: AlertsRibbonTab },
   { key: "print", icon: Printer, Tab: PrintDesignsTab },
   { key: "expiration", icon: Hourglass, Tab: ExpirationTab },
   { key: "email", icon: Mail, Tab: EmailTab },

@@ -36,6 +36,7 @@ import { preloadPage } from "@/lib/page-preload";
 import { prefetchPageData, warmUpPages } from "@/lib/page-prefetch";
 import { shownTone, tonedHex } from "@/lib/gold-tone";
 import { warmPrintingFor } from "@/lib/print-warm";
+import { AlertsRibbon } from "@/components/layout/alerts-ribbon";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
    tablets), a sticky glass header that holds each page's title and actions,
@@ -459,6 +460,7 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
         </AccountMenu>
         </span>
         <LuluNotifications open={open} anchor={bell} onClose={close} />
+        <AlertsRibbon />
       </header>
       {/* every page opens on the home page's lacquered band: the engraved waves, the page's medallion, its words and buttons */}
       <div className="ry-head rx-band no-print">
