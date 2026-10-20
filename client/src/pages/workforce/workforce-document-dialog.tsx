@@ -12,6 +12,7 @@ import {
   HeartPulse,
   ShieldPlus,
   Stamp,
+  BriefcaseBusiness,
   Plane,
   User,
   Hash,
@@ -50,7 +51,7 @@ type FormValues = z.infer<ReturnType<typeof makeSchema>>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  docType?: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET";
+  docType?: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET" | "WORK_PERMIT";
   document?: WorkforceDocumentItem | null;
   queryKey: string;
   onSuccess?: () => void;
@@ -96,6 +97,14 @@ const TYPE_CONFIG = {
     addKey: "workforce.visas.addTitle",
     numberKey: "workforce.visas.number",
     authorityKey: "workforce.visas.authority",
+  },
+  WORK_PERMIT: {
+    icon: BriefcaseBusiness,
+    tone: "indigo" as const,
+    titleKey: "workforce.workPermits.title",
+    addKey: "workforce.workPermits.addTitle",
+    numberKey: "workforce.workPermits.number",
+    authorityKey: "workforce.workPermits.authority",
   },
   FLIGHT_TICKET: {
     icon: Plane,

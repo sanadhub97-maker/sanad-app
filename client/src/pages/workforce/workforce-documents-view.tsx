@@ -56,7 +56,7 @@ const columnHelper = createColumnHelper<WorkforceDocumentItem>();
 interface Props {
   title: string;
   subtitle: string;
-  docType: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET";
+  docType: "IQAMA" | "PASSPORT" | "HEALTH_CERTIFICATE" | "MEDICAL_INSURANCE" | "VISA" | "FLIGHT_TICKET" | "WORK_PERMIT";
   queryFn: (params: WorkforceQueryParams) => Promise<WorkforceListResponse>;
   queryKey: string;
   icon: any;

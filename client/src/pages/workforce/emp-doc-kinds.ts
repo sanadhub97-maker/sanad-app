@@ -1,7 +1,7 @@
-import { BookUser, CreditCard, HeartPulse, Plane, ShieldPlus, Stamp, type LucideIcon } from "lucide-react";
+import { BookUser, BriefcaseBusiness, CreditCard, HeartPulse, Plane, ShieldPlus, Stamp, type LucideIcon } from "lucide-react";
 import type { WorkforceDocumentItem } from "@/api/workforceDocuments";
 
-/* The six kinds of employee documents, and where each document's own page lives. */
+/* The seven kinds of employee documents, and where each document's own page lives. */
 
 export const EMP_DOC_KINDS: { value: string; labelAr: string; labelEn: string; one: [string, string]; icon: LucideIcon }[] = [
   { value: "IQAMA", labelAr: "الإقامات", labelEn: "Iqamas", one: ["الإقامة", "Iqama"], icon: CreditCard },
@@ -9,9 +9,10 @@ export const EMP_DOC_KINDS: { value: string; labelAr: string; labelEn: string; o
   { value: "HEALTH_CERTIFICATE", labelAr: "الشهادات الصحية", labelEn: "Health Certificates", one: ["الشهادة الصحية", "Health certificate"], icon: HeartPulse },
   { value: "MEDICAL_INSURANCE", labelAr: "التأمين الطبي", labelEn: "Medical Insurance", one: ["التأمين الطبي", "Medical insurance"], icon: ShieldPlus },
   { value: "VISA", labelAr: "التأشيرات", labelEn: "Visas", one: ["التأشيرة", "Visa"], icon: Stamp },
+  { value: "WORK_PERMIT", labelAr: "رخص العمل", labelEn: "Work Permits", one: ["رخصة العمل", "Work permit"], icon: BriefcaseBusiness },
   { value: "FLIGHT_TICKET", labelAr: "تذاكر الطيران", labelEn: "Flight Tickets", one: ["تذكرة الطيران", "Flight ticket"], icon: Plane },
 ];
-/** A workforce document's type, folded into the six kinds above. */
+/** A workforce document's type, folded into the seven kinds above. */
 export function kindOfDoc(doc: Pick<WorkforceDocumentItem, "type" | "iqamaNumber">) {
   const raw = (doc.type || (doc.iqamaNumber ? "IQAMA" : "PASSPORT")).toUpperCase();
   return { raw, kind: EMP_DOC_KINDS.find((c) => c.value === raw || (raw.includes("VISA") && c.value === "VISA")) };

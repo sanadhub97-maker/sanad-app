@@ -122,6 +122,7 @@ function typeGroup(item: TrackableItem): string {
   if (item.sourceType === "COMPANY_DOCUMENT") return "COMPANY";
   if (item.docType === "HEALTH_CERTIFICATE") return "HEALTH_CERTIFICATE";
   if (item.docType === "MEDICAL_INSURANCE") return "MEDICAL_INSURANCE";
+  if (item.docType === "WORK_PERMIT") return "WORK_PERMIT";
   return "OTHER";
 }
 

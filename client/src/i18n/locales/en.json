@@ -346,6 +346,13 @@
       "number": "Visa Number",
       "authority": "Visa Type / Issuing Authority"
     },
+    "workPermits": {
+      "title": "Work Permits",
+      "subtitle": "Each employee's work permit and when it ends.",
+      "addTitle": "Add a work permit",
+      "number": "Work permit number",
+      "authority": "Issued by"
+    },
     "flightTickets": {
       "title": "Flight Tickets & Employee Travel",
       "subtitle": "Manage booked flight tickets, airline reservations (PNR), and annual leave travels.",

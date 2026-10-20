@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Activity, AlertTriangle, BellRing, BookUser, Building2, Car, Check, ClipboardList, Clock, Download, FileDown, FileText, FileWarning, HeartPulse, IdCard, KeyRound, ListChecks, Plus, Settings, ShieldPlus, TriangleAlert, UserPlus, Users, WalletCards, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BellRing, BookUser, BriefcaseBusiness, Building2, Car, Check, ClipboardList, Clock, Download, FileDown, FileText, FileWarning, HeartPulse, IdCard, KeyRound, ListChecks, Plus, Settings, ShieldPlus, TriangleAlert, UserPlus, Users, WalletCards, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { dashboardApi, type DashboardAttentionItem } from "@/api/dashboard";
@@ -133,6 +133,7 @@ export default function DashboardLulu() {
       ["PASSPORT", isAr ? "الجوازات" : "Passports", "#6d6cf0", BookUser, "/employee-documents?category=PASSPORT"],
       ["HEALTH_CERTIFICATE", isAr ? "الشهادات الصحية" : "Health certificates", "#2bb5a6", HeartPulse, "/employee-documents?category=HEALTH_CERTIFICATE"],
       ["MEDICAL_INSURANCE", isAr ? "التأمين الطبي" : "Medical insurance", "#e39a14", ShieldPlus, "/employee-documents?category=MEDICAL_INSURANCE"],
+      ["WORK_PERMIT", isAr ? "رخص العمل" : "Work permits", "#5b8def", BriefcaseBusiness, "/employee-documents?category=WORK_PERMIT"],
       ["COMPANY", isAr ? "وثائق الشركة" : "Company documents", "#a86de0", Building2, "/company-documents"],
       ["VEHICLE", isAr ? "المركبات" : "Vehicles", "#ef8a5b", Car, "/vehicles"],
       ["OTHER", isAr ? "وثائق أخرى" : "Other documents", "#8c97a8", FileText, "/employee-documents"],

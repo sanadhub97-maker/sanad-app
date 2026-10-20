@@ -390,6 +390,11 @@ export async function listAllWorkforceDocuments(query: ListWorkforceQuery & { ca
     return { ...res, data: mapped };
   }
 
+  if (category === "WORK_PERMIT") {
+    const res = await listGeneralDocuments([EmployeeDocumentType.WORK_PERMIT], { page, pageSize, q, branchId, status });
+    return { ...res, data: res.data.map((item) => ({ ...item, category: "WORK_PERMIT", name: item.name || "رخصة عمل" })) };
+  }
+
   if (category === "FLIGHT_TICKET") {
     const res = await listGeneralDocuments([EmployeeDocumentType.FLIGHT_TICKET], { page, pageSize, q, branchId, status });
     const mapped = res.data.map((item) => ({
@@ -640,6 +645,7 @@ export async function getWorkforceCategoryCounts() {
     MEDICAL_INSURANCE: (groupMap[EmployeeDocumentType.MEDICAL_INSURANCE] ?? 0) - superseded + linkedWithIqama,
     VISA: visaCount,
     FLIGHT_TICKET: groupMap[EmployeeDocumentType.FLIGHT_TICKET] ?? 0,
+    WORK_PERMIT: groupMap[EmployeeDocumentType.WORK_PERMIT] ?? 0,
   };
 }
 
