@@ -1,9 +1,9 @@
-import { useMemo, type CSSProperties } from "react";
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Activity, AlertTriangle, Bell, BookUser, Building2, Car, Check, ClipboardList, Clock, Download, FileText, FileWarning, HeartPulse, IdCard, KeyRound, ListChecks, Plus, Settings, ShieldPlus, TriangleAlert, Users, WalletCards, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BellRing, BookUser, Building2, Car, Check, ClipboardList, Clock, Download, FileDown, FileText, FileWarning, HeartPulse, IdCard, KeyRound, ListChecks, Plus, Settings, ShieldPlus, TriangleAlert, UserPlus, Users, WalletCards, type LucideIcon } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { dashboardApi, type DashboardAttentionItem } from "@/api/dashboard";
@@ -13,8 +13,7 @@ import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxBadge, PxBars, monthColor, PxCard, PxDonut } from "@/components/royal/px";
-import { ActivityTimeline, FollowLedger, KindLedger, RoyalArea, RoyalCard, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
-import { Guilloche, Medal } from "@/components/royal/royale-fx";
+import { ActivityTimeline, FollowLedger, KindLedger, RoyalArea, RoyalCard, RoyalStat, RoyalWelcome, type KindRow } from "@/components/royal/royal-kit";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
    welcome with a stack of documents, the compliance gauge, four stat cards,
@@ -25,8 +24,6 @@ function localIso(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
-const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "وثيقتان" : n <= 10 ? `${n} وثائق` : `${n} وثيقة`);
-const v = (o: Record<string, string | number>) => o as CSSProperties;
 
 /** The coin on each activity: what part of the system it touched. */
 const MODULE_ICON: Record<string, LucideIcon> = {
@@ -181,65 +178,22 @@ export default function DashboardLulu() {
         </div>
       ))}
 
-      <section className="px-welcome px-home" style={v({ "--i": 0 })}>
-        <Guilloche />
-        <Medal>{pct}%</Medal>
-        <div className="tx">
-          <span className="rx-eyebrow">{dateLine}</span>
-          <h2>
-            {greeting}
-            {firstName && (isAr ? ` يا ${firstName}` : `, ${firstName}`)}
-          </h2>
-          <p>
-            {isAr ? (
-              <>
-                {pct}% من الوثائق سارية
-                {expired > 0 && (
-                  <>
-                    ، و<b>{docsAr(expired)} منتهية</b> تحتاج تجديد
-                  </>
-                )}
-                {soon > 0 && (
-                  <>
-                    ، و<b>{docsAr(soon)}</b> تنتهي خلال 30 يومًا
-                  </>
-                )}
-                {canTasks && taskList.length > 0 && <>، و{taskList.length - done} مهام مفتوحة اليوم</>}.
-              </>
-            ) : (
-              <>
-                {pct}% of documents are valid
-                {expired > 0 && (
-                  <>
-                    ; <b>{expired} have expired</b>
-                  </>
-                )}
-                {soon > 0 && (
-                  <>
-                    ; <b>{soon}</b> end within 30 days
-                  </>
-                )}
-                .
-              </>
-            )}
-          </p>
-        </div>
-        <div className="acts">
-          {hasPermission("reports.view") && (
-            <button type="button" className="wb" onClick={() => navigate("/reports")}>
-              <Download /> {isAr ? "تقرير اليوم" : "Today’s report"}
-            </button>
-          )}
-          {hasPermission("employees.create") && (
-            <button type="button" className="wb" onClick={() => navigate("/employees?new=true")}>
-              <Plus /> {isAr ? "إضافة موظف" : "Add employee"}
-            </button>
-          )}
-          <button type="button" className="wb gold" onClick={() => navigate("/notifications")}>
-            <Bell /> {isAr ? "راجع الوثائق" : "Review documents"}
-          </button>
-        </div>
-      </section>
+      <RoyalWelcome
+        isAr={isAr}
+        pct={pct}
+        dateLine={dateLine}
+        greeting={`${greeting}${firstName ? (isAr ? ` يا ${firstName}` : `, ${firstName}`) : ""}`}
+        chips={[
+          ...(expired > 0 ? [{ n: expired, text: isAr ? "وثيقة منتهية تحتاج تجديد" : "expired, need renewing", color: "#ef6b5b", pulse: true, onOpen: () => navigate("/reports?tab=documents&status=EXPIRED&scope=all") }] : []),
+          ...(soon > 0 ? [{ n: soon, text: isAr ? "تنتهي خلال 30 يوم" : "end within 30 days", color: "#e39a14", onOpen: () => navigate("/reports?tab=documents&status=EXPIRING_SOON&scope=all") }] : []),
+          ...(canTasks && taskList.length - done > 0 ? [{ n: taskList.length - done, text: isAr ? "مهام مفتوحة اليوم" : "open tasks today", color: "#29a8d6", onOpen: () => navigate("/daily-tasks") }] : []),
+        ]}
+        actions={[
+          ...(hasPermission("reports.view") ? [{ label: isAr ? "تقرير اليوم" : "Today's report", icon: FileDown, onClick: () => navigate("/reports") }] : []),
+          ...(hasPermission("employees.create") ? [{ label: isAr ? "إضافة موظف" : "Add employee", icon: UserPlus, onClick: () => navigate("/employees?new=true") }] : []),
+          { label: isAr ? "راجع الوثائق" : "Review documents", icon: BellRing, gold: true, onClick: () => navigate("/notifications") },
+        ]}
+      />
 
       <div className="rk-stats">
         <RoyalStat i={1} label={isAr ? "إجمالي الموظفين" : "Employees"} value={summary?.totalEmployees ?? 0} icon={Users} color="#29a8d6"

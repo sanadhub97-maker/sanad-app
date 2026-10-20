@@ -290,3 +290,63 @@ export function RoyalArea({ labels, values, rtl }: { labels: string[]; values: n
     </div>
   );
 }
+
+/* ---------------- the welcome panel ---------------- */
+
+export interface WelcomeChip { n: number; text: string; color: string; pulse?: boolean; onOpen?: () => void }
+export interface WelcomeAction { label: string; icon: LucideIcon; onClick: () => void; gold?: boolean }
+
+export function RoyalWelcome({ pct, dateLine, greeting, chips, actions, isAr }: { pct: number; dateLine: string; greeting: string; chips: WelcomeChip[]; actions: WelcomeAction[]; isAr: boolean }) {
+  const on = useOn();
+  const n = useCount(pct, 200, 1700);
+  const [clock, setClock] = useState(() => new Date());
+  useEffect(() => { const id = setInterval(() => setClock(new Date()), 1000); return () => clearInterval(id); }, []);
+  const C = 2 * Math.PI * 44;
+  const hm = [clock.getHours(), clock.getMinutes(), clock.getSeconds()].map((x) => String(x).padStart(2, "0")).join(":");
+  return (
+    <section className="rk-card rk-welcome" style={{ ["--k" as string]: 0 } as CSSProperties}>
+      <Deco rosette dust={12} />
+      <div className="rk-body rk-wel">
+        <div className="dial" aria-label={isAr ? `${pct}٪ من الوثائق سارية` : `${pct}% of documents valid`}>
+          <svg viewBox="0 0 132 132" aria-hidden="true">
+            <defs>
+              <linearGradient id="rk-arc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7ee0ad" /><stop offset=".5" stopColor="#3fbf7f" /><stop offset="1" stopColor="#1f8a59" /></linearGradient>
+            </defs>
+            <circle cx="66" cy="66" r="62" className="face" stroke="url(#rk-gold)" strokeWidth="3" />
+            {Array.from({ length: 60 }, (_, t) => {
+              const a = (t / 60) * Math.PI * 2, big = t % 5 === 0, r2 = big ? 52 : 54.5;
+              return <line key={t} className={big ? "tick big" : "tick"} x1={66 + Math.sin(a) * 57} y1={66 - Math.cos(a) * 57} x2={66 + Math.sin(a) * r2} y2={66 - Math.cos(a) * r2} />;
+            })}
+            <circle cx="66" cy="66" r="44" fill="none" className="trk" strokeWidth="9" />
+            <circle cx="66" cy="66" r="44" fill="none" stroke="url(#rk-arc)" strokeWidth="9" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={on ? C * (1 - pct / 100) : C} transform="rotate(-90 66 66)" className="arc" />
+            <circle cx="66" cy="66" r="37" fill="none" stroke="url(#rk-gold)" strokeWidth="1.5" />
+          </svg>
+          <div className="mid"><b>{Math.round(n)}٪</b><small>{isAr ? "سارية" : "valid"}</small></div>
+        </div>
+        <div className="tx">
+          <div className="when"><span>{dateLine}</span><span className="clock">{hm}</span></div>
+          <h2>{greeting}</h2>
+          {chips.length > 0 && (
+            <div className="chips">
+              {chips.map((c, k) => (
+                <button key={k} type="button" className={`chip${c.pulse ? " bad" : ""}`} style={{ ["--c" as string]: c.color, ["--k" as string]: k } as CSSProperties} onClick={c.onOpen}>
+                  <i />
+                  <b>{fmt(c.n)}</b>
+                  {c.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="acts">
+          {actions.map((a) => (
+            <button key={a.label} type="button" className={a.gold ? "btn gold" : "btn"} onClick={a.onClick}>
+              {a.gold ? <a.icon className="ico" aria-hidden="true" /> : <Coin icon={a.icon} size={32} />}
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
