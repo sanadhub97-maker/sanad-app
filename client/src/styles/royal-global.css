@@ -72,3 +72,14 @@ html.rx-light .lu-app :is(.px-card, .px-stat, .rc-lic, .rc-dcard, .rc-rp, .lu-cc
 @media (prefers-reduced-motion: reduce) {
   .lu-app .px-chd h3, .lu-app .px-bar u, .lu-app .px-bar u::before { animation: none !important; }
 }
+
+/* the work permit's length in the payment dialog */
+.pd-dur { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 480px) { .pd-dur { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pd-dur button { font: inherit; display: grid; gap: 1px; justify-items: center; padding: 10px 6px; border-radius: 12px; cursor: pointer; color: inherit; background: hsl(var(--background) / 0.9); border: 1px solid rgba(201, 164, 100, 0.35); transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s; }
+.pd-dur button b { font-size: 22px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.pd-dur button span { font-size: 12px; opacity: 0.7; font-weight: 700; }
+.pd-dur button:hover { border-color: rgba(233, 199, 119, 0.8); }
+.pd-dur button:focus-visible { outline: 2px solid #d6b678; outline-offset: 2px; }
+.pd-dur button[aria-pressed="true"] { border-color: transparent; background: linear-gradient(160deg, #f3dfae, #c9a464 50%, #8f6a2a); color: #1a1307; box-shadow: 0 0 20px -6px rgba(233, 199, 119, 0.8); transform: translateY(-2px); }
+.pd-dur-hint { grid-column: 1 / -1; font-size: 12.5px; font-weight: 700; color: #d6b678; }

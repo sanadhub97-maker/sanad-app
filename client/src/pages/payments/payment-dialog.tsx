@@ -43,7 +43,7 @@ import type { Payment } from "@/types/models";
 import { LiveAside, LiveVoucher } from "@/components/royal/live-cards";
 
 // Keep in sync with server/src/modules/payments/payments.schemas.ts.
-const EMPLOYEE_CATEGORIES = ["IQAMA", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA", "HEALTH_CERTIFICATE"];
+const EMPLOYEE_CATEGORIES = ["IQAMA", "WORK_PERMIT", "SPONSORSHIP_TRANSFER", "PROFESSION_CHANGE", "VISA", "HEALTH_CERTIFICATE"];
 
 function needsEmployee(category?: string, type?: string) {
   return !!category && EMPLOYEE_CATEGORIES.includes(category) && !(category === "VISA" && type === "WORK_VISA");
@@ -141,6 +141,12 @@ export function PaymentDialog({
     const current = getValues("type");
     if (current && !subtypes?.includes(current)) setValue("type", undefined);
   }, [category, subtypes, getValues, setValue]);
+  const employeeId = watch("employeeId");
+  useEffect(() => {
+    if (!employeeId || multiBranch) return;
+    const branchId = employees.find((e) => e.id === employeeId)?.branchId;
+    if (branchId) setValue("branchId", branchId, { shouldDirty: true });
+  }, [employeeId, multiBranch, employees, setValue]);
   const amount = watch("amount") || 0;
   const vat = watch("vat") || 0;
   const total = (Number(amount) + Number(vat)).toFixed(2);
@@ -377,7 +383,35 @@ export function PaymentDialog({
                 />
               </FormField>
 
-              {subtypes && (
+              {category === "WORK_PERMIT" && (
+                <FormField label={isAr ? "مدة الرخصة" : "Permit length"} icon={FileText} required error={errors.type?.message} className="sm:col-span-2">
+                  <Controller
+                    control={control}
+                    name="type"
+                    render={({ field }) => (
+                      <div className="pd-dur" role="group" aria-label={isAr ? "مدة الرخصة" : "Permit length"}>
+                        {[3, 6, 9, 12].map((m) => (
+                          <button key={m} type="button" aria-pressed={field.value === `MONTHS_${m}`} onClick={() => field.onChange(`MONTHS_${m}`)}>
+                            <b>{m}</b>
+                            <span>{isAr ? (m === 12 ? "شهر" : "أشهر") : "months"}</span>
+                          </button>
+                        ))}
+                        {field.value && (
+                          <small className="pd-dur-hint">
+                            {(() => {
+                              const d = new Date(`${watch("paymentDate") || todayInputValue()}T00:00:00`);
+                              d.setMonth(d.getMonth() + Number(String(field.value).replace("MONTHS_", "")));
+                              return isAr ? `الرخصة تنتهي تقريبًا في ${d.toLocaleDateString("ar-EG-u-nu-latn", { day: "numeric", month: "long", year: "numeric" })}` : `The permit ends about ${d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`;
+                            })()}
+                          </small>
+                        )}
+                      </div>
+                    )}
+                  />
+                </FormField>
+              )}
+
+              {subtypes && category !== "WORK_PERMIT" && (
                 <FormField
                   label={category === "VISA" ? (isAr ? "نوع التأشيرة" : "Visa type") : isAr ? "نوع العملية" : "Transaction type"}
                   icon={FileText}

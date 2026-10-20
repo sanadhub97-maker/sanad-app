@@ -893,6 +893,10 @@
     "AMENDMENT": "Amendment",
     "EXIT_REENTRY": "Exit & re-entry",
     "FINAL_EXIT": "Final exit",
-    "WORK_VISA": "Work visa"
+    "WORK_VISA": "Work visa",
+    "MONTHS_3": "3 months",
+    "MONTHS_6": "6 months",
+    "MONTHS_9": "9 months",
+    "MONTHS_12": "12 months"
   }
 }

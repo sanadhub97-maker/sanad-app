@@ -835,7 +835,7 @@
     "LICENSES": "تراخيص أخرى",
     "IQAMA_ISSUE": "إصدار إقامة",
     "IQAMA_RENEWAL": "تجديد إقامة",
-    "WORK_PERMIT": "رسوم رخصة العمل",
+    "WORK_PERMIT": "رخصة العمل",
     "EXPAT_LEVY": "المقابل المالي",
     "DEPENDENTS_FEE": "رسوم المرافقين",
     "WORK_VISA": "إصدار تأشيرة عمل",
@@ -893,6 +893,10 @@
     "AMENDMENT": "تعديل",
     "EXIT_REENTRY": "خروج وعودة",
     "FINAL_EXIT": "خروج نهائي",
-    "WORK_VISA": "تأشيرة عمل"
+    "WORK_VISA": "تأشيرة عمل",
+    "MONTHS_3": "3 أشهر",
+    "MONTHS_6": "6 أشهر",
+    "MONTHS_9": "9 أشهر",
+    "MONTHS_12": "12 شهر"
   }
 }

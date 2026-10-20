@@ -49,7 +49,7 @@ export const PAYMENT_CATEGORY_LABELS_AR: Record<PaymentCategory, string> = {
   // الإقامات والتأشيرات
   IQAMA_ISSUE: "إصدار إقامة",
   IQAMA_RENEWAL: "تجديد إقامة",
-  WORK_PERMIT: "رسوم رخصة العمل",
+  WORK_PERMIT: "رخصة العمل",
   EXPAT_LEVY: "المقابل المالي",
   DEPENDENTS_FEE: "رسوم المرافقين",
   WORK_VISA: "إصدار تأشيرة عمل",
@@ -111,7 +111,7 @@ const PAYMENT_CATEGORY_LABELS_EN: Record<string, string> = {
   LICENSES: "Other licenses",
   IQAMA_ISSUE: "Iqama — issue",
   IQAMA_RENEWAL: "Iqama — renewal",
-  WORK_PERMIT: "Work permit fee",
+  WORK_PERMIT: "Work permit",
   EXPAT_LEVY: "Expat levy",
   DEPENDENTS_FEE: "Dependents fee",
   WORK_VISA: "Work visa issuance",
@@ -143,6 +143,10 @@ const SUBTYPE_LABELS_EN: Record<string, string> = {
   EXIT_REENTRY: "Exit & re-entry",
   FINAL_EXIT: "Final exit",
   WORK_VISA: "Work visa",
+  MONTHS_3: "3 months",
+  MONTHS_6: "6 months",
+  MONTHS_9: "9 months",
+  MONTHS_12: "12 months",
 };
 
 const PAYMENT_METHOD_LABELS_AR: Record<string, string> = {
@@ -165,6 +169,8 @@ export const PAYMENT_SUBTYPES: Partial<Record<PaymentCategory, string[]>> = {
   COMMERCIAL_REGISTRATION: ["ISSUE", "RENEWAL"],
   MUNICIPAL_LICENSE: ["ISSUE", "RENEWAL", "CANCELLATION", "AMENDMENT"],
   VISA: ["EXIT_REENTRY", "FINAL_EXIT", "WORK_VISA"],
+  // a work permit is issued for one of four lengths
+  WORK_PERMIT: ["MONTHS_3", "MONTHS_6", "MONTHS_9", "MONTHS_12"],
 };
 
 const SUBTYPE_LABELS_AR: Record<string, string> = {
@@ -175,6 +181,10 @@ const SUBTYPE_LABELS_AR: Record<string, string> = {
   EXIT_REENTRY: "خروج وعودة",
   FINAL_EXIT: "خروج نهائي",
   WORK_VISA: "تأشيرة عمل",
+  MONTHS_3: "3 أشهر",
+  MONTHS_6: "6 أشهر",
+  MONTHS_9: "9 أشهر",
+  MONTHS_12: "12 شهر",
 };
 
 /** In the current language, e.g. "إقامة — تجديد" / "Iqama — Renewal" or "تأشيرات — خروج وعودة" when the payment has a sub-type. */
