@@ -1,0 +1,74 @@
+/* The unified royal look on every card of the site (the "royal cards" preview): a double gold
+   frame, the engraved ground and the spotlight, gold-foil titles, coins for icons, flowing bars,
+   ledger tables and lists. Loaded last; the home page's own royal cards (royal-kit) match it. */
+
+:root { --rg-a: #17140f; --rg-b: #070608; --rg-engr: rgba(214, 182, 120, 0.06); --rg-spot: rgba(255, 236, 190, 0.16); --rg-edge: rgba(214, 182, 120, 0.34); --rg-line: rgba(201, 164, 100, 0.55); --rg-gold: #d6b678; --rg-muted: #a89c82; --rg-track: rgba(255, 255, 255, 0.07);
+  --rg-foil: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a); }
+html.rx-light { --rg-a: #fbf5e6; --rg-b: #efe3c3; --rg-engr: rgba(120, 92, 40, 0.07); --rg-spot: rgba(255, 255, 255, 0.7); --rg-edge: rgba(120, 92, 40, 0.3); --rg-line: rgba(168, 121, 47, 0.5); --rg-gold: #a8792f; --rg-muted: #6d6452; --rg-track: rgba(120, 92, 40, 0.14);
+  --rg-foil: linear-gradient(100deg, #6b4e1d, #b08a3e 38%, #d9b867 50%, #8f6a2a 74%, #6b4e1d); }
+
+/* ---- every card ---- */
+.lu-app :is(.px-card, .px-stat, .rp-card:not(.rp-kpis), .rc-lic, .rc-dcard, .rc-rp, .ry-card:not(.ry-welcome), .lux-glass, .lu-cc, .lu-row, .cu-card, .cu-kpi, .tk-card, .vio-card, .rp-day):not(.pxl),
+.lu-app .rp-kpis > *,
+html.rx-light .lu-app :is(.px-card, .px-stat, .rp-card:not(.rp-kpis), .rc-lic, .rc-dcard, .rc-rp, .ry-card:not(.ry-welcome), .lux-glass, .lu-cc, .lu-row, .cu-card, .cu-kpi, .tk-card, .vio-card, .rp-day):not(.pxl),
+html.rx-light .lu-app .rp-kpis > * {
+  border: 1px solid var(--rg-edge) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(900px 340px at 50% -14%, var(--rg-spot), transparent 62%),
+    repeating-radial-gradient(circle at 10% 120%, transparent 0 11px, var(--rg-engr) 11px 12px),
+    repeating-radial-gradient(circle at 90% -40%, transparent 0 11px, var(--rg-engr) 11px 12px),
+    linear-gradient(180deg, var(--rg-a), var(--rg-b)) !important;
+  box-shadow: 0 30px 60px -42px #000, inset 0 0 0 6px var(--rg-b), inset 0 0 0 7px var(--rg-line), inset 0 0 0 10px var(--rg-b), inset 0 0 0 10.6px rgba(201, 164, 100, 0.22) !important;
+}
+.lu-app :is(.px-card, .px-stat, .rc-lic, .rc-dcard, .rc-rp, .lu-cc, .cu-card, .cu-kpi, .tk-card, .vio-card):not(.pxl):hover,
+html.rx-light .lu-app :is(.px-card, .px-stat, .rc-lic, .rc-dcard, .rc-rp, .lu-cc, .cu-card, .cu-kpi, .tk-card, .vio-card):not(.pxl):hover {
+  border-color: rgba(243, 223, 174, 0.55) !important;
+  box-shadow: 0 30px 70px -32px #000, 0 0 40px -18px rgba(201, 164, 100, 0.55), inset 0 0 0 6px var(--rg-b), inset 0 0 0 7px var(--rg-line), inset 0 0 0 10px var(--rg-b), inset 0 0 0 10.6px rgba(201, 164, 100, 0.3) !important;
+}
+/* the corner marks become gold brackets sitting on the frame */
+.lu-app :is(.px-card, .px-stat):not(.pxl)::before, .lu-app :is(.px-card, .px-stat):not(.pxl)::after {
+  width: 26px !important; height: 26px !important; border-color: var(--rg-gold) !important; border-style: solid !important; opacity: 1 !important; z-index: 2 !important;
+}
+.lu-app :is(.px-card, .px-stat):not(.pxl)::before { top: 6px !important; right: 6px !important; border-width: 2px 2px 0 0 !important; border-top-right-radius: 12px !important; }
+.lu-app :is(.px-card, .px-stat):not(.pxl)::after { bottom: 6px !important; left: 6px !important; border-width: 0 0 2px 2px !important; border-bottom-left-radius: 12px !important; }
+
+/* ---- titles ---- */
+.lu-app .px-chd { border-bottom: 0 !important; position: relative; padding-top: 22px !important; padding-inline: 26px !important; }
+.lu-app .px-chd::after { content: ""; position: absolute; bottom: 0; inset-inline: 26px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.75), transparent); }
+.lu-app .px-chd h3, html.rx-light .lu-app .px-chd h3 { -webkit-text-fill-color: transparent !important; background: var(--rg-foil) !important; background-size: 220% 100% !important; -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; animation: rk-foil 7s linear infinite; font-weight: 900 !important; }
+.lu-app .px-chd h3::after { content: none !important; }
+.lu-app .px-chd .px-btn { color: var(--rg-gold); border: 1px solid rgba(201, 164, 100, 0.5); border-radius: 999px; background: linear-gradient(180deg, rgba(255, 243, 214, 0.06), transparent); }
+.lu-app .px-cb { padding-inline: 24px; }
+@keyframes rk-foil { to { background-position: -220% 0; } }
+
+/* ---- stat cards: the value in its colour, the icon a gold coin ---- */
+.lu-app .px-stat { padding: 22px 24px 24px !important; }
+.lu-app .px-stat .v { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 35%, #fff), var(--c) 75%) !important; -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; filter: drop-shadow(0 1px 8px color-mix(in srgb, var(--c) 40%, transparent)); }
+
+/* ---- bars keep flowing ---- */
+.lu-app .px-bar { height: 8px !important; border-radius: 8px !important; background: var(--rg-track) !important; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 0.6px rgba(201, 164, 100, 0.25); }
+.lu-app .px-bar u { position: relative; overflow: hidden; border-radius: 8px;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 6px, transparent 6px 12px), linear-gradient(90deg, color-mix(in srgb, var(--c) 60%, #000), var(--c) 55%, color-mix(in srgb, var(--c) 55%, #fff)) !important;
+  background-size: 17px 17px, 100% 100% !important; animation: rk-flow 1s linear infinite; }
+.lu-app .px-bar u::before { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent); animation: rk-run 2.4s ease-in-out infinite; }
+@keyframes rk-flow { to { background-position: -17px 0, 0 0; } }
+@keyframes rk-run { from { transform: translateX(260%); } to { transform: translateX(-160%); } }
+
+/* ---- tables become ledgers ---- */
+.lu-app .px-t th { background: none !important; color: var(--rg-gold) !important; font-weight: 800 !important; letter-spacing: 0.04em; border-bottom: 1px solid var(--rg-line); }
+.lu-app .px-t td { border-bottom: 1px solid rgba(201, 164, 100, 0.16) !important; }
+.lu-app .px-t tbody tr:hover { background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.1)) !important; }
+.lu-app .px-t tbody tr:hover > td:first-child { box-shadow: inset -3px 0 0 var(--rg-gold) !important; }
+
+/* ---- lists: gold hairlines between the rows, coins for the avatars ---- */
+.lu-app .px-li { position: relative; border-bottom: 0 !important; }
+.lu-app .px-li + .px-li::before { content: ""; position: absolute; top: 0; inset-inline: 20px; height: 1px; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.28), transparent); }
+.lu-app .px-li:hover { background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.1)) !important; }
+.lu-app .px-av, html.rx-light .lu-app .px-av { border-radius: 50% !important; background: radial-gradient(circle at 40% 30%, #2a2215, #070605 70%) !important; color: #e9c777 !important;
+  box-shadow: 0 0 0 2px #b8913f, 0 0 0 3px #000, 0 0 0 4.5px rgba(214, 182, 120, 0.45), inset 0 0 10px rgba(0, 0, 0, 0.9) !important; }
+.lu-app .px-av svg { stroke: url(#rk-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lu-app .px-chd h3, .lu-app .px-bar u, .lu-app .px-bar u::before { animation: none !important; }
+}

@@ -1,63 +1,49 @@
-/* The icon on every stat card: a jewel medallion. A gold bezel round a gem in the card's own colour,
-   a glass dome over it, the icon engraved in white. Loaded after the royal styles it replaces. */
+/* The icon on every stat card: the emblem cast in polished gold on a black coin (the approved
+   "engraved gold" style). The gold is the #rk-gold gradient the shell renders once. */
 .px-stat .ic,
 html.rx-light .px-stat .ic {
   position: relative;
-  width: 48px !important;
-  height: 48px !important;
+  width: 50px !important;
+  height: 50px !important;
   border-radius: 50% !important;
-  color: #fff !important;
-  border: 2.5px solid transparent !important;
-  background:
-    radial-gradient(circle at 34% 26%, color-mix(in srgb, var(--c) 52%, #fff) 0%, var(--c) 46%, color-mix(in srgb, var(--c) 52%, #000) 100%) padding-box,
-    linear-gradient(140deg, #fff3d6 0%, #e9c777 22%, #8f6a2a 48%, #f3dfae 66%, #a87e33 84%, #fff0c4 100%) border-box !important;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 8px 16px -6px color-mix(in srgb, var(--c) 75%, #000),
-    0 0 18px -4px color-mix(in srgb, var(--c) 70%, transparent),
-    inset 0 -5px 8px rgba(0, 0, 0, 0.35),
-    inset 0 2px 3px rgba(255, 255, 255, 0.45) !important;
-  animation: stat-glow 3.8s ease-in-out infinite !important;
+  border: 0 !important;
   overflow: hidden;
+  background: radial-gradient(circle at 40% 30%, #2a2215, #070605 70%) !important;
+  box-shadow: 0 0 0 2px #b8913f, 0 0 0 3px #000, 0 0 0 4.5px rgba(214, 182, 120, 0.5), 0 8px 18px -8px #000, inset 0 0 12px rgba(0, 0, 0, 0.9) !important;
+  animation: none !important;
 }
 .px-stat .ic::before {
   content: "";
   position: absolute;
-  inset: 2px 5px auto;
-  height: 46%;
-  border-radius: 50% 50% 60% 60% / 80% 80% 40% 40%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
-  pointer-events: none;
+  inset: 5px;
+  border-radius: 50%;
+  border: 0.6px dashed color-mix(in srgb, var(--c) 55%, transparent);
 }
 .px-stat .ic::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
-  transform: translateX(-130%);
-  animation: stat-sheen 6s ease-in-out infinite;
-  animation-delay: calc(var(--i, 0) * 0.5s);
+  background: linear-gradient(110deg, transparent 40%, rgba(255, 243, 214, 0.3) 50%, transparent 60%);
+  transform: translateX(-140%);
+  animation: stat-sheen 5s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.6s);
   pointer-events: none;
 }
 .px-stat .ic svg {
   position: relative;
   z-index: 1;
-  width: 22px !important;
-  height: 22px !important;
+  width: 26px !important;
+  height: 26px !important;
+  stroke: url(#rk-gold) !important;
   stroke-width: 1.9;
-  fill: rgba(255, 255, 255, 0.2);
-  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.55));
+  fill: none !important;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.85)) drop-shadow(0 0 5px rgba(243, 223, 174, 0.25));
 }
-button.px-stat:hover .ic { animation-duration: 1.6s !important; }
-@keyframes stat-glow {
-  50% { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 8px 16px -6px color-mix(in srgb, var(--c) 75%, #000), 0 0 26px -2px color-mix(in srgb, var(--c) 85%, transparent), inset 0 -5px 8px rgba(0, 0, 0, 0.35), inset 0 2px 3px rgba(255, 255, 255, 0.45); }
-}
-@keyframes stat-sheen { 0%, 60% { transform: translateX(-130%); } 90%, 100% { transform: translateX(130%); } }
+@keyframes stat-sheen { 0%, 60% { transform: translateX(-140%); } 90%, 100% { transform: translateX(140%); } }
 @media (max-width: 640px) {
-  .px-stat .ic, html.rx-light .px-stat .ic { width: 38px !important; height: 38px !important; border-width: 2px !important; }
-  .px-stat .ic svg { width: 18px !important; height: 18px !important; }
+  .px-stat .ic, html.rx-light .px-stat .ic { width: 40px !important; height: 40px !important; }
+  .px-stat .ic svg { width: 21px !important; height: 21px !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .px-stat .ic, html.rx-light .px-stat .ic { animation: none !important; }
   .px-stat .ic::after { animation: none; display: none; }
 }

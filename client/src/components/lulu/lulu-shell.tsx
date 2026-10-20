@@ -37,6 +37,7 @@ import { prefetchPageData, warmUpPages } from "@/lib/page-prefetch";
 import { shownTone, tonedHex } from "@/lib/gold-tone";
 import { warmPrintingFor } from "@/lib/print-warm";
 import { AlertsRibbon } from "@/components/layout/alerts-ribbon";
+import { RoyalDefs } from "@/components/royal/royal-kit";
 
 /* The Pearl shell on every device: a floating glass sidebar (an icon rail on
    tablets), a sticky glass header that holds each page's title and actions,
@@ -422,6 +423,7 @@ function Header({ onSearch, current }: { onSearch: () => void; current?: LuluNav
 
   return (
     <>
+      <RoyalDefs />
       <header className="lu-top rx-top no-print">
         {/* the organisation named in Settings, the search in the middle, the tools at the far end */}
         <span className="rx-org" title={brand.name}>

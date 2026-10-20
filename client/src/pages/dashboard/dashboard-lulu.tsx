@@ -13,7 +13,7 @@ import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut } from "@/components/royal/px";
-import { ActivityTimeline, FollowLedger, KindLedger, RoyalCard, RoyalDefs, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
+import { ActivityTimeline, FollowLedger, KindLedger, RoyalCard, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
 import { LuxeCard } from "@/components/royal/px-luxe";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
@@ -149,7 +149,6 @@ export default function DashboardLulu() {
 
   return (
     <div className="px">
-      <RoyalDefs />
       <PageHeader
         title={isAr ? "لوحة التحكم" : "Dashboard"}
         eyebrow={dateLine}
