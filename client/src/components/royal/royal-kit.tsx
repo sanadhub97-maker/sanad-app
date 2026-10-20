@@ -240,3 +240,53 @@ export function FollowLedger({ rows, isAr }: { rows: FollowRow[]; isAr: boolean 
     </div>
   );
 }
+
+/* ---------------- a royal area chart: a gold line that draws itself, plaques with each figure ---------------- */
+
+export function RoyalArea({ labels, values, rtl }: { labels: string[]; values: number[]; rtl: boolean }) {
+  const W = 1000, H = 250, T = 46, B = 196, padX = 46, n = values.length;
+  const max = Math.max(1, ...values) * 1.15;
+  const step = n > 1 ? (W - padX * 2) / (n - 1) : 0;
+  const x = (i: number) => (n === 1 ? W / 2 : rtl ? W - padX - i * step : padX + i * step);
+  const y = (v: number) => B - (v / max) * (B - T);
+  const pts = values.map((v, i) => [x(i), y(v)] as const);
+  const line = pts.map((p, i) => { if (!i) return `M${p[0]} ${p[1]}`; const q = pts[i - 1]; const mx = (q[0] + p[0]) / 2; return `C${mx} ${q[1]} ${mx} ${p[1]} ${p[0]} ${p[1]}`; }).join(" ");
+  const area = n ? `${line} L${pts[n - 1][0]} ${B} L${pts[0][0]} ${B} Z` : "";
+  const on = useOn();
+  return (
+    <div className="rk-area">
+      <svg viewBox={`0 0 ${W} ${H + 40}`} aria-hidden="true">
+        <defs>
+          <linearGradient id="rk-area-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e9c777" stopOpacity=".38" /><stop offset="1" stopColor="#e9c777" stopOpacity="0" /></linearGradient>
+          <linearGradient id="rk-area-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#8f6a2a" /><stop offset=".3" stopColor="#f3dfae" /><stop offset=".5" stopColor="#fff3d6" /><stop offset=".7" stopColor="#f3dfae" /><stop offset="1" stopColor="#8f6a2a" /></linearGradient>
+          <filter id="rk-area-glow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="4" /></filter>
+        </defs>
+        {[0, 1, 2, 3].map((k) => <line key={k} className="gl" x1={padX - 20} x2={W - padX + 20} y1={T + ((B - T) * k) / 3} y2={T + ((B - T) * k) / 3} />)}
+        <rect x={padX - 26} y={B} width={W - padX * 2 + 52} height={3} rx={1.5} fill="url(#rk-gold)" />
+        <path d={area} fill="url(#rk-area-f)" className={on ? "fill on" : "fill"} />
+        <path id="rk-area-path" d={line} fill="none" stroke="url(#rk-area-l)" strokeWidth="7" opacity=".45" filter="url(#rk-area-glow)" className={on ? "ln on" : "ln"} pathLength={1} />
+        <path d={line} fill="none" stroke="url(#rk-area-l)" strokeWidth="3" strokeLinecap="round" className={on ? "ln on" : "ln"} pathLength={1} />
+        {n > 1 && !reduced() && (
+          <circle r="5" fill="#fff8e6" className="spark-run">
+            <animateMotion dur="5s" repeatCount="indefinite" rotate="auto"><mpath href="#rk-area-path" /></animateMotion>
+          </circle>
+        )}
+        {pts.map((p, i) => {
+          const cur = i === 0;
+          return (
+            <g key={i} className="node" style={{ ["--k" as string]: i } as CSSProperties}>
+              <line x1={p[0]} x2={p[0]} y1={p[1] + 10} y2={B} stroke="#c9a464" strokeOpacity=".4" strokeDasharray="3 4" />
+              <rect x={p[0] - 7} y={p[1] - 7} width={14} height={14} transform={`rotate(45 ${p[0]} ${p[1]})`} fill="url(#rk-gold)" stroke="#0b0906" strokeWidth="2" />
+              <g className="plq">
+                <rect x={p[0] - 26} y={p[1] - 44} width={52} height={26} rx={8} className="plq-bg" stroke="url(#rk-gold)" strokeWidth="1.2" />
+                <text x={p[0]} y={p[1] - 26} textAnchor="middle" className="v">{fmt(values[i])}</text>
+              </g>
+              <rect x={p[0] - 40} y={B + 14} width={80} height={26} rx={13} className={cur ? "mon-bg cur" : "mon-bg"} />
+              <text x={p[0]} y={B + 32} textAnchor="middle" className={cur ? "mon cur" : "mon"}>{labels[i]}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}

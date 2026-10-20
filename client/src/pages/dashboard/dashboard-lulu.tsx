@@ -12,8 +12,8 @@ import { violationsApi } from "@/api/violations";
 import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
-import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut } from "@/components/royal/px";
-import { ActivityTimeline, FollowLedger, KindLedger, RoyalCard, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
+import { PxBadge, PxBars, monthColor, PxCard, PxDonut } from "@/components/royal/px";
+import { ActivityTimeline, FollowLedger, KindLedger, RoyalArea, RoyalCard, RoyalStat, type KindRow } from "@/components/royal/royal-kit";
 import { LuxeCard } from "@/components/royal/px-luxe";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
@@ -259,13 +259,13 @@ export default function DashboardLulu() {
       </div>
 
       <div className="px-g2">
-        <PxCard i={5} title={isAr ? "مواعيد الانتهاء القادمة" : "Upcoming expiries"} sub={isAr ? "الوثائق اللي هتنتهي في كل شهر من الشهور الجاية" : "Documents ending in each of the coming months"}>
+        <RoyalCard i={5} title={isAr ? "مواعيد الانتهاء القادمة" : "Upcoming expiries"} sub={isAr ? "الوثائق اللي هتنتهي في كل شهر من الشهور الجاية" : "Documents ending in each of the coming months"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: upcoming.reduce((a, m) => a + m.count, 0) }}>
           {upcoming.length ? (
-            <PxArea labels={upLabels} series={[{ name: isAr ? "تنتهي" : "Ending", color: "var(--lx)", values: upcoming.map((m) => m.count) }]} />
+            <RoyalArea labels={upLabels} values={upcoming.map((m) => m.count)} rtl={isAr} />
           ) : (
             <div className="px-empty">{isAr ? "لا شيء ينتهي في الشهور الجاية" : "Nothing ends in the coming months"}</div>
           )}
-        </PxCard>
+        </RoyalCard>
         <LuxeCard i={6} variant="card" title={isAr ? "حالة الوثائق" : "Documents by status"} sub={isAr ? `${tracked} وثيقة` : `${tracked} documents`}>
           <PxDonut
             center={tracked}

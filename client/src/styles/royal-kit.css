@@ -152,3 +152,20 @@ button.rk-card:focus-visible { outline: 2px solid var(--rk-gold); outline-offset
   .rk-card, .rk-card::after, .rk-rosette, .rk-dust i, .rk-hd h3, .rk-total b, .rk-coin::after, .rk-bar i, .rk-bar i::before, .rk-bar i::after, .rk-share i, .rk-share i::after, .rk-tl::after, .rk-lg, .rk-ev, .rk-led tbody tr, .rk-due.late b, .rk-trk i::after { animation: none !important; }
   .rk-bar i, .rk-share i, .rk-trk i, .rk-lg .pct .vl { transition: none; }
 }
+
+/* the royal area chart */
+.rk-area svg { width: 100%; height: auto; display: block; overflow: visible; }
+.rk-area .gl { stroke: rgba(201, 164, 100, 0.16); stroke-dasharray: 2 6; }
+.rk-area .ln { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.8s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.rk-area .ln.on { stroke-dashoffset: 0; }
+.rk-area .fill { opacity: 0; transition: opacity 1s 0.9s; }
+.rk-area .fill.on { opacity: 1; }
+.rk-area .spark-run { filter: drop-shadow(0 0 6px #fff3d6) drop-shadow(0 0 12px #e9c777); }
+.rk-area .node { animation: rk-in 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; animation-delay: calc(var(--k) * 0.12s + 0.8s); }
+.rk-area .plq-bg { fill: var(--rk-plate-b, #0b0a08); }
+.rk-area .v { font: 900 15px var(--font-sans); fill: var(--rk-ink, #f3ecdc); font-variant-numeric: tabular-nums; }
+.rk-area .mon-bg { fill: var(--rk-plate-b, #0b0a08); stroke: rgba(201, 164, 100, 0.35); }
+.rk-area .mon-bg.cur { fill: url(#rk-gold); stroke: none; }
+.rk-area .mon { font: 800 13.5px var(--font-sans); fill: var(--rk-muted, #a89c82); }
+.rk-area .mon.cur { fill: #1a1307; }
+@media (prefers-reduced-motion: reduce) { .rk-area .ln { transition: none; stroke-dashoffset: 0; } .rk-area .fill { transition: none; opacity: 1; } .rk-area .node { animation: none; } }
