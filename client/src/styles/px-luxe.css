@@ -93,3 +93,75 @@ html.rx-light .pxr-val.cur { fill: color-mix(in srgb, var(--vc) 55%, #000); }
   .pxr-seg, .pxr-row .bar i, .pxr-ring, .pxr-col, .pxr-tip { transition: none; }
   .pxr-spark { opacity: 0.8; }
 }
+
+/* ---- the royal card (LuxeCard) ---- */
+.lu-app .px-card.pxl {
+  --pxl-a: #17140f; --pxl-b: #070608; --pxl-engr: rgba(214, 182, 120, 0.06); --pxl-spot: rgba(255, 236, 190, 0.22); --pxl-rose: rgba(214, 182, 120, 0.22);
+  --pxl-gold: #d6b678; --pxl-edge: rgba(214, 182, 120, 0.34);
+  position: relative; padding: 0; isolation: isolate; overflow: hidden; border-radius: 18px;
+  border: 1px solid var(--pxl-edge) !important;
+  background:
+    radial-gradient(640px 260px at 90% -20%, rgba(201, 164, 100, 0.16), transparent 60%),
+    radial-gradient(500px 240px at 0% 120%, rgba(201, 164, 100, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--pxl-a), var(--pxl-b)) !important;
+  box-shadow: 0 34px 70px -44px #000, inset 0 0 0 5px var(--pxl-b), inset 0 0 0 6px rgba(201, 164, 100, 0.16) !important;
+}
+html.rx-light .lu-app .px-card.pxl {
+  --pxl-a: #fbf5e6; --pxl-b: #efe3c3; --pxl-engr: rgba(120, 92, 40, 0.07); --pxl-spot: rgba(255, 255, 255, 0.75); --pxl-rose: rgba(120, 92, 40, 0.2); --pxl-gold: #a8792f; --pxl-edge: rgba(120, 92, 40, 0.3);
+  --pxr-muted: #6d6452; --pxr-foil: linear-gradient(100deg, #6b4e1d, #b08a3e 35%, #d9b867 50%, #8f6a2a 70%, #6b4e1d);
+}
+.lu-app .px-card.pxl-panel {
+  border-radius: 22px;
+  background:
+    radial-gradient(900px 360px at 50% -12%, var(--pxl-spot), transparent 62%),
+    repeating-radial-gradient(circle at 10% 120%, transparent 0 11px, var(--pxl-engr) 11px 12px),
+    repeating-radial-gradient(circle at 90% -40%, transparent 0 11px, var(--pxl-engr) 11px 12px),
+    linear-gradient(180deg, var(--pxl-a), var(--pxl-b)) !important;
+  box-shadow: 0 40px 80px -50px #000, inset 0 0 0 6px var(--pxl-b) !important;
+}
+/* the old corner marks are replaced by this card's own */
+.lu-app .px-card.pxl::before { display: none !important; }
+.lu-app .px-card.pxl-plain::before { display: block !important; content: "" !important; position: absolute !important; top: 9px !important; inset-inline-start: 9px !important; left: auto !important; bottom: auto !important; right: auto !important; width: 16px !important; height: 16px !important; border: 1px solid var(--pxl-gold) !important; border-width: 1px 0 0 1px !important; opacity: 0.8; z-index: 2; pointer-events: none; }
+.lu-app .px-card.pxl-plain::after { content: "" !important; position: absolute !important; bottom: 9px !important; inset-inline-end: 9px !important; top: auto !important; left: auto !important; right: auto !important; width: 16px !important; height: 16px !important; border: 1px solid var(--pxl-gold) !important; border-width: 0 1px 1px 0 !important; opacity: 0.8; z-index: 2; pointer-events: none; }
+.lu-app .px-card.pxl-panel::after { content: "" !important; position: absolute !important; inset: 0 !important; width: auto !important; height: auto !important; border: 0 !important; z-index: 3; pointer-events: none; background: linear-gradient(105deg, transparent 40%, rgba(255, 243, 214, 0.09) 50%, transparent 60%); transform: translateX(-130%); animation: pxl-sweep 10s ease-in-out infinite; }
+@keyframes pxl-sweep { 0%, 55% { transform: translateX(-130%); } 90%, 100% { transform: translateX(130%); } }
+.px-card.pxl > .pxl-deco { position: absolute !important; pointer-events: none; }
+.px-card.pxl > .pxl-rosette { z-index: 0; inset-inline: 0; top: 50%; margin: auto; width: min(560px, 90%); aspect-ratio: 1; transform: translateY(-46%); color: var(--pxl-rose); animation: pxl-spin 180s linear infinite; }
+@keyframes pxl-spin { to { transform: translateY(-46%) rotate(360deg); } }
+.px-card.pxl > .pxl-frame { z-index: 2; inset: 9px; border: 1px solid rgba(201, 164, 100, 0.55); border-radius: 16px; }
+.px-card.pxl > .pxl-frame::before { content: ""; position: absolute; inset: 4px; border: 0.6px solid rgba(201, 164, 100, 0.28); border-radius: 12px; }
+.px-card.pxl > .pxl-corner { z-index: 3; width: 50px; height: 50px; color: var(--pxl-gold); }
+.px-card.pxl > .pxl-corner.a { top: 8px; right: 8px; transform: scaleX(-1); }
+.px-card.pxl > .pxl-corner.b { top: 8px; left: 8px; }
+.px-card.pxl > .pxl-corner.c { bottom: 8px; right: 8px; transform: scale(-1); }
+.px-card.pxl > .pxl-corner.d { bottom: 8px; left: 8px; transform: scaleY(-1); }
+.px-card.pxl > .pxl-dust { z-index: 0; inset: 0; overflow: hidden; }
+.pxl-dust i { position: absolute; bottom: -8px; width: 3px; height: 3px; border-radius: 50%; background: radial-gradient(circle, #fff3d6, #c9a464 60%, transparent 70%); opacity: 0; animation: pxl-rise var(--t, 9s) linear var(--d, 0s) infinite; }
+@keyframes pxl-rise { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 12% { opacity: 0.8; } 100% { transform: translate(var(--x, 12px), -440px) scale(1.2); opacity: 0; } }
+.px-card.pxl > .pxl-hd, .px-card.pxl > .pxl-ln, .px-card.pxl > .pxl-body { position: relative !important; z-index: 1; }
+.pxl-hd { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 18px 22px 14px; }
+.pxl-panel .pxl-hd { padding: 34px 40px 6px; }
+.pxl-ttl { display: grid; gap: 3px; min-width: 0; }
+.pxl-ttl h3 { margin: 0; font: 900 18px var(--font-sans); background: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: pxr-foil 7s linear infinite; }
+.pxl-panel .pxl-ttl h3 { font-size: 21px; }
+.pxl-ttl h3::after { content: none !important; }
+html.rx-light .pxl-ttl h3 { background-image: linear-gradient(100deg, #6b4e1d, #b08a3e 38%, #d9b867 50%, #8f6a2a 74%, #6b4e1d); }
+.pxl-ttl small { color: var(--pxr-muted, #a89c82); font-size: 12.5px; font-weight: 700; }
+.pxl-total { text-align: end; display: grid; gap: 1px; }
+.pxl-total span { font-size: 11.5px; font-weight: 800; color: var(--pxr-muted, #a89c82); letter-spacing: 0.08em; }
+.pxl-total b { font: 900 28px/1.1 var(--font-sans); font-variant-numeric: tabular-nums; background: var(--pxr-foil, linear-gradient(100deg, #8f6a2a, #f3dfae 30%, #fff3d6 50%, #c9a464 70%, #8f6a2a)); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: pxr-foil 5s linear infinite; }
+.pxl-total b small { font-size: 13px; font-weight: 800; margin-inline-start: 5px; }
+.pxl-ln { height: 1px; margin: 12px 22px 0; background: linear-gradient(90deg, transparent, rgba(201, 164, 100, 0.8), transparent); }
+.pxl-panel .pxl-ln { margin-inline: 40px; }
+.pxl-body { padding: 14px 22px 22px; }
+.pxl-panel .pxl-body { padding: 0 28px 40px; }
+.pxl-panel .pxr-vessels { padding: 0; }
+@media (max-width: 560px) {
+  .pxl-panel .pxl-hd { padding: 30px 26px 4px; }
+  .pxl-panel .pxl-ln { margin-inline: 26px; }
+  .pxl-panel .pxl-body { padding: 0 14px 34px; }
+  .pxl-total b { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lu-app .px-card.pxl-panel::after, .px-card.pxl > .pxl-rosette, .pxl-dust i, .pxl-ttl h3, .pxl-total b { animation: none; }
+}

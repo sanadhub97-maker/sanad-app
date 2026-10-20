@@ -13,6 +13,7 @@ import { maintenanceApi } from "@/api/maintenance";
 import { useAuthStore } from "@/stores/authStore";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PxArea, PxBadge, PxBars, monthColor, PxCard, PxDonut, PxStat } from "@/components/royal/px";
+import { LuxeCard } from "@/components/royal/px-luxe";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 
 /* The home page in the Royal design, as approved in the preview: a royal-blue
@@ -26,7 +27,6 @@ function localIso(d = new Date()) {
 const daysAr = (n: number) => (n === 1 ? "يوم واحد" : n === 2 ? "يومين" : n <= 10 ? `${n} أيام` : `${n} يومًا`);
 const docsAr = (n: number) => (n === 1 ? "وثيقة واحدة" : n === 2 ? "وثيقتان" : n <= 10 ? `${n} وثائق` : `${n} وثيقة`);
 const v = (o: Record<string, string | number>) => o as CSSProperties;
-const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
 export default function DashboardLulu() {
   const { t, i18n } = useTranslation();
@@ -268,7 +268,7 @@ export default function DashboardLulu() {
             <div className="px-empty">{isAr ? "لا شيء ينتهي في الشهور الجاية" : "Nothing ends in the coming months"}</div>
           )}
         </PxCard>
-        <PxCard i={6} title={isAr ? "حالة الوثائق" : "Documents by status"} sub={isAr ? `${tracked} وثيقة` : `${tracked} documents`}>
+        <LuxeCard i={6} variant="card" title={isAr ? "حالة الوثائق" : "Documents by status"} sub={isAr ? `${tracked} وثيقة` : `${tracked} documents`}>
           <PxDonut
             center={tracked}
             centerLabel={isAr ? "وثيقة" : "documents"}
@@ -278,7 +278,7 @@ export default function DashboardLulu() {
               { label: isAr ? "منتهية" : "Expired", value: summary?.expiredDocuments ?? expired, color: "var(--l-rose)" },
             ]}
           />
-        </PxCard>
+        </LuxeCard>
       </div>
 
       <div className="px-g2">
@@ -367,9 +367,9 @@ export default function DashboardLulu() {
       </div>
 
       <div className={canTasks ? "px-g2" : "px"}>
-        <PxCard i={9} title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? `آخر 6 أشهر · ${fmt(sixTotal)} ر.س` : `Last 6 months · ${fmt(sixTotal)} SAR`}>
+        <LuxeCard i={9} variant="panel" title={isAr ? "المدفوعات الشهرية" : "Monthly payments"} sub={isAr ? "آخر 6 أشهر" : "Last 6 months"} total={{ label: isAr ? "الإجمالي" : "TOTAL", value: sixTotal, unit: isAr ? "ر.س" : "SAR" }}>
           {sixTotal === 0 ? <div className="px-empty">{isAr ? "لا توجد مدفوعات في آخر 6 أشهر" : "No payments in the last 6 months"}</div> : <PxBars labels={months.map((m) => m.label)} values={monthly} colors={months.map((m) => monthColor(m.key))} unit={isAr ? "ر.س" : "SAR"} />}
-        </PxCard>
+        </LuxeCard>
         {canTasks && (
           <PxCard
             i={10}

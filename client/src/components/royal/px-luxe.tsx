@@ -322,3 +322,51 @@ function Plaque({ x, y, value, delay, cur, color, gold }: { x: number; y: number
     </g>
   );
 }
+
+/* ---------------------------------------------------------------- the royal card */
+
+/** The framed card the royal charts sit in. "panel": the double gold frame, corner brackets, the
+ * engraved rosette and the dust; "card": the lighter frame with a corner mark. Both have the
+ * gold-foil title and a rule under the head. */
+export function LuxeCard({ title, sub, total, variant = "panel", i = 0, children }: { title: ReactNode; sub?: ReactNode; total?: { label: string; value: number; unit?: string }; variant?: "panel" | "card"; i?: number; children: ReactNode }) {
+  const t = useCountUp(total?.value ?? 0, 300, 1900);
+  const panel = variant === "panel";
+  return (
+    <section className={`px-card pxl ${panel ? "pxl-panel" : "pxl-plain"}`} style={{ ["--i" as string]: i }}>
+      {panel && (
+        <svg className="pxl-deco pxl-rosette" viewBox="-100 -100 200 200" aria-hidden="true">
+          {Array.from({ length: 36 }, (_, k) => { const a = (k / 36) * Math.PI * 2; return <circle key={k} cx={Math.cos(a) * 34} cy={Math.sin(a) * 34} r={62} fill="none" stroke="currentColor" strokeWidth=".35" />; })}
+          <circle r={96} fill="none" stroke="currentColor" strokeWidth=".5" />
+          <circle r={99} fill="none" stroke="currentColor" strokeWidth=".3" />
+        </svg>
+      )}
+      {panel && <div className="pxl-deco pxl-frame" aria-hidden="true" />}
+      {panel && ["a", "b", "c", "d"].map((k) => (
+        <svg key={k} className={`pxl-deco pxl-corner ${k}`} viewBox="0 0 50 50" aria-hidden="true">
+          <path d="M1 49V17A16 16 0 0 1 17 1H49" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M5 49V19A14 14 0 0 1 19 5H49" fill="none" stroke="currentColor" strokeWidth=".7" opacity=".55" />
+          <rect x="9.2" y="9.2" width="5.6" height="5.6" transform="rotate(45 12 12)" fill="currentColor" />
+        </svg>
+      ))}
+      <div className="pxl-deco pxl-dust" aria-hidden="true">
+        {Array.from({ length: panel ? 18 : 12 }, (_, k) => (
+          <i key={k} style={{ left: `${4 + seed(k, 1) * 92}%`, ["--t" as string]: `${8 + seed(k, 2) * 7}s`, ["--d" as string]: `${-seed(k, 3) * 12}s`, ["--x" as string]: `${seed(k, 4) * 40 - 20}px` } as CSSProperties} />
+        ))}
+      </div>
+      <div className="pxl-hd">
+        <div className="pxl-ttl">
+          <h3>{title}</h3>
+          {sub && <small>{sub}</small>}
+        </div>
+        {total && (
+          <div className="pxl-total">
+            <span>{total.label}</span>
+            <b>{fmt(t)}<small>{total.unit}</small></b>
+          </div>
+        )}
+      </div>
+      <div className="pxl-ln" aria-hidden="true" />
+      <div className="pxl-body">{children}</div>
+    </section>
+  );
+}
