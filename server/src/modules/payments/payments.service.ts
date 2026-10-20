@@ -4,6 +4,8 @@ import { ApiError } from "@/utils/apiError";
 import { paginationMeta, skipTake } from "@/utils/pagination";
 import { PAYMENT_SUBTYPES, MULTI_BRANCH_CATEGORIES, MULTI_EMPLOYEE_CATEGORIES } from "@/constants/paymentCategories";
 import type { z } from "zod";
+import { getExpirationRules } from "@/services/settingsStore";
+import { computeStatus } from "@/services/expiration";
 import type { createPaymentSchema, listPaymentsQuerySchema, updatePaymentSchema } from "@/modules/payments/payments.schemas";
 
 type CreateInput = z.infer<typeof createPaymentSchema>;
@@ -118,10 +120,37 @@ export async function create(input: CreateInput, createdById: string) {
     if (existing) throw ApiError.badRequest("A payment with this number already exists.");
   }
 
-  return prisma.payment.create({
-    data: { ...input, ...parties(input.category, input), fileIds: input.fileIds ?? (input.fileId ? [input.fileId] : []), fileId: input.fileIds ? input.fileIds[0] ?? null : input.fileId, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById },
-    include: includeRelations,
-  });
+  const data = { ...input, ...parties(input.category, input), fileIds: input.fileIds ?? (input.fileId ? [input.fileId] : []), fileId: input.fileIds ? input.fileIds[0] ?? null : input.fileId, type: PAYMENT_SUBTYPES[input.category] ? input.type : undefined, paymentNumber, amount, vat, total, createdById };
+  const months = input.category === "WORK_PERMIT" ? workPermitMonths(input.type) : null;
+  if (!months || !input.employeeId) return prisma.payment.create({ data, include: includeRelations });
+
+  // A work permit paid for is recorded on the employee too, ending its length after the payment date.
+  const issued = new Date(input.paymentDate as unknown as string | Date);
+  const expiry = new Date(issued);
+  expiry.setUTCMonth(expiry.getUTCMonth() + months);
+  const rules = await getExpirationRules();
+  const [payment] = await prisma.$transaction([
+    prisma.payment.create({ data, include: includeRelations }),
+    prisma.employeeDocument.create({
+      data: {
+        employeeId: input.employeeId,
+        type: "WORK_PERMIT",
+        name: `رخصة عمل ${months === 12 ? "12 شهر" : `${months} أشهر`}`,
+        issueDate: issued,
+        startDate: issued,
+        expiryDate: expiry,
+        cachedStatus: computeStatus(expiry, rules),
+        notes: `سُجّلت من سند الصرف ${paymentNumber}`,
+      },
+    }),
+  ]);
+  return payment;
+}
+
+/** The months in a work permit's sub-type ("MONTHS_6" is six), or null. */
+export function workPermitMonths(type: string | null | undefined) {
+  const m = /^MONTHS_(3|6|9|12)$/.exec(type ?? "");
+  return m ? Number(m[1]) : null;
 }
 
 export async function update(id: string, input: UpdateInput) {
