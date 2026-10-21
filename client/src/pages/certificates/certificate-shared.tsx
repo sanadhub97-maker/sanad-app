@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { BranchMedal } from "@/pages/branches/branch-logo";
 import { PrintsAs } from "@/pages/custody/custody-shared";
 import "@/styles/experience.css";
+import "@/styles/docs-royal.css";
 
 /* What the experience and salary certificates share: whose letterhead they
    print on (the employee's establishment or a name typed by hand), a framed

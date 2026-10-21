@@ -8,6 +8,7 @@ import type { CustodyEmployee } from "@/api/custody";
 import { BranchMedal } from "@/pages/branches/branch-logo";
 import { Guilloche, Medal } from "@/components/royal/royale-fx";
 import "@/styles/custody.css";
+import "@/styles/docs-royal.css";
 
 /* The pieces both custody pages share, in the approved royal look. */
 
