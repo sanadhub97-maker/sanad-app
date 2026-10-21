@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Clock, Edit, MoreHorizontal, PackageCheck, Plus, Printer, Search, ShieldCheck, Trash2, Undo2, Wallet } from "lucide-react";
+import { Clock, Edit, MoreHorizontal, PackageCheck, Plus, Search, ShieldCheck, Trash2, Undo2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { tr } from "@/i18n";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
-import { PxBadge, PxPager, PxStat, PxTabs } from "@/components/royal/px";
+import { PxPager, PxStat, PxTabs } from "@/components/royal/px";
 import { getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { custodyApi, type CustodyHandover, type CustodyQuery } from "@/api/custody";
-import { EmployeeCell, dmy, money } from "@/pages/custody/custody-shared";
+import { HandoverCard } from "@/pages/custody/custody-cards";
 import { HandoverDialog, ReturnDialog, printHandover } from "@/pages/custody/handover-dialog";
 
 /* Custody handovers, as in the approved preview: the royal band, the figures,
@@ -102,95 +102,52 @@ export default function HandoversPage() {
             />
           </label>
         </div>
-        <div className="px-tw">
-          <table className="px-t">
-            <thead>
-              <tr>
-                <th>{tr("رقم المحضر", "Record")}</th>
-                <th>{tr("الموظف", "Employee")}</th>
-                <th className="hm">{tr("الأصناف", "Items")}</th>
-                <th className="hm">{tr("القيمة", "Value")}</th>
-                <th>{tr("التاريخ", "Date")}</th>
-                <th>{tr("الحالة", "Status")}</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading &&
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={7}>
-                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
-                    </td>
-                  </tr>
-                ))}
-              {!isLoading && rows.length === 0 && (
-                <tr>
-                  <td colSpan={7}>
-                    <div className="px-empty">
-                      <b>{q || state !== "all" ? tr("مفيش محاضر بالفلتر ده", "No records match") : tr("لسه مفيش عهد مسلّمة", "No custody handed over yet")}</b>
-                      {!q && state === "all" && tr("ابدأ بأول محضر: اختار الموظف وضيف اللي استلمه.", "Start with the first record: choose the employee and add what they received.")}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {!isLoading &&
-                rows.map((h, j) => (
-                  <tr key={h.id} className={has("custody.edit") ? "click" : undefined} style={{ ["--j" as string]: j }} onClick={() => has("custody.edit") && setDialog({ open: true, handover: h })}>
-                    <td className="mono">
-                      <b>{h.number}</b>
-                    </td>
-                    <td>
-                      <EmployeeCell e={h.employee} />
-                    </td>
-                    <td className="hm">
-                      {h.items.slice(0, 3).map((i) => i.kind).join("، ")}
-                      {h.items.length > 3 ? tr(` و${h.items.length - 3} كمان`, ` +${h.items.length - 3}`) : ""}
-                    </td>
-                    <td className="hm mono">
-                      {money(h.totalValue)} {tr("ر.س", "SAR")}
-                    </td>
-                    <td className="mono">{dmy(h.date)}</td>
-                    <td>{h.itemsOut === 0 ? <PxBadge tone="ok">{tr("رجعت كلها", "All returned")}</PxBadge> : <PxBadge tone="warn">{tr(`${h.itemsOut} من ${h.itemCount} مع الموظف`, `${h.itemsOut} of ${h.itemCount} out`)}</PxBadge>}</td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
-                        {has("custody.export") && (
-                          <button type="button" className="px-btn" onClick={() => printHandover(h)}>
-                            <Printer /> {tr("طباعة", "Print")}
-                          </button>
+        <div className="cuc-grid">
+          {isLoading && Array.from({ length: 3 }).map((_, i) => <div key={i} className="cuc cuc-skel" />)}
+          {!isLoading && rows.length === 0 && (
+            <div className="px-empty cuc-empty">
+              <b>{q || state !== "all" ? tr("مفيش محاضر بالفلتر ده", "No records match") : tr("لسه مفيش عهد مسلّمة", "No custody handed over yet")}</b>
+              {!q && state === "all" && tr("ابدأ بأول محضر: اختار الموظف وضيف اللي استلمه.", "Start with the first record: choose the employee and add what they received.")}
+            </div>
+          )}
+          {!isLoading &&
+            rows.map((h, j) => (
+              <HandoverCard
+                key={h.id}
+                h={h}
+                k={j}
+                onOpen={has("custody.edit") ? () => setDialog({ open: true, handover: h }) : undefined}
+                onPrint={has("custody.export") ? () => printHandover(h) : undefined}
+                menu={
+                  (has("custody.edit") || has("custody.delete")) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button type="button" aria-label={tr("إجراءات", "Actions")}>
+                          <MoreHorizontal /> {tr("إجراءات", "Actions")}
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
+                        {has("custody.edit") && (
+                          <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, handover: h })}>
+                            <Edit className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
+                          </DropdownMenuItem>
                         )}
-                        {(has("custody.edit") || has("custody.delete")) && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button type="button" className="px-iconbtn" aria-label={tr("إجراءات", "Actions")}>
-                                <MoreHorizontal />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-3xl p-2">
-                              {has("custody.edit") && (
-                                <DropdownMenuItem className="rounded-2xl" onSelect={() => setDialog({ open: true, handover: h })}>
-                                  <Edit className="me-2 h-4 w-4" /> {tr("تعديل", "Edit")}
-                                </DropdownMenuItem>
-                              )}
-                              {has("custody.edit") && h.itemsOut > 0 && (
-                                <DropdownMenuItem className="rounded-2xl" onSelect={() => setReturning(h)}>
-                                  <Undo2 className="me-2 h-4 w-4" /> {tr("استرجاع أصناف", "Return items")}
-                                </DropdownMenuItem>
-                              )}
-                              {has("custody.delete") && (
-                                <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(h)}>
-                                  <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        {has("custody.edit") && h.itemsOut > 0 && (
+                          <DropdownMenuItem className="rounded-2xl" onSelect={() => setReturning(h)}>
+                            <Undo2 className="me-2 h-4 w-4" /> {tr("استرجاع أصناف", "Return items")}
+                          </DropdownMenuItem>
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                        {has("custody.delete") && (
+                          <DropdownMenuItem className="rounded-2xl text-destructive" onSelect={() => setDeleting(h)}>
+                            <Trash2 className="me-2 h-4 w-4" /> {tr("حذف", "Delete")}
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
+                }
+              />
+            ))}
         </div>
         <PxPager page={page} pages={pages} total={total} pageSize={pageSize} onChange={setPage} />
       </section>

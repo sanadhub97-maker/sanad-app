@@ -6,10 +6,10 @@ import { tr } from "@/i18n";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
-import { PxBadge, PxPager, PxStat, PxTabs } from "@/components/royal/px";
+import { PxPager, PxStat, PxTabs } from "@/components/royal/px";
 import { getErrorMessage } from "@/lib/api";
-import { DEPARTMENTS, REASONS, custodyApi, type Clearance, type CustodyQuery } from "@/api/custody";
-import { EmployeeCell, dmy, money } from "@/pages/custody/custody-shared";
+import { custodyApi, type Clearance, type CustodyQuery } from "@/api/custody";
+import { ClearanceCard } from "@/pages/custody/custody-cards";
 import { ClearanceDialog, printClearance } from "@/pages/custody/clearance-dialog";
 
 /* End-of-service clearances: saved in the page with full Add, Edit, Print, and Delete capabilities. */
@@ -95,88 +95,36 @@ export default function ClearancesPage() {
             />
           </label>
         </div>
-        <div className="px-tw">
-          <table className="px-t">
-            <thead>
-              <tr>
-                <th>{tr("رقم الإخلاء", "Number")}</th>
-                <th>{tr("الموظف", "Employee")}</th>
-                <th className="hm">{tr("السبب", "Reason")}</th>
-                <th>{tr("آخر يوم", "Last day")}</th>
-                <th className="hm">{tr("المستحقات", "Dues")}</th>
-                <th>{tr("الحالة", "Status")}</th>
-                <th>{tr("الإجراءات", "Actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading &&
-                Array.from({ length: 4 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={7}>
-                      <div className="h-9 animate-pulse rounded-xl bg-[var(--l-ground)]" />
-                    </td>
-                  </tr>
-                ))}
-              {!isLoading && rows.length === 0 && (
-                <tr>
-                  <td colSpan={7}>
-                    <div className="px-empty">
-                      <b>{q || state !== "all" ? tr("مفيش إخلاءات بالفلتر ده", "No clearances match") : tr("لسه مفيش إخلاءات طرف", "No clearances yet")}</b>
-                      {!q && state === "all" && tr("لما موظف يسيب الشغل، اعمله إخلاء طرف من هنا وهيتحفظ للرجوع إليه في أي وقت.", "When an employee leaves, start their clearance here.")}
-                    </div>
-                  </td>
-                </tr>
-              )}
-              {!isLoading &&
-                rows.map((c, j) => {
-                  const reason = REASONS.find((r) => r.value === c.reason);
-                  const signed = DEPARTMENTS.length - c.blockers.departmentsPending.length;
-                  return (
-                    <tr key={c.id} className="click" style={{ ["--j" as string]: j }} onClick={() => open(c)}>
-                      <td className="mono">
-                        <b>{c.number}</b>
-                      </td>
-                      <td>
-                        <EmployeeCell e={c.employee} />
-                      </td>
-                      <td className="hm">{reason ? tr(reason.ar, reason.en) : c.reason}</td>
-                      <td className="mono">{dmy(c.lastWorkingDay)}</td>
-                      <td className="hm mono">
-                        {money(c.dues)} {tr("ر.س", "SAR")}
-                      </td>
-                      <td>
-                        {c.status === "ISSUED" ? (
-                          <PxBadge tone="ok">{tr("صدرت الشهادة", "Issued")}</PxBadge>
-                        ) : c.blockers.itemsOut > 0 ? (
-                          <PxBadge tone="warn">{tr(`${c.blockers.itemsOut} عهدة لسه برّه · ${signed}/${DEPARTMENTS.length} أقسام`, `${c.blockers.itemsOut} out · ${signed}/${DEPARTMENTS.length} signed`)}</PxBadge>
-                        ) : (
-                          <PxBadge tone={signed === DEPARTMENTS.length ? "ok" : "mut"}>{signed === DEPARTMENTS.length ? tr("جاهز للإصدار", "Ready to issue") : tr(`${signed}/${DEPARTMENTS.length} أقسام أكّدت`, `${signed}/${DEPARTMENTS.length} signed`)}</PxBadge>
-                        )}
-                      </td>
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1.5">
-                          <button type="button" className="px-btn" onClick={() => setDialog({ open: true, clearance: c })} title={tr("تعديل إخلاء الطرف", "Edit clearance")}>
-                            <Edit /> {tr("تعديل", "Edit")}
-                          </button>
-                          <button type="button" className="px-btn" onClick={() => printClearance(c)} title={tr("طباعة PDF", "Print PDF")}>
-                            <Printer /> {c.status === "ISSUED" ? tr("الشهادة", "Certificate") : tr("طباعة", "Print")}
-                          </button>
-                          <button
-                            type="button"
-                            className="px-iconbtn text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeleting(c)}
-                            aria-label={tr("حذف", "Delete")}
-                            title={tr("حذف إخلاء الطرف", "Delete clearance")}
-                          >
-                            <Trash2 />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
+        <div className="cuc-grid">
+          {isLoading && Array.from({ length: 3 }).map((_, i) => <div key={i} className="cuc cuc-skel" />)}
+          {!isLoading && rows.length === 0 && (
+            <div className="px-empty cuc-empty">
+              <b>{q || state !== "all" ? tr("مفيش إخلاءات بالفلتر ده", "No clearances match") : tr("لسه مفيش إخلاءات طرف", "No clearances yet")}</b>
+              {!q && state === "all" && tr("لما موظف يسيب الشغل، اعمله إخلاء طرف من هنا وهيتحفظ للرجوع إليه في أي وقت.", "When an employee leaves, start their clearance here.")}
+            </div>
+          )}
+          {!isLoading &&
+            rows.map((c, j) => (
+              <ClearanceCard
+                key={c.id}
+                c={c}
+                k={j}
+                onOpen={() => open(c)}
+                actions={
+                  <>
+                    <button type="button" className="pri" onClick={() => printClearance(c)}>
+                      <Printer /> {c.status === "ISSUED" ? tr("الشهادة", "Certificate") : tr("طباعة", "Print")}
+                    </button>
+                    <button type="button" onClick={() => setDialog({ open: true, clearance: c })}>
+                      <Edit /> {tr("تعديل", "Edit")}
+                    </button>
+                    <button type="button" className="del" onClick={() => setDeleting(c)} aria-label={tr("حذف", "Delete")} title={tr("حذف إخلاء الطرف", "Delete clearance")}>
+                      <Trash2 />
+                    </button>
+                  </>
+                }
+              />
+            ))}
         </div>
         <PxPager page={page} pages={pages} total={total} pageSize={pageSize} onChange={setPage} />
       </section>
