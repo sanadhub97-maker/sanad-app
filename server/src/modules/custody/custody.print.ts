@@ -213,6 +213,8 @@ html, body { margin: 0; padding: 0; background: #fffdf7; }
 .ry-sigs.mid { position: relative; }
 /* between the signatures the seal sits on their line (its middle on the line, tilted like a real stamp), named underneath */
 .ry-sigs.mid { --line: 112px; --stamp: 104px; }
+/* one signer beside the seal: the signature keeps to the start, clear of the seal in the middle */
+.ry .ry-sigs.mid.solo { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; justify-content: stretch !important; gap: 0 170px !important; padding-inline: 10px; }
 .ry-mid { position: absolute; left: 50%; top: calc(var(--line) - var(--stamp) / 2 - 12px); width: 150px; transform: translateX(-50%); z-index: 1; display: flex; flex-direction: column; align-items: center; }
 .ry-mid .ry-stamp { position: static; width: var(--stamp); height: var(--stamp); transform: rotate(-9deg); opacity: .94; }
 .ry-mid .ry-seal { position: static; transform: none; width: calc(var(--stamp) * .6); margin-top: calc(var(--stamp) * .08); }
@@ -279,8 +281,8 @@ export async function royalSheet(input: SheetInput) {
   const grid = `<div class="ry-grid">${cells.map(([k, v, n]) => `<div><span>${k}</span><b class="${n ? "n" : ""}">${esc(v)}</b></div>`).join("")}</div>`;
   const sealFor = () => (input.seal && !input.seal.show ? "" : input.seal?.stamp ? `<img class="ry-stamp" src="${input.seal.stamp}" alt="">` : royalSeal(est.name, deep));
   // The seal sits on the approving (last) signature, or between the signatures when asked (the certificates).
-  const mid = !!input.seal?.center;
-  const sigs = (list: [string, string, (string | null)?][]) => `<div class="grow"></div>` + sec(L("الاعتماد الرسمي", "Official Approval"), `<div class="ry-sigs${mid ? " mid" : ""}">${mid && sealFor() ? `<div class="ry-mid">${sealFor()}<span class="cap">${L("الختم الرسمي", "OFFICIAL SEAL")}</span></div>` : ""}${list.map(([t, n, img], i) => `<div class="ry-sig">${!mid && i === list.length - 1 ? sealFor() : ""}<div class="ln">${img && !n ? `<img class="ry-name-img" src="${img}" alt="">` : ""}</div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`);
+  const center = !!input.seal?.center;
+  const sigs = (list: [string, string, (string | null)?][]) => { const mid = center; return `<div class="grow"></div>` + sec(L("الاعتماد الرسمي", "Official Approval"), `<div class="ry-sigs${mid ? " mid" : ""}${mid && list.length === 1 ? " solo" : ""}">${mid && sealFor() ? `<div class="ry-mid">${sealFor()}<span class="cap">${L("الختم الرسمي", "OFFICIAL SEAL")}</span></div>` : ""}${list.map(([t, n, img], i) => `<div class="ry-sig">${!mid && i === list.length - 1 ? sealFor() : ""}<div class="ln">${img && !n ? `<img class="ry-name-img" src="${img}" alt="">` : ""}</div><b>${t}</b><small>${esc(n || "")}</small></div>`).join("")}</div>`); };
   const meta = [
     est.cr ? `<span>${L("سجل تجاري", "CR")} <b class="n">${esc(est.cr)}</b></span>` : "",
     est.vat ? `<span>${L("الرقم الضريبي", "VAT")} <b class="n">${esc(est.vat)}</b></span>` : "",
