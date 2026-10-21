@@ -1230,3 +1230,10 @@ model VehicleRenewal {
 
   @@index([vehicleId])
 }
+
+/// Login attempt counters shared by all server instances (see lib/dbRateStore.ts).
+model RateLimitHit {
+  key     String   @id
+  hits    Int      @default(0)
+  resetAt DateTime @map("reset_at")
+}

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
+import { DbRateStore } from "@/lib/dbRateStore";
 import { createHash } from "node:crypto";
 import { validate } from "@/middleware/validate";
 import { requireAuth } from "@/middleware/auth";
@@ -24,6 +25,7 @@ const router = Router();
 // fallback text ("Invalid email or password") was masking the real 429,
 // which is actively misleading when it fires.
 const authLimiter = rateLimit({
+  store: new DbRateStore("login-ip"),
   windowMs: 15 * 60 * 1000,
   max: 20,
   standardHeaders: true,
@@ -36,6 +38,7 @@ const authLimiter = rateLimit({
 // No public self-registration — accounts are created by an admin via
 // Users & Roles, matching this app's internal-system access model.
 const accountLimiter = rateLimit({
+  store: new DbRateStore("login-account"),
   windowMs: 15 * 60 * 1000,
   max: 10,
   keyGenerator: (req) => createHash("sha256").update(String(req.body.email).trim().toLowerCase()).digest("hex"),
