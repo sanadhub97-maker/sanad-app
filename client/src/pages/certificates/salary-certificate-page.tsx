@@ -412,9 +412,6 @@ export default function SalaryCertificatePage() {
                     aria-label={tr("بحث", "Search")}
                   />
                 </label>
-                <Button size="sm" onClick={openNewCertificate}>
-                  <Plus className="h-4 w-4" /> {tr("إضافة تعريف بالراتب", "Add salary certificate")}
-                </Button>
               </div>
             </div>
 
@@ -432,13 +429,6 @@ export default function SalaryCertificatePage() {
                 <div className="mt-2">
                   {!q && tr("اضغط على زر «إضافة تعريف بالراتب» لفتح صفحة التسجيل وإنشاء أول بطاقة تعريف بالراتب.", "Click “Add salary certificate” to open the registration page and create the first card.")}
                 </div>
-                {!q && (
-                  <div className="mt-4">
-                    <Button onClick={openNewCertificate}>
-                      <Plus className="h-4 w-4" /> {tr("إضافة تعريف بالراتب", "Add salary certificate")}
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
 
