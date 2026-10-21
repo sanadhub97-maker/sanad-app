@@ -24,6 +24,7 @@ import "@/styles/stat-medallion.css";
 import "@/styles/px-luxe.css";
 import "@/styles/royal-kit.css";
 import "@/styles/royal-global.css";
+import "@/styles/royal-dialog.css";
 
 // Show the interface immediately with its system-font fallback while the
 // external font stylesheet downloads. Apply the original fonts when ready.

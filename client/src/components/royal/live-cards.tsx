@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { tr } from "@/i18n";
+import { amountInWords } from "@/lib/money-words";
 
 /* The live pieces of the add forms (styles/royale.css, "live previews"):
    what is being added takes shape beside the form as it is typed — the
@@ -130,29 +131,49 @@ export function LiveDates({ items }: { items: { label: string; date?: string }[]
 }
 
 /** The expense voucher as it will print, with its total worked out. */
-export function LiveVoucher({ number, company, rows, amount, vat }: { number?: string; company?: string; rows: [string, string | undefined][]; amount: number; vat: number }) {
+export function LiveVoucher({ number, company, rows, amount, vat, tag }: { number?: string; company?: string; rows: [string, string | undefined][]; amount: number; vat: number; tag?: string }) {
+  const total = amount + vat;
+  const en = !tr("ar", "") ;
+  const initial = (company || "").trim().charAt(0) || tr("س", "S");
   return (
-    <div className="rx-voucher">
-      <div className="vh">
-        <div>
-          <b>{tr("سند صرف", "Expense voucher")}</b>
-          <small>{company || "—"}</small>
-        </div>
-        <span className="no" dir="ltr">{number || tr("رقم تلقائي", "Auto number")}</span>
+    <article className="lv-doc">
+      <svg className="lv-rose" viewBox="-100 -100 200 200" aria-hidden="true">
+        {Array.from({ length: 36 }, (_, i) => { const a = (i / 36) * Math.PI * 2; return <circle key={i} cx={Math.cos(a) * 34} cy={Math.sin(a) * 34} r={62} fill="none" stroke="currentColor" strokeWidth=".4" />; })}
+      </svg>
+      <span className="lv-holo" aria-hidden="true" />
+      <span className="lv-sweep" aria-hidden="true" />
+      {["a", "b", "c", "d"].map((k) => (
+        <svg key={k} className={`lv-corner ${k}`} viewBox="0 0 40 40" aria-hidden="true"><path d="M2 38V14C2 7 7 2 14 2h24" fill="none" stroke="currentColor" strokeWidth="1.6" /><rect x="11" y="11" width="6" height="6" transform="rotate(45 14 14)" fill="currentColor" /></svg>
+      ))}
+      <div className="lv-band" />
+      <div className="lv-top">
+        <span className="lv-seal">{initial}</span>
+        <div className="lv-t"><b>{tr("سند صرف", "Expense voucher")}</b><small>{company || "—"}</small></div>
+        <div className="lv-no"><span>{tr("رقم السند", "VOUCHER NO.")}</span><b dir="ltr">{number || tr("تلقائي", "Auto")}</b></div>
       </div>
-      <div className="rows">
-        {rows.map(([k, v]) => (
-          <div key={k}><span>{k}</span><b>{v || "—"}</b></div>
+      <div className="lv-amt">
+        <div className="lbl"><span>{tr("المبلغ الإجمالي", "Total amount")}</span></div>
+        <div className="big"><span dir="ltr">{money(total)}</span><small>{tr("ر.س", "SAR")}</small></div>
+        <div className="words">{total > 0 ? amountInWords(total, en) : "—"}</div>
+      </div>
+      <div className="lv-rows">
+        {rows.map(([k, v], i) => (
+          <div key={k}><span>{k}</span><b className={v ? undefined : "mut"}>{v || "—"}{i === 0 && tag ? <i className="lv-tag">{tag}</i> : null}</b></div>
         ))}
-        <div><span>{tr("المبلغ", "Amount")}</span><b dir="ltr">{money(amount)} {tr("ر.س", "SAR")}</b></div>
-        <div><span>{tr("الضريبة", "VAT")}</span><b dir="ltr">{money(vat)} {tr("ر.س", "SAR")}</b></div>
       </div>
-      <div className="tot">
-        <span>{tr("الإجمالي", "Total")}</span>
-        <span className="stamp" aria-hidden="true">{tr("معتمد", "Approved")}</span>
-        <b dir="ltr">{money(amount + vat)} {tr("ر.س", "SAR")}</b>
+      <div className="lv-sum">
+        <div><span>{tr("المبلغ", "Amount")}</span><b dir="ltr">{money(amount)}</b></div>
+        <div><span>{tr("الضريبة", "VAT")}</span><b dir="ltr">{money(vat)}</b></div>
+        <div className="t"><span>{tr("الإجمالي", "Total")}</span><b dir="ltr">{money(total)}</b></div>
       </div>
-    </div>
+      <div className="lv-sig">
+        <div className="ln"><i />{tr("المحاسب", "Accountant")}</div>
+        <div className={`lv-wax${total > 0 ? "" : " draft"}`}><div className="disc"><span>{total > 0 ? <>{tr("معتمد", "APPROVED")}<br />{tr("سند", "SanaD")}</> : tr("مسودة", "DRAFT")}</span></div></div>
+        <div className="ln"><i />{tr("المدير المالي", "Finance manager")}</div>
+      </div>
+      <div className="lv-perf"><i /><i /></div>
+      <div className="lv-stub"><span>{tr("كعب السند", "Stub")} · <b dir="ltr">{number || "—"}</b></span><span className="bars" aria-hidden="true" /></div>
+    </article>
   );
 }
 

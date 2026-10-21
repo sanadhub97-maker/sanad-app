@@ -627,6 +627,7 @@ export function PaymentDialog({
               ]}
               amount={Number(amount) || 0}
               vat={Number(vat) || 0}
+              tag={live.category === "WORK_PERMIT" && live.type ? t(`paymentSubtypes.${live.type}`) : undefined}
             />
           </LiveAside>
         </form>

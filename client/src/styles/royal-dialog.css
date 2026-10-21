@@ -1,0 +1,144 @@
+/* Every add / edit window in the royal look (approved on the voucher window): a double gold frame,
+   gold-foil titles, sections framed in gold, gold-edged fields that glow gold when typed in,
+   gold buttons. Light theme keeps the same shapes on ivory. */
+
+.lu-app ~ [role="dialog"], [role="dialog"] {
+  --rd-a: #15130f; --rd-b: #0b0a08; --rd-sec-a: #1a1712; --rd-sec-b: #0e0c09; --rd-well-a: #0c0b08; --rd-well-b: #12100c; --rd-ink: #f3ecdc; --rd-muted: #a89c82; --rd-gold: #d6b678;
+  --rd-foil: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a);
+}
+html.rx-light [role="dialog"] {
+  --rd-a: #fbf5e6; --rd-b: #f1e6ca; --rd-sec-a: #fffaf0; --rd-sec-b: #f4ead0; --rd-well-a: #fffdf8; --rd-well-b: #f8f0dc; --rd-ink: #1d1a14; --rd-muted: #6d6452; --rd-gold: #a8792f;
+  --rd-foil: linear-gradient(100deg, #6b4e1d, #b08a3e 38%, #d9b867 50%, #8f6a2a 74%, #6b4e1d);
+}
+
+/* the window */
+[role="dialog"]:has(form) {
+  border: 1px solid rgba(214, 182, 120, 0.4) !important;
+  background: radial-gradient(900px 300px at 70% -10%, rgba(255, 236, 190, 0.1), transparent 60%), linear-gradient(180deg, var(--rd-a), var(--rd-b)) !important;
+  box-shadow: 0 40px 90px -40px #000, inset 0 0 0 6px var(--rd-b), inset 0 0 0 7px rgba(201, 164, 100, 0.45) !important;
+}
+/* the rose glows the old windows carried */
+[role="dialog"]:has(form) > .pointer-events-none.absolute { display: none !important; }
+[role="dialog"]:has(form) > div:first-of-type.border-b, [role="dialog"]:has(form) [class*="DialogHeader"], [role="dialog"]:has(form) > .border-b { border-bottom-color: rgba(201, 164, 100, 0.45) !important; background: transparent !important; }
+
+/* titles */
+[role="dialog"]:has(form) h2 {
+  background: var(--rd-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent; animation: rd-foil 7s linear infinite; font-weight: 900 !important;
+}
+@keyframes rd-foil { to { background-position: -220% 0; } }
+
+/* sections */
+[role="dialog"] form :is(.rounded-2xl, .rounded-3xl).border {
+  position: relative; border-color: rgba(214, 182, 120, 0.32) !important;
+  background: repeating-radial-gradient(circle at 100% 0%, transparent 0 11px, rgba(214, 182, 120, 0.04) 11px 12px), linear-gradient(180deg, var(--rd-sec-a), var(--rd-sec-b)) !important;
+  box-shadow: inset 0 0 0 4px var(--rd-sec-b), inset 0 0 0 4.6px rgba(201, 164, 100, 0.2), 0 20px 40px -32px #000 !important; backdrop-filter: none !important;
+}
+[role="dialog"] form :is(.rounded-2xl, .rounded-3xl).border::before { content: ""; position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border: solid #c9a464; border-width: 1.5px 1.5px 0 0; border-top-right-radius: 8px; pointer-events: none; }
+/* the old rose total box becomes a gold plate */
+[role="dialog"] form .border-rose-500\/30 {
+  border-color: transparent !important;
+  background: linear-gradient(120deg, #3a2b10, #1a1307 40%, #2a1f0c) !important;
+  box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.6), inset 0 0 0 4px #1a1307, inset 0 0 0 4.6px rgba(214, 182, 120, 0.35), 0 16px 30px -18px rgba(233, 199, 119, 0.5) !important;
+}
+[role="dialog"] form .border-rose-500\/30 :is(.text-rose-600, .text-rose-500, .text-rose-400, [class*="text-rose"]) {
+  background: var(--rd-foil); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; -webkit-text-fill-color: transparent;
+}
+[role="dialog"] form .border-rose-500\/30 * { color: #e8dcc1; }
+
+/* labels */
+[role="dialog"] form label { color: color-mix(in srgb, var(--rd-ink) 85%, var(--rd-gold)) !important; }
+[role="dialog"] form label svg { color: var(--rd-gold) !important; opacity: 0.85; }
+
+/* fields: gold edges, a deep well, a gold glow when typed in */
+[role="dialog"] form :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), textarea, button[role="combobox"]) {
+  background: linear-gradient(180deg, var(--rd-well-a), var(--rd-well-b)) padding-box, linear-gradient(135deg, rgba(243, 223, 174, 0.55), rgba(143, 106, 42, 0.35) 50%, rgba(233, 199, 119, 0.5)) border-box !important;
+  border: 1px solid transparent !important; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45) !important; color: var(--rd-ink) !important;
+}
+[role="dialog"] form :is(input, textarea, button[role="combobox"]):focus-visible,
+[role="dialog"] form :is(input, textarea):focus,
+[role="dialog"] form button[role="combobox"][data-state="open"] {
+  outline: none !important; box-shadow: 0 0 0 3px rgba(214, 182, 120, 0.28), 0 0 18px -6px rgba(233, 199, 119, 0.6), inset 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+}
+[role="dialog"] form button[role="combobox"] svg { color: var(--rd-gold) !important; opacity: 0.9; }
+/* the permit-length dropdown keeps its own trigger, in the same gold edge */
+[role="dialog"] form .pls-trig { background: linear-gradient(180deg, var(--rd-well-a), var(--rd-well-b)) padding-box, linear-gradient(135deg, rgba(243, 223, 174, 0.55), rgba(143, 106, 42, 0.35) 50%, rgba(233, 199, 119, 0.5)) border-box !important; border: 1px solid transparent !important; }
+[role="dialog"] form .pls.open .pls-trig { box-shadow: 0 0 0 3px rgba(214, 182, 120, 0.28), 0 0 18px -6px rgba(233, 199, 119, 0.6) !important; }
+
+/* buttons: the action in gold, the rest gold-edged */
+[role="dialog"]:has(form) button[type="submit"] {
+  color: #1a1307 !important; border: 0 !important; background: linear-gradient(120deg, #a87e33, #f3dfae 30%, #d9b25a 55%, #fff0c4 78%, #b8913f) !important; box-shadow: 0 10px 24px -10px rgba(233, 199, 119, 0.6) !important;
+}
+[role="dialog"]:has(form) button[type="submit"] svg { color: #1a1307 !important; }
+[role="dialog"]:has(form) button[type="button"]:is(.border, [class*="outline"]):not([role="combobox"]):not(.pls-trig):not(.pls-opt) {
+  background: linear-gradient(180deg, var(--rd-sec-a), var(--rd-sec-b)) padding-box, linear-gradient(135deg, #f3dfae, #8f6a2a 45%, #e9c777 70%, #8f6a2a) border-box !important; border: 1px solid transparent !important; color: var(--rd-ink) !important;
+}
+
+/* ===== the expense voucher as the royal black document ===== */
+.lv-doc { position: relative; overflow: hidden; border-radius: 14px; color: #f3ecdc; filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.55)); isolation: isolate;
+  background: radial-gradient(520px 260px at 80% -10%, rgba(255, 236, 190, 0.16), transparent 60%), radial-gradient(420px 300px at 0% 110%, rgba(201, 164, 100, 0.12), transparent 60%), linear-gradient(170deg, #1b1610, #0a0806 60%, #120e09); }
+.lv-doc::before { content: ""; position: absolute; inset: 8px; border-radius: 9px; border: 1.5px solid #c9a464; pointer-events: none; z-index: 2; }
+.lv-doc::after { content: ""; position: absolute; inset: 12px; border-radius: 6px; border: 0.6px dashed rgba(214, 182, 120, 0.35); pointer-events: none; z-index: 2; }
+.lv-doc > :not(.lv-rose):not(.lv-holo):not(.lv-sweep):not(.lv-corner) { position: relative; z-index: 1; }
+.lv-rose { position: absolute; z-index: 0; top: 46%; left: 50%; width: 380px; aspect-ratio: 1; transform: translate(-50%, -50%); color: rgba(214, 182, 120, 0.12); pointer-events: none; animation: lv-rot 140s linear infinite; }
+@keyframes lv-rot { to { transform: translate(-50%, -50%) rotate(360deg); } }
+.lv-sweep { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(110deg, transparent 40%, rgba(255, 243, 214, 0.15) 50%, transparent 60%); transform: translateX(-130%); animation: lv-sw 8s ease-in-out infinite; }
+@keyframes lv-sw { 0%, 60% { transform: translateX(-130%); } 90%, 100% { transform: translateX(130%); } }
+.lv-holo { position: absolute; z-index: 2; top: 0; bottom: 0; inset-inline-end: 0; width: 6px; opacity: 0.55; pointer-events: none; background: linear-gradient(180deg, #ff9ec4, #ffe08a, #9df0c6, #8ec5ff, #d8a6ff, #ff9ec4); background-size: 100% 300%; animation: lv-holo 6s linear infinite; mix-blend-mode: screen; }
+@keyframes lv-holo { to { background-position: 0 300%; } }
+.lv-corner { position: absolute; z-index: 2; width: 30px; height: 30px; color: #c9a464; pointer-events: none; }
+.lv-corner.a { top: 13px; right: 13px; transform: scaleX(-1); } .lv-corner.b { top: 13px; left: 13px; } .lv-corner.c { bottom: 13px; right: 13px; transform: scale(-1); } .lv-corner.d { bottom: 13px; left: 13px; transform: scaleY(-1); }
+.lv-band { height: 6px; background: linear-gradient(90deg, #6d4f1c, #f3dfae 25%, #c9a464 50%, #fff0c4 75%, #6d4f1c); }
+.lv-top { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 20px 22px 10px; }
+.lv-seal { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; font-weight: 900; color: #1a1307; background: radial-gradient(circle at 40% 30%, #fff3d6, #c9a464 60%, #8f6a2a); box-shadow: 0 0 0 2px #0a0806, 0 0 0 3.5px #c9a464, 0 0 18px -4px rgba(233, 199, 119, 0.8); }
+.lv-t b, .lv-amt .big span, .lv-no b { background: linear-gradient(100deg, #b08a3e, #f3dfae 35%, #fff3d6 50%, #c9a464 70%, #b08a3e); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rd-foil 6s linear infinite; }
+.lv-t b { display: block; font-size: 20px; font-weight: 900; line-height: 1.2; }
+.lv-t small { font-size: 11px; color: #b5a888; font-weight: 700; }
+.lv-no { text-align: end; } .lv-no span { display: block; font-size: 9.5px; font-weight: 800; letter-spacing: 0.08em; color: #b5a888; } .lv-no b { font-family: ui-monospace, Consolas, monospace; font-size: 13px; font-weight: 700; }
+.lv-amt { margin: 4px 22px 0; padding: 12px 14px; border-radius: 12px; display: grid; gap: 3px; background: linear-gradient(180deg, rgba(255, 243, 214, 0.06), rgba(255, 243, 214, 0.02)); box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.5), inset 0 0 0 4px #0d0a07, inset 0 0 0 4.6px rgba(214, 182, 120, 0.25); }
+.lv-amt .lbl { font-size: 10.5px; font-weight: 800; color: #b5a888; }
+.lv-amt .big { display: flex; align-items: baseline; gap: 8px; font-size: 30px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.lv-amt .big small { font-size: 13px; color: #b5a888; }
+.lv-amt .words { font-size: 12.5px; color: #e9c777; line-height: 1.6; font-weight: 700; }
+.lv-rows { margin: 10px 22px 0; display: grid; }
+.lv-rows > div { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px dashed rgba(214, 182, 120, 0.22); font-size: 13px; }
+.lv-rows > div:last-child { border-bottom: 0; }
+.lv-rows span { color: #b5a888; font-weight: 700; }
+.lv-rows b { font-weight: 800; color: #f3ecdc; min-width: 0; overflow-wrap: anywhere; }
+.lv-rows b.mut { color: #6f6656; font-weight: 600; }
+.lv-tag { display: inline-block; font-style: normal; font-size: 10.5px; font-weight: 800; color: #1a1307; background: linear-gradient(120deg, #c9a464, #f3dfae); border-radius: 999px; padding: 0 8px; margin-inline-start: 6px; }
+.lv-sum { margin: 10px 22px 0; display: grid; grid-template-columns: 1fr 1fr 1fr; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(214, 182, 120, 0.4); }
+.lv-sum div { padding: 7px 8px; text-align: center; font-variant-numeric: tabular-nums; }
+.lv-sum div + div { border-inline-start: 1px solid rgba(214, 182, 120, 0.3); }
+.lv-sum span { display: block; font-size: 10px; font-weight: 800; color: #b5a888; }
+.lv-sum b { font-size: 13px; font-weight: 900; color: #f3ecdc; }
+.lv-sum .t { background: linear-gradient(160deg, #f3dfae, #c9a464 55%, #8f6a2a); } .lv-sum .t span { color: #3a2b10; } .lv-sum .t b { color: #1a1307; }
+.lv-sig { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; margin: 16px 22px 0; }
+.lv-sig .ln { display: grid; gap: 4px; font-size: 10.5px; color: #b5a888; font-weight: 700; text-align: center; }
+.lv-sig .ln i { height: 1px; background: rgba(214, 182, 120, 0.45); }
+.lv-wax { position: relative; width: 84px; height: 84px; display: grid; place-items: center; }
+.lv-wax::before, .lv-wax::after { content: ""; position: absolute; bottom: -16px; width: 20px; height: 36px; background: linear-gradient(180deg, #9b1c1c, #6a0f0f); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%); z-index: -1; }
+.lv-wax::before { left: 22px; transform: rotate(14deg); } .lv-wax::after { right: 22px; transform: rotate(-14deg); }
+.lv-wax .disc { width: 78px; height: 78px; display: grid; place-items: center; text-align: center; color: #ffd9a8; background: radial-gradient(circle at 38% 30%, #e0484a, #a31d1f 55%, #6b0f11);
+  clip-path: polygon(50% 0, 61% 4%, 72% 2%, 79% 11%, 90% 14%, 92% 26%, 100% 36%, 97% 48%, 100% 60%, 93% 70%, 92% 82%, 81% 87%, 74% 97%, 62% 95%, 50% 100%, 38% 95%, 26% 97%, 19% 87%, 8% 82%, 7% 70%, 0 60%, 3% 48%, 0 36%, 8% 26%, 10% 14%, 21% 11%, 28% 2%, 39% 4%); }
+.lv-wax .disc span { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(255, 217, 168, 0.55), inset 0 0 0 5px rgba(107, 15, 17, 0.6); font-size: 11px; font-weight: 900; line-height: 1.25; }
+.lv-wax.draft .disc { background: radial-gradient(circle at 38% 30%, #d9c08a, #a8843d 55%, #6d521f); color: #fff3d6; }
+.lv-wax.draft::before, .lv-wax.draft::after { background: linear-gradient(180deg, #8f6a2a, #5a4116); }
+.lv-perf { position: relative; height: 20px; margin-top: 16px; }
+.lv-perf::before { content: ""; position: absolute; inset-inline: 16px; top: 50%; border-top: 2px dashed rgba(214, 182, 120, 0.45); }
+.lv-perf i { position: absolute; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--rd-a, #15130f); }
+.lv-perf i:first-child { right: -10px; } .lv-perf i:last-child { left: -10px; }
+.lv-stub { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 2px 22px 20px; font-size: 11px; color: #b5a888; font-weight: 700; }
+.lv-stub b { color: #f3dfae; font-family: ui-monospace, Consolas, monospace; }
+.lv-stub .bars { height: 24px; flex: 1; max-width: 150px; background: repeating-linear-gradient(90deg, #d6b678 0 2px, transparent 2px 4px, #d6b678 4px 5px, transparent 5px 8px, #d6b678 8px 11px, transparent 11px 13px); opacity: 0.8; }
+@media (prefers-reduced-motion: reduce) {
+  [role="dialog"]:has(form) h2, .lv-rose, .lv-sweep, .lv-holo, .lv-t b, .lv-amt .big span, .lv-no b { animation: none !important; }
+}
+
+/* the light theme's own rules are more specific; the gold plate and the gold button win there too */
+html.rx-light [role="dialog"] form .border-rose-500\/30, html.rx-light [role="dialog"] form div.border-rose-500\/30 {
+  background: linear-gradient(120deg, #3a2b10, #1a1307 40%, #2a1f0c) !important;
+  box-shadow: 0 0 0 1px rgba(214, 182, 120, 0.6), inset 0 0 0 4px #1a1307, inset 0 0 0 4.6px rgba(214, 182, 120, 0.35) !important;
+}
+html.rx-light [role="dialog"] form .border-rose-500\/30 * { color: #e8dcc1 !important; }
+html.rx-light [role="dialog"] form .border-rose-500\/30 :is([class*="text-rose"]) { color: transparent !important; background: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a); -webkit-background-clip: text; background-clip: text; }
+html.rx-light [role="dialog"]:has(form) button[type="submit"], html.rx-light [role="dialog"]:has(form) button[type="submit"] * { color: #1a1307 !important; -webkit-text-fill-color: #1a1307 !important; }
