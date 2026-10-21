@@ -142,3 +142,6 @@ html.rx-light [role="dialog"] form .border-rose-500\/30, html.rx-light [role="di
 html.rx-light [role="dialog"] form .border-rose-500\/30 * { color: #e8dcc1 !important; }
 html.rx-light [role="dialog"] form .border-rose-500\/30 :is([class*="text-rose"]) { color: transparent !important; background: linear-gradient(100deg, #8f6a2a, #f3dfae 32%, #fff3d6 50%, #c9a464 74%, #8f6a2a); -webkit-background-clip: text; background-clip: text; }
 html.rx-light [role="dialog"]:has(form) button[type="submit"], html.rx-light [role="dialog"]:has(form) button[type="submit"] * { color: #1a1307 !important; -webkit-text-fill-color: #1a1307 !important; }
+
+/* add / edit windows a little wider on large screens */
+@media (min-width: 1100px) { [role="dialog"]:has(form) { max-width: min(1320px, 94vw) !important; width: 100% !important; } }
