@@ -88,8 +88,17 @@ function star(cx: number, cy: number, r: number, color: string, sw: number) {
   const pts = (rot: number) => Array.from({ length: 4 }, (_, i) => { const a = rot + (i * Math.PI) / 2; return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`; }).join(" ");
   return `<polygon points="${pts(0)}" fill="none" stroke="${color}" stroke-width="${sw}"/><polygon points="${pts(Math.PI / 4)}" fill="none" stroke="${color}" stroke-width="${sw}"/><circle cx="${cx}" cy="${cy}" r="${r * 0.42}" fill="none" stroke="${color}" stroke-width="${sw * 0.8}"/>`;
 }
-// The repeating tile of the border and the header band.
-const tile = (size: number, color: string, sw: number) => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="${size}" height="${size}">${star(18, 18, 12, color, sw)}<circle cx="18" cy="18" r="1.6" fill="${color}"/><path d="M0 0 L6 6 M36 0 L30 6 M0 36 L6 30 M36 36 L30 30" stroke="${color}" stroke-width="${sw}"/></svg>`);
+// The same tile laid out as vector copies over a w × h box. A repeated CSS background
+// image, and an SVG <pattern> too, is flattened into a bitmap in the PDF (about 900 KB
+// a sheet); plain copies of one symbol stay vector and cost a few KB.
+let patSeq = 0;
+function tilePattern(w: number, h: number, size: number, color: string, sw: number, opacity = 1) {
+  const id = `tp${++patSeq}`;
+  let uses = "";
+  for (let y = 0; y < h; y += size) for (let x = 0; x < w; x += size) uses += `<use href="#${id}" x="${x}" y="${y}"/>`;
+  const k = (size / 36).toFixed(4);
+  return `<svg class="tp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><defs><g id="${id}" transform="scale(${k})" stroke-opacity="${opacity}" fill-opacity="${opacity}">${star(18, 18, 12, color, sw)}<circle cx="18" cy="18" r="1.6" fill="${color}"/><path d="M0 0 L6 6 M36 0 L30 6 M0 36 L6 30 M36 36 L30 30" stroke="${color}" stroke-width="${sw}"/></g></defs>${uses}</svg>`;
+}
 // A tapering gold rule with a diamond and a star beside the title.
 function starRule(id: string) {
   return `<svg viewBox="0 0 220 26" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="#b48a3c" stop-opacity="0"/><stop offset=".55" stop-color="#c9a253"/><stop offset="1" stop-color="#e8cf8b"/></linearGradient></defs>
@@ -133,14 +142,15 @@ html, body { margin: 0; padding: 0; background: #fffdf7; }
 .ry-tbl th span { color: #e8cf8b; }
 .ry { width: 794px; height: 1123px; background: #fffdf7; color: #1a2130; position: relative; overflow: hidden; font: 11.8px/1.6 'Zain', sans-serif;
   --foil: linear-gradient(135deg, #7a5a22 0%, #e8cf8b 28%, #b48a3c 46%, #f7e7b0 64%, #9c7631 82%, #e2c37c 100%); --gold: #b08a40; --gold-l: #e3cd97; --ink2: #3c4659; }
-.ry .edge { position: absolute; background-color: var(--deep); background-size: 18px 18px; }
+.ry .edge { position: absolute; background-color: var(--deep); overflow: hidden; }
+.tp { position: absolute; top: 0; left: 0; display: block; }
 .ry .edge.t, .ry .edge.b { left: 0; right: 0; height: 18px; } .ry .edge.t { top: 0; } .ry .edge.b { bottom: 0; }
 .ry .edge.r, .ry .edge.l { top: 0; bottom: 0; width: 18px; } .ry .edge.r { right: 0; } .ry .edge.l { left: 0; }
 .ry .rule { position: absolute; inset: 22px; border: 1.2px solid transparent; border-image: var(--foil) 1; }
 .ry .rule::after { content: ""; position: absolute; inset: 3px; border: .5px solid var(--gold-l); }
 .ry .bg { position: absolute; left: 50%; top: 58%; width: 520px; max-height: 520px; object-fit: contain; transform: translate(-50%, -50%); opacity: .045; }
 .ry-band { position: absolute; top: 26px; left: 26px; right: 26px; height: 150px; background-color: var(--deep); background-image: radial-gradient(120% 140% at 50% -20%, color-mix(in srgb, var(--brand) 55%, transparent), transparent 70%); overflow: hidden; }
-.ry-band .pat { position: absolute; inset: 0; opacity: .14; background-size: 34px 34px; }
+.ry-band .pat { position: absolute; inset: 0; overflow: hidden; }
 .ry-band .fl { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--foil); }
 .ry-band .txt { position: relative; display: grid; justify-items: stretch; gap: 2px; padding: 22px 30px 0; text-align: center; }
 .ry-band h1 { margin: 0; font-size: 25px; line-height: 1.25; font-weight: 700; }
@@ -256,7 +266,6 @@ export async function royalSheet(input: SheetInput) {
   const { est, emp } = input;
   const brand = validHex(est.brandColor) ?? "#1e40af";
   const deep = shade(brand, 0.38);
-  const edgeTile = tile(18, "#c9a253", 2.2), bandTile = tile(34, "#e8cf8b", 1.3);
   const sec = (t: string, inner: string) => `<div class="ry-sec"><h4><span class="dm"></span>${t}</h4>${inner}</div>`;
   const cells: [string, string, boolean?][] = [
     [L("الاسم", "Name"), emp.name],
@@ -286,10 +295,10 @@ export async function royalSheet(input: SheetInput) {
   const socials = socialList(est.socials);
   const html = `<!doctype html><html lang="${isEn() ? "en" : "ar"}" dir="${isEn() ? "ltr" : "rtl"}"><head><meta charset="utf-8"><title>${esc(input.number)}</title><style>${CSS}${input.extraCss ?? ""}</style></head><body>
   <div class="ry${input.sheetClass ? ` ${input.sheetClass}` : ""}${socials.length ? " has-soc" : ""}" style="--brand:${brand};--deep:${deep}">
-    <div class="edge t" style="background-image:${edgeTile}"></div><div class="edge b" style="background-image:${edgeTile}"></div><div class="edge r" style="background-image:${edgeTile}"></div><div class="edge l" style="background-image:${edgeTile}"></div>
+    <div class="edge t">${tilePattern(794, 18, 18, "#c9a253", 2.2)}</div><div class="edge b">${tilePattern(794, 18, 18, "#c9a253", 2.2)}</div><div class="edge r">${tilePattern(18, 1123, 18, "#c9a253", 2.2)}</div><div class="edge l">${tilePattern(18, 1123, 18, "#c9a253", 2.2)}</div>
     <div class="rule"></div>
     ${logo && est.logoTransparent ? `<img class="bg" src="${logo}" alt="">` : ""}
-    <div class="ry-band"><div class="pat" style="background-image:${bandTile}"></div><div class="txt"><h1>${foilText(est.name, 25, { head: true, maxChars: 42 })}</h1>${est.nameEn ? `<div class="en">${esc(est.nameEn)}</div>` : ""}
+    <div class="ry-band"><div class="pat">${tilePattern(742, 150, 34, "#e8cf8b", 1.3, 0.14)}</div><div class="txt"><h1>${foilText(est.name, 25, { head: true, maxChars: 42 })}</h1>${est.nameEn ? `<div class="en">${esc(est.nameEn)}</div>` : ""}
       ${meta ? `<div class="meta">${meta}</div>` : ""}</div><div class="fl"></div></div>
     <div class="ry-medal"><div class="disc">${logo ? `<img src="${logo}" alt="">` : `<span class="ini">${esc(est.name.trim().charAt(0))}</span>`}</div></div>
     <div class="body">
